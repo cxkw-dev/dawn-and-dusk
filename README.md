@@ -96,6 +96,7 @@ npm install
 npm run dev        # builds the system, then serves the docs at http://localhost:4321/dawn-and-dusk
 npm run build      # builds the system and the static docs into dist/
 npm run build:ds   # rebuilds release/, entry points and the skill only
+npm test           # behaviour tests in headless Chrome against the running dev server (npm test -- menu tabs)
 ```
 
 **Adding a component**

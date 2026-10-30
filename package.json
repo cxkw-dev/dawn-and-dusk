@@ -1,7 +1,7 @@
 {
   "name": "dawn-and-dusk",
   "version": "0.1.0",
-  "description": "dawn & dusk — the cxkw.dev design system: tokens, components and an agent skill, in light (dawn) and dark (dusk).",
+  "description": "dawn & dusk \u2014 the cxkw.dev design system: tokens, components and an agent skill, in light (dawn) and dark (dusk).",
   "type": "module",
   "license": "UNLICENSED",
   "private": true,
@@ -12,7 +12,8 @@
     "dev": "node scripts/build-ds.mjs && astro dev",
     "build": "node scripts/build-ds.mjs && astro build",
     "build:ds": "node scripts/build-ds.mjs",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "test": "node tests/run.mjs"
   },
   "devDependencies": {
     "astro": "^6.1.3"
