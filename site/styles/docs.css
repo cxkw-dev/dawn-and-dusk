@@ -57,7 +57,7 @@
 .doc-main > p, .doc-main > section > p, .doc-main li { text-wrap: pretty; }
 .doc-main > p, .doc-main > section > p { margin: 0 0 var(--dd-space-4); max-width: 68ch; }
 .doc-main > ul, .doc-main > section > ul { padding-left: 1.2em; margin: 0 0 var(--dd-space-4); }
-.doc-main :not(pre) > code {
+.doc-main :not(pre) > code:not(.ex-stage *) {
   font-family: var(--dd-font-mono); font-size: 0.86em; padding: 0.1em 0.38em; border-radius: 4px; background: var(--dd-surface-2);
 }
 .doc-main a:not([class]) { color: var(--dd-text); text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: 0.25em; }

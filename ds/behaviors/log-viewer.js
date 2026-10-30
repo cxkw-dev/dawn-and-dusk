@@ -1,5 +1,5 @@
 /* Log viewer: [data-dd-log-viewer] wires up its bar.
-   - input[data-dd-log-viewer-search]: filters lines by text and highlights matches with <mark>. Esc clears.
+   - input[data-dd-log-viewer-search]: filters lines by text and highlights matches (service and message) with <mark>. Esc clears.
    - button[data-dd-log-viewer-level="debug|info|warn|error"]: aria-pressed toggles that level.
    - button[data-dd-log-viewer-wrap]: aria-pressed toggles .is-wrapped (long messages wrap instead of scrolling).
    - [data-dd-log-viewer-count]: gets “18 of 24 lines”; [data-dd-log-viewer-empty] shows when nothing matches.
@@ -49,8 +49,7 @@
       const textOk = !q || line.textContent.toLowerCase().includes(q);
       line.hidden = !(levelOk && textOk);
       if (!line.hidden) shown++;
-      const msg = line.querySelector(`.${C}__msg`);
-      if (msg) highlight(msg, line.hidden ? '' : query);
+      line.querySelectorAll(`.${C}__src, .${C}__msg`).forEach((el) => highlight(el, line.hidden ? '' : query));
     });
     const count = root.querySelector('[data-dd-log-viewer-count]');
     if (count) count.textContent = shown === lines.length ? `${lines.length} lines` : `${shown} of ${lines.length} lines`;
