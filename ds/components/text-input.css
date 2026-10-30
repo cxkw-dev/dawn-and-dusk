@@ -87,7 +87,7 @@
 /* States */
 .dd-input.is-invalid, .dd-input:has(.dd-input__control[aria-invalid='true']) {
   --_fill: color-mix(in oklab, var(--dd-bad) 14%, var(--dd-surface-2));
-  --_fill-hover: color-mix(in oklab, var(--dd-bad) 19%, var(--dd-surface-2));
+  --_fill-hover: color-mix(in oklab, var(--dd-bad) 23%, var(--dd-surface-2));
 }
 .dd-input.is-invalid:focus-within, .dd-input:has(.dd-input__control[aria-invalid='true']):focus-within {
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-bad) 55%, transparent), var(--dd-shadow-float);

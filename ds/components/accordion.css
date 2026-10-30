@@ -1,13 +1,13 @@
 /* Accordion — native <details>/<summary>, no JS. Sections stack with hairlines between them; the chevron turns
    on open, and the body eases open where the browser supports animating to auto. Group items with the native
    name="…" attribute so only one stays open. Variants: --boxed (tonal fill) and .dd-expand (an expandable card). */
-/* Hover tone for the filled variants (boxed items, expand cards): a step further from the page, never toward it. In dusk
+/* Hover tone for the filled variants (boxed items, expand cards): a lift toward ink, like an interactive card. In dusk
    the page's grain reads lighter than --dd-surface, so --dd-surface-2 would land on the page tone and the box would
-   vanish — there the step goes darker. Dawn keeps --dd-surface-2. */
+   vanish — there it lifts 14%, well clear of the page. Dawn keeps --dd-surface-2. */
 :root, [data-theme="dawn"] { --dd-accordion-hover: var(--dd-surface-2); }
-[data-theme="dusk"] { --dd-accordion-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+[data-theme="dusk"] { --dd-accordion-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 14%); }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) { --dd-accordion-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+  :root:not([data-theme]) { --dd-accordion-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 14%); }
 }
 
 .dd-accordion { display: flex; flex-direction: column; min-width: 0; interpolate-size: allow-keywords; }

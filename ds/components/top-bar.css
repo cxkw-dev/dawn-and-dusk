@@ -93,7 +93,7 @@
 }
 .dd-top-bar__menu-item > .dd-icon { color: var(--dd-muted); }
 .dd-top-bar__menu-item:hover, .dd-top-bar__menu-item:focus-visible { background: var(--dd-float-hover); outline: none; }
-.dd-top-bar__menu-item .dd-top-bar__kbd { margin-left: auto; background: transparent; padding: 0; color: var(--dd-faint); }
+.dd-top-bar__menu-item .dd-top-bar__kbd { margin-left: auto; background: transparent; padding: 0; color: var(--dd-quiet); }
 
 /* Narrow: menu button in, search to an icon, extras out. __narrow shows only here (e.g. a logo the side nav carries on desktop). */
 .dd-top-bar__narrow { display: none !important; }

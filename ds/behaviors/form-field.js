@@ -1,6 +1,7 @@
 /* Form field counter: a .dd-field__counter inside a .dd-field counts the characters of the field's control.
    The limit comes from data-dd-counter="280" (a soft limit: typing past it marks the field invalid) or from the
-   control's maxlength (a hard limit). The counter gets .is-near at 90% and .is-over past the limit. */
+   control's maxlength (a hard limit). The counter gets .is-near at 90% and .is-over past the limit, and re-counts
+   when its form is reset. */
 (() => {
   const update = (field) => {
     const counter = field.querySelector('.dd-field__counter');
@@ -20,6 +21,12 @@
   document.addEventListener('input', (e) => {
     const field = e.target.closest?.('.dd-field');
     if (field && field.querySelector('.dd-field__counter')) update(field);
+  });
+  // A form reset restores values without firing input: re-count once the browser has put the defaults back.
+  document.addEventListener('reset', (e) => {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    setTimeout(() => form.querySelectorAll('.dd-field__counter').forEach((c) => { const f = c.closest('.dd-field'); if (f) update(f); }));
   });
   const init = () => document.querySelectorAll('.dd-field__counter').forEach((c) => update(c.closest('.dd-field')));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();

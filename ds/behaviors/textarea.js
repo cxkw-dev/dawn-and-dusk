@@ -8,6 +8,10 @@
     el.style.overflowY = el.scrollHeight > max ? 'auto' : 'hidden';
   };
   document.addEventListener('input', (e) => { if (e.target.matches?.('textarea[data-dd-autogrow]')) grow(e.target); });
+  // A form reset restores the text without an input event: regrow after the browser has put it back.
+  document.addEventListener('reset', (e) => {
+    if (e.target instanceof HTMLFormElement) setTimeout(() => e.target.querySelectorAll('textarea[data-dd-autogrow]').forEach(grow));
+  });
   const init = () => document.querySelectorAll('textarea[data-dd-autogrow]').forEach(grow);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

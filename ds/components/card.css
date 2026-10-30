@@ -1,14 +1,14 @@
 /* Card — "Lifted": borderless, lifted off the page by tone alone (--dd-surface on --dd-bg), no shadow.
-   Interactive cards step one tone deeper on hover — tone only, no edge. Variants: media · stat · row · compact.
+   Interactive cards lift a tone toward ink on hover — tone only, no edge. Variants: media · stat · row · compact.
    Lay several out with .dd-card-grid. */
 
-/* Hover tone: one step further from the page, never toward it. In dawn the card sits darker than the page, so the step
-   leans toward ink. In dusk the page's grain reads lighter than --dd-surface, so a lighter hover would land on the page
-   tone and the card would vanish (or flash through it mid-transition) — there the step goes darker instead. */
+/* Hover tone: the card lifts toward ink. In dawn a 6% step reads clearly. In dusk the page's grain reads lighter than
+   --dd-surface, so a 6% step would land on the page tone and the card would vanish; there it lifts 14%, well clear of
+   the page. (.dd-app-shell, a plain page with no grain, sets the 6% step in both themes.) */
 :root, [data-theme="dawn"] { --dd-card-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 6%); }
-[data-theme="dusk"] { --dd-card-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+[data-theme="dusk"] { --dd-card-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 14%); }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) { --dd-card-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+  :root:not([data-theme]) { --dd-card-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 14%); }
 }
 
 .dd-card {

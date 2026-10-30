@@ -6,8 +6,8 @@
   contain: layout; /* own stacking context; the off-canvas nav is fixed to the shell, which is the viewport in an app */
   position: relative; display: flex; height: var(--dd-app-shell-h, 100dvh); overflow: hidden;
   background-color: var(--dd-bg); color: var(--dd-text);
-  /* The shell paints a plain --dd-bg (no grain), so cards sit lighter than the page in dusk as well: their hover steps
-     toward ink in both themes here. (On dusk's grain page card.css and accordion.css step darker instead.) */
+  /* The shell paints a plain --dd-bg (no grain), so cards already stand clear of the page in dusk: their hover keeps
+     dawn's gentler step here. (On dusk's grain page card.css and accordion.css lift further, so cards never vanish.) */
   --dd-card-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 6%);
   --dd-accordion-hover: var(--dd-surface-2);
 }

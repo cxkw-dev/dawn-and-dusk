@@ -1,12 +1,8 @@
 /* Popover — a small non-modal panel opened by a click: header, body, actions and an arrow pointing at its trigger.
    Built on the native popover attribute (top layer, Esc and outside-click close for free); behaviors/popover.js
    places it next to the trigger, flips it when there is no room and keeps aria-expanded in sync.
-   Floating layer: --dd-shadow-float on --dd-float-bg in dawn (lighter than the page). In dusk the film grain lifts the
-   page to about --dd-surface-2 (= --dd-float-bg there), so the panel takes --dd-surface-3, one clear step up, like the
-   tooltip, toast and guide cue. */
+   Floating layer: --dd-shadow-float on --dd-float-bg (lighter than the page in dawn, a clear step up in dusk). */
 :root, [data-theme] { --dd-popover-bg: var(--dd-float-bg); }
-[data-theme="dusk"] { --dd-popover-bg: var(--dd-surface-3); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme]) { --dd-popover-bg: var(--dd-surface-3); } }
 
 .dd-popover {
   position: fixed; inset: auto; top: 0; left: 0; z-index: var(--dd-z-overlay); margin: 0;
@@ -30,7 +26,7 @@
   padding: 0; border: 0; border-radius: var(--dd-r-ctl); background: none; color: var(--dd-muted); cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
-/* Wash, not --dd-surface-2: in dusk the panel itself is surface-2, so a tone step would vanish. */
+/* A wash of the text colour, so the hover shows on whatever --dd-popover-bg is set to. */
 .dd-popover__close:hover { color: var(--dd-text); background: var(--dd-wash-strong); }
 .dd-popover__close:active { background: color-mix(in oklab, var(--dd-text) 18%, transparent); }
 .dd-popover__close:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }

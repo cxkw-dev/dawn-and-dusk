@@ -18,6 +18,7 @@
   transition: transform var(--dd-dur) var(--dd-ease);
 }
 .dd-select__chevron > .dd-icon { width: 16px; height: 16px; vertical-align: 0; }
+.dd-select:is(:disabled, .is-disabled, :has(> select:disabled)) > .dd-select__chevron { color: color-mix(in oklab, var(--dd-muted) 55%, var(--dd-faint)); }
 .dd-select[aria-expanded='true'] > .dd-select__chevron > .dd-icon { transform: rotate(180deg); }
 .dd-select__chevron > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-select .dd-select__placeholder,

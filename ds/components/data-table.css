@@ -72,10 +72,10 @@
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-data-table__chip b { font-weight: 600; color: var(--dd-text); }
-.dd-data-table__chip:hover { color: var(--dd-text); box-shadow: inset 0 0 0 1px var(--dd-border-strong); }
+.dd-data-table__chip:hover { color: var(--dd-text); background-color: var(--dd-wash); box-shadow: inset 0 0 0 1px var(--dd-border-strong); }
 .dd-data-table__chip:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-data-table__chip .dd-icon { width: 1em; height: 1em; opacity: .7; }
-.dd-data-table__chip:active { background: var(--dd-wash); }
+.dd-data-table__chip:active { background-color: var(--dd-wash-strong); }
 .dd-data-table__chip[aria-pressed="true"], .dd-data-table__chip.is-active {
   background: var(--_on); color: var(--dd-accent); box-shadow: none;
 }
@@ -144,9 +144,10 @@
 .dd-data-table.is-scrolled-y thead th { box-shadow: inset 0 -1px 0 var(--_head-line), 0 6px 10px -8px var(--_shade); }
 .dd-data-table__table tbody > tr > :is(td, th) { border-bottom: 1px solid var(--_line); }
 .dd-data-table__table tbody > tr:last-child > :is(td, th) { border-bottom-color: transparent; }
-.dd-data-table__table tbody > tr:not(.dd-data-table__group, .dd-data-table__detail, .dd-data-table__empty-row):hover { --_cell: var(--_hover); }
+/* Hover, or keyboard focus on a control inside the row (so keyboard users can see which row they are in). */
+.dd-data-table__table tbody > tr:not(.dd-data-table__group, .dd-data-table__detail, .dd-data-table__empty-row):is(:hover, :has(:focus-visible)) { --_cell: var(--_hover); }
 .dd-data-table__table tbody > tr.is-selected { --_cell: var(--_sel); }
-.dd-data-table__table tbody > tr.is-selected:hover { --_cell: var(--_sel-hover); }
+.dd-data-table__table tbody > tr.is-selected:is(:hover, :has(:focus-visible)) { --_cell: var(--_sel-hover); }
 .dd-data-table__table tbody th { font-weight: 600; }
 
 /* cell types */
@@ -230,6 +231,7 @@
 }
 .dd-data-table__check:hover { box-shadow: inset 0 0 0 1.5px var(--dd-muted); }
 .dd-data-table__check:checked, .dd-data-table__check:indeterminate { background: var(--dd-accent); box-shadow: none; }
+.dd-data-table__check:is(:checked, :indeterminate):hover { background: color-mix(in oklab, var(--dd-accent), var(--dd-text) 22%); }
 .dd-data-table__check:checked::before { transform: scale(1); }
 .dd-data-table__check:indeterminate::before { transform: scale(1); height: 2px; clip-path: none; border-radius: 1px; }
 .dd-data-table__check:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }

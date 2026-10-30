@@ -10,9 +10,10 @@
   display: inline-flex; align-items: stretch; gap: 2px; box-sizing: border-box; max-width: 100%; min-inline-size: 0;
   margin: 0; padding: var(--_pad); border: 0; border-radius: calc(var(--dd-r-ctl) + var(--_pad));
   background: var(--dd-surface); vertical-align: middle;
-  /* Hover and chosen are translucent steps toward the text, so they read on any track tone. Dawn keeps its old
-     half-step / --dd-surface-3 look; dusk, where the track sits darker than the grained page, takes fuller steps. */
-  --_hover: light-dark(color-mix(in oklab, var(--dd-text) 4%, transparent), var(--dd-wash));
+  /* Hover and chosen are translucent steps toward the text, so they read on any track tone (plain or --inset).
+     Chosen lands on the old --dd-surface-3 tone in dawn; dusk, where the track sits darker than the grained page,
+     takes a fuller step so the choice stays obvious. */
+  --_hover: var(--dd-wash);
   --_on: light-dark(var(--dd-wash-strong), color-mix(in oklab, var(--dd-text) 17%, transparent));
   overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
   font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: 1.1;

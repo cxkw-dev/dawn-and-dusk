@@ -262,3 +262,5 @@ details.ex-code { box-shadow: none; }
 
 /* focus rings that would be clipped by a scroll or overflow container are drawn inside instead */
 .doc-toc a:focus-visible, .ex-code pre:focus-visible { outline-offset: -2px; }
+/* Shiki code blocks are focusable (scrollable); show where focus is. */
+.doc-main pre.astro-code:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: -2px; }

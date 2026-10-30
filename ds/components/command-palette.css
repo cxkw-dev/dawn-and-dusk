@@ -31,7 +31,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   border: 0; outline: none; background: none; color: var(--dd-text);
   font-family: var(--dd-font-body); font-size: var(--dd-fs-base); font-weight: 450; text-overflow: ellipsis;
 }
-.dd-command__input::placeholder { color: var(--dd-faint); }
+.dd-command__input::placeholder { color: var(--dd-quiet); opacity: 1; } /* like .dd-input: a readable hint, still clearly not a value */
 .dd-command__input::-webkit-search-cancel-button { display: none; }
 
 /* Results. */

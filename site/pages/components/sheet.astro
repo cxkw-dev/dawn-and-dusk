@@ -104,7 +104,7 @@ ${regions.map(([code, city, on]) => `      <button class="dd-sheet__item" type="
   <p>The sheet shares its script with <a href="dialog">Dialog</a>: <code>data-dd-dialog-open="#id"</code> opens it, <code>data-dd-dialog-close="value"</code> on a row or button closes it and sets <code>returnValue</code>, a tap on the scrim or Esc slides it away, and focus returns to the opener.</p>
   <ClassTable head={['Key', 'What it does']} rows={[
     ['Esc', 'Closes the sheet.'],
-    ['Tab / Shift+Tab', 'Stays inside the sheet; the page behind is inert.'],
+    ['Tab / Shift+Tab', 'Stays inside the sheet, wrapping at the ends; the page behind is inert.'],
     ['↑ ↓ · Home / End', 'Move between the rows of a <code>role="menu"</code> list.'],
     ['Enter / Space', 'Activates the focused row.'],
   ]} />

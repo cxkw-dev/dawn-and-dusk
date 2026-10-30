@@ -45,6 +45,8 @@
 .dd-link--inverse { color: inherit; text-decoration-color: color-mix(in oklab, var(--dd-bg) 50%, transparent); }
 .dd-link--inverse:hover, .dd-link--inverse:hover > span { color: var(--dd-bg); text-decoration-color: var(--dd-bg); }
 .dd-link--inverse > span { text-decoration-color: color-mix(in oklab, var(--dd-bg) 50%, transparent); }
+/* The usual ring is accent-on-page; on an ink panel it vanishes in dusk, so the ring takes the page colour instead. */
+.dd-link--inverse:focus-visible { outline-color: color-mix(in oklab, var(--dd-bg) 60%, transparent); }
 
 .dd-link[aria-disabled='true'] { color: var(--dd-quiet); text-decoration-color: var(--dd-faint); pointer-events: none; cursor: not-allowed; }
 .dd-link[aria-disabled='true'] > span { text-decoration-color: var(--dd-faint); }

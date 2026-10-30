@@ -1362,12 +1362,19 @@
     if (still() || !el.animate) return done();
     const cs = getComputedStyle(el);
     const from = { height: `${el.offsetHeight}px`, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, marginTop: cs.marginTop, marginBottom: cs.marginBottom };
+    // In a stacked flex/grid parent the gap next to the element goes too, or the rest would jump by one gap at the end.
+    const end = { height: '0px', paddingTop: '0px', paddingBottom: '0px', marginTop: '0px', marginBottom: '0px', opacity: 0 };
+    const pcs = el.parentElement ? getComputedStyle(el.parentElement) : null;
+    const stacked = pcs && (pcs.display.includes('grid') || (pcs.display.includes('flex') && pcs.flexDirection.startsWith('column')));
+    const gap = stacked ? parseFloat(pcs.rowGap) || 0 : 0;
+    if (gap && el.nextElementSibling) end.marginBottom = `${-gap}px`;
+    else if (gap && el.previousElementSibling) end.marginTop = `${-gap}px`;
     el.style.overflow = 'hidden';
     el.style.pointerEvents = 'none';
     el.animate([
       { ...from, opacity: 1 },
       { ...from, opacity: 0, offset: 0.45 },
-      { height: '0px', paddingTop: '0px', paddingBottom: '0px', marginTop: '0px', marginBottom: '0px', opacity: 0 },
+      end,
     ], { duration: 320, easing: 'cubic-bezier(.45, 0, .55, 1)' }).finished.then(done, done);
   };
 
@@ -1474,7 +1481,8 @@
 /* ===== behaviors/form-field.js ===== */
 /* Form field counter: a .dd-field__counter inside a .dd-field counts the characters of the field's control.
    The limit comes from data-dd-counter="280" (a soft limit: typing past it marks the field invalid) or from the
-   control's maxlength (a hard limit). The counter gets .is-near at 90% and .is-over past the limit. */
+   control's maxlength (a hard limit). The counter gets .is-near at 90% and .is-over past the limit, and re-counts
+   when its form is reset. */
 (() => {
   const update = (field) => {
     const counter = field.querySelector('.dd-field__counter');
@@ -1494,6 +1502,12 @@
   document.addEventListener('input', (e) => {
     const field = e.target.closest?.('.dd-field');
     if (field && field.querySelector('.dd-field__counter')) update(field);
+  });
+  // A form reset restores values without firing input: re-count once the browser has put the defaults back.
+  document.addEventListener('reset', (e) => {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    setTimeout(() => form.querySelectorAll('.dd-field__counter').forEach((c) => { const f = c.closest('.dd-field'); if (f) update(f); }));
   });
   const init = () => document.querySelectorAll('.dd-field__counter').forEach((c) => update(c.closest('.dd-field')));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
@@ -2639,6 +2653,7 @@
     return own(root, '[role="tabpanel"]')[tabsOf(root).indexOf(tab)] || null;
   };
   const enabled = (t) => !t.disabled && t.getAttribute('aria-disabled') !== 'true';
+  const smooth = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
 
   const select = (root, tab, { focus = false, scroll = true } = {}) => {
     let panel = null;
@@ -2655,8 +2670,8 @@
       const list = tab.closest('[role="tablist"]');
       if (list && list.scrollWidth > list.clientWidth) {
         const lr = list.getBoundingClientRect(), tr = tab.getBoundingClientRect(), pad = 32;
-        if (tr.left < lr.left + pad) list.scrollBy({ left: tr.left - lr.left - pad, behavior: 'smooth' });
-        else if (tr.right > lr.right - pad) list.scrollBy({ left: tr.right - lr.right + pad, behavior: 'smooth' });
+        if (tr.left < lr.left + pad) list.scrollBy({ left: tr.left - lr.left - pad, behavior: smooth() });
+        else if (tr.right > lr.right - pad) list.scrollBy({ left: tr.right - lr.right + pad, behavior: smooth() });
       }
     }
     root.dispatchEvent(new CustomEvent('dd:tabchange', { bubbles: true, detail: { tab, panel } }));
@@ -2716,7 +2731,8 @@
 /* Text input helpers, all opt-in and delegated from document:
    - [data-dd-reveal]  on a button inside .dd-input toggles its control between password and text (aria-pressed).
    - [data-dd-clear]   empties the control, fires input/change and puts focus back.
-   - [data-dd-step="1"|"-1"] steps a number control (stepUp / stepDown honour min, max and step). */
+   - [data-dd-step="1"|"-1"] steps a number control (stepUp / stepDown honour min, max and step); the button is
+     disabled while the value sits on that end of the range. */
 (() => {
   const controlOf = (el) => el.closest('.dd-input')?.querySelector('.dd-input__control');
   const fire = (el) => {
@@ -2754,6 +2770,22 @@
       fire(input);
     }
   });
+
+  // Steppers dim at the ends of the range (min / max), and come back as soon as the value moves off them.
+  const limits = (input) => {
+    const box = input.closest('.dd-input');
+    if (!box || input.type !== 'number') return;
+    const v = input.valueAsNumber; const min = parseFloat(input.min); const max = parseFloat(input.max);
+    box.querySelectorAll('[data-dd-step]').forEach((b) => {
+      const down = Number(b.dataset.ddStep) < 0;
+      const off = input.disabled || input.readOnly || (!Number.isNaN(v) && (down ? v <= min : v >= max));
+      if (off && b === document.activeElement) input.focus(); // don't strand keyboard focus on a dead button
+      b.disabled = off;
+    });
+  };
+  document.addEventListener('input', (e) => { if (e.target.matches?.('.dd-input__control[type="number"]')) limits(e.target); });
+  const init = () => document.querySelectorAll('.dd-input:has([data-dd-step]) .dd-input__control[type="number"]').forEach(limits);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
 
@@ -2768,6 +2800,10 @@
     el.style.overflowY = el.scrollHeight > max ? 'auto' : 'hidden';
   };
   document.addEventListener('input', (e) => { if (e.target.matches?.('textarea[data-dd-autogrow]')) grow(e.target); });
+  // A form reset restores the text without an input event: regrow after the browser has put it back.
+  document.addEventListener('reset', (e) => {
+    if (e.target instanceof HTMLFormElement) setTimeout(() => e.target.querySelectorAll('textarea[data-dd-autogrow]').forEach(grow));
+  });
   const init = () => document.querySelectorAll('textarea[data-dd-autogrow]').forEach(grow);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

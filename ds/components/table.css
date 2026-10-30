@@ -67,14 +67,14 @@
 }
 .dd-table-header__meta { font-size: var(--dd-fs-xs); color: var(--dd-muted); font-family: var(--dd-font-mono); }
 .dd-table-header__action {
-  display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); margin-left: auto;
+  display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); margin: -3px -7px -3px auto; padding: 3px 7px;
   font-size: var(--dd-fs-sm); font-weight: 600; color: var(--dd-accent); text-decoration: none;
-  border-radius: var(--dd-r-ctl); transition: color var(--dd-dur-fast) var(--dd-ease);
+  border-radius: var(--dd-r-ctl);
+  transition: color var(--dd-dur-fast) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-table-header__action:hover {
-  color: var(--dd-accent-hover); text-decoration: underline; text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
-  text-underline-offset: 4px;
-}
+/* Hover: a wash tone step behind the link (padding is cancelled by the negative margin, so nothing moves). */
+.dd-table-header__action:hover { color: var(--dd-accent-hover); background-color: var(--dd-wash); }
+.dd-table-header__action:active { background-color: var(--dd-wash-strong); }
 .dd-table-header__action .dd-icon { transition: transform var(--dd-dur-fast) var(--dd-ease); }
 .dd-table-header__action:hover .dd-icon:last-child { transform: translateX(2px); }
 .dd-table-header > .dd-btn { margin-left: auto; align-self: center; }

@@ -221,7 +221,7 @@ const standalone = `
   <Example code={search} />
 
   <h2 id="number">Number with steppers</h2>
-  <p>Native spinners are hidden; the minus and plus buttons call <code>stepDown()</code> / <code>stepUp()</code>, so <code>min</code>, <code>max</code> and <code>step</code> are honoured. Arrow keys still work in the field.</p>
+  <p>Native spinners are hidden; the minus and plus buttons call <code>stepDown()</code> / <code>stepUp()</code>, so <code>min</code>, <code>max</code> and <code>step</code> are honoured, and each dims at its end of the range. Arrow keys still work in the field.</p>
   <Example code={number} />
 
   <h2 id="sizes">Sizes</h2>
@@ -251,7 +251,7 @@ const standalone = `
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['data-dd-reveal', 'On a button in the box: toggles the control’s <code>type</code> between password and text, sets <code>aria-pressed</code> and swaps <code>.dd-input__show</code> / <code>.dd-input__hide</code>.'],
     ['data-dd-clear', 'On a button in the box: empties the control, fires <code>input</code> and <code>change</code>, returns focus.'],
-    ['data-dd-step="1" / "-1"', 'On a button in the box: steps a number control and fires <code>input</code> and <code>change</code>.'],
+    ['data-dd-step="1" / "-1"', 'On a button in the box: steps a number control and fires <code>input</code> and <code>change</code>. The button disables itself while the value sits on that end of <code>min</code> / <code>max</code>.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

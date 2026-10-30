@@ -43,7 +43,7 @@
 .dd-btn-group__caret > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-btn-group__caret[aria-expanded='true'] > .dd-icon { transform: rotate(180deg); }
 /* Open: the caret keeps its own variant's hover tone (menu.css does the same for any open menu trigger). */
-.dd-btn-group__caret[aria-expanded='true'] { background: var(--dd-btn-secondary-hover); }
+.dd-btn-group__caret[aria-expanded='true'] { background: var(--_tonal-hover, var(--dd-btn-secondary-hover)); }
 .dd-btn-group__caret.dd-btn--primary[aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
 .dd-btn-group__caret[aria-expanded='true']:hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
 .dd-btn-group__caret.dd-btn--ink[aria-expanded='true'] { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }

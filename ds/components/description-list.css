@@ -52,7 +52,7 @@
 .dd-description-list__copy:hover { background: var(--dd-wash); color: var(--dd-text); }
 .dd-description-list__copy:active { background: var(--dd-wash-strong); }
 .dd-description-list__copy:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
-@media (hover: none) { .dd-description-list__copy { opacity: 1; } }
+@media (hover: none), (pointer: coarse) { .dd-description-list__copy { opacity: 1; } } /* touch: no hover to reveal it */
 
 /* Stacked: term above value */
 .dd-description-list--stacked .dd-description-list__item { grid-template-columns: minmax(0, 1fr); gap: 2px; }

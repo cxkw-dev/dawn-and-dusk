@@ -340,13 +340,13 @@
 /* Accordion — native <details>/<summary>, no JS. Sections stack with hairlines between them; the chevron turns
    on open, and the body eases open where the browser supports animating to auto. Group items with the native
    name="…" attribute so only one stays open. Variants: --boxed (tonal fill) and .dd-expand (an expandable card). */
-/* Hover tone for the filled variants (boxed items, expand cards): a step further from the page, never toward it. In dusk
+/* Hover tone for the filled variants (boxed items, expand cards): a lift toward ink, like an interactive card. In dusk
    the page's grain reads lighter than --dd-surface, so --dd-surface-2 would land on the page tone and the box would
-   vanish — there the step goes darker. Dawn keeps --dd-surface-2. */
+   vanish — there it lifts 14%, well clear of the page. Dawn keeps --dd-surface-2. */
 :root, [data-theme="dawn"] { --dd-accordion-hover: var(--dd-surface-2); }
-[data-theme="dusk"] { --dd-accordion-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+[data-theme="dusk"] { --dd-accordion-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 14%); }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) { --dd-accordion-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+  :root:not([data-theme]) { --dd-accordion-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 14%); }
 }
 
 .dd-accordion { display: flex; flex-direction: column; min-width: 0; interpolate-size: allow-keywords; }
@@ -497,6 +497,9 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
 .dd-alert__action:active { opacity: .7; }
 .dd-alert__action:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 3px; border-radius: 2px; }
 .dd-alert__action--secondary { color: color-mix(in oklab, var(--dd-text) 68%, var(--_c)); }
+/* Secondary hover ends exactly where the primary does — full text colour and a solid underline — so the change is
+   colour AND line, never a faint colour shift on the tinted fill. */
+.dd-alert__action--secondary:hover { color: var(--dd-text); }
 
 /* Dismiss: a quiet square icon button, top-right. */
 .dd-alert__dismiss {
@@ -535,8 +538,8 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
   contain: layout; /* own stacking context; the off-canvas nav is fixed to the shell, which is the viewport in an app */
   position: relative; display: flex; height: var(--dd-app-shell-h, 100dvh); overflow: hidden;
   background-color: var(--dd-bg); color: var(--dd-text);
-  /* The shell paints a plain --dd-bg (no grain), so cards sit lighter than the page in dusk as well: their hover steps
-     toward ink in both themes here. (On dusk's grain page card.css and accordion.css step darker instead.) */
+  /* The shell paints a plain --dd-bg (no grain), so cards already stand clear of the page in dusk: their hover keeps
+     dawn's gentler step here. (On dusk's grain page card.css and accordion.css lift further, so cards never vanish.) */
   --dd-card-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 6%);
   --dd-accordion-hover: var(--dd-surface-2);
 }
@@ -828,8 +831,8 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
 .dd-breadcrumbs__link > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dd-breadcrumbs__link > .dd-icon { opacity: .85; }
 /* Washes, not surface steps: trails sit on the grain page, in top bars and on cards, and a wash reads on all of them. */
-a.dd-breadcrumbs__link:hover { color: var(--dd-text); background: var(--dd-wash); }
-a.dd-breadcrumbs__link:active { background: var(--dd-wash-strong); }
+a.dd-breadcrumbs__link[href]:hover { color: var(--dd-text); background: var(--dd-wash); }
+a.dd-breadcrumbs__link[href]:active { background: var(--dd-wash-strong); }
 .dd-breadcrumbs__link:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
 .dd-breadcrumbs__link[aria-current='page'] { color: var(--dd-text); font-weight: 600; }
 .dd-breadcrumbs__link.dd-mono { font-size: .92em; }
@@ -909,7 +912,7 @@ a.dd-breadcrumbs__link:active { background: var(--dd-wash-strong); }
 .dd-btn-group__caret > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-btn-group__caret[aria-expanded='true'] > .dd-icon { transform: rotate(180deg); }
 /* Open: the caret keeps its own variant's hover tone (menu.css does the same for any open menu trigger). */
-.dd-btn-group__caret[aria-expanded='true'] { background: var(--dd-btn-secondary-hover); }
+.dd-btn-group__caret[aria-expanded='true'] { background: var(--_tonal-hover, var(--dd-btn-secondary-hover)); }
 .dd-btn-group__caret.dd-btn--primary[aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
 .dd-btn-group__caret[aria-expanded='true']:hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
 .dd-btn-group__caret.dd-btn--ink[aria-expanded='true'] { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }
@@ -925,13 +928,16 @@ a.dd-breadcrumbs__link:active { background: var(--dd-wash-strong); }
   border: 0; border-radius: var(--dd-r-ctl); background: var(--dd-btn-secondary); color: var(--dd-text);
   font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); font-weight: 600; line-height: 1.1; letter-spacing: 0;
   white-space: nowrap; text-decoration: none; cursor: pointer; user-select: none;
+  /* Tonal hover: --dd-btn-secondary-hover in dawn; in dusk that token is a small step on a small button, so dusk
+     lifts further toward the text. Menu triggers and split chevrons reuse it for their open state. */
+  --_tonal-hover: light-dark(var(--dd-btn-secondary-hover), color-mix(in oklab, var(--dd-text) 26%, var(--dd-bg)));
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease),
     box-shadow var(--dd-dur-fast) var(--dd-ease), transform var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease);
 }
 /* Icon first: tighten the leading edge so the icon optically aligns. */
 .dd-btn:has(> .dd-icon:first-child):not(.dd-btn--icon) { padding-left: calc(var(--dd-u) * var(--_px) * .78); }
 .dd-btn > .dd-icon { opacity: .9; }
-.dd-btn:hover { background: var(--dd-btn-secondary-hover); }
+.dd-btn:hover { background: var(--_tonal-hover); }
 .dd-btn:active { transform: translateY(1px); }
 .dd-btn:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 
@@ -940,7 +946,7 @@ a.dd-breadcrumbs__link:active { background: var(--dd-wash-strong); }
 .dd-btn--primary { background: var(--dd-primary); color: var(--dd-on-primary); }
 .dd-btn--primary:hover { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
 .dd-btn--secondary { background: var(--dd-btn-secondary); color: var(--dd-text); }
-.dd-btn--secondary:hover { background: var(--dd-btn-secondary-hover); }
+.dd-btn--secondary:hover { background: var(--_tonal-hover); }
 .dd-btn--ink { background: var(--dd-text); color: var(--dd-bg); }
 .dd-btn--ink:hover { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }
 /* Ghost hover is a translucent wash, so it shows on the page, on cards and on floating layers in both themes
@@ -1018,16 +1024,16 @@ a.dd-breadcrumbs__link:active { background: var(--dd-wash-strong); }
 
 /* ===== components/card.css ===== */
 /* Card — "Lifted": borderless, lifted off the page by tone alone (--dd-surface on --dd-bg), no shadow.
-   Interactive cards step one tone deeper on hover — tone only, no edge. Variants: media · stat · row · compact.
+   Interactive cards lift a tone toward ink on hover — tone only, no edge. Variants: media · stat · row · compact.
    Lay several out with .dd-card-grid. */
 
-/* Hover tone: one step further from the page, never toward it. In dawn the card sits darker than the page, so the step
-   leans toward ink. In dusk the page's grain reads lighter than --dd-surface, so a lighter hover would land on the page
-   tone and the card would vanish (or flash through it mid-transition) — there the step goes darker instead. */
+/* Hover tone: the card lifts toward ink. In dawn a 6% step reads clearly. In dusk the page's grain reads lighter than
+   --dd-surface, so a 6% step would land on the page tone and the card would vanish; there it lifts 14%, well clear of
+   the page. (.dd-app-shell, a plain page with no grain, sets the 6% step in both themes.) */
 :root, [data-theme="dawn"] { --dd-card-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 6%); }
-[data-theme="dusk"] { --dd-card-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+[data-theme="dusk"] { --dd-card-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 14%); }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) { --dd-card-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+  :root:not([data-theme]) { --dd-card-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 14%); }
 }
 
 .dd-card {
@@ -1300,7 +1306,7 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
   position: absolute; top: 0; left: calc(50% + 12px); z-index: var(--dd-z-tooltip);
   display: flex; flex-direction: column; gap: 5px; min-width: 150px; max-width: 240px; margin: 0;
   padding: calc(var(--dd-u) * 2) calc(var(--dd-u) * 2.5); border-radius: var(--dd-r-box);
-  background: var(--dd-bg); box-shadow: var(--dd-shadow-float); color: var(--dd-text);
+  background: var(--dd-float-bg); box-shadow: var(--dd-shadow-float); color: var(--dd-text);
   font-size: var(--dd-fs-xs); line-height: 1.3; text-align: left; white-space: nowrap; pointer-events: none;
   opacity: 0; visibility: hidden; transform: translateY(3px);
   transition: opacity var(--dd-dur-fast) var(--dd-ease), transform var(--dd-dur-fast) var(--dd-ease), visibility var(--dd-dur-fast);
@@ -1318,8 +1324,6 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 }
 .dd-chart__tip-row--total { padding-top: 5px; margin-top: 1px; border-top: 1px solid var(--_grid, color-mix(in oklab, var(--dd-text) 8%, transparent)); color: var(--dd-muted); }
 .dd-chart__tip-row--total::before { visibility: hidden; }
-[data-theme="dusk"] .dd-chart__tip { background: var(--dd-surface-3); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme]) .dd-chart__tip { background: var(--dd-surface-3); } }
 
 /* ---------- horizontal bars (HTML) ---------- */
 .dd-chart__hbars { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
@@ -1432,12 +1436,12 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
   transform: translateY(-1px) rotate(45deg) scale(0); transition: transform var(--dd-dur) var(--dd-ease);
 }
 /* Hover — on the box or anywhere on its label or card. Off: the edge steps up to --dd-muted. On / mixed: the fill
-   steps toward the text (dawn: --dd-accent-hover, darker; dusk: lighter, since its hover token is a hair off the accent). */
-.dd-checkbox__input:not(:disabled):hover, .dd-checkbox:hover > .dd-checkbox__input:not(:disabled),
-.dd-checkbox-card:hover > .dd-checkbox__input:not(:disabled) { border-color: var(--dd-muted); }
+   steps toward the text (darker in dawn, lighter in dusk; --dd-accent-hover is too small a step to see on a 20px box). */
+.dd-checkbox__input:not(:disabled, [aria-invalid='true']):hover, .dd-checkbox:hover > .dd-checkbox__input:not(:disabled, [aria-invalid='true']),
+.dd-checkbox-card:hover > .dd-checkbox__input:not(:disabled, [aria-invalid='true']) { border-color: var(--dd-muted); }
 .dd-checkbox__input:checked, .dd-checkbox__input:indeterminate { background: var(--dd-accent); border-color: var(--dd-accent); }
 :is(.dd-checkbox__input:not(:disabled):hover, .dd-checkbox:hover > .dd-checkbox__input:not(:disabled), .dd-checkbox-card:hover > .dd-checkbox__input:not(:disabled)):is(:checked, :indeterminate) {
-  --_on: light-dark(var(--dd-accent-hover), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
+  --_on: light-dark(color-mix(in oklab, var(--dd-accent) 70%, var(--dd-text)), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
   background: var(--_on); border-color: var(--_on);
 }
 .dd-checkbox__input:checked::before { transform: translateY(-1px) rotate(45deg) scale(1); }
@@ -1575,7 +1579,7 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
   flex: 1 0 8ch; min-width: 8ch; padding: calc(var(--dd-u) * .75) calc(var(--dd-u) * 1); border: 0; outline: 0; background: none;
   color: var(--dd-text); font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: 1.3;
 }
-.dd-chip-input__field::placeholder { color: var(--dd-faint); }
+.dd-chip-input__field::placeholder { color: var(--dd-quiet); opacity: 1; } /* like .dd-input: a readable hint */
 
 /* A row of chips. */
 .dd-chip-group { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5); }
@@ -1820,7 +1824,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   border: 0; outline: none; background: none; color: var(--dd-text);
   font-family: var(--dd-font-body); font-size: var(--dd-fs-base); font-weight: 450; text-overflow: ellipsis;
 }
-.dd-command__input::placeholder { color: var(--dd-faint); }
+.dd-command__input::placeholder { color: var(--dd-quiet); opacity: 1; } /* like .dd-input: a readable hint, still clearly not a value */
 .dd-command__input::-webkit-search-cancel-button { display: none; }
 
 /* Results. */
@@ -1961,10 +1965,10 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-data-table__chip b { font-weight: 600; color: var(--dd-text); }
-.dd-data-table__chip:hover { color: var(--dd-text); box-shadow: inset 0 0 0 1px var(--dd-border-strong); }
+.dd-data-table__chip:hover { color: var(--dd-text); background-color: var(--dd-wash); box-shadow: inset 0 0 0 1px var(--dd-border-strong); }
 .dd-data-table__chip:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-data-table__chip .dd-icon { width: 1em; height: 1em; opacity: .7; }
-.dd-data-table__chip:active { background: var(--dd-wash); }
+.dd-data-table__chip:active { background-color: var(--dd-wash-strong); }
 .dd-data-table__chip[aria-pressed="true"], .dd-data-table__chip.is-active {
   background: var(--_on); color: var(--dd-accent); box-shadow: none;
 }
@@ -2033,9 +2037,10 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-data-table.is-scrolled-y thead th { box-shadow: inset 0 -1px 0 var(--_head-line), 0 6px 10px -8px var(--_shade); }
 .dd-data-table__table tbody > tr > :is(td, th) { border-bottom: 1px solid var(--_line); }
 .dd-data-table__table tbody > tr:last-child > :is(td, th) { border-bottom-color: transparent; }
-.dd-data-table__table tbody > tr:not(.dd-data-table__group, .dd-data-table__detail, .dd-data-table__empty-row):hover { --_cell: var(--_hover); }
+/* Hover, or keyboard focus on a control inside the row (so keyboard users can see which row they are in). */
+.dd-data-table__table tbody > tr:not(.dd-data-table__group, .dd-data-table__detail, .dd-data-table__empty-row):is(:hover, :has(:focus-visible)) { --_cell: var(--_hover); }
 .dd-data-table__table tbody > tr.is-selected { --_cell: var(--_sel); }
-.dd-data-table__table tbody > tr.is-selected:hover { --_cell: var(--_sel-hover); }
+.dd-data-table__table tbody > tr.is-selected:is(:hover, :has(:focus-visible)) { --_cell: var(--_sel-hover); }
 .dd-data-table__table tbody th { font-weight: 600; }
 
 /* cell types */
@@ -2119,6 +2124,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 }
 .dd-data-table__check:hover { box-shadow: inset 0 0 0 1.5px var(--dd-muted); }
 .dd-data-table__check:checked, .dd-data-table__check:indeterminate { background: var(--dd-accent); box-shadow: none; }
+.dd-data-table__check:is(:checked, :indeterminate):hover { background: color-mix(in oklab, var(--dd-accent), var(--dd-text) 22%); }
 .dd-data-table__check:checked::before { transform: scale(1); }
 .dd-data-table__check:indeterminate::before { transform: scale(1); height: 2px; clip-path: none; border-radius: 1px; }
 .dd-data-table__check:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
@@ -2383,7 +2389,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-description-list__copy:hover { background: var(--dd-wash); color: var(--dd-text); }
 .dd-description-list__copy:active { background: var(--dd-wash-strong); }
 .dd-description-list__copy:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
-@media (hover: none) { .dd-description-list__copy { opacity: 1; } }
+@media (hover: none), (pointer: coarse) { .dd-description-list__copy { opacity: 1; } } /* touch: no hover to reveal it */
 
 /* Stacked: term above value */
 .dd-description-list--stacked .dd-description-list__item { grid-template-columns: minmax(0, 1fr); gap: 2px; }
@@ -3234,6 +3240,8 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-link--inverse { color: inherit; text-decoration-color: color-mix(in oklab, var(--dd-bg) 50%, transparent); }
 .dd-link--inverse:hover, .dd-link--inverse:hover > span { color: var(--dd-bg); text-decoration-color: var(--dd-bg); }
 .dd-link--inverse > span { text-decoration-color: color-mix(in oklab, var(--dd-bg) 50%, transparent); }
+/* The usual ring is accent-on-page; on an ink panel it vanishes in dusk, so the ring takes the page colour instead. */
+.dd-link--inverse:focus-visible { outline-color: color-mix(in oklab, var(--dd-bg) 60%, transparent); }
 
 .dd-link[aria-disabled='true'] { color: var(--dd-quiet); text-decoration-color: var(--dd-faint); pointer-events: none; cursor: not-allowed; }
 .dd-link[aria-disabled='true'] > span { text-decoration-color: var(--dd-faint); }
@@ -3503,7 +3511,7 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
 
 /* A trigger that has its menu open keeps its variant's hover tone (visible in dusk too, where the tonal fill is
    already --dd-surface-3). */
-.dd-btn[data-dd-menu][aria-expanded='true'] { background: var(--dd-btn-secondary-hover); }
+.dd-btn[data-dd-menu][aria-expanded='true'] { background: var(--_tonal-hover, var(--dd-btn-secondary-hover)); }
 .dd-btn--ghost[data-dd-menu][aria-expanded='true'] { background: var(--dd-wash-strong); }
 .dd-btn--primary[data-dd-menu][aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
 .dd-btn--ink[data-dd-menu][aria-expanded='true'] { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }
@@ -3631,12 +3639,8 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
 /* Popover — a small non-modal panel opened by a click: header, body, actions and an arrow pointing at its trigger.
    Built on the native popover attribute (top layer, Esc and outside-click close for free); behaviors/popover.js
    places it next to the trigger, flips it when there is no room and keeps aria-expanded in sync.
-   Floating layer: --dd-shadow-float on --dd-float-bg in dawn (lighter than the page). In dusk the film grain lifts the
-   page to about --dd-surface-2 (= --dd-float-bg there), so the panel takes --dd-surface-3, one clear step up, like the
-   tooltip, toast and guide cue. */
+   Floating layer: --dd-shadow-float on --dd-float-bg (lighter than the page in dawn, a clear step up in dusk). */
 :root, [data-theme] { --dd-popover-bg: var(--dd-float-bg); }
-[data-theme="dusk"] { --dd-popover-bg: var(--dd-surface-3); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme]) { --dd-popover-bg: var(--dd-surface-3); } }
 
 .dd-popover {
   position: fixed; inset: auto; top: 0; left: 0; z-index: var(--dd-z-overlay); margin: 0;
@@ -3660,7 +3664,7 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
   padding: 0; border: 0; border-radius: var(--dd-r-ctl); background: none; color: var(--dd-muted); cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
-/* Wash, not --dd-surface-2: in dusk the panel itself is surface-2, so a tone step would vanish. */
+/* A wash of the text colour, so the hover shows on whatever --dd-popover-bg is set to. */
 .dd-popover__close:hover { color: var(--dd-text); background: var(--dd-wash-strong); }
 .dd-popover__close:active { background: color-mix(in oklab, var(--dd-text) 18%, transparent); }
 .dd-popover__close:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
@@ -3886,11 +3890,11 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
   transform: scale(0); transition: transform var(--dd-dur) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease);
 }
 /* Hover — on the circle or anywhere on its label. Off: the edge steps up to --dd-muted. On: edge and dot step
-   toward the text (dawn: --dd-accent-hover, darker; dusk: lighter, since its hover token is a hair off the accent). */
-.dd-radio__input:not(:disabled):hover, .dd-radio:hover > .dd-radio__input:not(:disabled) { border-color: var(--dd-muted); }
+   toward the text (darker in dawn, lighter in dusk; --dd-accent-hover is too small a step to see on a 20px circle). */
+.dd-radio__input:not(:disabled, [aria-invalid='true']):hover, .dd-radio:hover > .dd-radio__input:not(:disabled, [aria-invalid='true']) { border-color: var(--dd-muted); }
 .dd-radio__input:checked { border-color: var(--dd-accent); }
 :is(.dd-radio__input:not(:disabled):hover, .dd-radio:hover > .dd-radio__input:not(:disabled)):checked {
-  --_on: light-dark(var(--dd-accent-hover), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
+  --_on: light-dark(color-mix(in oklab, var(--dd-accent) 70%, var(--dd-text)), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
   border-color: var(--_on);
 }
 :is(.dd-radio__input:not(:disabled):hover, .dd-radio:hover > .dd-radio__input:not(:disabled)):checked::before { background: var(--_on); }
@@ -3968,9 +3972,10 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
   display: inline-flex; align-items: stretch; gap: 2px; box-sizing: border-box; max-width: 100%; min-inline-size: 0;
   margin: 0; padding: var(--_pad); border: 0; border-radius: calc(var(--dd-r-ctl) + var(--_pad));
   background: var(--dd-surface); vertical-align: middle;
-  /* Hover and chosen are translucent steps toward the text, so they read on any track tone. Dawn keeps its old
-     half-step / --dd-surface-3 look; dusk, where the track sits darker than the grained page, takes fuller steps. */
-  --_hover: light-dark(color-mix(in oklab, var(--dd-text) 4%, transparent), var(--dd-wash));
+  /* Hover and chosen are translucent steps toward the text, so they read on any track tone (plain or --inset).
+     Chosen lands on the old --dd-surface-3 tone in dawn; dusk, where the track sits darker than the grained page,
+     takes a fuller step so the choice stays obvious. */
+  --_hover: var(--dd-wash);
   --_on: light-dark(var(--dd-wash-strong), color-mix(in oklab, var(--dd-text) 17%, transparent));
   overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
   font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: 1.1;
@@ -4059,6 +4064,7 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
   transition: transform var(--dd-dur) var(--dd-ease);
 }
 .dd-select__chevron > .dd-icon { width: 16px; height: 16px; vertical-align: 0; }
+.dd-select:is(:disabled, .is-disabled, :has(> select:disabled)) > .dd-select__chevron { color: color-mix(in oklab, var(--dd-muted) 55%, var(--dd-faint)); }
 .dd-select[aria-expanded='true'] > .dd-select__chevron > .dd-icon { transform: rotate(180deg); }
 .dd-select__chevron > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-select .dd-select__placeholder,
@@ -4272,7 +4278,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 /* Rail labels: a small ink tooltip from [data-label], on hover and keyboard focus. */
 .dd-side-nav__item[data-label]::after {
   content: attr(data-label); position: absolute; left: calc(100% + 10px); top: 50%; z-index: 5; translate: -4px -50%;
-  padding: 5px 8px; border-radius: var(--dd-r-ctl); background: var(--dd-text); color: var(--dd-bg);
+  padding: 5px 8px; border-radius: var(--dd-r-ctl); background: var(--dd-tooltip-bg, var(--dd-text)); color: var(--dd-tooltip-fg, var(--dd-bg));
   font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1.2; white-space: nowrap; pointer-events: none; opacity: 0;
   transition: opacity var(--dd-dur-fast) var(--dd-ease), translate var(--dd-dur-fast) var(--dd-ease);
 }
@@ -4876,12 +4882,15 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
   background: light-dark(var(--dd-bg), var(--dd-text)); box-shadow: 0 1px 3px var(--dd-overlay);
   transition: transform var(--dd-dur) var(--dd-ease), background-color var(--dd-dur) var(--dd-ease), width var(--dd-dur-fast) var(--dd-ease);
 }
-/* Hover (on the track or anywhere on its label) steps the track toward the text when off. When on, it steps
-   toward the text too (dawn: --dd-accent-hover, darker; dusk: lighter, since its hover token is a hair off the accent). */
-.dd-switch__input:hover, .dd-switch:hover > .dd-switch__input { background: color-mix(in oklab, var(--dd-border-strong), var(--dd-text) 16%); }
+/* Hover — on the track or anywhere on its label: the track steps well toward the text (darker in dawn, lighter in
+   dusk; --dd-accent-hover is too small a step to see) and a soft wash halo rings it, so the state reads in both
+   themes whether the switch is on or off. */
+.dd-switch__input:hover, .dd-switch:hover > .dd-switch__input {
+  background: color-mix(in oklab, var(--dd-border-strong), var(--dd-text) 30%); box-shadow: 0 0 0 4px var(--dd-wash);
+}
 .dd-switch__input:checked { background: var(--dd-accent); }
 .dd-switch__input:checked:hover, .dd-switch:hover > .dd-switch__input:checked {
-  background: light-dark(var(--dd-accent-hover), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
+  background: light-dark(color-mix(in oklab, var(--dd-accent) 60%, var(--dd-text)), color-mix(in oklab, var(--dd-accent) 30%, var(--dd-text)));
 }
 .dd-switch__input:checked::before { transform: translateX(calc(var(--_w) - var(--_h))); background: var(--dd-on-accent); }
 /* Pressed (on the track or its label): the knob stretches toward where it is going. */
@@ -4889,7 +4898,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-switch__input:checked:not(:disabled):active::before, .dd-switch:active > .dd-switch__input:checked:not(:disabled)::before { transform: translateX(calc(var(--_w) - var(--_h) - 3px)); }
 .dd-switch__input:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 .dd-switch__input:disabled { opacity: .4; cursor: not-allowed; }
-.dd-switch:hover > .dd-switch__input:disabled { background: var(--dd-border-strong); }
+.dd-switch:hover > .dd-switch__input:disabled { background: var(--dd-border-strong); box-shadow: none; }
 .dd-switch:hover > .dd-switch__input:disabled:checked { background: var(--dd-accent); }
 .dd-switch:has(.dd-switch__input:disabled) { cursor: not-allowed; color: var(--dd-muted); }
 
@@ -4974,14 +4983,14 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 }
 .dd-table-header__meta { font-size: var(--dd-fs-xs); color: var(--dd-muted); font-family: var(--dd-font-mono); }
 .dd-table-header__action {
-  display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); margin-left: auto;
+  display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); margin: -3px -7px -3px auto; padding: 3px 7px;
   font-size: var(--dd-fs-sm); font-weight: 600; color: var(--dd-accent); text-decoration: none;
-  border-radius: var(--dd-r-ctl); transition: color var(--dd-dur-fast) var(--dd-ease);
+  border-radius: var(--dd-r-ctl);
+  transition: color var(--dd-dur-fast) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-table-header__action:hover {
-  color: var(--dd-accent-hover); text-decoration: underline; text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
-  text-underline-offset: 4px;
-}
+/* Hover: a wash tone step behind the link (padding is cancelled by the negative margin, so nothing moves). */
+.dd-table-header__action:hover { color: var(--dd-accent-hover); background-color: var(--dd-wash); }
+.dd-table-header__action:active { background-color: var(--dd-wash-strong); }
 .dd-table-header__action .dd-icon { transition: transform var(--dd-dur-fast) var(--dd-ease); }
 .dd-table-header__action:hover .dd-icon:last-child { transform: translateX(2px); }
 .dd-table-header > .dd-btn { margin-left: auto; align-self: center; }
@@ -5047,8 +5056,8 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 }
 .dd-tabs__tab > .dd-icon { opacity: .75; }
 .dd-tabs__tab:hover { color: var(--dd-text); }
-/* The hover marker is a translucent ink: the same tone as --dd-border-strong in dawn, and still visible on dusk's grain. */
-.dd-tabs__tab:hover::after { background: color-mix(in oklab, var(--dd-text) 35%, transparent); }
+/* Hover previews the marker in a translucent ink — clearly there in both themes, still well short of the active ink. */
+.dd-tabs__tab:hover::after { background: color-mix(in oklab, var(--dd-text) 45%, transparent); }
 .dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active) { color: var(--dd-text); }
 .dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active)::after { background: var(--dd-text); }
 .dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active) > .dd-icon { opacity: 1; }
@@ -5195,7 +5204,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 /* States */
 .dd-input.is-invalid, .dd-input:has(.dd-input__control[aria-invalid='true']) {
   --_fill: color-mix(in oklab, var(--dd-bad) 14%, var(--dd-surface-2));
-  --_fill-hover: color-mix(in oklab, var(--dd-bad) 19%, var(--dd-surface-2));
+  --_fill-hover: color-mix(in oklab, var(--dd-bad) 23%, var(--dd-surface-2));
 }
 .dd-input.is-invalid:focus-within, .dd-input:has(.dd-input__control[aria-invalid='true']):focus-within {
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-bad) 55%, transparent), var(--dd-shadow-float);
@@ -5369,8 +5378,8 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 /* ===== components/toast.css ===== */
 /* Toast — a short, temporary confirmation in a stack at the bottom-right (.dd-toaster). From the Soft fill alert family:
    in dawn the toast is an ink slab (text colour fill, page colour type); in dusk it is a raised dark surface
-   (--dd-surface-3 + --dd-shadow-float, like the tooltip and guide cue: one step above the grain-lit page, so it never
-   melts into it), never a light slab. Intents tint only the icon and the progress line.
+   (--dd-float-bg + --dd-shadow-float, like menus and popovers), never a light slab. Intents tint only the icon and
+   the progress line.
    Motion: toasts in the stack slide in, the others glide to make room, and a toast swiped sideways (touch, pen or a
    mouse drag) follows the pointer and leaves; reduced motion drops all of it.
    Create them with dd.toast({ title, description, intent, action }) or a [data-dd-toast] trigger (behaviors/toast.js). */
@@ -5379,12 +5388,12 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
   --dd-toast-muted: color-mix(in oklab, var(--dd-bg) 68%, var(--dd-text)); --dd-toast-tint: 62%;
 }
 [data-theme="dusk"] {
-  --dd-toast-bg: var(--dd-surface-3); --dd-toast-fg: var(--dd-text);
+  --dd-toast-bg: var(--dd-float-bg); --dd-toast-fg: var(--dd-text);
   --dd-toast-muted: var(--dd-muted); --dd-toast-tint: 100%;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --dd-toast-bg: var(--dd-surface-3); --dd-toast-fg: var(--dd-text);
+    --dd-toast-bg: var(--dd-float-bg); --dd-toast-fg: var(--dd-text);
     --dd-toast-muted: var(--dd-muted); --dd-toast-tint: 100%;
   }
 }
@@ -5613,7 +5622,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 }
 .dd-top-bar__menu-item > .dd-icon { color: var(--dd-muted); }
 .dd-top-bar__menu-item:hover, .dd-top-bar__menu-item:focus-visible { background: var(--dd-float-hover); outline: none; }
-.dd-top-bar__menu-item .dd-top-bar__kbd { margin-left: auto; background: transparent; padding: 0; color: var(--dd-faint); }
+.dd-top-bar__menu-item .dd-top-bar__kbd { margin-left: auto; background: transparent; padding: 0; color: var(--dd-quiet); }
 
 /* Narrow: menu button in, search to an icon, extras out. __narrow shows only here (e.g. a logo the side nav carries on desktop). */
 .dd-top-bar__narrow { display: none !important; }

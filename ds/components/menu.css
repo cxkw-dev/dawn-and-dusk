@@ -80,7 +80,7 @@
 
 /* A trigger that has its menu open keeps its variant's hover tone (visible in dusk too, where the tonal fill is
    already --dd-surface-3). */
-.dd-btn[data-dd-menu][aria-expanded='true'] { background: var(--dd-btn-secondary-hover); }
+.dd-btn[data-dd-menu][aria-expanded='true'] { background: var(--_tonal-hover, var(--dd-btn-secondary-hover)); }
 .dd-btn--ghost[data-dd-menu][aria-expanded='true'] { background: var(--dd-wash-strong); }
 .dd-btn--primary[data-dd-menu][aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
 .dd-btn--ink[data-dd-menu][aria-expanded='true'] { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }

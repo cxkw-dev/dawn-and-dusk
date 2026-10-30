@@ -14,8 +14,8 @@
 .dd-breadcrumbs__link > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dd-breadcrumbs__link > .dd-icon { opacity: .85; }
 /* Washes, not surface steps: trails sit on the grain page, in top bars and on cards, and a wash reads on all of them. */
-a.dd-breadcrumbs__link:hover { color: var(--dd-text); background: var(--dd-wash); }
-a.dd-breadcrumbs__link:active { background: var(--dd-wash-strong); }
+a.dd-breadcrumbs__link[href]:hover { color: var(--dd-text); background: var(--dd-wash); }
+a.dd-breadcrumbs__link[href]:active { background: var(--dd-wash-strong); }
 .dd-breadcrumbs__link:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
 .dd-breadcrumbs__link[aria-current='page'] { color: var(--dd-text); font-weight: 600; }
 .dd-breadcrumbs__link.dd-mono { font-size: .92em; }

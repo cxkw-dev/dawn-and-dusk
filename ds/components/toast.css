@@ -1,7 +1,7 @@
 /* Toast — a short, temporary confirmation in a stack at the bottom-right (.dd-toaster). From the Soft fill alert family:
    in dawn the toast is an ink slab (text colour fill, page colour type); in dusk it is a raised dark surface
-   (--dd-surface-3 + --dd-shadow-float, like the tooltip and guide cue: one step above the grain-lit page, so it never
-   melts into it), never a light slab. Intents tint only the icon and the progress line.
+   (--dd-float-bg + --dd-shadow-float, like menus and popovers), never a light slab. Intents tint only the icon and
+   the progress line.
    Motion: toasts in the stack slide in, the others glide to make room, and a toast swiped sideways (touch, pen or a
    mouse drag) follows the pointer and leaves; reduced motion drops all of it.
    Create them with dd.toast({ title, description, intent, action }) or a [data-dd-toast] trigger (behaviors/toast.js). */
@@ -10,12 +10,12 @@
   --dd-toast-muted: color-mix(in oklab, var(--dd-bg) 68%, var(--dd-text)); --dd-toast-tint: 62%;
 }
 [data-theme="dusk"] {
-  --dd-toast-bg: var(--dd-surface-3); --dd-toast-fg: var(--dd-text);
+  --dd-toast-bg: var(--dd-float-bg); --dd-toast-fg: var(--dd-text);
   --dd-toast-muted: var(--dd-muted); --dd-toast-tint: 100%;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --dd-toast-bg: var(--dd-surface-3); --dd-toast-fg: var(--dd-text);
+    --dd-toast-bg: var(--dd-float-bg); --dd-toast-fg: var(--dd-text);
     --dd-toast-muted: var(--dd-muted); --dd-toast-tint: 100%;
   }
 }

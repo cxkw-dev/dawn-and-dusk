@@ -161,11 +161,11 @@ const grid = `
 ].join('')}
 </div>`;
 ---
-<Docs title="Card" group="Layout" lead="A container for one thing — a project, a service, a stat. Cards lift off the page by tone alone: no border, no shadow. Interactive cards step one tone deeper on hover.">
-  <Example title="Default" description="Eyebrow, lockup title, a line of text and a footer with meta and a link. The arrow nudges when the card is hovered." code={basic} />
+<Docs title="Card" group="Layout" lead="A container for one thing — a project, a service, a stat. Cards lift off the page by tone alone: no border, no shadow. Interactive cards lift a tone toward ink on hover.">
+  <Example title="Default" description="Eyebrow, lockup title, a line of text and a footer with meta and a link. On a static card only the link reacts: it underlines and its arrow nudges." code={basic} />
 
   <h2 id="interactive">Interactive</h2>
-  <p>When the whole card goes somewhere, make the card the link: an <code>&lt;a class="dd-card dd-card--link"&gt;</code>, or keep the card an <code>&lt;article&gt;</code> and give its title a <code>.dd-card__stretch</code> link that covers the card. Hover deepens the tone; keyboard focus draws the ring.</p>
+  <p>When the whole card goes somewhere, make the card the link: an <code>&lt;a class="dd-card dd-card--link"&gt;</code>, or keep the card an <code>&lt;article&gt;</code> and give its title a <code>.dd-card__stretch</code> link that covers the card. Hover lifts the card toward ink and nudges the arrow; keyboard focus draws the ring. On dusk’s grain page, which reads lighter than the cards, the lift is larger, so a hovered card always stands clear of the page.</p>
   <Example code={interactive} />
 
   <h2 id="media">With media</h2>
@@ -195,9 +195,10 @@ const grid = `
     ['.dd-card__eyebrow', 'Small muted line above the title; takes an icon.'],
     ['.dd-card__title', 'Lockup heading (lowercase, 800).'],
     ['.dd-card__text', 'Muted body copy.'],
-    ['.dd-card__foot', 'Bottom row, pushed to the end: <code>.dd-card__meta</code> and <code>.dd-card__link</code>.'],
+    ['.dd-card__foot', 'Bottom row, pushed to the end: <code>.dd-card__meta</code> and <code>.dd-card__link</code> (as an <code>&lt;a&gt;</code> it underlines on hover; its arrow nudges with the card or the link).'],
     ['.dd-card__media', 'Cover panel or image. <code>.dd-card__media--warm</code> for the Golden hour gradient.'],
-    ['.dd-card--link', 'Interactive card: one tone deeper on hover and focus.'],
+    ['.dd-card--link', 'Interactive card: lifts toward ink on hover and focus (<code>--dd-card-hover</code>).'],
+    ['--dd-card-hover', 'The hover tone: 6% toward ink in dawn, 14% on dusk’s grain page. <code>.dd-app-shell</code> (a plain page, no grain) uses 6% in both. Set it yourself if cards sit on another surface.'],
     ['.dd-card__stretch', 'A link whose hit area covers the whole card.'],
     ['.dd-card--inset-media', 'Media inset with its own corners.'],
     ['.dd-card--stat', 'With <code>.dd-card__stat</code>, <code>.dd-card__label</code>, <code>.dd-card__delta</code> (<code>is-up</code> / <code>is-down</code>).'],

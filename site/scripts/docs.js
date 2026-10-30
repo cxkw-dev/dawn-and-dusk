@@ -3,6 +3,11 @@
 const pageTheme = () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dusk' : 'dawn');
 
 document.addEventListener('click', (e) => {
+  // Placeholder links in examples (href="#") would otherwise jump the docs page to the top.
+  if (e.target.closest('.ex-stage a[href="#"]')) e.preventDefault();
+  // A theme toggle inside an example flips the page; drop the stage's own override so the example follows it.
+  const innerToggle = e.target.closest('.ex-stage [data-dd-theme-toggle]');
+  if (innerToggle) delete innerToggle.closest('.ex-stage').dataset.theme;
   const codeBtn = e.target.closest('[data-ex-code]');
   if (codeBtn) {
     const panel = codeBtn.closest('.ex-frame')?.querySelector('.ex-code');

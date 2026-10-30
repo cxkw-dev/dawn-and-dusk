@@ -51,6 +51,9 @@
 .dd-alert__action:active { opacity: .7; }
 .dd-alert__action:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 3px; border-radius: 2px; }
 .dd-alert__action--secondary { color: color-mix(in oklab, var(--dd-text) 68%, var(--_c)); }
+/* Secondary hover ends exactly where the primary does — full text colour and a solid underline — so the change is
+   colour AND line, never a faint colour shift on the tinted fill. */
+.dd-alert__action--secondary:hover { color: var(--dd-text); }
 
 /* Dismiss: a quiet square icon button, top-right. */
 .dd-alert__dismiss {

@@ -44,7 +44,7 @@
 /* Rail labels: a small ink tooltip from [data-label], on hover and keyboard focus. */
 .dd-side-nav__item[data-label]::after {
   content: attr(data-label); position: absolute; left: calc(100% + 10px); top: 50%; z-index: 5; translate: -4px -50%;
-  padding: 5px 8px; border-radius: var(--dd-r-ctl); background: var(--dd-text); color: var(--dd-bg);
+  padding: 5px 8px; border-radius: var(--dd-r-ctl); background: var(--dd-tooltip-bg, var(--dd-text)); color: var(--dd-tooltip-fg, var(--dd-bg));
   font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1.2; white-space: nowrap; pointer-events: none; opacity: 0;
   transition: opacity var(--dd-dur-fast) var(--dd-ease), translate var(--dd-dur-fast) var(--dd-ease);
 }

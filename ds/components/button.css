@@ -7,13 +7,16 @@
   border: 0; border-radius: var(--dd-r-ctl); background: var(--dd-btn-secondary); color: var(--dd-text);
   font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); font-weight: 600; line-height: 1.1; letter-spacing: 0;
   white-space: nowrap; text-decoration: none; cursor: pointer; user-select: none;
+  /* Tonal hover: --dd-btn-secondary-hover in dawn; in dusk that token is a small step on a small button, so dusk
+     lifts further toward the text. Menu triggers and split chevrons reuse it for their open state. */
+  --_tonal-hover: light-dark(var(--dd-btn-secondary-hover), color-mix(in oklab, var(--dd-text) 26%, var(--dd-bg)));
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease),
     box-shadow var(--dd-dur-fast) var(--dd-ease), transform var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease);
 }
 /* Icon first: tighten the leading edge so the icon optically aligns. */
 .dd-btn:has(> .dd-icon:first-child):not(.dd-btn--icon) { padding-left: calc(var(--dd-u) * var(--_px) * .78); }
 .dd-btn > .dd-icon { opacity: .9; }
-.dd-btn:hover { background: var(--dd-btn-secondary-hover); }
+.dd-btn:hover { background: var(--_tonal-hover); }
 .dd-btn:active { transform: translateY(1px); }
 .dd-btn:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 
@@ -22,7 +25,7 @@
 .dd-btn--primary { background: var(--dd-primary); color: var(--dd-on-primary); }
 .dd-btn--primary:hover { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
 .dd-btn--secondary { background: var(--dd-btn-secondary); color: var(--dd-text); }
-.dd-btn--secondary:hover { background: var(--dd-btn-secondary-hover); }
+.dd-btn--secondary:hover { background: var(--_tonal-hover); }
 .dd-btn--ink { background: var(--dd-text); color: var(--dd-bg); }
 .dd-btn--ink:hover { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }
 /* Ghost hover is a translucent wash, so it shows on the page, on cards and on floating layers in both themes

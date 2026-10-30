@@ -13,6 +13,7 @@
     return own(root, '[role="tabpanel"]')[tabsOf(root).indexOf(tab)] || null;
   };
   const enabled = (t) => !t.disabled && t.getAttribute('aria-disabled') !== 'true';
+  const smooth = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
 
   const select = (root, tab, { focus = false, scroll = true } = {}) => {
     let panel = null;
@@ -29,8 +30,8 @@
       const list = tab.closest('[role="tablist"]');
       if (list && list.scrollWidth > list.clientWidth) {
         const lr = list.getBoundingClientRect(), tr = tab.getBoundingClientRect(), pad = 32;
-        if (tr.left < lr.left + pad) list.scrollBy({ left: tr.left - lr.left - pad, behavior: 'smooth' });
-        else if (tr.right > lr.right - pad) list.scrollBy({ left: tr.right - lr.right + pad, behavior: 'smooth' });
+        if (tr.left < lr.left + pad) list.scrollBy({ left: tr.left - lr.left - pad, behavior: smooth() });
+        else if (tr.right > lr.right - pad) list.scrollBy({ left: tr.right - lr.right + pad, behavior: smooth() });
       }
     }
     root.dispatchEvent(new CustomEvent('dd:tabchange', { bubbles: true, detail: { tab, panel } }));

@@ -19,12 +19,15 @@
   background: light-dark(var(--dd-bg), var(--dd-text)); box-shadow: 0 1px 3px var(--dd-overlay);
   transition: transform var(--dd-dur) var(--dd-ease), background-color var(--dd-dur) var(--dd-ease), width var(--dd-dur-fast) var(--dd-ease);
 }
-/* Hover (on the track or anywhere on its label) steps the track toward the text when off. When on, it steps
-   toward the text too (dawn: --dd-accent-hover, darker; dusk: lighter, since its hover token is a hair off the accent). */
-.dd-switch__input:hover, .dd-switch:hover > .dd-switch__input { background: color-mix(in oklab, var(--dd-border-strong), var(--dd-text) 16%); }
+/* Hover — on the track or anywhere on its label: the track steps well toward the text (darker in dawn, lighter in
+   dusk; --dd-accent-hover is too small a step to see) and a soft wash halo rings it, so the state reads in both
+   themes whether the switch is on or off. */
+.dd-switch__input:hover, .dd-switch:hover > .dd-switch__input {
+  background: color-mix(in oklab, var(--dd-border-strong), var(--dd-text) 30%); box-shadow: 0 0 0 4px var(--dd-wash);
+}
 .dd-switch__input:checked { background: var(--dd-accent); }
 .dd-switch__input:checked:hover, .dd-switch:hover > .dd-switch__input:checked {
-  background: light-dark(var(--dd-accent-hover), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
+  background: light-dark(color-mix(in oklab, var(--dd-accent) 60%, var(--dd-text)), color-mix(in oklab, var(--dd-accent) 30%, var(--dd-text)));
 }
 .dd-switch__input:checked::before { transform: translateX(calc(var(--_w) - var(--_h))); background: var(--dd-on-accent); }
 /* Pressed (on the track or its label): the knob stretches toward where it is going. */
@@ -32,7 +35,7 @@
 .dd-switch__input:checked:not(:disabled):active::before, .dd-switch:active > .dd-switch__input:checked:not(:disabled)::before { transform: translateX(calc(var(--_w) - var(--_h) - 3px)); }
 .dd-switch__input:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 .dd-switch__input:disabled { opacity: .4; cursor: not-allowed; }
-.dd-switch:hover > .dd-switch__input:disabled { background: var(--dd-border-strong); }
+.dd-switch:hover > .dd-switch__input:disabled { background: var(--dd-border-strong); box-shadow: none; }
 .dd-switch:hover > .dd-switch__input:disabled:checked { background: var(--dd-accent); }
 .dd-switch:has(.dd-switch__input:disabled) { cursor: not-allowed; color: var(--dd-muted); }
 

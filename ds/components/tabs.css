@@ -42,8 +42,8 @@
 }
 .dd-tabs__tab > .dd-icon { opacity: .75; }
 .dd-tabs__tab:hover { color: var(--dd-text); }
-/* The hover marker is a translucent ink: the same tone as --dd-border-strong in dawn, and still visible on dusk's grain. */
-.dd-tabs__tab:hover::after { background: color-mix(in oklab, var(--dd-text) 35%, transparent); }
+/* Hover previews the marker in a translucent ink — clearly there in both themes, still well short of the active ink. */
+.dd-tabs__tab:hover::after { background: color-mix(in oklab, var(--dd-text) 45%, transparent); }
 .dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active) { color: var(--dd-text); }
 .dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active)::after { background: var(--dd-text); }
 .dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active) > .dd-icon { opacity: 1; }

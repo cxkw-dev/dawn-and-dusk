@@ -19,12 +19,12 @@
   transform: translateY(-1px) rotate(45deg) scale(0); transition: transform var(--dd-dur) var(--dd-ease);
 }
 /* Hover — on the box or anywhere on its label or card. Off: the edge steps up to --dd-muted. On / mixed: the fill
-   steps toward the text (dawn: --dd-accent-hover, darker; dusk: lighter, since its hover token is a hair off the accent). */
-.dd-checkbox__input:not(:disabled):hover, .dd-checkbox:hover > .dd-checkbox__input:not(:disabled),
-.dd-checkbox-card:hover > .dd-checkbox__input:not(:disabled) { border-color: var(--dd-muted); }
+   steps toward the text (darker in dawn, lighter in dusk; --dd-accent-hover is too small a step to see on a 20px box). */
+.dd-checkbox__input:not(:disabled, [aria-invalid='true']):hover, .dd-checkbox:hover > .dd-checkbox__input:not(:disabled, [aria-invalid='true']),
+.dd-checkbox-card:hover > .dd-checkbox__input:not(:disabled, [aria-invalid='true']) { border-color: var(--dd-muted); }
 .dd-checkbox__input:checked, .dd-checkbox__input:indeterminate { background: var(--dd-accent); border-color: var(--dd-accent); }
 :is(.dd-checkbox__input:not(:disabled):hover, .dd-checkbox:hover > .dd-checkbox__input:not(:disabled), .dd-checkbox-card:hover > .dd-checkbox__input:not(:disabled)):is(:checked, :indeterminate) {
-  --_on: light-dark(var(--dd-accent-hover), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
+  --_on: light-dark(color-mix(in oklab, var(--dd-accent) 70%, var(--dd-text)), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
   background: var(--_on); border-color: var(--_on);
 }
 .dd-checkbox__input:checked::before { transform: translateY(-1px) rotate(45deg) scale(1); }

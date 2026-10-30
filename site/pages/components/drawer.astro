@@ -139,7 +139,7 @@ const sizes = `
   <p>The drawer shares its script with <a href="dialog">Dialog</a>: <code>data-dd-dialog-open="#id"</code> opens it, <code>data-dd-dialog-close</code> (with an optional value) closes it, a click on the scrim or Esc closes it with the slide-out, and focus returns to the opener. <code>dd.dialog.open('#id')</code> does the same from script.</p>
   <ClassTable head={['Key', 'What it does']} rows={[
     ['Esc', 'Closes the drawer.'],
-    ['Tab / Shift+Tab', 'Stays inside the drawer; the page behind is inert.'],
+    ['Tab / Shift+Tab', 'Stays inside the drawer, wrapping at the ends; the page behind is inert.'],
     ['On open / close', 'Focus moves to <code>[autofocus]</code> or the first control; on close it returns to the opener.'],
   ]} />
 

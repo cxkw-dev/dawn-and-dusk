@@ -85,7 +85,7 @@
   flex: 1 0 8ch; min-width: 8ch; padding: calc(var(--dd-u) * .75) calc(var(--dd-u) * 1); border: 0; outline: 0; background: none;
   color: var(--dd-text); font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: 1.3;
 }
-.dd-chip-input__field::placeholder { color: var(--dd-faint); }
+.dd-chip-input__field::placeholder { color: var(--dd-quiet); opacity: 1; } /* like .dd-input: a readable hint */
 
 /* A row of chips. */
 .dd-chip-group { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5); }

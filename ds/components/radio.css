@@ -17,11 +17,11 @@
   transform: scale(0); transition: transform var(--dd-dur) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease);
 }
 /* Hover — on the circle or anywhere on its label. Off: the edge steps up to --dd-muted. On: edge and dot step
-   toward the text (dawn: --dd-accent-hover, darker; dusk: lighter, since its hover token is a hair off the accent). */
-.dd-radio__input:not(:disabled):hover, .dd-radio:hover > .dd-radio__input:not(:disabled) { border-color: var(--dd-muted); }
+   toward the text (darker in dawn, lighter in dusk; --dd-accent-hover is too small a step to see on a 20px circle). */
+.dd-radio__input:not(:disabled, [aria-invalid='true']):hover, .dd-radio:hover > .dd-radio__input:not(:disabled, [aria-invalid='true']) { border-color: var(--dd-muted); }
 .dd-radio__input:checked { border-color: var(--dd-accent); }
 :is(.dd-radio__input:not(:disabled):hover, .dd-radio:hover > .dd-radio__input:not(:disabled)):checked {
-  --_on: light-dark(var(--dd-accent-hover), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
+  --_on: light-dark(color-mix(in oklab, var(--dd-accent) 70%, var(--dd-text)), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
   border-color: var(--_on);
 }
 :is(.dd-radio__input:not(:disabled):hover, .dd-radio:hover > .dd-radio__input:not(:disabled)):checked::before { background: var(--_on); }

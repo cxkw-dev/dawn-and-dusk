@@ -26,12 +26,19 @@
     if (still() || !el.animate) return done();
     const cs = getComputedStyle(el);
     const from = { height: `${el.offsetHeight}px`, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, marginTop: cs.marginTop, marginBottom: cs.marginBottom };
+    // In a stacked flex/grid parent the gap next to the element goes too, or the rest would jump by one gap at the end.
+    const end = { height: '0px', paddingTop: '0px', paddingBottom: '0px', marginTop: '0px', marginBottom: '0px', opacity: 0 };
+    const pcs = el.parentElement ? getComputedStyle(el.parentElement) : null;
+    const stacked = pcs && (pcs.display.includes('grid') || (pcs.display.includes('flex') && pcs.flexDirection.startsWith('column')));
+    const gap = stacked ? parseFloat(pcs.rowGap) || 0 : 0;
+    if (gap && el.nextElementSibling) end.marginBottom = `${-gap}px`;
+    else if (gap && el.previousElementSibling) end.marginTop = `${-gap}px`;
     el.style.overflow = 'hidden';
     el.style.pointerEvents = 'none';
     el.animate([
       { ...from, opacity: 1 },
       { ...from, opacity: 0, offset: 0.45 },
-      { height: '0px', paddingTop: '0px', paddingBottom: '0px', marginTop: '0px', marginBottom: '0px', opacity: 0 },
+      end,
     ], { duration: 320, easing: 'cubic-bezier(.45, 0, .55, 1)' }).finished.then(done, done);
   };
 
