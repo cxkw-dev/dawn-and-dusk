@@ -84,3 +84,6 @@
 .dd-radio-card--row .dd-radio-card__title { padding-right: 0; }
 .dd-radio-card--row .dd-radio-card__meta { flex: none; margin: 0; padding: 0; }
 .dd-radio-card--row .dd-radio-card__mark { margin-left: 0; }
+
+/* Hover halo, as on the switch: a soft wash ring so hover reads on a 20px circle in both themes, chosen or not. */
+:is(.dd-radio__input:hover, .dd-radio:hover > .dd-radio__input):not(:disabled, [aria-invalid='true']) { box-shadow: 0 0 0 4px var(--dd-wash); }

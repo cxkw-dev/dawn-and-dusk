@@ -72,3 +72,6 @@
 .dd-checkbox-card:hover .dd-checkbox-card__icon { background: light-dark(var(--dd-surface-3), var(--dd-wash-strong)); }
 .dd-checkbox-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: calc(var(--dd-u) * 2); min-width: 0; margin: 0; padding: 0; border: 0; }
 .dd-checkbox-cards > .dd-checkbox-group__legend { grid-column: 1 / -1; margin-bottom: calc(var(--dd-u) * 1); }
+
+/* Hover halo, as on the switch: a soft wash ring so hover reads on a 20px box in both themes, checked or not. */
+:is(.dd-checkbox__input:hover, .dd-checkbox:hover > .dd-checkbox__input):not(:disabled, [aria-invalid='true']) { box-shadow: 0 0 0 4px var(--dd-wash); }

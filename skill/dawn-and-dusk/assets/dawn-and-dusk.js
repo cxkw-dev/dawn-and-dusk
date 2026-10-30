@@ -1061,6 +1061,9 @@
     const r = pop.getBoundingClientRect();
     const over = r.right - (document.documentElement.clientWidth - 8);
     if (over > 0) pop.style.translate = `${-Math.min(over, Math.max(0, r.left - 8))}px 0`;
+    // On narrow screens the presets become a scrolling row: bring the active one into view.
+    const row = pop.querySelector('.dd-date-picker__presets'); const on = row?.querySelector('[aria-pressed="true"]');
+    if (row && on && row.scrollWidth > row.clientWidth) row.scrollLeft = on.offsetLeft - row.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
   };
 
   const openPicker = (root) => {
