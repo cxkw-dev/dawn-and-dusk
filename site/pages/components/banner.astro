@@ -72,7 +72,7 @@ const sticky = `
     <div class="dd-banner__inner">
       ${i('refresh')}
       <p class="dd-banner__text"><strong>A new version is ready.</strong>Reload to get dawn-and-dusk v0.4.</p>
-      <div class="dd-banner__actions"><button class="dd-banner__action" type="button">Reload</button></div>
+      <div class="dd-banner__actions"><button class="dd-banner__action" type="button" data-dd-toast="Reloaded" data-dd-toast-description="You’re on dawn-and-dusk v0.4." data-dd-toast-intent="ok">Reload</button></div>
     </div>
   </div>
   <div class="dd-stack" style="padding: var(--dd-space-5) var(--dd-space-6)">
@@ -86,11 +86,11 @@ const sticky = `
 </div>`;
 ---
 <Docs title="Banner" group="Feedback & status" lead="A message for the whole page — announcements, maintenance, incidents. Full width above the app, the same soft fill as the alert, and gone with one click.">
-  <Example title="Announcement" description="Centred icon, a bold lead-in and one action. Dismiss sits at the far right so it never crowds the message." code={announce} stage="flush" />
+  <Example title="Announcement" description="Centred icon, a bold lead-in and one action. Dismiss sits at the far right so it never crowds the message. Try it: press × — the banner fades, the page closes up under it, and keyboard focus stays where it was." code={announce} stage="flush" />
 
   <h2 id="intents">Intents</h2>
   <p>Info for news, ok for a recovery, warn for something planned, bad for an incident, neutral for a mode the page is in (a snapshot, an impersonation, a preview). Leave dismiss off while the condition is still true.</p>
-  <Example code={intents} stage="flush" />
+  <Example code={intents} stage="flush" description="Try it: only the maintenance banner has a ×; the incident can’t be dismissed while it’s open." />
 
   <h2 id="responsive">Narrow</h2>
   <p>Banners are size containers too. Under about 560px the content left-aligns, the icon sits on the first line, actions wrap underneath and dismiss moves to the top-right corner.</p>
@@ -98,7 +98,7 @@ const sticky = `
 
   <h2 id="sticky">Sticky</h2>
   <p><code>--sticky</code> pins the banner to the top of its scrolling container — for things the reader must not lose, like a pending reload.</p>
-  <Example code={sticky} stage="flush" />
+  <Example code={sticky} stage="flush" description="Try it: scroll the panel, then press Reload." />
 
   <h2 id="themes">Dawn and dusk</h2>
   <p>Dawn washes 14% of the status colour over the page. Dusk uses a solid 30% fill over <code>--dd-surface</code> with no border — try “View in dusk” on any example above.</p>

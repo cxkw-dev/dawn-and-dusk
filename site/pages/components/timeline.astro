@@ -15,7 +15,7 @@ const item = (marker: string, text: string, time: string, dt: string, detail = '
         ${marker}
         <div class="dd-timeline__body">
           <p class="dd-timeline__text">${text}</p>
-          <time class="dd-timeline__time" datetime="${dt}">${time}</time>${detail ? `
+          ${dt ? `<time class="dd-timeline__time" datetime="${dt}">${time}</time>` : `<span class="dd-timeline__time" aria-hidden="true">${time}</span>`}${detail ? `
           <div class="dd-timeline__detail">${detail}</div>` : ''}
         </div>
       </li>`;

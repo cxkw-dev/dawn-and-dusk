@@ -3,7 +3,8 @@
    .dd-command__item rows by their text and optional data-keywords; empty groups hide and .dd-command__empty shows
    (its .dd-command__query echoes the search). ↑ ↓ (or Ctrl+P / Ctrl+N) move the selected row, Enter runs it,
    Esc clears the search and then closes, a click on the backdrop closes. Running a row clicks it (links navigate),
-   fires a bubbling `dd:command` event with detail { item, value } and closes the dialog. Works on inline palettes too. */
+   fires a bubbling `dd:command` event with detail { item, value } and closes the dialog. value = the row's data-value,
+   else its name (the first part of .dd-command__body), else its text. Works on inline palettes too. */
 (() => {
   const ITEM = '.dd-command__item';
   let uid = 0;
@@ -12,6 +13,9 @@
   const parts = (root) => ({ input: root.querySelector('.dd-command__input'), list: root.querySelector('.dd-command__list'), empty: root.querySelector('.dd-command__empty') });
   const visible = (root) => [...root.querySelectorAll(ITEM)].filter((el) => !el.closest('[hidden]') && el.getAttribute('aria-disabled') !== 'true');
   const selected = (root) => root.querySelector(`${ITEM}[aria-selected="true"]`);
+  // What a row is called: its text without the trailing shortcut hint (so "then" or "⌘" never match a search).
+  const words = (el) => [...el.childNodes].filter((n) => !n.classList?.contains('dd-command__hint')).map((n) => n.textContent).join(' ');
+  const valueOf = (item) => item.dataset.value ?? (item.querySelector('.dd-command__body > :first-child') || item).textContent.trim().replace(/\s+/g, ' ');
 
   function select(root, item, scroll) {
     root.querySelectorAll(`${ITEM}[aria-selected="true"]`).forEach((el) => el.setAttribute('aria-selected', 'false'));
@@ -25,12 +29,13 @@
 
   function filter(root) {
     const { input, list, empty } = parts(root);
-    const words = (input?.value || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const query = (input?.value || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
     root.querySelectorAll(ITEM).forEach((el) => {
-      const hay = `${el.textContent} ${el.dataset.keywords || ''}`.toLowerCase();
-      el.hidden = !words.every((w) => hay.includes(w));
+      const hay = `${words(el)} ${el.dataset.keywords || ''}`.toLowerCase();
+      el.hidden = !query.every((w) => hay.includes(w));
     });
     root.querySelectorAll('.dd-command__group').forEach((g) => { g.hidden = !g.querySelector(`${ITEM}:not([hidden])`); });
+    if (list) list.hidden = false; // count matches with the list shown, or a list hidden by a miss never comes back
     const rows = visible(root);
     if (list) list.hidden = rows.length === 0;
     if (empty) {
@@ -43,7 +48,7 @@
 
   function run(root, item) {
     if (!item || item.getAttribute('aria-disabled') === 'true') return;
-    root.dispatchEvent(new CustomEvent('dd:command', { bubbles: true, detail: { item, value: item.dataset.value ?? item.textContent.trim() } }));
+    root.dispatchEvent(new CustomEvent('dd:command', { bubbles: true, detail: { item, value: valueOf(item) } }));
     if (root instanceof HTMLDialogElement && root.open) root.close();
   }
 

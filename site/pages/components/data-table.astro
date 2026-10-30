@@ -32,12 +32,15 @@ const OPEN = ['search-indexer'];
 const sortTh = (label, col, cls = '', sort = 'none') =>
   `<th${cls ? ` class="${cls}"` : ''} data-col="${col}" aria-sort="${sort}"><button class="dd-data-table__sort" type="button">${label}${i('chevron-down')}</button></th>`;
 
+// The flagship pages 10 rows at a time; rows past the first page start hidden so nothing jumps while the script loads.
+const PAGE = 10;
 const flagRows = services.map(([id, name, s, label, region, ver, owner, req, err, p95, cpu, at], n) => {
   const open = OPEN.includes(name);
+  const off = n >= PAGE;
   const sel = SEL.includes(name);
   const [sha, msg] = commits[name] ?? ['3f0d8b1', 'Bump runtime to node 22.12'];
   return `
-      <tr${sel ? ' class="is-selected"' : ''}>
+      <tr${sel ? ' class="is-selected"' : ''}${off ? ' hidden' : ''}>
         <td class="dd-data-table__select"><input class="dd-data-table__check" type="checkbox" aria-label="Select ${name}"${sel ? ' checked' : ''}></td>
         <td class="is-frozen" data-col="service"><button class="dd-data-table__expand" type="button" aria-expanded="${open}" aria-controls="dt-${id}" aria-label="Details for ${name}">${i('chevron-right')}</button><a href="#">${name}</a></td>
         <td class="is-mono is-muted" data-col="id">${id}</td>
@@ -50,7 +53,7 @@ const flagRows = services.map(([id, name, s, label, region, ver, owner, req, err
         ${p95Cell(p95)}
         ${cpuCell(cpu)}
         <td class="is-num is-muted">${at}</td>
-        <td class="is-actions"><button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-label="Actions for ${name}">${i('more')}</button></td>
+        <td class="is-actions"><button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-label="Actions for ${name}" data-dd-menu="dt-row-menu" data-dd-placement="bottom-end" aria-haspopup="menu" aria-expanded="false" aria-controls="dt-row-menu">${i('more')}</button></td>
       </tr>
       <tr class="dd-data-table__detail" id="dt-${id}"${open ? '' : ' hidden'}>
         <td colspan="13"><div class="dd-data-table__detail-body">
@@ -73,7 +76,15 @@ const flagship = `
 <div class="dd-data-table" data-dd-data-table style="--dd-data-table-height: 460px">
   <div class="dd-data-table__toolbar">
     <label class="dd-data-table__search">${i('search')}<input type="search" placeholder="Filter services…" aria-label="Filter services" data-dd-data-table-search></label>
-    <button class="dd-data-table__chip" type="button"><span>Region</span> <b>all</b>${i('chevron-down')}</button>
+    <details class="dd-data-table__menu dd-data-table__menu--start">
+      <summary class="dd-data-table__chip"><span>Region</span> <b data-dd-data-table-filter-label="region">all</b>${i('chevron-down')}</summary>
+      <div class="dd-data-table__menu-panel">
+        <p class="dd-data-table__menu-title">Region</p>
+        <label><input class="dd-data-table__check" type="checkbox" data-dd-data-table-filter="region=us-east-1"> us-east-1</label>
+        <label><input class="dd-data-table__check" type="checkbox" data-dd-data-table-filter="region=eu-west-2"> eu-west-2</label>
+        <label><input class="dd-data-table__check" type="checkbox" data-dd-data-table-filter="region=ap-south-1"> ap-south-1</label>
+      </div>
+    </details>
     <button class="dd-data-table__chip" type="button" aria-pressed="false" data-dd-data-table-filter="status=warn"><span class="dd-data-table__chip-dot" style="--_c: var(--dd-warn)"></span>Degraded</button>
     <button class="dd-data-table__chip" type="button" aria-pressed="false" data-dd-data-table-filter="status=bad"><span class="dd-data-table__chip-dot" style="--_c: var(--dd-bad)"></span>Down</button>
     <div class="dd-data-table__tools">
@@ -88,14 +99,14 @@ const flagship = `
           <label><input class="dd-data-table__check" type="checkbox" data-dd-data-table-column="owner"> Owner</label>
         </div>
       </details>
-      <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button">${i('download')}<span>Export</span></button>
+      <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" data-dd-toast="Export started" data-dd-toast-description="services.csv downloads when it’s ready.">${i('download')}<span>Export</span></button>
     </div>
   </div>
   <div class="dd-data-table__bulk" role="region" aria-label="Bulk actions">
     <span class="dd-data-table__bulk-count"><span data-dd-data-table-selected>2</span> selected</span>
-    <button class="dd-btn dd-btn--sm" type="button">${i('refresh')}<span>Restart</span></button>
-    <button class="dd-btn dd-btn--sm" type="button">${i('pause')}<span>Pause</span></button>
-    <button class="dd-btn dd-btn--sm" type="button">${i('download')}<span>Export</span></button>
+    <button class="dd-btn dd-btn--sm" type="button" data-dd-toast="Restart queued" data-dd-toast-description="The selected services restart one instance at a time." data-dd-toast-intent="ok">${i('refresh')}<span>Restart</span></button>
+    <button class="dd-btn dd-btn--sm" type="button" data-dd-toast="Traffic paused" data-dd-toast-description="The selected services stop taking new requests." data-dd-toast-intent="warn">${i('pause')}<span>Pause</span></button>
+    <button class="dd-btn dd-btn--sm" type="button" data-dd-toast="Export started" data-dd-toast-description="The selected rows download as a CSV.">${i('download')}<span>Export</span></button>
     <button class="dd-btn dd-btn--sm dd-data-table__bulk-end" type="button" data-dd-data-table-clear>Clear</button>
   </div>
   <div class="dd-data-table__scroll" tabindex="0" role="region" aria-label="Services">
@@ -126,15 +137,20 @@ const flagship = `
       </tbody>
     </table>
   </div>
-  <div class="dd-data-table__footer">
+  <div class="dd-data-table__footer" data-dd-pagination data-total="${services.length}">
     <label class="dd-pagination__size">Rows per page
-      <span class="dd-pagination__select"><select aria-label="Rows per page"><option>25</option><option selected>50</option><option>100</option></select>${i('chevron-down')}</span>
+      <span class="dd-pagination__select"><select aria-label="Rows per page"><option selected>${PAGE}</option><option>25</option><option>50</option></select>${i('chevron-down')}</span>
     </label>
     <nav class="dd-pagination dd-pagination--compact" aria-label="Pagination">
-      <span class="dd-pagination__range"><b>1–12</b> of 2,481</span>
-      <button class="dd-pagination__step" type="button" aria-label="Previous page" disabled>${i('chevron-left')}</button>
+      <span class="dd-pagination__range"><b>1–${PAGE}</b> of ${services.length}</span>
+      <button class="dd-pagination__step" type="button" aria-label="Previous page" aria-disabled="true">${i('chevron-left')}</button>
       <button class="dd-pagination__step" type="button" aria-label="Next page">${i('chevron-right')}</button>
     </nav>
+  </div>
+  <div class="dd-menu" id="dt-row-menu" role="menu" aria-label="Service actions" hidden>
+    <button class="dd-menu__item" role="menuitem" type="button" data-dd-toast="Opening logs" data-dd-toast-description="The log viewer opens filtered to this service."><span class="dd-menu__body">View logs</span></button>
+    <button class="dd-menu__item" role="menuitem" type="button" data-dd-toast="Restart queued" data-dd-toast-description="Instances restart one at a time." data-dd-toast-intent="ok"><span class="dd-menu__body">Restart</span></button>
+    <button class="dd-menu__item" role="menuitem" type="button" data-dd-toast="Traffic paused" data-dd-toast-description="The service stops taking new requests." data-dd-toast-intent="warn"><span class="dd-menu__body">Pause traffic</span></button>
   </div>
 </div>`;
 
@@ -201,7 +217,7 @@ const empty = `
 <div class="dd-data-table" data-dd-data-table>
   <div class="dd-data-table__toolbar">
     <label class="dd-data-table__search">${i('search')}<input type="search" value="edge-proxy" aria-label="Filter services" data-dd-data-table-search></label>
-    <button class="dd-data-table__chip" type="button" aria-pressed="true" data-dd-data-table-filter="region=eu-west-2">Region <b>eu-west-2</b>${i('x')}</button>
+    <button class="dd-data-table__chip" type="button" aria-pressed="true" data-dd-data-table-filter="region=eu-west-2" data-dd-data-table-removable aria-label="Remove filter: region eu-west-2">Region <b>eu-west-2</b>${i('x')}</button>
     <div class="dd-data-table__tools"><span class="dd-data-table__count" data-dd-data-table-count="services">0 of 3 services</span></div>
   </div>
   <div class="dd-data-table__scroll" role="region" aria-label="Services">
@@ -241,7 +257,7 @@ const noData = `
             <span class="dd-data-table__empty-icon">${i('link')}</span>
             <p class="dd-data-table__empty-title">No webhooks yet</p>
             <p>Send deploy and incident events from billing-worker to your own endpoint.</p>
-            <div class="dd-row"><button class="dd-btn dd-btn--primary dd-btn--sm" type="button">${i('plus')}<span>Add webhook</span></button></div>
+            <div class="dd-row"><button class="dd-btn dd-btn--primary dd-btn--sm" type="button" data-dd-toast="Add webhook" data-dd-toast-description="In an app this opens the new-webhook form.">${i('plus')}<span>Add webhook</span></button></div>
           </div></td>
         </tr>
       </tbody>
@@ -252,7 +268,7 @@ const noData = `
 <Docs title="Data table" group="Data display" lead="The dense table for large data sets: search and filter, sort, select in bulk, expand a row for detail, and scroll wide data with the header and first column pinned." wide>
   <Example
     title="Hairline"
-    description="Toolbar, bulk actions, sticky header, frozen service column, sortable figures, selectable and expandable rows, pagination. Try it: sort a column, filter for “cache”, toggle Degraded, select rows, open the Columns menu, scroll sideways."
+    description="Toolbar, bulk actions, sticky header, frozen service column, sortable figures, selectable and expandable rows, pagination. Try it: click a header to sort (again for descending, a third time to reset), filter for “cache”, pick a region or toggle Degraded, select rows (Shift-click for a range), expand a row, open Columns, page with the arrows, scroll sideways."
     code={flagship}
     stage="pad"
   />
@@ -262,7 +278,7 @@ const noData = `
     <li><strong>Toolbar</strong>: search on the left, filter chips, then the row count, column toggle and table-level actions on the right. It wraps on narrow screens; search takes the first line.</li>
     <li><strong>Bulk bar</strong>: appears under the toolbar while rows are selected, in the accent tone, with the count and the actions that apply to the selection.</li>
     <li><strong>Scroll container</strong>: <code>.dd-data-table__scroll</code> scrolls both ways. The header sticks to its top; the select and first data column stick to its left and cast a soft edge once you scroll. Cap its height with <code>--dd-data-table-height</code> (default <code>70vh</code>).</li>
-    <li><strong>Footer</strong>: page size and the <a href="pagination">pagination</a> range.</li>
+    <li><strong>Footer</strong>: page size and the <a href="pagination">pagination</a> range. Give it <code>data-dd-pagination</code> and the table pages its rows in the browser; leave it off when the server pages.</li>
   </ul>
 
   <h2 id="columns">Columns and cells</h2>
@@ -270,7 +286,7 @@ const noData = `
 
   <h2 id="grouped">Grouped rows and row numbers</h2>
   <p>Group rows are a tonal band whose label stays visible while the table scrolls sideways. Sorting keeps rows inside their group. Row numbers (<code>.dd-data-table__rownum</code>) make a read-only table feel like a sheet. This one is <code>--compact</code>.</p>
-  <Example code={grouped} />
+  <Example code={grouped} description="Try it: sort Req / min or p95. Rows reorder inside their region; the group bands stay put." />
 
   <h2 id="loading">Loading</h2>
   <p>Keep the header and draw skeleton bars where values will land, with widths that vary like real data. Set <code>aria-busy="true"</code> on the region.</p>
@@ -278,7 +294,7 @@ const noData = `
 
   <h2 id="empty">Empty and filtered</h2>
   <p>When filters hide everything, say so, name the query and offer to clear the filters. The behaviour fills in the query and shows <code>.dd-data-table__empty-row</code> for you.</p>
-  <Example code={empty} />
+  <Example code={empty} description="Try it: remove the region chip, then press Clear filters." />
   <p>With no data at all, explain what will appear and give the one action that creates it. <code>--card</code> puts the whole table on <code>--dd-surface</code>.</p>
   <Example code={noData} />
 
@@ -323,12 +339,16 @@ const noData = `
     ['[data-dd-data-table-clear]', 'Clears the selection.'],
     ['.dd-data-table__expand', 'Toggles <code>aria-expanded</code> and the <code>hidden</code> detail row named by <code>aria-controls</code>.'],
     ['[data-dd-data-table-search]', 'Filters rows by their text as you type.'],
-    ['[data-dd-data-table-filter="col=value"]', 'Toggle chip (<code>aria-pressed</code>). Matches cells with <code>data-col="col"</code> by <code>data-value</code> or text. Same column = any, different columns = all.'],
+    ['[data-dd-data-table-filter="col=value"]', 'Toggle chip (<code>aria-pressed</code>) or checkbox (e.g. in a <code>__menu</code>). Matches cells with <code>data-col="col"</code> by <code>data-value</code> or text. Same column = any, different columns = all.'],
+    ['[data-dd-data-table-filter-label="col"]', 'Shows <code>all</code>, the one value or “2 selected” for that column, and marks its chip <code>.is-active</code>.'],
+    ['[data-dd-data-table-removable]', 'On a filter chip: it disappears once cleared (focus moves to the search).'],
     ['[data-dd-data-table-count="noun"]', 'Shows “12 services”, or “3 of 12 services” while filtered.'],
     ['[data-dd-data-table-query]', 'Receives the quoted search text in the empty state.'],
-    ['[data-dd-data-table-reset]', 'Clears search and chips.'],
+    ['[data-dd-data-table-reset]', 'Clears search and chips, and returns focus to the search.'],
+    ['[data-dd-pagination] inside the root', 'Pages the matching rows in the browser (see <a href="pagination">pagination</a>): <code>data-total</code> is kept in step, the page-size select and arrows move through the rows. Filtering goes back to page 1; sorting keeps the page.'],
     ['[data-dd-data-table-column="col"]', 'Checkbox that shows / hides the column whose header has <code>data-col="col"</code>.'],
-    ['Keyboard', 'Every control is a native button, checkbox or input. The scroll region is focusable, so arrow keys scroll it. <kbd>Esc</kbd> closes the column menu.'],
+    ['Keyboard', 'Every control is a native button, checkbox or input, so <kbd>Tab</kbd>, <kbd>Enter</kbd> and <kbd>Space</kbd> work throughout. The scroll region is focusable, so arrow keys scroll it. <kbd>Esc</kbd> closes a column or filter menu and returns focus to its button; a click outside closes it too.'],
+    ['Events', '<code>dd:sort</code> <code>{ column, direction, index }</code> after a header sorts; <code>dd:selectionchange</code> <code>{ count, rows }</code> after the selection changes; <code>dd:pagechange</code> (from the pager) <code>{ page, pages, pageSize, total, from, to }</code>. All bubble from the root, so a server-backed table can listen and fetch.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

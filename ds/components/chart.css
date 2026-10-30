@@ -267,6 +267,32 @@
 .dd-chart__data td { font-family: var(--dd-font-mono); }
 .dd-chart__data td:first-child { font-family: inherit; }
 
+/* ---------- behaviour: chart.js on [data-dd-chart] ---------- */
+/* The mark under the pointer, finger or keyboard is .is-active: it gets the same tooltip, band and dimming as hover.
+   Esc adds .is-tip-off to hide the tooltip until the next move. */
+.dd-chart[data-dd-chart] { position: relative; }
+.dd-chart { overflow-x: clip; } /* closed tooltips beside the last marks never widen the page */
+:is(.dd-chart__slot, .dd-chart__hit).is-active > .dd-chart__tip { opacity: 1; visibility: visible; transform: none; }
+.dd-chart__slot.is-active { background: color-mix(in oklab, var(--dd-text) 5%, transparent); }
+.dd-chart__cols:has(> .is-active) .dd-chart__slot:not(.is-active) > :is(.dd-chart__col, .dd-chart__stackcol) { opacity: .45; }
+.dd-chart__hit.is-active::before, .dd-chart__hit.is-active .dd-chart__dot { opacity: 1; }
+.dd-chart__stack:has(> .is-active) .dd-chart__seg:not(.is-active) { opacity: .5; }
+.dd-chart__stack--thin:has(> :focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; } /* it clips its segments */
+.dd-chart__donut svg:has(.dd-chart__arc.is-active) .dd-chart__arc:not(.is-active) { opacity: .45; }
+.dd-chart__arc.is-active { stroke-width: 6.5; }
+.dd-chart__arc:focus-visible { outline: none; }
+.dd-chart__donut:has(.dd-chart__arc:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 4px; border-radius: 50%; }
+:is(.dd-chart__slot, .dd-chart__hit).is-tip-off > .dd-chart__tip { opacity: 0; visibility: hidden; transform: translateY(3px); }
+/* Floating tip for segments and arcs, placed by the script. */
+.dd-chart__tip--float { left: 0; top: 0; }
+.dd-chart__tip--float.is-open { opacity: 1; visibility: visible; transform: none; }
+
+/* View as table: [data-dd-chart-view] swaps the plot for its table. */
+.dd-chart [data-dd-chart-view][aria-pressed="true"] { background: var(--dd-wash-strong); color: var(--dd-text); }
+.dd-chart.is-table :is(.dd-chart__frame, .dd-chart__pie, .dd-chart__stack, .dd-chart__hbars) { display: none; }
+.dd-chart__data--swap .dd-chart__data-scroll { margin-top: 0; max-height: calc(var(--_h) + 2.5rem); overflow: auto; }
+.dd-chart__data--swap thead th { position: sticky; top: 0; background: var(--_bg); }
+
 /* ---------- narrow ---------- */
 /* Minor x ticks go first: below ~760px a dozen time labels start to touch. */
 @container (max-width: 760px) { .dd-chart__x > .is-minor { visibility: hidden; } }

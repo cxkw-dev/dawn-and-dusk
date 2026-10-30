@@ -76,14 +76,14 @@ const cards = `
 
   <h2 id="select-all">Select all</h2>
   <p>A parent with <code>data-dd-check-all="key"</code> checks every child with <code>data-dd-check-in="key"</code> and shows the mixed state when only some are on.</p>
-  <Example code={nested} />
+  <Example description="Try it: check “All regions” to select every region, clear one region to see the mixed state, then check them one by one." code={nested} />
 
   <h2 id="inline">Inline and small</h2>
   <Example code={inline} />
 
   <h2 id="card">Checkbox card</h2>
   <p>For choices that need a sentence or a price. The whole card is the target; checked cards take a soft accent tint.</p>
-  <Example code={cards} />
+  <Example description="Try it: click anywhere on a card, or Tab to it and press Space. Audit export is disabled." code={cards} />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[

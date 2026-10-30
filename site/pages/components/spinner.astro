@@ -3,6 +3,7 @@ import Docs from '../../layouts/Docs.astro';
 import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
 
 const sizes = `
 <div class="dd-row" style="--dd-gap: var(--dd-space-6)">
@@ -48,6 +49,22 @@ const overlay = `
     <p class="dd-page-loader__label">Recalculating totals</p>
   </div>
 </div>`;
+const live = `
+<div id="sp-invoices" style="position: relative; min-height: 220px; padding: var(--dd-space-6)">
+  <div class="dd-row" style="justify-content: space-between; align-items: flex-start; margin-bottom: var(--dd-space-4)">
+    <div>
+      <p class="dd-eyebrow">billing-worker · invoices</p>
+      <p class="dd-h3" style="margin: var(--dd-space-2) 0 0">october</p>
+    </div>
+    <button class="dd-btn dd-btn--sm" type="button" data-sp-recalc aria-controls="sp-invoices">${i('refresh')}<span>Recalculate</span></button>
+  </div>
+  <p class="dd-text dd-muted">142 invoices · $18,420.00 · 3 overdue</p>
+  <p class="dd-text dd-muted">Last sync <span data-sp-sync>09:41</span> UTC</p>
+  <div class="dd-page-loader dd-page-loader--overlay" role="status" hidden>
+    <span class="dd-spinner"></span>
+    <p class="dd-page-loader__label">Recalculating totals</p>
+  </div>
+</div>`;
 ---
 <Docs title="Spinner" group="Feedback & status" lead="Something is working and we can’t say for how long. A thin taupe ring for most waits, three dots for conversational ones, a line of text when it’s inline, a loader when the whole page waits.">
   <Example title="Sizes" description="sm 14 · md 18 (default) · lg 28 · xl 40. The ring takes currentColor — the taupe accent by default, muted for quiet places." code={sizes} stage="center" />
@@ -64,6 +81,7 @@ const overlay = `
   <p>Centred in the space the page will fill (at least 60% of the viewport, up to 480px — the example is shorter). <code>--overlay</code> lays it over content that’s being recalculated (its parent needs <code>position: relative</code>); <code>--fixed</code> covers the viewport.</p>
   <Example code={page} stage="flush" />
   <Example code={overlay} stage="flush" />
+  <Example code={live} stage="flush" description="Try it: press Recalculate. The overlay covers the panel while the totals are worked out (the button can’t be pressed twice meanwhile), then lifts and the sync time updates." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -74,7 +92,7 @@ const overlay = `
     ['.dd-spinner--dots', 'Three dots; needs three <code>&lt;i&gt;</code> children.'],
     ['.dd-loading', 'Spinner + muted text in a row.'],
     ['.dd-page-loader', 'Centred loader for a page or section, with <code>__label</code> and <code>__meta</code>.'],
-    ['.dd-page-loader--overlay / --fixed', 'Cover the parent / the viewport with a translucent wash.'],
+    ['.dd-page-loader--overlay / --fixed', 'Cover the parent / the viewport with a translucent wash. Show and hide it with the <code>hidden</code> attribute.'],
   ]} />
 
   <h2 id="motion">Motion</h2>
@@ -86,3 +104,26 @@ const overlay = `
     dont={['Don’t put more than one spinner in a view.', 'Don’t block the whole page for something one panel needs.', 'Don’t use a spinner for progress you can measure — use a progress bar.']}
   />
 </Docs>
+
+<script>
+  // Docs demo: Recalculate lays the overlay loader over the panel for a moment, then lifts it and updates the sync
+  // time. While it runs the button is aria-disabled, so a second press (pointer or keyboard) does nothing.
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as Element).closest<HTMLButtonElement>('[data-sp-recalc]');
+    const panel = btn && document.getElementById(btn.getAttribute('aria-controls') || '');
+    const loader = panel?.querySelector<HTMLElement>('.dd-page-loader');
+    if (!btn || !panel || !loader || !loader.hidden) return;
+    loader.hidden = false;
+    panel.setAttribute('aria-busy', 'true');
+    btn.setAttribute('aria-disabled', 'true');
+    setTimeout(() => {
+      loader.hidden = true;
+      panel.removeAttribute('aria-busy');
+      btn.removeAttribute('aria-disabled');
+      const now = new Date();
+      const sync = panel.querySelector('[data-sp-sync]');
+      if (sync) sync.textContent = `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`;
+      (window as any).dd?.toast({ title: 'Totals recalculated', description: '142 invoices · $18,420.00', intent: 'ok', from: btn });
+    }, 1500);
+  });
+</script>

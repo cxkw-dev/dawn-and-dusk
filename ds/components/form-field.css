@@ -28,6 +28,7 @@
 .dd-field__hint, .dd-field__error { margin: 0; font-size: var(--dd-fs-xs); line-height: 1.45; color: var(--dd-muted); overflow-wrap: anywhere; }
 .dd-field__error { display: flex; align-items: flex-start; gap: calc(var(--dd-u) * 1.25); color: var(--dd-bad); font-weight: 500; }
 .dd-field__error > .dd-icon { margin-top: .1em; }
+.dd-field__error[hidden] { display: none; }
 .dd-field__counter {
   flex: none; margin-left: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); line-height: 1.45;
   font-variant-numeric: tabular-nums; color: var(--dd-muted); transition: color var(--dd-dur-fast) var(--dd-ease);

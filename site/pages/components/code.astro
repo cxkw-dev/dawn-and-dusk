@@ -128,7 +128,7 @@ const terminal = `
 </figure>`;
 ---
 <Docs title="Code" group="Data display" lead="Code blocks, inline code, copyable fields and a terminal. Mono throughout, tone instead of borders, and a copy button wherever someone will want the text.">
-  <Example title="Code block" description="A title bar names the file and language; the copy button copies the code exactly (line spans are separated by real newlines)." code={block} />
+  <Example title="Code block" description="A title bar names the file and language; the copy button copies the code exactly (line spans are separated by real newlines). Try it: press copy — the icon turns into a check for a moment." code={block} />
 
   <h2 id="line-numbers">Line numbers &amp; highlights</h2>
   <p>Add <code>dd-code--numbered</code> for a counter gutter (never copied). Mark lines with <code>is-highlight</code> to draw the eye to what changed or matters.</p>
@@ -147,7 +147,7 @@ const terminal = `
 
   <h2 id="field">Copyable field</h2>
   <p>A single value someone needs to copy: API keys, webhook URLs, IDs. Secrets stay masked until revealed, and copy always copies the real value.</p>
-  <Example code={field} />
+  <Example code={field} description="Try it: press the eye to reveal the key and again to mask it; copy gives you the real key either way." />
 
   <h2 id="terminal">Terminal</h2>
   <p>Always dark. Set <code>data-theme="dusk"</code> on the block so it reads dusk tokens in either mode. Prompts are not selectable, and the copy button copies just the command (<code>data-dd-copy</code>), never the output.</p>

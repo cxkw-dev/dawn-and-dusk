@@ -48,7 +48,9 @@
   font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1.2; white-space: nowrap; pointer-events: none; opacity: 0;
   transition: opacity var(--dd-dur-fast) var(--dd-ease), translate var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-side-nav__item[data-label]:is(:hover, :focus-visible)::after { opacity: 1; translate: 0 -50%; transition-delay: 120ms; }
+/* Hover only where there is a real hover: on touch, :hover sticks after a tap and the label would sit over the panel. */
+.dd-side-nav__item[data-label]:focus-visible::after { opacity: 1; translate: 0 -50%; transition-delay: 120ms; }
+@media (hover: hover) { .dd-side-nav__item[data-label]:hover::after { opacity: 1; translate: 0 -50%; transition-delay: 120ms; } }
 
 /* The collapse chevron sits at the foot of the rail; it points the way the panel will move. */
 .dd-side-nav__collapse > .dd-icon { transition: rotate var(--dd-dur) var(--dd-ease); }
@@ -141,6 +143,7 @@
 .dd-side-nav--offcanvas {
   position: fixed; inset-block: 0; top: 0; left: calc(-1 * (var(--dd-side-nav-rail) + var(--dd-side-nav-panel)) - 48px);
   z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden;
+  pointer-events: none; /* while it slides out, a tap goes to the page (e.g. the menu button again), not the leaving nav */
   transition: left var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
 }
 .dd-side-nav--offcanvas::before {
@@ -149,7 +152,7 @@
 }
 .dd-side-nav--offcanvas .dd-side-nav__panel { width: var(--dd-side-nav-panel); min-width: 0; flex-shrink: 1; visibility: inherit; }
 .dd-side-nav--offcanvas .dd-side-nav__collapse > .dd-icon { rotate: 0deg; }
-.dd-side-nav--offcanvas.is-mobile-open { left: 0; visibility: visible; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
+.dd-side-nav--offcanvas.is-mobile-open { left: 0; visibility: visible; pointer-events: auto; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
 .dd-side-nav--offcanvas.is-mobile-open::before { opacity: 1; pointer-events: auto; }
 
 /* Restoring a persisted state on load: no animation. */

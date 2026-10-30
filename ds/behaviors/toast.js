@@ -4,7 +4,8 @@
      duration  ms before it leaves on its own (default 5000; 0 keeps it until dismissed). A hairline shows the time
                left; hovering or focusing the stack pauses every timer, and so does hiding the tab.
    Swipe a toast sideways (or drag it with the mouse) to dismiss it; Esc dismisses the toast that has focus, and focus
-   then moves to the next toast or back to where it was before the stack.
+   then moves to the next toast or back to where it was before the stack. The stack is a manual popover (top layer),
+   so toasts show above modal dialogs; while a modal is open the stack moves inside it so its buttons aren't inert.
      icon      any sprite name, to override the intent's icon
    Returns { el, dismiss() }. dd.toast('Saved') works too, and dd.toast.clear() empties the stack.
    Declarative: <button data-dd-toast="Title" data-dd-toast-description="…" data-dd-toast-intent="ok"
@@ -35,6 +36,9 @@
   };
 
   const live = new Set(); // toasts with a running timer
+  // Where supported the stack is a manual popover, so it shows in the top layer: above modal dialogs, drawers and
+  // their scrims, and clickable there (not inert behind a modal).
+  const topLayer = typeof HTMLElement !== 'undefined' && 'showPopover' in HTMLElement.prototype;
   let stack;
   let held = false;
   let returnTo = null; // where focus was before it entered the stack
@@ -51,6 +55,7 @@
     }
     stack.setAttribute('aria-label', 'Notifications');
     stack.setAttribute('aria-live', 'polite');
+    if (topLayer) stack.setAttribute('popover', 'manual');
     stack.addEventListener('pointerenter', () => hold(true));
     stack.addEventListener('pointerleave', () => { if (!stack.contains(document.activeElement)) hold(false); });
     stack.addEventListener('focusin', (e) => {
@@ -66,6 +71,28 @@
     return stack;
   };
   document.addEventListener('visibilitychange', () => hold(document.hidden || !!stack?.matches(':hover') || !!stack?.contains(document.activeElement)));
+
+  // Put the stack at the top of the top layer. Everything outside an open modal dialog is inert, so while one is
+  // open the stack lives inside the topmost modal (as a top-layer popover it still sits fixed at the viewport
+  // corner, above the dialog and its scrim) and goes back to <body> when that dialog closes. Toasts that are
+  // already showing don't replay their entrance when the stack moves.
+  const topModal = () => document.activeElement?.closest?.('dialog:modal') || [...document.querySelectorAll('dialog:modal')].pop() || null;
+  const raise = () => {
+    if (!topLayer || !stack?.isConnected) return;
+    const host = topModal() || document.body;
+    if (stack.parentElement !== host) {
+      if (stack.contains(document.activeElement)) return; // don't pull focus out from under a keyboard user
+      stack.querySelectorAll(':scope > .dd-toast').forEach((t) => t.classList.add('is-settled'));
+      host.append(stack); // leaving the DOM hides the popover
+    } else if (stack.matches(':popover-open')) return;
+    stack.showPopover();
+  };
+  document.addEventListener('close', (e) => {
+    if (!stack || !(e.target instanceof HTMLDialogElement) || !e.target.contains(stack)) return;
+    stack.querySelectorAll(':scope > .dd-toast').forEach((t) => t.classList.add('is-settled'));
+    document.body.append(stack);
+    if (stack.querySelector('.dd-toast')) raise();
+  }, true);
 
   // Toasts already in the stack glide to their new place instead of jumping when one is added (FLIP).
   const glide = (region, change) => {
@@ -149,6 +176,8 @@
     const region = toaster();
     // A brand-new live region needs a beat before content lands in it, or screen readers miss the first toast.
     const add = () => {
+      if (gone) return; // dismissed before it was shown
+      raise();
       glide(region, () => region.append(el));
       const shown = [...region.querySelectorAll(':scope > .dd-toast:not([data-leaving])')];
       shown.slice(0, Math.max(0, shown.length - MAX)).forEach((old) => old.ddToast?.dismiss());

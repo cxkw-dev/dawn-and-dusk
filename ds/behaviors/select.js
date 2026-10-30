@@ -3,8 +3,13 @@
            > [role="option"][data-value] (aria-selected on the chosen one, aria-disabled to skip).
    The trigger's [data-dd-select-value] (or its .dd-input__control) shows the chosen option's label; an optional
    <input type="hidden"> inside the root receives the value. Fires a bubbling "dd-select" event with
-   detail { value, label, option }, and "change" on the hidden input.
-   Keyboard: Enter / Space / ↓ / ↑ open; ↑ ↓ Home End move; type to jump; Enter / Space choose; Esc closes. */
+   detail { value, label, option, values, selected }, and "change" on the hidden input.
+   Multiple: aria-multiselectable="true" on the listbox. Choosing toggles an option and keeps the list open; the
+   trigger lists the chosen labels (or its placeholder when none), the hidden input gets the values joined by
+   commas, and detail.values holds them all.
+   Keyboard: Enter / Space / ↓ / ↑ / Home / End open; ↑ ↓ Home End move; type to jump (a letter typed again cycles
+   through the options that start with it; typing on the closed trigger opens it there); Enter / Space choose
+   (toggle in a multiple list); Esc closes. */
 (() => {
   let uid = 0;
   const parts = (root) => ({
@@ -49,28 +54,41 @@
     list.focus({ preventScroll: true });
   };
 
+  const valueOf = (opt) => opt.dataset.value ?? labelOf(opt);
   const choose = (root, opt) => {
     const { btn, list } = parts(root);
     if (!opt || opt.getAttribute('aria-disabled') === 'true') return;
-    list.querySelectorAll('[role="option"][aria-selected="true"]').forEach((o) => o.setAttribute('aria-selected', 'false'));
-    opt.setAttribute('aria-selected', 'true');
-    const value = opt.dataset.value ?? labelOf(opt);
+    const multi = list.getAttribute('aria-multiselectable') === 'true';
+    const selected = multi ? opt.getAttribute('aria-selected') !== 'true' : true;
+    if (!multi) list.querySelectorAll('[role="option"][aria-selected="true"]').forEach((o) => o.setAttribute('aria-selected', 'false'));
+    opt.setAttribute('aria-selected', String(selected));
+    const chosen = [...list.querySelectorAll('[role="option"][aria-selected="true"]')];
+    const value = valueOf(opt);
     const label = labelOf(opt);
+    const values = chosen.map(valueOf);
     const out = btn.querySelector('[data-dd-select-value]') || btn.querySelector('.dd-input__control');
     if (out) {
-      const icon = opt.querySelector('.dd-listbox__icon, .dd-listbox__swatch');
+      // Remember the placeholder the first time it is replaced, so a multiple list can go back to it.
+      if (out.classList.contains('dd-select__placeholder') && !out.dataset.ddPlaceholder) out.dataset.ddPlaceholder = out.textContent.trim();
       out.textContent = '';
-      if (icon) out.append(icon.cloneNode(true));
-      out.append(label);
-      out.classList.remove('dd-select__placeholder');
+      if (multi) {
+        out.append(chosen.map(labelOf).join(', ') || out.dataset.ddPlaceholder || '');
+        out.classList.toggle('dd-select__placeholder', !chosen.length);
+      } else {
+        const icon = opt.querySelector('.dd-listbox__icon, .dd-listbox__swatch');
+        if (icon) out.append(icon.cloneNode(true));
+        out.append(label);
+        out.classList.remove('dd-select__placeholder');
+      }
     }
     const hidden = root.querySelector('input[type="hidden"]');
-    if (hidden) { hidden.value = value; hidden.dispatchEvent(new Event('change', { bubbles: true })); }
-    root.dispatchEvent(new CustomEvent('dd-select', { bubbles: true, detail: { value, label, option: opt } }));
-    close(root);
+    if (hidden) { hidden.value = values.join(','); hidden.dispatchEvent(new Event('change', { bubbles: true })); }
+    root.dispatchEvent(new CustomEvent('dd-select', { bubbles: true, detail: { value, label, option: opt, values, selected } }));
+    if (multi) setActive(list, opt); else close(root);
   };
 
-  // Typeahead: letters typed within 600ms build a prefix to jump to.
+  // Typeahead: letters typed within 600ms build a prefix to jump to. The same letter again moves on to the next
+  // option that starts with it, so "e e e" walks through every e-option.
   const typeahead = new WeakMap();
   const jump = (root, list, key) => {
     const t = typeahead.get(root) || { q: '', at: 0 };
@@ -79,7 +97,11 @@
     t.at = now;
     typeahead.set(root, t);
     const opts = options(list);
-    const hit = opts.find((o) => labelOf(o).toLowerCase().startsWith(t.q));
+    const cur = opts.indexOf(list.querySelector('[role="option"].is-active'));
+    const repeat = [...t.q].every((c) => c === t.q[0]);
+    const q = repeat ? t.q[0] : t.q;
+    const from = repeat ? cur + 1 : Math.max(cur, 0);
+    const hit = [...opts.slice(from), ...opts.slice(0, from)].find((o) => labelOf(o).toLowerCase().startsWith(q));
     if (hit) setActive(list, hit);
   };
 
@@ -112,7 +134,14 @@
     if (!root) return;
     const { btn, list } = parts(root);
     if (e.target === btn) {
-      if (['ArrowDown', 'ArrowUp'].includes(e.key)) { e.preventDefault(); open(root, e.key === 'ArrowUp' ? 'last' : undefined); }
+      if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
+        e.preventDefault();
+        open(root, e.key === 'ArrowUp' || e.key === 'End' ? 'last' : e.key === 'Home' ? 'first' : undefined);
+      } else if (e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        if (list.hidden) open(root);
+        jump(root, list, e.key);
+      }
       return;
     }
     if (e.target !== list) return;

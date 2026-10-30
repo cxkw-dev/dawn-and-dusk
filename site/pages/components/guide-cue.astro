@@ -78,11 +78,11 @@ const tour = `
 </div>`;
 ---
 <Docs title="Guide cue" group="Feedback & status" lead="An onboarding tip that points at one thing: what it is and why it matters, in a sentence. Steps link into a short tour with a count, Next and a way out.">
-  <Example title="Anatomy" description="Step count with pips, a close ×, a title, one or two sentences and two actions — a quiet way out and Next. The arrow points at the target and an apricot beacon pulses on it. Ink in dawn, like a toast; a raised surface in dusk." code={anatomy} stage="center" />
+  <Example title="Anatomy" description="Step count with pips, a close ×, a title, one or two sentences and two actions — a quiet way out and Next. The arrow points at the target and an apricot beacon pulses on it. Ink in dawn, like a toast; a raised surface in dusk. This one is a still — the live tour is below." code={anatomy} stage="center" />
 
   <h2 id="tour">A tour</h2>
   <p>Each step is a <code>.dd-guide-cue</code> with <code>popover="manual"</code>, the tour name in <code>data-dd-guide</code> and its target in <code>data-dd-guide-target</code>. Steps run in document order; the script fills the count and pips, scrolls the target into view, rings it, drops the beacon and moves focus into the cue.</p>
-  <Example code={tour} />
+  <Example code={tour} description="Try it: start the tour, then Next and Back to walk the three steps; × or Esc ends it, and focus goes back to where you started." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[

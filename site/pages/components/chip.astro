@@ -82,15 +82,15 @@ const people = `
 
   <h2 id="removable">Removable</h2>
   <p>A small × at the end removes the chip — applied filters, selected recipients. Focus moves to the next chip, so you can clear a row from the keyboard; Delete and Backspace work on the × too.</p>
-  <Example code={removable} />
+  <Example code={removable} description="Try it: click an ×, or Tab to one and press Delete — focus moves on to the next chip. Reload the page to get them back." />
 
   <h2 id="filter">Filter chips</h2>
   <p>Toggle buttons with <code>aria-pressed</code>. Off is a lighter wash; on deepens it and slides in a check. Hover is a quieter step on top of either, so you can always tell hover from on.</p>
-  <Example code={filter} />
+  <Example code={filter} description="Try it: click a chip, or Tab to it and press Space, to turn it on and off." />
 
   <h2 id="input">Input chips</h2>
   <p>A field that turns what you type into chips, in the same tonal box as a text input. The colour comes from the text, so a tag keeps its colour wherever it shows up. Typing a tag that is already there makes it flash instead of adding a twin.</p>
-  <Example code={input} />
+  <Example code={input} description="Try it: type canary and press Enter (or a comma); type release again to see it flash; Backspace in the empty field removes the last tag." />
 
   <h2 id="avatar">Avatar chips</h2>
   <p>A person (or a bot) with a tiny avatar. Pill-shaped to echo the avatar; neutral wash so the avatar’s colour leads.</p>

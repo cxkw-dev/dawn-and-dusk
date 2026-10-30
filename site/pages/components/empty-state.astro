@@ -12,20 +12,20 @@ const panel = `
     <h3 class="dd-empty-state__title">No deploys yet</h3>
     <p class="dd-empty-state__text">Connect a repository and every push to <code>main</code> ships to fra1, sfo3 and sgp1.</p>
     <div class="dd-empty-state__actions">
-      <button class="dd-btn dd-btn--primary" type="button">${i('plus')}<span>New deploy</span></button>
-      <a class="dd-btn dd-btn--ghost" href="#docs">${i('external')}<span>Read the guide</span></a>
+      <button class="dd-btn dd-btn--primary" type="button" data-dd-toast="New deploy" data-dd-toast-description="In an app this opens the deploy form.">${i('plus')}<span>New deploy</span></button>
+      <a class="dd-btn dd-btn--ghost" href="#" data-dd-toast="Opening the deploy guide" data-dd-toast-description="In an app this opens the docs.">${i('external')}<span>Read the guide</span></a>
     </div>
   </div>
 </div>`;
 
 const compact = `
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--dd-space-3)">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--dd-space-3)">
   <div class="dd-surface">
     <div class="dd-empty-state dd-empty-state--compact">
       <div class="dd-empty-state__icon">${i('search')}</div>
       <h3 class="dd-empty-state__title">No logs match</h3>
       <p class="dd-empty-state__text"><code>status:500 service:edge-cache</code> in the last hour.</p>
-      <div class="dd-empty-state__actions"><button class="dd-btn dd-btn--sm" type="button">${i('x')}<span>Clear filters</span></button></div>
+      <div class="dd-empty-state__actions"><button class="dd-btn dd-btn--sm" type="button" data-dd-toast="Filters cleared" data-dd-toast-description="In an app the matching logs come back here.">${i('x')}<span>Clear filters</span></button></div>
     </div>
   </div>
   <div class="dd-surface">
@@ -40,7 +40,7 @@ const compact = `
       <div class="dd-empty-state__icon">${i('lock')}</div>
       <h3 class="dd-empty-state__title">Billing is owner-only</h3>
       <p class="dd-empty-state__text">Ask andy@cxkw.dev for access.</p>
-      <div class="dd-empty-state__actions"><button class="dd-btn dd-btn--sm" type="button">${i('mail')}<span>Request access</span></button></div>
+      <div class="dd-empty-state__actions"><button class="dd-btn dd-btn--sm" type="button" data-dd-toast="Access requested" data-dd-toast-description="andy@cxkw.dev will get an email." data-dd-toast-intent="ok">${i('mail')}<span>Request access</span></button></div>
     </div>
   </div>
   <div class="dd-surface">
@@ -48,7 +48,7 @@ const compact = `
       <div class="dd-empty-state__icon">${i('cloud')}</div>
       <h3 class="dd-empty-state__title">Couldn’t load metrics</h3>
       <p class="dd-empty-state__text">The metrics API timed out after 30s.</p>
-      <div class="dd-empty-state__actions"><button class="dd-btn dd-btn--sm" type="button">${i('refresh')}<span>Try again</span></button></div>
+      <div class="dd-empty-state__actions"><button class="dd-btn dd-btn--sm" type="button" data-dd-toast="Loading metrics again" data-dd-toast-description="In an app this retries the request.">${i('refresh')}<span>Try again</span></button></div>
     </div>
   </div>
 </div>`;
@@ -59,14 +59,14 @@ const page = `
   <h2 class="dd-empty-state__title">nothing here yet</h2>
   <p class="dd-empty-state__text">Projects hold your deploys, domains and logs. Start one from a repository or a template — it takes about a minute.</p>
   <div class="dd-empty-state__actions">
-    <button class="dd-btn dd-btn--primary dd-btn--lg" type="button">${i('plus')}<span>New project</span></button>
-    <button class="dd-btn dd-btn--lg" type="button">${i('download')}<span>Import</span></button>
+    <button class="dd-btn dd-btn--primary dd-btn--lg" type="button" data-dd-toast="New project" data-dd-toast-description="In an app this opens the new-project form.">${i('plus')}<span>New project</span></button>
+    <button class="dd-btn dd-btn--lg" type="button" data-dd-toast="Import" data-dd-toast-description="In an app this lets you pick a repository.">${i('download')}<span>Import</span></button>
   </div>
   <p class="dd-empty-state__meta">or run <span class="dd-mono">dd init</span> in a folder</p>
 </div>`;
 ---
 <Docs title="Empty state" group="Feedback & status" lead="What a view says before it has anything to show: why it’s empty, and the one thing that fills it. No illustrations — an icon on a soft tile, a sentence, an action.">
-  <Example title="In a panel" description="The default size, for cards and panels. Title says what’s missing, text says what will be here, the primary action makes it happen." code={panel} />
+  <Example title="In a panel" description="The default size, for cards and panels. Title says what’s missing, text says what will be here, the primary action makes it happen. Try it: the actions on this page answer with a toast." code={panel} />
 
   <h2 id="compact">Compact</h2>
   <p>For table bodies, lists and side panels — and for the other reasons a view can be empty: no results, nothing to do, no permission, or an error.</p>

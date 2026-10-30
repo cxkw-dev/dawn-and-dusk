@@ -92,6 +92,219 @@
 })();
 
 
+/* ===== behaviors/button.js ===== */
+/* Button: a busy (.is-loading) or aria-disabled .dd-btn ignores activation. CSS already stops pointer clicks;
+   this also stops the keyboard (Enter / Space), a form's implicit submit and an aria-disabled link's navigation,
+   so a busy Save can't be sent twice. Runs in the capture phase, before any other click handler. */
+(() => {
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest?.('.dd-btn.is-loading, .dd-btn[aria-disabled="true"]');
+    if (!b) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }, true);
+})();
+
+
+/* ===== behaviors/chart.js ===== */
+/* Chart: keyboard, touch and table view for .dd-chart. Opt in with [data-dd-chart] on the .dd-chart figure.
+   Marks — .dd-chart__slot (columns), .dd-chart__hit (line/area points), .dd-chart__seg (100% bar), .dd-chart__arc (donut)
+   or anything with [data-dd-chart-point] — become ONE tab stop per group of siblings (roving tabindex):
+     ← → (↑ ↓) step through the marks, Home / End jump to the ends, Esc hides the tooltip until the next move.
+   The mark under the pointer, finger or keyboard focus gets .is-active, which shows its tooltip: the .dd-chart__tip
+   inside it, or — for marks without one — a floating tip built from data-dd-chart-label / data-dd-chart-value
+   (plus the mark's series class). Tapping a mark on a touch screen shows its tooltip; tapping elsewhere hides it.
+   Tooltips flip to whichever side has room.
+   View as table: a button [data-dd-chart-view] (aria-controls = the table container, or the figure's .dd-chart__data)
+   swaps the plot for its data table and back; aria-pressed and .is-table on the figure follow. A plain
+   <details class="dd-chart__data"> needs no script. Fires `dd:change` on the figure with { view: 'chart' | 'table' }. */
+(() => {
+  const MARK = '.dd-chart__slot, .dd-chart__hit, .dd-chart__seg, .dd-chart__arc, [data-dd-chart-point]';
+  const chartOf = (el) => el.closest('[data-dd-chart]');
+  const markOf = (el) => {
+    const m = el instanceof Element ? el.closest(MARK) : null;
+    return m && chartOf(m) ? m : null;
+  };
+  const marksIn = (group) => [...group.children].filter((c) => c.matches(MARK));
+
+  // Roving tabindex: one stop per group; it stays on the last mark used.
+  const initGroup = (group, current) => {
+    const marks = marksIn(group);
+    const cur = current || marks.find((m) => m.tabIndex === 0 && m.dataset.ddChartRoved) || marks[0];
+    for (const m of marks) { m.tabIndex = m === cur ? 0 : -1; m.dataset.ddChartRoved = ''; }
+  };
+  const init = (root = document) => {
+    const groups = new Set();
+    root.querySelectorAll('[data-dd-chart]').forEach((c) => c.querySelectorAll(MARK).forEach((m) => groups.add(m.parentElement)));
+    groups.forEach((g) => initGroup(g));
+  };
+
+  // Floating tip for marks that carry their data in attributes.
+  const floatTip = (chart) => {
+    let tip = chart.querySelector(':scope > .dd-chart__tip--float');
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.className = 'dd-chart__tip dd-chart__tip--float';
+      tip.setAttribute('aria-hidden', 'true');
+      chart.append(tip);
+    }
+    return tip;
+  };
+  // Where a mark's floating tip points: an arc's midpoint on the ring (with the outward direction), otherwise the
+  // top centre of the mark (pointing up).
+  const anchor = (mark) => {
+    if (mark.matches('.dd-chart__arc')) {
+      const svg = mark.ownerSVGElement.getBoundingClientRect();
+      const [len] = (mark.getAttribute('stroke-dasharray') || '0').split(/[\s,]+/).map(Number);
+      const off = -Number(mark.getAttribute('stroke-dashoffset') || 0);
+      const total = Number(mark.getAttribute('pathLength') || 100);
+      const a = ((off + len / 2) / total) * 2 * Math.PI; // 0 = 12 o'clock (the SVG is turned -90deg), clockwise
+      const r = svg.width / 2;
+      return { x: svg.left + r + Math.sin(a) * r, y: svg.top + r - Math.cos(a) * r, dx: Math.sin(a), dy: -Math.cos(a) };
+    }
+    const b = mark.getBoundingClientRect();
+    return { x: b.left + b.width / 2, y: b.top, dx: 0, dy: -1 };
+  };
+  const showFloat = (chart, mark) => {
+    const tip = floatTip(chart);
+    const series = [...mark.classList].find((c) => /^dd-chart-(s\d|other)$/.test(c)) || '';
+    tip.replaceChildren();
+    const title = mark.dataset.ddChartTitle;
+    if (title) { const t = document.createElement('p'); t.className = 'dd-chart__tip-title'; t.textContent = title; tip.append(t); }
+    const row = document.createElement('p');
+    row.className = `dd-chart__tip-row ${series}`.trim();
+    row.append(mark.dataset.ddChartLabel || mark.getAttribute('aria-label') || '');
+    if (mark.dataset.ddChartValue) { const b = document.createElement('b'); b.textContent = mark.dataset.ddChartValue; row.append(b); }
+    tip.append(row);
+    const box = chart.getBoundingClientRect();
+    const p = anchor(mark);
+    const w = tip.offsetWidth, h = tip.offsetHeight, gap = 8;
+    // Centre the tip just outside the mark along its direction, then keep it inside the card.
+    let x = p.x - box.left - w / 2 + p.dx * (w / 2 + gap);
+    let y = p.y - box.top - h / 2 + p.dy * (h / 2 + gap);
+    if (box.top + y < 0) y = p.y - box.top + gap * 2; // no room above in the viewport: open below
+    x = Math.min(Math.max(x, 0), Math.max(box.width - w, 0));
+    tip.style.left = `${Math.round(x)}px`;
+    tip.style.top = `${Math.round(y)}px`;
+    tip.classList.add('is-open');
+  };
+  const hideFloat = (chart) => chart.querySelector(':scope > .dd-chart__tip--float')?.classList.remove('is-open');
+
+  // Inner tips (slots, hits) open beside their mark: the authored side if it fits in the card, else the other side,
+  // else (narrow cards) above the plot, centred on the mark and clamped to the card.
+  const placeInner = (mark) => {
+    const tip = mark.querySelector(':scope > .dd-chart__tip');
+    if (!tip) return;
+    if (mark.dataset.ddChartFlip === undefined) mark.dataset.ddChartFlip = mark.classList.contains('is-flip') ? 'authored' : '';
+    const authored = mark.dataset.ddChartFlip === 'authored';
+    tip.style.left = tip.style.right = tip.style.top = tip.style.bottom = '';
+    const card = chartOf(mark).getBoundingClientRect();
+    const lo = Math.max(card.left, 0), hi = Math.min(card.right, document.documentElement.clientWidth);
+    const fits = () => { const r = tip.getBoundingClientRect(); return r.left >= lo && r.right <= hi; };
+    mark.classList.toggle('is-flip', authored);
+    if (fits()) return;
+    mark.classList.toggle('is-flip', !authored);
+    if (fits()) return;
+    mark.classList.toggle('is-flip', authored);
+    const m = mark.getBoundingClientRect(), w = tip.offsetWidth;
+    const x = Math.min(Math.max(m.left + m.width / 2 - w / 2, lo + 4), hi - w - 4);
+    tip.style.left = `${Math.round(x - m.left)}px`;
+    tip.style.right = 'auto';
+    tip.style.top = 'auto'; // above the plot, so it doesn't sit on the mark under your finger
+    tip.style.bottom = 'calc(100% + 6px)';
+  };
+
+  const deactivate = (chart) => {
+    chart.querySelectorAll('.is-active').forEach((m) => { if (m.matches(MARK)) m.classList.remove('is-active', 'is-tip-off'); });
+    hideFloat(chart);
+  };
+  const activate = (mark) => {
+    const chart = chartOf(mark);
+    chart.querySelectorAll('.is-active, .is-tip-off').forEach((m) => { if (m !== mark && m.matches(MARK)) m.classList.remove('is-active', 'is-tip-off'); });
+    mark.classList.remove('is-tip-off');
+    mark.classList.add('is-active');
+    if (mark.querySelector(':scope > .dd-chart__tip')) { hideFloat(chart); placeInner(mark); }
+    else if (mark.dataset.ddChartLabel || mark.dataset.ddChartValue) showFloat(chart, mark);
+  };
+
+  document.addEventListener('pointerover', (e) => {
+    if (e.pointerType === 'touch') return; // touch goes through focus (tap) instead
+    const mark = markOf(e.target);
+    if (mark && !mark.classList.contains('is-active')) activate(mark);
+  });
+  document.addEventListener('pointerout', (e) => {
+    if (e.pointerType === 'touch') return;
+    const mark = markOf(e.target);
+    if (!mark || (e.relatedTarget && mark.contains(e.relatedTarget))) return;
+    if (document.activeElement === mark && mark.matches(':focus-visible')) return; // keyboard owns it
+    const chart = chartOf(mark);
+    mark.classList.remove('is-active', 'is-tip-off');
+    if (!chart.querySelector('.is-active')) hideFloat(chart);
+  });
+  document.addEventListener('focusin', (e) => {
+    const mark = markOf(e.target);
+    if (!mark) return;
+    if (!mark.dataset.ddChartRoved) initGroup(mark.parentElement, mark);
+    else for (const m of marksIn(mark.parentElement)) m.tabIndex = m === mark ? 0 : -1;
+    activate(mark);
+  });
+  document.addEventListener('focusout', (e) => {
+    const mark = markOf(e.target);
+    if (!mark) return;
+    const to = e.relatedTarget && markOf(e.relatedTarget);
+    if (to && chartOf(to) === chartOf(mark)) return;
+    if (mark.matches(':hover')) { mark.classList.remove('is-tip-off'); return; }
+    deactivate(chartOf(mark));
+  });
+  // Touch: a tap opens the mark's tip (and focuses it natively, via tabindex); a tap anywhere else closes it.
+  document.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'touch') return;
+    const mark = markOf(e.target);
+    if (mark) activate(mark);
+    document.querySelectorAll('[data-dd-chart]').forEach((c) => { if (!mark || chartOf(mark) !== c) deactivate(c); });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const mark = markOf(e.target);
+    if (!mark || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === 'Escape') {
+      if (!mark.classList.contains('is-active') || mark.classList.contains('is-tip-off')) return;
+      e.preventDefault();
+      mark.classList.add('is-tip-off');
+      hideFloat(chartOf(mark));
+      return;
+    }
+    const marks = marksIn(mark.parentElement);
+    const k = marks.indexOf(mark);
+    const next = { ArrowRight: k + 1, ArrowDown: k + 1, ArrowLeft: k - 1, ArrowUp: k - 1, Home: 0, End: marks.length - 1 }[e.key];
+    if (next === undefined) return;
+    e.preventDefault();
+    const to = marks[Math.max(0, Math.min(marks.length - 1, next))];
+    if (to !== mark) to.focus({ preventScroll: true }); else activate(mark); // at an end: bring the tip back after Esc
+  });
+
+  // View as table.
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-dd-chart-view]');
+    if (!btn) return;
+    const chart = btn.closest('.dd-chart');
+    if (!chart) return;
+    const id = btn.getAttribute('aria-controls');
+    const table = (id && document.getElementById(id)) || chart.querySelector('.dd-chart__data');
+    if (!table) return;
+    const on = btn.getAttribute('aria-pressed') !== 'true';
+    btn.setAttribute('aria-pressed', String(on));
+    chart.classList.toggle('is-table', on);
+    table.hidden = !on; // the plot itself is hidden by CSS (.is-table)
+    deactivate(chart);
+    chart.dispatchEvent(new CustomEvent('dd:change', { bubbles: true, detail: { view: on ? 'table' : 'chart' } }));
+  });
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => init());
+  else init();
+})();
+
+
 /* ===== behaviors/checkbox.js ===== */
 /* Checkbox helpers.
    - input[data-dd-indeterminate] starts in the mixed state (HTML has no attribute for it).
@@ -134,8 +347,8 @@
    - Filter: <button class="dd-chip dd-chip--filter" aria-pressed="false"> toggles aria-pressed on click and fires
      "dd:chip-toggle" (detail.pressed).
    - Input: .dd-chip-input with a .dd-chip-input__field. Enter or a comma turns the text into a chip (colour picked
-     from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes instead of being
-     added twice; Backspace in an empty field removes the last chip.
+     from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes (a still, deeper
+     tint under reduced motion) instead of being added twice; Backspace in an empty field removes the last chip.
      The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x).
    When a chip goes, the chips after it glide into its place (not under reduced motion). */
 (() => {
@@ -226,7 +439,10 @@
         twin.classList.remove('is-duplicate');
         void twin.offsetWidth;
         twin.classList.add('is-duplicate');
-        twin.addEventListener('animationend', () => twin.classList.remove('is-duplicate'), { once: true });
+        // Motion: the nudge animation clears it. Reduced motion: a still, deeper tint held briefly.
+        clearTimeout(twin.ddDuplicate);
+        if (still()) twin.ddDuplicate = setTimeout(() => twin.classList.remove('is-duplicate'), 600);
+        else twin.addEventListener('animationend', () => twin.classList.remove('is-duplicate'), { once: true });
       } else {
         field.before(create(text));
         changed(box);
@@ -272,7 +488,9 @@
    Single: choosing fills the input. Multi: choosing toggles the option and adds / removes a chip
    (.dd-combobox__chip, coloured from the option's data-set="1…8" or by position). Matches are underlined.
    An optional <input type="hidden"> receives the value (comma-separated for multi).
-   Fires a bubbling "dd-combobox" event with detail { value, values, option }.
+   Fires a bubbling "dd-combobox" event with detail { value, values, option } (+ created: true for a new value).
+   data-dd-combobox-create on the wrapper allows new values: when the text matches no option exactly, a
+   "Create “…”" row (.dd-combobox__create) ends the list; choosing it adds that option and selects it.
    Keyboard: ↓ / ↑ open and move · Enter chooses · Esc closes, then clears · Backspace on empty removes the last chip. */
 (() => {
   let uid = 0;
@@ -282,8 +500,9 @@
     box: root.querySelector('.dd-input'),
   });
   const multi = (root) => root.dataset.ddCombobox === 'multi';
-  const options = (list) => [...list.querySelectorAll('[role="option"]')];
-  const usable = (list) => options(list).filter((o) => !o.hidden && o.getAttribute('aria-disabled') !== 'true');
+  // The "Create …" row is a listbox option for the keyboard, but never a value.
+  const options = (list) => [...list.querySelectorAll('[role="option"]:not([data-dd-create])')];
+  const usable = (list) => [...list.querySelectorAll('[role="option"]')].filter((o) => !o.hidden && o.getAttribute('aria-disabled') !== 'true');
   const labelEl = (opt) => opt.querySelector('.dd-listbox__label') || opt;
   const labelOf = (opt) => (opt.dataset.label || labelEl(opt).dataset.text || labelEl(opt).textContent).trim();
   const valueOf = (opt) => opt.dataset.value ?? labelOf(opt);
@@ -307,7 +526,7 @@
     const closeGroup = () => { if (group) group.hidden = groupHits === 0; };
     for (const el of list.children) {
       if (el.classList.contains('dd-listbox__group')) { closeGroup(); group = el; groupHits = 0; continue; }
-      if (el.getAttribute('role') !== 'option') continue;
+      if (el.getAttribute('role') !== 'option' || el.hasAttribute('data-dd-create')) continue;
       const lab = labelEl(el);
       if (lab.dataset.text === undefined) lab.dataset.text = lab.textContent;
       const text = lab.dataset.text;
@@ -320,9 +539,50 @@
       if (show) { hits++; groupHits++; }
     }
     closeGroup();
+    const creating = createRow(root, query.trim());
     const empty = list.querySelector('.dd-listbox__empty');
-    if (empty) empty.hidden = hits > 0;
+    if (empty) empty.hidden = hits > 0 || creating;
     setActive(root, usable(list)[0]);
+  };
+
+  // data-dd-combobox-create: offer the typed text as a new option unless an option already has that label.
+  const createRow = (root, text) => {
+    const { list } = parts(root);
+    let row = list.querySelector(':scope > [data-dd-create]');
+    const show = root.hasAttribute('data-dd-combobox-create') && !!text
+      && !options(list).some((o) => labelOf(o).toLowerCase() === text.toLowerCase());
+    if (!show) { if (row) row.hidden = true; return false; }
+    if (!row) {
+      row = document.createElement('li');
+      row.className = 'dd-listbox__option dd-combobox__create';
+      row.setAttribute('role', 'option');
+      row.setAttribute('aria-selected', 'false');
+      row.dataset.ddCreate = '';
+      list.insertBefore(row, list.querySelector(':scope > .dd-listbox__empty'));
+    }
+    row.dataset.value = text;
+    row.innerHTML = `${icon('plus')}<span class="dd-listbox__text"><span>Create <q>${esc(text)}</q></span></span>`;
+    row.hidden = false;
+    return true;
+  };
+
+  // Turns the "Create …" row into a real option (placed before it) and returns that option.
+  const create = (root, row) => {
+    const { list } = parts(root);
+    const text = row.dataset.value;
+    const all = options(list);
+    const swatched = !!list.querySelector('.dd-listbox__swatch');
+    const n = (all.length % 8) + 1;
+    const opt = document.createElement('li');
+    opt.className = 'dd-listbox__option';
+    opt.setAttribute('role', 'option');
+    opt.setAttribute('aria-selected', 'false');
+    opt.dataset.value = text;
+    if (swatched) opt.dataset.set = String(n);
+    opt.innerHTML = `${swatched ? `<span class="dd-listbox__swatch" style="--dd-chip: var(--dd-set-${n})"></span>` : ''}<span class="dd-listbox__text"><span class="dd-listbox__label">${esc(text)}</span></span><span class="dd-listbox__check">${icon('check')}</span>`;
+    list.insertBefore(opt, row);
+    row.hidden = true;
+    return opt;
   };
 
   const open = (root, query) => {
@@ -349,12 +609,12 @@
     root.classList.remove('is-open');
   };
 
-  const sync = (root, opt) => {
+  const sync = (root, opt, created = false) => {
     const { list } = parts(root);
     const values = options(list).filter((o) => o.getAttribute('aria-selected') === 'true').map(valueOf);
     const hidden = root.querySelector('input[type="hidden"]');
     if (hidden) { hidden.value = values.join(','); hidden.dispatchEvent(new Event('change', { bubbles: true })); }
-    root.dispatchEvent(new CustomEvent('dd-combobox', { bubbles: true, detail: { value: values[0] ?? '', values, option: opt } }));
+    root.dispatchEvent(new CustomEvent('dd-combobox', { bubbles: true, detail: { value: values[0] ?? '', values, option: opt, ...(created ? { created } : {}) } }));
   };
 
   const chipFor = (root, opt) => {
@@ -371,6 +631,8 @@
 
   const choose = (root, opt) => {
     if (!opt || opt.getAttribute('aria-disabled') === 'true') return;
+    const created = opt.hasAttribute('data-dd-create');
+    if (created) opt = create(root, opt);
     const { input, list, box } = parts(root);
     if (multi(root)) {
       const on = opt.getAttribute('aria-selected') !== 'true';
@@ -388,7 +650,7 @@
       input.value = labelOf(opt);
       close(root);
     }
-    sync(root, opt);
+    sync(root, opt, created);
   };
 
   const removeChip = (root, chip) => {
@@ -407,8 +669,9 @@
   };
 
   document.addEventListener('mousedown', (e) => {
-    // Keep focus in the input while clicking options or chips.
-    if (e.target.closest('[data-dd-combobox] [role="listbox"]')) e.preventDefault();
+    // Keep focus in the input while clicking options or the toggle (a focusable toggle would blur the input first,
+    // and in browsers that don't focus buttons on click that blur would close the list before the toggle runs).
+    if (e.target.closest('[data-dd-combobox] [role="listbox"], [data-dd-combobox-toggle]')) e.preventDefault();
   });
 
   document.addEventListener('click', (e) => {
@@ -449,10 +712,15 @@
     if (e.target !== input) return;
     const isOpen = !list.hidden;
     switch (e.key) {
-      case 'ArrowDown':
+      case 'ArrowDown': {
         e.preventDefault();
-        if (!isOpen) open(root, multi(root) ? input.value : undefined); else move(root, 1);
+        if (isOpen) { move(root, 1); break; }
+        // Reopen on what was typed; on the chosen label (or nothing), show every option with the choice active.
+        const chosen = list.querySelector('[role="option"][aria-selected="true"]');
+        const showAll = !multi(root) && (!input.value || (chosen && labelOf(chosen) === input.value));
+        open(root, showAll ? undefined : input.value);
         break;
+      }
       case 'ArrowUp':
         e.preventDefault();
         if (isOpen) move(root, -1);
@@ -503,7 +771,8 @@
    .dd-command__item rows by their text and optional data-keywords; empty groups hide and .dd-command__empty shows
    (its .dd-command__query echoes the search). ↑ ↓ (or Ctrl+P / Ctrl+N) move the selected row, Enter runs it,
    Esc clears the search and then closes, a click on the backdrop closes. Running a row clicks it (links navigate),
-   fires a bubbling `dd:command` event with detail { item, value } and closes the dialog. Works on inline palettes too. */
+   fires a bubbling `dd:command` event with detail { item, value } and closes the dialog. value = the row's data-value,
+   else its name (the first part of .dd-command__body), else its text. Works on inline palettes too. */
 (() => {
   const ITEM = '.dd-command__item';
   let uid = 0;
@@ -512,6 +781,9 @@
   const parts = (root) => ({ input: root.querySelector('.dd-command__input'), list: root.querySelector('.dd-command__list'), empty: root.querySelector('.dd-command__empty') });
   const visible = (root) => [...root.querySelectorAll(ITEM)].filter((el) => !el.closest('[hidden]') && el.getAttribute('aria-disabled') !== 'true');
   const selected = (root) => root.querySelector(`${ITEM}[aria-selected="true"]`);
+  // What a row is called: its text without the trailing shortcut hint (so "then" or "⌘" never match a search).
+  const words = (el) => [...el.childNodes].filter((n) => !n.classList?.contains('dd-command__hint')).map((n) => n.textContent).join(' ');
+  const valueOf = (item) => item.dataset.value ?? (item.querySelector('.dd-command__body > :first-child') || item).textContent.trim().replace(/\s+/g, ' ');
 
   function select(root, item, scroll) {
     root.querySelectorAll(`${ITEM}[aria-selected="true"]`).forEach((el) => el.setAttribute('aria-selected', 'false'));
@@ -525,12 +797,13 @@
 
   function filter(root) {
     const { input, list, empty } = parts(root);
-    const words = (input?.value || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const query = (input?.value || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
     root.querySelectorAll(ITEM).forEach((el) => {
-      const hay = `${el.textContent} ${el.dataset.keywords || ''}`.toLowerCase();
-      el.hidden = !words.every((w) => hay.includes(w));
+      const hay = `${words(el)} ${el.dataset.keywords || ''}`.toLowerCase();
+      el.hidden = !query.every((w) => hay.includes(w));
     });
     root.querySelectorAll('.dd-command__group').forEach((g) => { g.hidden = !g.querySelector(`${ITEM}:not([hidden])`); });
+    if (list) list.hidden = false; // count matches with the list shown, or a list hidden by a miss never comes back
     const rows = visible(root);
     if (list) list.hidden = rows.length === 0;
     if (empty) {
@@ -543,7 +816,7 @@
 
   function run(root, item) {
     if (!item || item.getAttribute('aria-disabled') === 'true') return;
-    root.dispatchEvent(new CustomEvent('dd:command', { bubbles: true, detail: { item, value: item.dataset.value ?? item.textContent.trim() } }));
+    root.dispatchEvent(new CustomEvent('dd:command', { bubbles: true, detail: { item, value: valueOf(item) } }));
     if (root instanceof HTMLDialogElement && root.open) root.close();
   }
 
@@ -625,6 +898,7 @@
 /* Copy to clipboard: [data-dd-copy="text to copy"] or [data-dd-copy-target="#id"] (copies that element's text).
    The trigger gets [data-copied] for 1.6s so CSS can show a confirmation. */
 (() => {
+  const timers = new WeakMap();
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-dd-copy], [data-dd-copy-target]');
     if (!btn) return;
@@ -633,7 +907,8 @@
     try {
       await navigator.clipboard.writeText(text.trim());
       btn.setAttribute('data-copied', '');
-      setTimeout(() => btn.removeAttribute('data-copied'), 1600);
+      clearTimeout(timers.get(btn)); // a repeat click restarts the confirmation instead of cutting it short
+      timers.set(btn, setTimeout(() => btn.removeAttribute('data-copied'), 1600));
     } catch { /* clipboard blocked — leave the text selectable */ }
   });
 })();
@@ -643,16 +918,23 @@
 /* Data table — opt in with [data-dd-data-table] on .dd-data-table.
    - Sort: <th aria-sort="none"><button class="dd-data-table__sort">…</button></th> cycles none → ascending → descending → none.
      Rows sort within each group; expanded detail rows travel with their row. Mark numeric columns with .is-num;
-     a cell's data-value (if set) is used instead of its text.
+     a cell's data-value (if set) is used instead of its text. Emits dd:sort { column, direction, index }.
    - Select: .dd-data-table__check in the header selects every visible row (with indeterminate state); Shift-click selects a
      range. Selected rows get .is-selected; .dd-data-table__bulk shows while anything is selected and
-     [data-dd-data-table-selected] receives the count. [data-dd-data-table-clear] clears the selection.
+     [data-dd-data-table-selected] receives the count. [data-dd-data-table-clear] clears the selection (focus moves to the
+     select-all box). Emits dd:selectionchange { count, rows }.
    - Expand: .dd-data-table__expand[aria-controls] toggles its detail row (hidden) and aria-expanded.
-   - Filter: [data-dd-data-table-search] (text) and chips [data-dd-data-table-filter="col=value"] with aria-pressed
-     (cells carry data-col="col" and optionally data-value). Same column = OR, different columns = AND.
+   - Filter: [data-dd-data-table-search] (text), toggle chips [data-dd-data-table-filter="col=value"] with aria-pressed, and
+     checkboxes with the same attribute (e.g. in a .dd-data-table__menu). Cells carry data-col="col" and optionally
+     data-value. Same column = OR, different columns = AND. [data-dd-data-table-filter-label="col"] shows "all", the one value,
+     or "2 selected", and marks its chip .is-active. A chip with [data-dd-data-table-removable] disappears once cleared.
      [data-dd-data-table-count="noun"] shows "12 services" / "3 of 12 services"; .dd-data-table__empty-row shows when
-     nothing matches and [data-dd-data-table-query] receives the query. [data-dd-data-table-reset] clears filters.
+     nothing matches and [data-dd-data-table-query] receives the query. [data-dd-data-table-reset] clears filters and
+     returns focus to the search.
+   - Pages: a [data-dd-pagination] element inside the root (see pagination.js) pages the filtered rows in the browser.
+     Filtering returns to page 1; sorting keeps the page.
    - Columns: inputs [data-dd-data-table-column="col"] show/hide the column whose <th data-col="col">.
+   - Menus (.dd-data-table__menu, a <details>) close on Esc (focus returns to the summary) and on any click outside.
    - Scroll: adds .is-scrolled-x / .is-scrolled-y to the root so the frozen column and sticky header cast an edge. */
 (() => {
   const ROOT = '[data-dd-data-table]';
@@ -665,6 +947,8 @@
     const btn = tr.querySelector('.dd-data-table__expand[aria-controls]');
     return btn ? document.getElementById(btn.getAttribute('aria-controls')) : null;
   };
+  const pagerOf = (root) => root.querySelector('[data-dd-pagination]');
+  const emit = (root, name, detail) => root.dispatchEvent(new CustomEvent(name, { bubbles: true, detail }));
 
   // ---------- selection ----------
   function syncSelection(root) {
@@ -683,7 +967,12 @@
     }
     root.querySelectorAll('.dd-data-table__bulk').forEach((bar) => { bar.hidden = n === 0; });
     root.querySelectorAll('[data-dd-data-table-selected]').forEach((el) => { el.textContent = n.toLocaleString(); });
+    return n;
   }
+  const selectionChanged = (root) => {
+    const n = syncSelection(root);
+    emit(root, 'dd:selectionchange', { count: n, rows: dataRows(root).filter((r) => rowBox(r)?.checked) });
+  };
 
   // ---------- sorting ----------
   const keyOf = (tr, i, numeric) => {
@@ -730,28 +1019,55 @@
     }
   }
 
-  // ---------- filtering ----------
-  function applyFilter(root) {
+  // ---------- filtering + paging ----------
+  const filterOn = (el) => (el.matches('input') ? el.checked : el.getAttribute('aria-pressed') === 'true');
+
+  function refresh(root, { firstPage = false } = {}) {
     const input = root.querySelector('[data-dd-data-table-search]');
     const q = (input?.value || '').trim().toLowerCase();
     const active = {};
-    root.querySelectorAll('[data-dd-data-table-filter][aria-pressed="true"]').forEach((chip) => {
-      const [k, v] = chip.dataset.ddDataTableFilter.split('=');
+    root.querySelectorAll('[data-dd-data-table-filter]').forEach((el) => {
+      const on = filterOn(el);
+      if (el.hasAttribute('data-dd-data-table-removable')) el.hidden = !on;
+      if (!on) return;
+      const [k, v] = el.dataset.ddDataTableFilter.split('=');
       (active[k] ||= []).push(v);
     });
+    root.querySelectorAll('[data-dd-data-table-filter-label]').forEach((el) => {
+      const vals = active[el.dataset.ddDataTableFilterLabel] || [];
+      el.textContent = vals.length === 0 ? 'all' : vals.length === 1 ? vals[0] : `${vals.length} selected`;
+      el.closest('.dd-data-table__chip')?.classList.toggle('is-active', vals.length > 0);
+    });
+
     const rows = dataRows(root);
-    let shown = 0;
-    for (const tr of rows) {
-      let ok = !q || tr.textContent.toLowerCase().includes(q);
+    const matched = rows.filter((tr) => {
+      if (q && !tr.textContent.toLowerCase().includes(q)) return false;
       for (const [k, vals] of Object.entries(active)) {
         const cell = tr.querySelector(`[data-col="${k}"]`);
         const v = (cell?.dataset.value ?? cell?.textContent ?? '').trim();
-        if (!vals.includes(v)) ok = false;
+        if (!vals.includes(v)) return false;
       }
-      tr.hidden = !ok;
-      if (ok) shown++;
+      return true;
+    });
+
+    // Paging: only the current page of the matching rows shows.
+    let shown = new Set(matched);
+    const pager = pagerOf(root);
+    if (pager) {
+      const sel = pager.querySelector('.dd-pagination__size select');
+      const size = Number(pager.dataset.pageSize) || Number(sel?.value) || matched.length || 1;
+      const pages = Math.max(1, Math.ceil(matched.length / size));
+      const page = firstPage ? 1 : Math.min(pages, Math.max(1, Number(pager.dataset.page) || 1));
+      pager.dataset.total = String(matched.length);
+      pager.dataset.page = String(page);
+      shown = new Set(matched.slice((page - 1) * size, page * size));
+      window.dd?.pagination?.(pager);
+    }
+
+    for (const tr of rows) {
+      tr.hidden = !shown.has(tr);
       const det = detailOf(tr);
-      if (det) det.hidden = !ok || tr.querySelector('.dd-data-table__expand')?.getAttribute('aria-expanded') !== 'true';
+      if (det) det.hidden = tr.hidden || tr.querySelector('.dd-data-table__expand')?.getAttribute('aria-expanded') !== 'true';
     }
     // A group header hides when every row under it is hidden.
     for (const tbody of root.querySelectorAll('tbody')) {
@@ -763,11 +1079,11 @@
       }
       close();
     }
-    root.querySelectorAll('.dd-data-table__empty-row').forEach((r) => { r.hidden = shown > 0; });
+    root.querySelectorAll('.dd-data-table__empty-row').forEach((r) => { r.hidden = matched.length > 0; });
     root.querySelectorAll('[data-dd-data-table-query]').forEach((el) => { el.textContent = q ? `“${input.value.trim()}”` : 'these filters'; });
     root.querySelectorAll('[data-dd-data-table-count]').forEach((el) => {
       const noun = el.dataset.ddDataTableCount || 'rows';
-      el.textContent = shown === rows.length ? `${rows.length.toLocaleString()} ${noun}` : `${shown.toLocaleString()} of ${rows.length.toLocaleString()} ${noun}`;
+      el.textContent = matched.length === rows.length ? `${rows.length.toLocaleString()} ${noun}` : `${matched.length.toLocaleString()} of ${rows.length.toLocaleString()} ${noun}`;
     });
     syncSelection(root);
   }
@@ -792,12 +1108,10 @@
 
   // ---------- events ----------
   document.addEventListener('click', (e) => {
+    // Any click outside an open column / filter menu closes it, whichever table it belongs to.
+    document.querySelectorAll(`${ROOT} .dd-data-table__menu[open]`).forEach((d) => { if (!d.contains(e.target)) d.open = false; });
     const root = e.target.closest(ROOT);
-    if (!root) {
-      document.querySelectorAll(`${ROOT} .dd-data-table__menu[open]`).forEach((d) => { d.open = false; });
-      return;
-    }
-    root.querySelectorAll('.dd-data-table__menu[open]').forEach((d) => { if (!d.contains(e.target)) d.open = false; });
+    if (!root) return;
 
     const sort = e.target.closest('.dd-data-table__sort');
     if (sort) {
@@ -806,6 +1120,8 @@
       th.closest('tr').querySelectorAll('th[aria-sort]').forEach((h) => h.setAttribute('aria-sort', 'none'));
       th.setAttribute('aria-sort', next);
       sortTable(root, th, next);
+      if (pagerOf(root)) refresh(root);
+      emit(root, 'dd:sort', { column: th.dataset.col ?? null, direction: next, index: [...th.parentElement.cells].indexOf(th) });
       return;
     }
 
@@ -827,28 +1143,35 @@
         boxes.slice(a, b + 1).forEach((b2) => { b2.checked = box.checked; });
       }
       lastClicked.set(root, box);
-      syncSelection(root);
+      selectionChanged(root);
       return;
     }
 
-    const chip = e.target.closest('[data-dd-data-table-filter]');
+    const chip = e.target.closest('[data-dd-data-table-filter]:not(input)');
     if (chip) {
-      chip.setAttribute('aria-pressed', String(chip.getAttribute('aria-pressed') !== 'true'));
-      applyFilter(root);
+      const on = chip.getAttribute('aria-pressed') !== 'true';
+      chip.setAttribute('aria-pressed', String(on));
+      // A removable chip vanishes once cleared; keep focus in the toolbar.
+      if (!on && chip.hasAttribute('data-dd-data-table-removable')) root.querySelector('[data-dd-data-table-search]')?.focus();
+      refresh(root, { firstPage: true });
       return;
     }
 
     if (e.target.closest('[data-dd-data-table-clear]')) {
       dataRows(root).map(rowBox).filter(Boolean).forEach((b) => { b.checked = false; });
-      syncSelection(root);
+      selectionChanged(root);
+      root.querySelector('thead .dd-data-table__check')?.focus();
       return;
     }
 
     if (e.target.closest('[data-dd-data-table-reset]')) {
       const input = root.querySelector('[data-dd-data-table-search]');
       if (input) input.value = '';
-      root.querySelectorAll('[data-dd-data-table-filter]').forEach((c) => c.setAttribute('aria-pressed', 'false'));
-      applyFilter(root);
+      root.querySelectorAll('[data-dd-data-table-filter]').forEach((c) => {
+        if (c.matches('input')) c.checked = false; else c.setAttribute('aria-pressed', 'false');
+      });
+      refresh(root, { firstPage: true });
+      (input && !input.closest('[hidden]') ? input : root.querySelector('.dd-data-table__scroll'))?.focus();
     }
   });
 
@@ -858,22 +1181,33 @@
     if (e.target.matches('thead .dd-data-table__check')) {
       const on = e.target.checked;
       dataRows(root).filter((r) => !r.hidden).map(rowBox).filter(Boolean).forEach((b) => { b.checked = on; });
-      syncSelection(root);
+      selectionChanged(root);
     } else if (e.target.matches('[data-dd-data-table-column]')) {
       setColumn(root, e.target.dataset.ddDataTableColumn, e.target.checked);
+    } else if (e.target.matches('input[data-dd-data-table-filter]')) {
+      refresh(root, { firstPage: true });
     }
   });
 
   document.addEventListener('input', (e) => {
     if (!e.target.matches('[data-dd-data-table-search]')) return;
     const root = e.target.closest(ROOT);
-    if (root) applyFilter(root);
+    if (root) refresh(root, { firstPage: true });
+  });
+
+  // A page change from the footer pager: show that page and bring the first row into view.
+  document.addEventListener('dd:pagechange', (e) => {
+    const root = e.target.closest(ROOT);
+    if (!root || !root.contains(e.target)) return;
+    refresh(root);
+    const scroller = root.querySelector('.dd-data-table__scroll');
+    if (scroller) scroller.scrollTop = 0;
   });
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     const menu = e.target.closest?.(`${ROOT} .dd-data-table__menu[open]`);
-    if (menu) { menu.open = false; menu.querySelector('summary')?.focus(); }
+    if (menu) { menu.open = false; menu.querySelector('summary')?.focus(); e.preventDefault(); }
   });
 
   document.addEventListener('scroll', (e) => {
@@ -886,7 +1220,7 @@
 
   const init = () => document.querySelectorAll(ROOT).forEach((root) => {
     root.querySelectorAll('[data-dd-data-table-column]').forEach((inp) => { if (!inp.checked) setColumn(root, inp.dataset.ddDataTableColumn, false); });
-    if (root.querySelector('[data-dd-data-table-search], [data-dd-data-table-filter], [data-dd-data-table-count]')) applyFilter(root);
+    if (root.querySelector('[data-dd-data-table-search], [data-dd-data-table-filter], [data-dd-data-table-count], [data-dd-pagination]')) refresh(root);
     else syncSelection(root);
   });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
@@ -946,8 +1280,12 @@
     const start = addDays(first, -lead);
     const inMonth = (d) => d.getMonth() === first.getMonth();
     // Roving tabindex: selected day, else today, else the 1st — whichever is in this month.
-    const anchors = [s.value, s.start, s.today].filter((v) => v && v.slice(0, 7) === iso(first).slice(0, 7));
-    const focusDay = anchors[0] || iso(first);
+    const ym = iso(first).slice(0, 7);
+    const allowed = (v) => !(s.min && v < s.min) && !(s.max && v > s.max);
+    const anchors = [s.value, s.start, s.today].filter((v) => v && v.slice(0, 7) === ym && allowed(v));
+    // …or the 1st, or data-min when the month starts before it.
+    let focusDay = anchors[0] || iso(first);
+    if (!allowed(focusDay) && s.min && s.min.slice(0, 7) === ym) focusDay = s.min;
     let rows = '';
     for (let w = 0; w < 6; w++) {
       rows += '<tr>';
@@ -1008,14 +1346,22 @@
     render(cal);
   };
 
+  const sameDay = (d, n) => new Date(d.getFullYear(), d.getMonth() + n, Math.min(d.getDate(), new Date(d.getFullYear(), d.getMonth() + n + 1, 0).getDate()));
+
   const focusDate = (cal, d) => {
-    const day = iso(d);
+    const { min, max } = cal.dataset;
+    let day = iso(d);
+    // Arrows stop at data-min / data-max instead of landing on a day that can't be chosen.
+    if (min && day < min) day = min;
+    if (max && day > max) day = max;
     if (!cal.querySelector(`[data-date="${day}"]:not(.is-outside)`)) { cal.dataset.month = day.slice(0, 7); render(cal); }
     const btn = cal.querySelector(`[data-date="${day}"]`);
     if (!btn) return;
     cal.querySelectorAll('.dd-calendar__day[tabindex="0"]').forEach((b) => { b.tabIndex = -1; });
     btn.tabIndex = 0;
     btn.focus();
+    // Picking a range by keyboard previews it like hovering does.
+    if (cal.dataset.mode === 'range' && cal.dataset.start && !cal.dataset.end) { cal.dataset.ddHover = day; paintHover(cal, day); }
   };
 
   // ---------- picker ----------
@@ -1047,6 +1393,7 @@
       if (!v) return false;
       input.value = short(v);
     }
+    input.removeAttribute('aria-invalid');
     const hidden = root.querySelector('input[type="hidden"]');
     if (hidden) hidden.value = s.mode === 'range' ? `${s.start}/${s.end}` : s.value;
     input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1066,6 +1413,14 @@
     if (row && on && row.scrollWidth > row.clientWidth) row.scrollLeft = on.offsetLeft - row.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
   };
 
+  // What Esc, Cancel or a click outside goes back to: the calendar's value and the pressed preset.
+  const save = (root) => {
+    const { cal } = pickerParts(root);
+    if (!cal) return;
+    const presets = [...root.querySelectorAll('.dd-date-picker__preset')];
+    root.dataset.ddSaved = JSON.stringify({ value: cal.dataset.value, start: cal.dataset.start, end: cal.dataset.end, preset: presets.findIndex((p) => p.getAttribute('aria-pressed') === 'true') });
+  };
+
   const openPicker = (root) => {
     const { toggle, pop, cal, input } = pickerParts(root);
     if (!pop || input?.disabled) return;
@@ -1074,7 +1429,7 @@
     root.classList.add('is-open');
     toggle?.setAttribute('aria-expanded', 'true');
     if (cal) {
-      root.dataset.ddSaved = JSON.stringify({ value: cal.dataset.value, start: cal.dataset.start, end: cal.dataset.end });
+      save(root);
       const s = state(cal);
       const sel = s.value || s.start;
       if (sel) cal.dataset.month = sel.slice(0, 7);
@@ -1091,6 +1446,7 @@
     if (revert && cal && root.dataset.ddSaved) {
       const saved = JSON.parse(root.dataset.ddSaved);
       for (const k of ['value', 'start', 'end']) { if (saved[k] === undefined) delete cal.dataset[k]; else cal.dataset[k] = saved[k]; }
+      root.querySelectorAll('.dd-date-picker__preset').forEach((p, n) => p.setAttribute('aria-pressed', String(n === saved.preset)));
     }
     pop.hidden = true;
     root.classList.remove('is-open');
@@ -1137,6 +1493,7 @@
       root.querySelectorAll('.dd-date-picker__preset').forEach((p) => p.setAttribute('aria-pressed', String(p === preset)));
       summarise(root);
       emit(cal);
+      if (!root.querySelector('[data-dd-date-apply]')) { commit(root); closePicker(root, false); pickerParts(root).input?.focus(); }
       return;
     }
     if (t.closest('[data-dd-date-toggle]') || (t.matches('.dd-input__control') && t.readOnly)) {
@@ -1166,8 +1523,8 @@
     const ws = Number(cal.dataset.weekStart ?? 1);
     const moves = {
       ArrowLeft: () => addDays(d, -1), ArrowRight: () => addDays(d, 1), ArrowUp: () => addDays(d, -7), ArrowDown: () => addDays(d, 7),
-      PageUp: () => new Date(d.getFullYear(), d.getMonth() - 1, Math.min(d.getDate(), 28)),
-      PageDown: () => new Date(d.getFullYear(), d.getMonth() + 1, Math.min(d.getDate(), 28)),
+      // Same day of the previous / next month, or its last day when the month is shorter (Jan 31 → Feb 28).
+      PageUp: () => sameDay(d, -1), PageDown: () => sameDay(d, 1),
       Home: () => addDays(d, -((d.getDay() - ws + 7) % 7)), End: () => addDays(d, 6 - ((d.getDay() - ws + 7) % 7)),
     };
     if (moves[e.key]) { e.preventDefault(); focusDate(cal, moves[e.key]()); }
@@ -1179,22 +1536,45 @@
     if (root && e.relatedTarget && !root.contains(e.relatedTarget)) closePicker(root, false, true);
   });
 
-  // Typed dates: anything Date can parse ("2026-10-14", "Oct 14, 2026") moves the calendar.
+  // Typed dates: anything Date can parse ("2026-10-14", "Oct 14, 2026") moves the calendar. ISO dates are read as
+  // local days (Date.parse would take them as UTC midnight, the day before west of Greenwich). A date outside
+  // data-min / data-max marks the field invalid; clearing the field clears the value.
   document.addEventListener('change', (e) => {
     const root = e.target.closest?.('[data-dd-date-picker]');
     if (!root || e.target !== pickerParts(root).input || !e.isTrusted) return;
     const { cal } = pickerParts(root);
-    const t = Date.parse(e.target.value);
-    if (!cal || Number.isNaN(t) || (cal.dataset.mode || 'single') === 'range') return;
+    if (!cal || (cal.dataset.mode || 'single') === 'range') return;
+    const text = e.target.value.trim();
+    const hidden = root.querySelector('input[type="hidden"]');
+    if (!text) {
+      e.target.removeAttribute('aria-invalid');
+      if (!cal.dataset.value) return;
+      delete cal.dataset.value;
+      if (hidden) hidden.value = '';
+      render(cal); emit(cal);
+      return;
+    }
+    const t = /^\d{4}-\d{1,2}-\d{1,2}$/.test(text) ? parse(text)?.getTime() : Date.parse(text);
+    if (t === undefined || Number.isNaN(t)) { e.target.setAttribute('aria-invalid', 'true'); return; }
     const v = iso(new Date(t));
+    const { min, max } = cal.dataset;
+    if ((min && v < min) || (max && v > max)) { e.target.setAttribute('aria-invalid', 'true'); return; }
+    e.target.removeAttribute('aria-invalid');
     Object.assign(cal.dataset, { value: v, month: v.slice(0, 7) });
+    if (hidden) hidden.value = v;
     render(cal);
     e.target.value = short(parse(v));
+    emit(cal);
   });
 
   const placeOpen = () => document.querySelectorAll('[data-dd-date-picker].is-open').forEach(place);
   addEventListener('resize', placeOpen);
-  const init = () => { document.querySelectorAll('[data-dd-calendar]').forEach((c) => render(c)); placeOpen(); };
+  const init = () => {
+    document.querySelectorAll('[data-dd-calendar]').forEach((c) => render(c));
+    // A picker rendered open has nothing saved yet: remember its state now, so closing it without applying restores it.
+    document.querySelectorAll('[data-dd-date-picker]').forEach((r) => { const { pop } = pickerParts(r); if (pop && !pop.hidden) save(r); });
+    placeOpen();
+  };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
@@ -1207,7 +1587,9 @@
    - A click on the backdrop closes it, unless the dialog has data-dd-dialog-backdrop="static". Esc closes (native).
    - Closing plays the exit animation (.is-closing), then calls close(); focus returns to the opener.
    - Tab / Shift+Tab wrap inside the open dialog instead of leaving for the browser's own UI.
-   - Inside a role="menu" list (sheet actions / choices): ↑ ↓ move between rows, Home / End jump to the ends.
+   - Inside a role="menu" list (sheet actions / choices): ↑ ↓ move between rows, Home / End jump to the ends. Choosing a
+     role="menuitemradio" row marks it aria-checked (and unmarks the others); a menuitemcheckbox row flips.
+   - Reopening a dialog while it plays its exit animation cancels the exit.
    - Global: dd.dialog.open('#id'), dd.dialog.close('#id', value). Listen for the native "close" event for the result. */
 (() => {
   const SEL = 'dialog.dd-dialog, dialog.dd-drawer, dialog.dd-sheet';
@@ -1216,7 +1598,12 @@
   const resolve = (target) => (typeof target === 'string' ? document.querySelector(target) : target);
 
   const open = (dlg, opener) => {
-    if (!(dlg instanceof HTMLDialogElement) || dlg.open) return;
+    if (!(dlg instanceof HTMLDialogElement)) return;
+    // Reopened while its exit animation plays: cancel the exit and keep it open (and the original opener).
+    if (dlg.open) {
+      if (dlg.classList.contains('is-closing')) { pending.get(dlg)?.(); dlg.classList.remove('is-closing'); }
+      return;
+    }
     pending.get(dlg)?.();
     dlg.classList.remove('is-closing');
     dlg.returnValue = '';
@@ -1259,6 +1646,13 @@
       const dlg = resolve(opener.getAttribute('data-dd-dialog-open'));
       if (dlg) { e.preventDefault(); open(dlg, opener); }
       return;
+    }
+    // Choices in a sheet / dialog list: a menuitemradio becomes the checked one, a menuitemcheckbox flips.
+    const choice = e.target.closest(`:is(${SEL}) :is([role="menuitemradio"], [role="menuitemcheckbox"])`);
+    if (choice && !choice.disabled && choice.getAttribute('aria-disabled') !== 'true') {
+      if (choice.getAttribute('role') === 'menuitemcheckbox') choice.setAttribute('aria-checked', String(choice.getAttribute('aria-checked') !== 'true'));
+      else (choice.closest('[role="group"], [role="menu"]') || choice.parentElement).querySelectorAll('[role="menuitemradio"]')
+        .forEach((r) => r.setAttribute('aria-checked', String(r === choice)));
     }
     const closer = e.target.closest('[data-dd-dialog-close]');
     if (closer) {
@@ -1401,7 +1795,11 @@
    - [data-dd-dropzone] (a .dd-dropzone label around an <input type="file">) gets .is-dragover while files hover it;
      dropped files are handed to the input, which fires "change".
    - data-dd-dropzone="#listId" lists the chosen files in that .dd-file-list (name, size, a remove button).
-   - [data-dd-file-remove] inside a .dd-file removes that row (with a short exit animation). */
+     A multiple input adds to the list (and its files are everything listed); a single one replaces it.
+   - Files that don't match the input's accept="…" or exceed data-dd-max-size ("20MB", "500KB", bytes) are listed as
+     errors with the reason, and left out of the input's files.
+   - [data-dd-file-remove] inside a .dd-file removes that row (with a short exit animation) and its file, then fires
+     a bubbling "dd-file-remove" event on the list with detail { name }. */
 (() => {
   const size = (b) => (b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(1)} MB`);
   const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -1415,6 +1813,29 @@
     return ['', ext.slice(0, 4)];
   };
   const zoneOf = (e) => e.target.closest?.('[data-dd-dropzone]');
+  const added = new WeakSet(); // rows the script added
+  const files = new WeakMap(); // row → File, for the accepted ones
+  const UNITS = { b: 1, kb: 1024, mb: 1048576, gb: 1073741824 };
+  const bytes = (s) => { const m = /^\s*([\d.]+)\s*(b|kb|mb|gb)?\s*$/i.exec(s || ''); return m ? Number(m[1]) * UNITS[(m[2] || 'b').toLowerCase()] : Infinity; };
+  // Same rules as the accept attribute: ".png", "image/*", "application/pdf".
+  const accepted = (input, f) => {
+    const rules = (input.accept || '').split(',').map((r) => r.trim().toLowerCase()).filter(Boolean);
+    const name = f.name.toLowerCase(); const type = (f.type || '').toLowerCase();
+    return !rules.length || rules.some((r) => (r.startsWith('.') ? name.endsWith(r) : r.endsWith('/*') ? type.startsWith(r.slice(0, -1)) : type === r));
+  };
+  const problem = (input, zone, f) => {
+    if (!accepted(input, f)) return 'Type not accepted';
+    const max = zone?.dataset.ddMaxSize;
+    if (max && f.size > bytes(max)) return `Too large — ${max.replace(/\s*([KMG]?B)$/i, ' $1').toUpperCase()} max`;
+    return '';
+  };
+  const setFiles = (input, list) => {
+    try { const dt = new DataTransfer(); list.forEach((f) => dt.items.add(f)); input.files = dt.files; } catch { /* old browsers: leave the input as it is */ }
+  };
+  const listFor = (input) => {
+    const target = input.closest('[data-dd-dropzone]')?.dataset.ddDropzone;
+    return target ? document.querySelector(target) : null;
+  };
 
   // Drag state: count enter/leave pairs so moving over children doesn't flicker.
   const depth = new WeakMap();
@@ -1422,9 +1843,9 @@
     const z = zoneOf(e); if (!z) return;
     e.preventDefault();
     depth.set(z, (depth.get(z) || 0) + 1);
-    z.classList.add('is-dragover');
+    if (!z.querySelector('input[type="file"]')?.disabled) z.classList.add('is-dragover');
   });
-  document.addEventListener('dragover', (e) => { const z = zoneOf(e); if (z) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
+  document.addEventListener('dragover', (e) => { const z = zoneOf(e); if (z) { e.preventDefault(); e.dataTransfer.dropEffect = z.querySelector('input[type="file"]')?.disabled ? 'none' : 'copy'; } });
   document.addEventListener('dragleave', (e) => {
     const z = zoneOf(e); if (!z) return;
     const n = (depth.get(z) || 1) - 1;
@@ -1438,45 +1859,67 @@
     z.classList.remove('is-dragover');
     const input = z.querySelector('input[type="file"]');
     if (!input || input.disabled || !e.dataTransfer?.files?.length) return;
-    try {
-      const dt = new DataTransfer();
-      [...e.dataTransfer.files].slice(0, input.multiple ? undefined : 1).forEach((f) => dt.items.add(f));
-      input.files = dt.files;
-    } catch { return; }
+    const dropped = [...e.dataTransfer.files].slice(0, input.multiple ? undefined : 1);
+    setFiles(input, dropped);
+    if (input.files.length !== dropped.length) return;
     input.dispatchEvent(new Event('change', { bubbles: true }));
   });
 
   document.addEventListener('change', (e) => {
     const input = e.target;
     if (!(input instanceof HTMLInputElement) || input.type !== 'file') return;
-    const z = input.closest('[data-dd-dropzone]');
-    const target = z?.dataset.ddDropzone;
-    const list = target ? document.querySelector(target) : null;
-    if (!list) return;
-    for (const f of input.files) {
+    const zone = input.closest('[data-dd-dropzone]');
+    const list = listFor(input);
+    const chosen = [...input.files];
+    // A single-file field holds one file: a new choice replaces the old row.
+    if (list && !input.multiple) list.querySelectorAll(':scope > .dd-file').forEach((row) => added.has(row) && row.remove());
+    const keep = list && input.multiple ? [...list.querySelectorAll(':scope > .dd-file')].map((row) => files.get(row)).filter(Boolean) : [];
+    for (const f of chosen) {
+      const why = problem(input, zone, f);
+      if (!why) keep.push(f);
+      if (!list) continue;
       const [cls, ext] = kind(f.name);
       const li = document.createElement('li');
-      li.className = 'dd-file is-done is-new';
+      li.className = `dd-file ${why ? 'is-error' : 'is-done'} is-new`;
       li.innerHTML = `<span class="dd-file__icon ${cls}"${ext ? ` data-ext="${esc(ext)}"` : ''}>${icon('file')}</span>
         <span class="dd-file__body"><span class="dd-file__name">${esc(f.name)}</span>
-        <span class="dd-file__meta"><span>${size(f.size)}</span><span class="dd-file__status">${icon('check')}Ready</span></span></span>
+        <span class="dd-file__meta"><span>${size(f.size)}</span><span class="dd-file__status">${icon(why ? 'alert' : 'check')}${why ? esc(why) : 'Ready'}</span></span></span>
         <span class="dd-file__actions"><button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" type="button" data-dd-file-remove aria-label="Remove ${esc(f.name)}">${icon('x')}</button></span>`;
+      added.add(li);
+      if (!why) files.set(li, f);
       list.append(li);
     }
+    // The input's files are the accepted ones the list shows; rejected files never reach the form.
+    if (keep.length !== chosen.length || keep.some((f, n) => f !== chosen[n])) setFiles(input, keep);
   });
 
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-dd-file-remove]');
     if (!btn) return;
     const row = btn.closest('.dd-file');
-    if (!row) return;
+    if (!row || row.classList.contains('is-removing')) return;
     const list = row.parentElement;
     const next = row.nextElementSibling?.querySelector('[data-dd-file-remove]') || row.previousElementSibling?.querySelector('[data-dd-file-remove]');
     row.classList.add('is-removing');
     // Focus moves to the neighbouring remove button, or back to the list's dropzone once the list is empty.
-    const zone = list?.id ? document.querySelector(`[data-dd-dropzone="#${CSS.escape(list.id)}"] input[type="file"]`) : null;
-    const done = () => { row.remove(); (next || zone)?.focus(); list?.dispatchEvent(new CustomEvent('dd-file-remove', { bubbles: true })); };
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) done(); else row.addEventListener('animationend', done, { once: true });
+    const input = list?.id ? document.querySelector(`[data-dd-dropzone="#${CSS.escape(list.id)}"] input[type="file"]`) : null;
+    const file = files.get(row);
+    if (input && file) setFiles(input, [...input.files].filter((f) => f !== file));
+    const name = row.querySelector('.dd-file__name')?.textContent.trim() ?? '';
+    let finished = false;
+    const done = () => {
+      if (finished) return;
+      finished = true;
+      const hadFocus = row.contains(document.activeElement);
+      row.remove();
+      if (hadFocus || document.activeElement === document.body) (next || input)?.focus();
+      list?.dispatchEvent(new CustomEvent('dd-file-remove', { bubbles: true, detail: { name } }));
+    };
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) done();
+    else {
+      row.addEventListener('animationend', (ev) => { if (ev.target === row) done(); });
+      setTimeout(done, 600); // in case the animation never runs (hidden tab, display: none)
+    }
   });
 })();
 
@@ -1485,7 +1928,8 @@
 /* Form field counter: a .dd-field__counter inside a .dd-field counts the characters of the field's control.
    The limit comes from data-dd-counter="280" (a soft limit: typing past it marks the field invalid) or from the
    control's maxlength (a hard limit). The counter gets .is-near at 90% and .is-over past the limit, and re-counts
-   when its form is reset. */
+   when its form is reset. An error in the same field marked [data-dd-counter-error] shows only while a soft limit
+   is passed. */
 (() => {
   const update = (field) => {
     const counter = field.querySelector('.dd-field__counter');
@@ -1500,6 +1944,7 @@
     // A soft limit marks the control invalid while it is over, and only clears what it set itself.
     if (soft && n > max) { control.setAttribute('aria-invalid', 'true'); control.dataset.ddOver = ''; }
     else if ('ddOver' in control.dataset) { control.removeAttribute('aria-invalid'); delete control.dataset.ddOver; }
+    if (soft) field.querySelectorAll('[data-dd-counter-error]').forEach((err) => { err.hidden = n <= max; });
   };
 
   document.addEventListener('input', (e) => {
@@ -1514,6 +1959,100 @@
   });
   const init = () => document.querySelectorAll('.dd-field__counter').forEach((c) => update(c.closest('.dd-field')));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+
+/* ===== behaviors/form-layout.js ===== */
+/* Form validation: <form data-dd-validate novalidate> checks its controls when it is submitted, using the browser's
+   own constraints (required, type, pattern, min / max, minlength…) but showing the result in the form's own style.
+   - Each invalid control gets aria-invalid="true" and a .dd-field__error under its box (text: the control's
+     data-dd-error, else the browser's message), linked with aria-describedby. A hint in the same spot steps aside
+     while the error shows.
+   - Focus moves to the first invalid control, and the submit stops there: no other submit listener sees it.
+   - After a failed submit, an error clears as soon as its control is valid again (on input), and a control is
+     re-checked when it is committed (on change) — never while someone is typing a first value.
+   - Resetting the form clears every error.
+   A valid form submits as usual: handle "submit" yourself. A submit button with formnovalidate skips the check. */
+(() => {
+  let uid = 0;
+  const sprite = () => (window.dd && window.dd.iconSprite) || '';
+  const controls = (form) => [...form.elements].filter((el) => el.willValidate && el.matches('input, select, textarea'));
+  const fieldOf = (el) => el.closest('.dd-field');
+  const hintOf = (field) => field.querySelector(':scope > .dd-field__hint, :scope > .dd-field__foot > .dd-field__hint');
+
+  const clear = (el) => {
+    if (!('ddValid' in el.dataset)) return;
+    const err = el.dataset.ddValid && document.getElementById(el.dataset.ddValid);
+    if (err) {
+      const ids = (el.getAttribute('aria-describedby') || '').split(/\s+/).filter((id) => id && id !== err.id);
+      if (ids.length) el.setAttribute('aria-describedby', ids.join(' ')); else el.removeAttribute('aria-describedby');
+      err.remove();
+    }
+    const field = fieldOf(el);
+    const hint = field && hintOf(field);
+    if (hint && 'ddValidHid' in hint.dataset) { hint.hidden = false; delete hint.dataset.ddValidHid; }
+    el.removeAttribute('aria-invalid');
+    delete el.dataset.ddValid;
+  };
+
+  const flag = (el) => {
+    const text = el.dataset.ddError || el.validationMessage;
+    el.setAttribute('aria-invalid', 'true');
+    const field = fieldOf(el);
+    if (!field) { el.dataset.ddValid = ''; return; }
+    let err = el.dataset.ddValid && document.getElementById(el.dataset.ddValid);
+    if (!err) {
+      err = document.createElement('p');
+      err.className = 'dd-field__error';
+      err.id = `dd-error-${++uid}`;
+      const hint = hintOf(field);
+      if (hint) { hint.after(err); if (!hint.hidden) { hint.hidden = true; hint.dataset.ddValidHid = ''; } }
+      else {
+        const box = [...field.children].find((c) => c.contains(el)) || el;
+        const foot = field.querySelector(':scope > .dd-field__foot');
+        if (foot) foot.prepend(err); else box.after(err);
+      }
+      el.setAttribute('aria-describedby', [err.id, el.getAttribute('aria-describedby')].filter(Boolean).join(' '));
+      el.dataset.ddValid = err.id;
+    }
+    err.innerHTML = `<svg class="dd-icon" aria-hidden="true"><use href="${sprite()}#dd-i-error"/></svg>`;
+    err.append(text);
+  };
+
+  const check = (el) => { if (el.validity.valid) clear(el); else flag(el); return el.validity.valid; };
+
+  // Capture phase, so an invalid submit never reaches the page's own submit handlers.
+  document.addEventListener('submit', (e) => {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement) || !form.matches('[data-dd-validate]')) return;
+    if (e.submitter && e.submitter.hasAttribute('formnovalidate')) return;
+    form.dataset.ddChecked = '';
+    const bad = controls(form).filter((el) => !check(el));
+    if (!bad.length) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const first = bad[0];
+    first.focus({ preventScroll: true });
+    first.scrollIntoView({ block: 'center' }); // instant, like the browser's own validation: nothing moves under the next click
+  }, true);
+
+  // Reward fixes right away; only re-judge a control once it is committed.
+  document.addEventListener('input', (e) => {
+    const el = e.target;
+    if ('ddValid' in (el.dataset || {}) && el.validity?.valid) clear(el);
+  });
+  document.addEventListener('change', (e) => {
+    const el = e.target;
+    const form = el.form;
+    if (form && form.matches('[data-dd-validate]') && 'ddChecked' in form.dataset && el.willValidate) check(el);
+  });
+
+  document.addEventListener('reset', (e) => {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement) || !form.matches('[data-dd-validate]')) return;
+    delete form.dataset.ddChecked;
+    [...form.elements].forEach(clear);
+  });
 })();
 
 
@@ -1812,7 +2351,10 @@
    - button[data-dd-log-viewer-level="debug|info|warn|error"]: aria-pressed toggles that level.
    - button[data-dd-log-viewer-wrap]: aria-pressed toggles .is-wrapped (long messages wrap instead of scrolling).
    - [data-dd-log-viewer-count]: gets “18 of 24 lines”; [data-dd-log-viewer-empty] shows when nothing matches.
-   Lines are .dd-log-viewer__line[data-level]; matches are highlighted inside .dd-log-viewer__msg. */
+   - button[data-dd-log-viewer-follow]: aria-pressed keeps the stream pinned to the newest line as lines arrive.
+     Scrolling up to read pauses it; scrolling back to the bottom (or pressing it) resumes.
+   Lines are .dd-log-viewer__line[data-level]; matches are highlighted inside .dd-log-viewer__msg. Append new
+   lines to the list at any time: they are filtered, highlighted and counted like the rest. */
 (() => {
   const C = 'dd-log-viewer';
   const originals = new WeakMap();
@@ -1845,21 +2387,25 @@
     }
   }
 
-  function apply(root) {
+  // only: just these (new) lines need filtering and highlighting; counts always cover every line.
+  function apply(root, only) {
     const input = root.querySelector('[data-dd-log-viewer-search]');
     const query = (input?.value || '').trim();
     const q = query.toLowerCase();
     const levels = root.querySelectorAll('[data-dd-log-viewer-level]');
     const on = new Set([...levels].filter((b) => b.getAttribute('aria-pressed') !== 'false').map((b) => b.dataset.ddLogViewerLevel));
     const lines = root.querySelectorAll(`.${C}__line`);
-    let shown = 0;
-    lines.forEach((line) => {
+    (only || lines).forEach((line) => {
       const levelOk = !levels.length || on.has(line.dataset.level);
       const textOk = !q || line.textContent.toLowerCase().includes(q);
       line.hidden = !(levelOk && textOk);
-      if (!line.hidden) shown++;
-      line.querySelectorAll(`.${C}__src, .${C}__msg`).forEach((el) => highlight(el, line.hidden ? '' : query));
+      line.querySelectorAll(`.${C}__src, .${C}__msg`).forEach((el) => {
+        if (!only || q) highlight(el, line.hidden ? '' : query);
+        else originals.set(el, el.innerHTML); // new line, no search: nothing to mark, just remember it as written
+      });
     });
+    let shown = 0;
+    lines.forEach((line) => { if (!line.hidden) shown++; });
     const count = root.querySelector('[data-dd-log-viewer-count]');
     if (count) count.textContent = shown === lines.length ? `${lines.length} lines` : `${shown} of ${lines.length} lines`;
     const empty = root.querySelector('[data-dd-log-viewer-empty]');
@@ -1875,7 +2421,56 @@
       const lvl = b.dataset.ddLogViewerLevel;
       n.textContent = [...lines].filter((l) => l.dataset.level === lvl && (!q || l.textContent.toLowerCase().includes(q))).length;
     });
+    stick(root);
   }
+
+  // Follow: keep the scroll area at the bottom while the follow toggle is pressed.
+  const scroller = (root) => root.querySelector(`.${C}__scroll`);
+  const followBtn = (root) => root.querySelector('[data-dd-log-viewer-follow]');
+  const following = (root) => followBtn(root)?.getAttribute('aria-pressed') === 'true';
+  const atBottom = (el) => el.scrollHeight - el.scrollTop - el.clientHeight < 4;
+  const programmatic = new WeakSet();
+  function stick(root) {
+    const el = scroller(root);
+    if (!el || !following(root) || atBottom(el)) return;
+    programmatic.add(el);
+    el.scrollTop = el.scrollHeight;
+  }
+  function setFollow(root, on, why = '') {
+    const btn = followBtn(root);
+    if (!btn) return;
+    btn.setAttribute('aria-pressed', String(on));
+    // Paused by scrolling up (not by the button): reaching the bottom again resumes.
+    if (why === 'scroll') btn.dataset.ddLogViewerPaused = ''; else delete btn.dataset.ddLogViewerPaused;
+    stick(root);
+  }
+  document.addEventListener('scroll', (e) => {
+    const el = e.target;
+    if (!(el instanceof Element) || !el.classList.contains(`${C}__scroll`)) return;
+    const root = el.closest('[data-dd-log-viewer]');
+    const btn = root && followBtn(root);
+    if (!btn) return;
+    if (programmatic.has(el)) { programmatic.delete(el); if (atBottom(el)) return; }
+    if (following(root) && !atBottom(el)) setFollow(root, false, 'scroll');
+    else if (!following(root) && 'ddLogViewerPaused' in btn.dataset && atBottom(el)) setFollow(root, true);
+  }, true);
+
+  // Lines added later (a live tail): filter, highlight, count and follow them.
+  new MutationObserver((records) => {
+    const added = new Map();
+    for (const r of records) {
+      for (const n of r.addedNodes) {
+        if (!(n instanceof Element) || !n.classList.contains(`${C}__line`)) continue;
+        const root = n.closest('[data-dd-log-viewer]');
+        if (root) added.set(root, [...(added.get(root) || []), n]);
+      }
+      if (r.removedNodes.length && r.target instanceof Element && r.target.classList.contains(`${C}__lines`)) {
+        const root = r.target.closest('[data-dd-log-viewer]');
+        if (root && !added.has(root)) added.set(root, []);
+      }
+    }
+    added.forEach((lines, root) => apply(root, lines));
+  }).observe(document.documentElement, { childList: true, subtree: true });
 
   document.addEventListener('input', (e) => {
     const input = e.target.closest?.('[data-dd-log-viewer-search]');
@@ -1898,13 +2493,17 @@
     const level = e.target.closest('[data-dd-log-viewer-level]');
     const wrap = e.target.closest('[data-dd-log-viewer-wrap]');
     const clear = e.target.closest('[data-dd-log-viewer-clear]');
-    if (level) {
+    const follow = e.target.closest('[data-dd-log-viewer-follow]');
+    if (follow) {
+      setFollow(root, follow.getAttribute('aria-pressed') !== 'true');
+    } else if (level) {
       level.setAttribute('aria-pressed', String(level.getAttribute('aria-pressed') === 'false'));
       apply(root);
     } else if (wrap) {
       const next = wrap.getAttribute('aria-pressed') !== 'true';
       wrap.setAttribute('aria-pressed', String(next));
       root.classList.toggle('is-wrapped', next);
+      stick(root);
     } else if (clear) {
       const input = root.querySelector('[data-dd-log-viewer-search]');
       if (input) input.value = '';
@@ -1914,10 +2513,12 @@
   });
 
   const init = () => document.querySelectorAll('[data-dd-log-viewer]').forEach((root) => {
-    // Apply the initial search value and level toggles from the markup, and sync wrap state.
+    // Apply the initial search value and level toggles from the markup, sync wrap state, start at the newest line
+    // when following.
     apply(root);
     const wrap = root.querySelector('[data-dd-log-viewer-wrap]');
     if (wrap) root.classList.toggle('is-wrapped', wrap.getAttribute('aria-pressed') === 'true');
+    stick(root);
   });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
@@ -1929,6 +2530,7 @@
    [data-dd-contextmenu="menu-id"] on an area opens the menu at the pointer on right-click, Shift+F10 or the Menu key.
    An item inside a menu with [data-dd-menu] opens a submenu to its side. Optional [data-dd-placement] on the trigger:
    bottom-start (default) · bottom-end · top-start · top-end. Menus flip when they would leave the viewport.
+   Several triggers may share one menu (a ⋯ button per row): clicking another one moves the open menu to it.
    Keyboard: ↓ / ↑ on the trigger open at the first / last item; in the menu ↑ ↓ Home End move, a letter jumps,
    → opens a submenu, ← closes it, Esc closes and returns focus, Tab closes. Clicking outside closes.
    role=menuitemcheckbox toggles aria-checked; role=menuitemradio checks one per group — both keep the menu open. */
@@ -2033,7 +2635,9 @@
   const toggleFromTrigger = (t, focus) => {
     const menu = menuFor(t);
     if (!menu) return;
-    if (entryOf(menu)) { closeAbove(t.closest('.dd-menu.is-floating') || null); t.focus({ preventScroll: true }); }
+    // Open from this trigger: close it. Open from another trigger sharing the menu (one menu for every row's
+    // ⋯ button): move it here instead.
+    if (entryOf(menu)?.trigger === t) { closeAbove(t.closest('.dd-menu.is-floating') || null); t.focus({ preventScroll: true }); }
     else open(menu, t, { focus });
   };
 
@@ -2072,19 +2676,34 @@
     }
   });
 
-  document.addEventListener('contextmenu', (e) => {
-    const area = e.target.closest('[data-dd-contextmenu]');
-    const menu = area && byId(area.getAttribute('data-dd-contextmenu'));
-    if (!menu) return;
-    e.preventDefault();
-    let x = e.clientX, y = e.clientY;
-    if (!x && !y) { const r = (document.activeElement || area).getBoundingClientRect(); x = r.left + 12; y = r.bottom; }
+  // Context menus: right-click opens at the pointer; from the keyboard (Menu key, Shift F10) under the focused element.
+  const openContext = (area, menu, x, y) => {
+    // Re-opening keeps the original return target, not an item of the menu that is about to close.
+    const prev = entryOf(menu);
+    const ret = prev ? prev.ret : document.activeElement;
+    if (!x && !y) {
+      const from = ret && area.contains(ret) ? ret : area;
+      const r = from.getBoundingClientRect(); x = r.left + 12; y = r.bottom;
+    }
     closeAll(false);
-    open(menu, area, { at: { x, y }, ret: document.activeElement });
+    open(menu, area, { at: { x, y }, ret });
+  };
+  const contextOf = (el) => {
+    const area = el?.closest?.('[data-dd-contextmenu]');
+    const menu = area && byId(area.getAttribute('data-dd-contextmenu'));
+    return menu && !menu.contains(el) ? { area, menu } : null;
+  };
+  document.addEventListener('contextmenu', (e) => {
+    const c = contextOf(e.target);
+    if (!c) return;
+    e.preventDefault();
+    openContext(c.area, c.menu, e.clientX, e.clientY);
   });
 
   // Hover moves focus within floating menus and opens / closes submenus after a short pause.
   document.addEventListener('pointerover', (e) => {
+    // Touch has no hover: a finger held past the delay would open a submenu that the tap's click then closes.
+    if (e.pointerType === 'touch') return;
     const item = e.target.closest(ITEM);
     const menu = item?.closest('.dd-menu.is-floating');
     if (!menu) return;
@@ -2093,7 +2712,7 @@
     hoverTimer = setTimeout(() => {
       if (!entryOf(menu)) return;
       const sub = item.matches('[data-dd-menu]') && !disabled(item) ? menuFor(item) : null;
-      if (sub && entryOf(sub)) { closeAbove(sub); return; }
+      if (sub && entryOf(sub)?.trigger === item) { closeAbove(sub); return; }
       closeAbove(menu);
       if (sub) open(sub, item, { focus: 'none' });
     }, 140);
@@ -2101,11 +2720,16 @@
 
   document.addEventListener('keydown', (e) => {
     const t = e.target;
+    // Shift F10 opens a context menu; macOS browsers don't turn it into a contextmenu event themselves.
+    if (e.key === 'F10' && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const c = contextOf(t);
+      if (c) { e.preventDefault(); openContext(c.area, c.menu, 0, 0); return; }
+    }
     // Root trigger: ↓ / ↑ open at the first / last item.
     if (t.matches?.('[data-dd-menu]') && !t.closest('.dd-menu') && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       e.preventDefault();
       const menu = menuFor(t);
-      if (menu && !entryOf(menu)) open(menu, t, { focus: e.key === 'ArrowUp' ? 'last' : 'first' });
+      if (menu && entryOf(menu)?.trigger !== t) open(menu, t, { focus: e.key === 'ArrowUp' ? 'last' : 'first' });
       else if (menu) { const l = itemsOf(menu); (e.key === 'ArrowUp' ? l[l.length - 1] : l[0])?.focus(); }
       return;
     }
@@ -2179,6 +2803,160 @@
 })();
 
 
+/* ===== behaviors/pagination.js ===== */
+/* Pagination — opt in with [data-dd-pagination] on a .dd-pagination, or on a wrapper that also holds the page-size select.
+   State lives in attributes: data-page (1-based) and either data-pages, or data-total + data-page-size (a
+   .dd-pagination__size select inside sets the size when data-page-size is absent). The behaviour keeps the markup in step:
+   numbered pages (first, last, the current page and its neighbours, a gap for the rest: never more than seven slots),
+   aria-current="page", "Page 4 of 50", the range ("<b>151–200</b> of 2,481") and aria-disabled on the arrows at either end
+   (they stay focusable, so keyboard focus never drops). The first .dd-pagination__step goes back, the last goes forward.
+   Clicking a page or an arrow, or changing the size, emits a bubbling dd:pagechange with
+   { page, pages, pageSize, total, from, to }. dd.pagination(el, { page, pages, total, pageSize }) sets state from script
+   (no event) and returns it. Without the attribute the markup is static: render links with real hrefs on the server. */
+(() => {
+  window.dd = window.dd || {};
+  const ROOT = '[data-dd-pagination]';
+  const num = (v) => (v == null || v === '' ? NaN : Number(v));
+  const fmt = (n) => n.toLocaleString('en-US');
+  const sizeSelect = (root) => root.querySelector('.dd-pagination__size select');
+  const shown = new WeakMap(); // root → the state last rendered (a size change must start from the old size)
+
+  function state(root) {
+    let size = num(root.dataset.pageSize);
+    const sel = sizeSelect(root);
+    if (!(size > 0) && sel) size = num(sel.value);
+    const total = num(root.dataset.total);
+    const known = total >= 0 && size > 0;
+    let pages = known ? Math.max(1, Math.ceil(total / size)) : num(root.dataset.pages);
+    if (!(pages >= 1)) pages = 1;
+    const page = Math.min(pages, Math.max(1, Math.round(num(root.dataset.page)) || 1));
+    return {
+      page, pages,
+      pageSize: size > 0 ? size : null,
+      total: total >= 0 ? total : null,
+      from: known ? Math.min(total, (page - 1) * size + 1) : null,
+      to: known ? Math.min(total, page * size) : null,
+    };
+  }
+
+  // First and last page, the current one and its neighbours; a gap stands for anything skipped.
+  const slots = (p, n) => {
+    if (n <= 7) return Array.from({ length: n }, (_, k) => k + 1);
+    if (p <= 4) return [1, 2, 3, 4, 5, '…', n];
+    if (p >= n - 3) return [1, '…', n - 4, n - 3, n - 2, n - 1, n];
+    return [1, '…', p - 1, p, p + 1, '…', n];
+  };
+
+  function renderPages(list, s) {
+    const old = [...list.children].filter((li) => li.matches('.dd-pagination__gap, .dd-pagination__status') || li.querySelector('.dd-pagination__page'));
+    if (!old.length) return;
+    const sample = list.querySelector('.dd-pagination__page');
+    const tag = sample?.tagName === 'A' ? 'a' : 'button';
+    const hadStatus = old.some((li) => li.matches('.dd-pagination__status'));
+    const hadFocus = old.some((li) => li.contains(document.activeElement));
+    const frag = document.createDocumentFragment();
+    for (const v of slots(s.page, s.pages)) {
+      const li = document.createElement('li');
+      if (v === '…') {
+        li.className = 'dd-pagination__gap';
+        li.setAttribute('aria-hidden', 'true');
+        li.textContent = '…';
+      } else {
+        const b = document.createElement(tag);
+        b.className = 'dd-pagination__page';
+        if (tag === 'a') b.href = '#'; else b.type = 'button';
+        b.setAttribute('aria-label', `Page ${v}`);
+        if (v === s.page) b.setAttribute('aria-current', 'page');
+        b.textContent = String(v);
+        li.append(b);
+      }
+      frag.append(li);
+    }
+    if (hadStatus) {
+      const li = document.createElement('li');
+      li.className = 'dd-pagination__status';
+      li.textContent = `Page ${s.page} of ${s.pages}`;
+      frag.append(li);
+    }
+    const steps = list.querySelectorAll('.dd-pagination__step');
+    const before = steps.length > 1 ? steps[steps.length - 1].closest('li') : null;
+    old.forEach((li) => li.remove());
+    list.insertBefore(frag, before && before.parentElement === list ? before : null);
+    if (hadFocus) list.querySelector('.dd-pagination__page[aria-current="page"]')?.focus();
+  }
+
+  function render(root) {
+    const s = state(root);
+    root.dataset.page = String(s.page);
+    root.querySelectorAll('.dd-pagination__pages').forEach((list) => renderPages(list, s));
+    if (s.total !== null) {
+      const range = s.total === 0 ? '0' : s.from === s.to ? fmt(s.from) : `${fmt(s.from)}–${fmt(s.to)}`;
+      root.querySelectorAll('.dd-pagination__range').forEach((el) => { el.innerHTML = `<b>${range}</b> of ${fmt(s.total)}`; });
+    }
+    root.querySelectorAll('.dd-pagination__status').forEach((el) => { el.textContent = `Page ${s.page} of ${s.pages}`; });
+    const steps = [...root.querySelectorAll('.dd-pagination__step')];
+    steps.forEach((el, k) => {
+      const off = k === 0 ? s.page <= 1 : k === steps.length - 1 ? s.page >= s.pages : false;
+      el.removeAttribute('disabled');
+      if (off) el.setAttribute('aria-disabled', 'true'); else el.removeAttribute('aria-disabled');
+    });
+    const sel = sizeSelect(root);
+    if (sel && s.pageSize && [...sel.options].some((o) => +o.value === s.pageSize)) sel.value = String(s.pageSize);
+    shown.set(root, s);
+    return s;
+  }
+
+  const emit = (root) => root.dispatchEvent(new CustomEvent('dd:pagechange', { bubbles: true, detail: state(root) }));
+
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('.dd-pagination__page, .dd-pagination__step');
+    const root = el?.closest(ROOT);
+    if (!root) return;
+    e.preventDefault();
+    if (el.getAttribute('aria-disabled') === 'true' || el.disabled) return;
+    const s = state(root);
+    let page = s.page;
+    if (el.classList.contains('dd-pagination__page')) page = Number(el.textContent.trim()) || s.page;
+    else {
+      const steps = [...root.querySelectorAll('.dd-pagination__step')];
+      page += el === steps[0] ? -1 : 1;
+    }
+    if (page === s.page) return;
+    root.dataset.page = String(page);
+    render(root);
+    emit(root);
+  });
+
+  document.addEventListener('change', (e) => {
+    const sel = e.target;
+    if (!(sel instanceof HTMLSelectElement) || !sel.closest('.dd-pagination__size')) return;
+    const root = sel.closest(ROOT);
+    if (!root) return;
+    // By now the select already shows the new size, so take the first row from what was on screen before.
+    const s = shown.get(root) || state(root);
+    const size = num(sel.value);
+    if (!(size > 0)) return;
+    root.dataset.pageSize = String(size);
+    // Keep the first row on screen in view: it lands on whichever page now holds it.
+    root.dataset.page = String(s.from ? Math.floor((s.from - 1) / size) + 1 : 1);
+    render(root);
+    emit(root);
+  });
+
+  window.dd.pagination = (el, opts = {}) => {
+    const root = typeof el === 'string' ? document.querySelector(el) : el;
+    if (!root) return null;
+    root.setAttribute('data-dd-pagination', root.getAttribute('data-dd-pagination') || '');
+    const keys = { page: 'page', pages: 'pages', total: 'total', pageSize: 'pageSize' };
+    for (const [k, attr] of Object.entries(keys)) if (opts[k] != null) root.dataset[attr] = String(opts[k]);
+    return render(root);
+  };
+
+  const init = () => document.querySelectorAll(ROOT).forEach(render);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+
 /* ===== behaviors/popover.js ===== */
 /* Popover: <button popovertarget="deploy-pop"> + <div class="dd-popover" id="deploy-pop" popover role="dialog">.
    The browser does the opening, Esc and outside-click closing, and puts the panel in the top layer; this script places
@@ -2243,6 +3021,8 @@
     } else {
       open.delete(pop);
       document.querySelectorAll(`[popovertarget="${CSS.escape(pop.id)}"]`).forEach((b) => { if (!pop.contains(b)) b.setAttribute('aria-expanded', 'false'); });
+      // An anchor passed to dd.popover.open() hears about the close too.
+      if (a && !pop.contains(a) && a.hasAttribute('aria-expanded')) a.setAttribute('aria-expanded', 'false');
     }
   }, true);
 
@@ -2331,8 +3111,13 @@
            > [role="option"][data-value] (aria-selected on the chosen one, aria-disabled to skip).
    The trigger's [data-dd-select-value] (or its .dd-input__control) shows the chosen option's label; an optional
    <input type="hidden"> inside the root receives the value. Fires a bubbling "dd-select" event with
-   detail { value, label, option }, and "change" on the hidden input.
-   Keyboard: Enter / Space / ↓ / ↑ open; ↑ ↓ Home End move; type to jump; Enter / Space choose; Esc closes. */
+   detail { value, label, option, values, selected }, and "change" on the hidden input.
+   Multiple: aria-multiselectable="true" on the listbox. Choosing toggles an option and keeps the list open; the
+   trigger lists the chosen labels (or its placeholder when none), the hidden input gets the values joined by
+   commas, and detail.values holds them all.
+   Keyboard: Enter / Space / ↓ / ↑ / Home / End open; ↑ ↓ Home End move; type to jump (a letter typed again cycles
+   through the options that start with it; typing on the closed trigger opens it there); Enter / Space choose
+   (toggle in a multiple list); Esc closes. */
 (() => {
   let uid = 0;
   const parts = (root) => ({
@@ -2377,28 +3162,41 @@
     list.focus({ preventScroll: true });
   };
 
+  const valueOf = (opt) => opt.dataset.value ?? labelOf(opt);
   const choose = (root, opt) => {
     const { btn, list } = parts(root);
     if (!opt || opt.getAttribute('aria-disabled') === 'true') return;
-    list.querySelectorAll('[role="option"][aria-selected="true"]').forEach((o) => o.setAttribute('aria-selected', 'false'));
-    opt.setAttribute('aria-selected', 'true');
-    const value = opt.dataset.value ?? labelOf(opt);
+    const multi = list.getAttribute('aria-multiselectable') === 'true';
+    const selected = multi ? opt.getAttribute('aria-selected') !== 'true' : true;
+    if (!multi) list.querySelectorAll('[role="option"][aria-selected="true"]').forEach((o) => o.setAttribute('aria-selected', 'false'));
+    opt.setAttribute('aria-selected', String(selected));
+    const chosen = [...list.querySelectorAll('[role="option"][aria-selected="true"]')];
+    const value = valueOf(opt);
     const label = labelOf(opt);
+    const values = chosen.map(valueOf);
     const out = btn.querySelector('[data-dd-select-value]') || btn.querySelector('.dd-input__control');
     if (out) {
-      const icon = opt.querySelector('.dd-listbox__icon, .dd-listbox__swatch');
+      // Remember the placeholder the first time it is replaced, so a multiple list can go back to it.
+      if (out.classList.contains('dd-select__placeholder') && !out.dataset.ddPlaceholder) out.dataset.ddPlaceholder = out.textContent.trim();
       out.textContent = '';
-      if (icon) out.append(icon.cloneNode(true));
-      out.append(label);
-      out.classList.remove('dd-select__placeholder');
+      if (multi) {
+        out.append(chosen.map(labelOf).join(', ') || out.dataset.ddPlaceholder || '');
+        out.classList.toggle('dd-select__placeholder', !chosen.length);
+      } else {
+        const icon = opt.querySelector('.dd-listbox__icon, .dd-listbox__swatch');
+        if (icon) out.append(icon.cloneNode(true));
+        out.append(label);
+        out.classList.remove('dd-select__placeholder');
+      }
     }
     const hidden = root.querySelector('input[type="hidden"]');
-    if (hidden) { hidden.value = value; hidden.dispatchEvent(new Event('change', { bubbles: true })); }
-    root.dispatchEvent(new CustomEvent('dd-select', { bubbles: true, detail: { value, label, option: opt } }));
-    close(root);
+    if (hidden) { hidden.value = values.join(','); hidden.dispatchEvent(new Event('change', { bubbles: true })); }
+    root.dispatchEvent(new CustomEvent('dd-select', { bubbles: true, detail: { value, label, option: opt, values, selected } }));
+    if (multi) setActive(list, opt); else close(root);
   };
 
-  // Typeahead: letters typed within 600ms build a prefix to jump to.
+  // Typeahead: letters typed within 600ms build a prefix to jump to. The same letter again moves on to the next
+  // option that starts with it, so "e e e" walks through every e-option.
   const typeahead = new WeakMap();
   const jump = (root, list, key) => {
     const t = typeahead.get(root) || { q: '', at: 0 };
@@ -2407,7 +3205,11 @@
     t.at = now;
     typeahead.set(root, t);
     const opts = options(list);
-    const hit = opts.find((o) => labelOf(o).toLowerCase().startsWith(t.q));
+    const cur = opts.indexOf(list.querySelector('[role="option"].is-active'));
+    const repeat = [...t.q].every((c) => c === t.q[0]);
+    const q = repeat ? t.q[0] : t.q;
+    const from = repeat ? cur + 1 : Math.max(cur, 0);
+    const hit = [...opts.slice(from), ...opts.slice(0, from)].find((o) => labelOf(o).toLowerCase().startsWith(q));
     if (hit) setActive(list, hit);
   };
 
@@ -2440,7 +3242,14 @@
     if (!root) return;
     const { btn, list } = parts(root);
     if (e.target === btn) {
-      if (['ArrowDown', 'ArrowUp'].includes(e.key)) { e.preventDefault(); open(root, e.key === 'ArrowUp' ? 'last' : undefined); }
+      if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
+        e.preventDefault();
+        open(root, e.key === 'ArrowUp' || e.key === 'End' ? 'last' : e.key === 'Home' ? 'first' : undefined);
+      } else if (e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        if (list.hidden) open(root);
+        jump(root, list, e.key);
+      }
       return;
     }
     if (e.target !== list) return;
@@ -2561,10 +3370,12 @@
     if (link) setMobile(link.closest('.dd-side-nav'), false);
   });
 
-  // Tabbing out of an open off-canvas nav closes it, so focus never sits on the page hidden behind the scrim.
-  document.addEventListener('focusin', (e) => {
-    const nav = document.querySelector('.dd-side-nav.is-mobile-open');
-    if (nav && !nav.contains(e.target) && !openers(nav).includes(e.target)) setMobile(nav, false);
+  // Tabbing out of an open off-canvas nav closes it, so focus never sits on the page hidden behind the scrim. Only focus
+  // that leaves the nav counts: focus elsewhere that never was inside it (another demo on the same page) leaves it open.
+  document.addEventListener('focusout', (e) => {
+    const nav = e.target.closest?.('.dd-side-nav.is-mobile-open');
+    const to = e.relatedTarget;
+    if (nav && to && !nav.contains(to) && !openers(nav).includes(to)) setMobile(nav, false);
   });
 
   document.addEventListener('keydown', (e) => {
@@ -2595,7 +3406,9 @@
      the thumbs crossing.
    - <output for="inputId"> (anywhere) shows that input's value; data-unit on the output appends a unit.
    - .dd-slider__bubble[data-for="inputId"] rides above its thumb.
-   - .dd-slider__ticks > [data-value] gets .is-active when it matches a value. */
+   - .dd-slider__ticks > [data-value] gets .is-active when it matches a value.
+   - When a value is committed (thumb released, or a key step) the .dd-slider fires a bubbling `dd:change` event with
+     detail { value, input }: value is a number, or [low, high] for a range. */
 (() => {
   const frac = (el) => {
     const min = Number(el.min || 0); const max = Number(el.max || 100);
@@ -2635,6 +3448,13 @@
     const input = e.target.closest?.('.dd-slider__input');
     if (input) sync(input.closest('.dd-slider'), input);
   });
+  document.addEventListener('change', (e) => {
+    const input = e.target.closest?.('.dd-slider__input');
+    const slider = input?.closest('.dd-slider');
+    if (!slider) return;
+    const values = [...slider.querySelectorAll('.dd-slider__input')].map((el) => Number(el.value));
+    slider.dispatchEvent(new CustomEvent('dd:change', { bubbles: true, detail: { value: values.length > 1 ? values : values[0], input } }));
+  });
   const init = () => document.querySelectorAll('.dd-slider').forEach((s) => sync(s));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
@@ -2643,9 +3463,12 @@
 /* ===== behaviors/tabs.js ===== */
 /* Tabs: [data-dd-tabs] wraps a [role="tablist"] of [role="tab"] buttons and their [role="tabpanel"]s.
    - A tab finds its panel through aria-controls, or by order when aria-controls is missing (ids are filled in).
-   - Roving focus: only the selected tab is in the tab order. ←/→ (↑/↓ when the list has aria-orientation="vertical"),
-     Home and End move between tabs and select them; disabled tabs are skipped.
-   - Fires "dd:tabchange" on the [data-dd-tabs] element with { detail: { tab, panel } }. */
+   - Roving focus: only the selected tab is in the tab order; Tab from it moves into its panel.
+   - Automatic activation: ←/→ (↑/↓ when the list has aria-orientation="vertical"), Home and End move focus and select
+     the tab in one step, wrapping at the ends; disabled tabs are skipped.
+   - Fires "dd:tabchange" on the [data-dd-tabs] element when the selection changes (not on load, not when the current
+     tab is pressed again) with { detail: { tab, panel, previous } }.
+   - Global: dd.tabs.select(tabOrSelector) · dd.tabs.init() wires tabs added to the page later. */
 (() => {
   let uid = 0;
   const own = (root, sel) => [...root.querySelectorAll(sel)].filter((el) => el.closest('[data-dd-tabs]') === root);
@@ -2658,8 +3481,9 @@
   const enabled = (t) => !t.disabled && t.getAttribute('aria-disabled') !== 'true';
   const smooth = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
 
-  const select = (root, tab, { focus = false, scroll = true } = {}) => {
+  const select = (root, tab, { focus = false, scroll = true, silent = false } = {}) => {
     let panel = null;
+    const previous = tabsOf(root).find((t) => t.getAttribute('aria-selected') === 'true') || null;
     tabsOf(root).forEach((t) => {
       const on = t === tab;
       t.setAttribute('aria-selected', String(on));
@@ -2677,7 +3501,7 @@
         else if (tr.right > lr.right - pad) list.scrollBy({ left: tr.right - lr.right + pad, behavior: smooth() });
       }
     }
-    root.dispatchEvent(new CustomEvent('dd:tabchange', { bubbles: true, detail: { tab, panel } }));
+    if (!silent && previous !== tab) root.dispatchEvent(new CustomEvent('dd:tabchange', { bubbles: true, detail: { tab, panel, previous } }));
   };
 
   const init = (root) => {
@@ -2696,7 +3520,7 @@
       }
     });
     const current = tabs.find((t) => t.getAttribute('aria-selected') === 'true') || tabs.find(enabled) || tabs[0];
-    select(root, current, { scroll: false });
+    select(root, current, { scroll: false, silent: true });
   };
   const initAll = () => document.querySelectorAll('[data-dd-tabs]').forEach(init);
 
@@ -2710,8 +3534,9 @@
 
   document.addEventListener('keydown', (e) => {
     const tab = e.target.closest?.('[data-dd-tabs] [role="tab"]');
-    if (!tab) return;
+    if (!tab || e.altKey || e.ctrlKey || e.metaKey) return;
     const root = tab.closest('[data-dd-tabs]');
+    init(root);
     const vertical = tab.closest('[role="tablist"]')?.getAttribute('aria-orientation') === 'vertical';
     const keys = vertical ? { ArrowUp: -1, ArrowDown: 1 } : { ArrowLeft: -1, ArrowRight: 1 };
     const list = tabsOf(root).filter(enabled);
@@ -2726,7 +3551,14 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAll); else initAll();
   window.dd = window.dd || {};
-  window.dd.tabs = { init: initAll, select: (tab) => { const root = tab?.closest('[data-dd-tabs]'); if (root) { init(root); select(root, tab); } } };
+  window.dd.tabs = {
+    init: initAll,
+    select: (target) => {
+      const tab = typeof target === 'string' ? document.querySelector(target) : target;
+      const root = tab?.closest?.('[data-dd-tabs]');
+      if (root && enabled(tab)) { init(root); select(root, tab); }
+    },
+  };
 })();
 
 
@@ -2819,7 +3651,8 @@
      duration  ms before it leaves on its own (default 5000; 0 keeps it until dismissed). A hairline shows the time
                left; hovering or focusing the stack pauses every timer, and so does hiding the tab.
    Swipe a toast sideways (or drag it with the mouse) to dismiss it; Esc dismisses the toast that has focus, and focus
-   then moves to the next toast or back to where it was before the stack.
+   then moves to the next toast or back to where it was before the stack. The stack is a manual popover (top layer),
+   so toasts show above modal dialogs; while a modal is open the stack moves inside it so its buttons aren't inert.
      icon      any sprite name, to override the intent's icon
    Returns { el, dismiss() }. dd.toast('Saved') works too, and dd.toast.clear() empties the stack.
    Declarative: <button data-dd-toast="Title" data-dd-toast-description="…" data-dd-toast-intent="ok"
@@ -2850,6 +3683,9 @@
   };
 
   const live = new Set(); // toasts with a running timer
+  // Where supported the stack is a manual popover, so it shows in the top layer: above modal dialogs, drawers and
+  // their scrims, and clickable there (not inert behind a modal).
+  const topLayer = typeof HTMLElement !== 'undefined' && 'showPopover' in HTMLElement.prototype;
   let stack;
   let held = false;
   let returnTo = null; // where focus was before it entered the stack
@@ -2866,6 +3702,7 @@
     }
     stack.setAttribute('aria-label', 'Notifications');
     stack.setAttribute('aria-live', 'polite');
+    if (topLayer) stack.setAttribute('popover', 'manual');
     stack.addEventListener('pointerenter', () => hold(true));
     stack.addEventListener('pointerleave', () => { if (!stack.contains(document.activeElement)) hold(false); });
     stack.addEventListener('focusin', (e) => {
@@ -2881,6 +3718,28 @@
     return stack;
   };
   document.addEventListener('visibilitychange', () => hold(document.hidden || !!stack?.matches(':hover') || !!stack?.contains(document.activeElement)));
+
+  // Put the stack at the top of the top layer. Everything outside an open modal dialog is inert, so while one is
+  // open the stack lives inside the topmost modal (as a top-layer popover it still sits fixed at the viewport
+  // corner, above the dialog and its scrim) and goes back to <body> when that dialog closes. Toasts that are
+  // already showing don't replay their entrance when the stack moves.
+  const topModal = () => document.activeElement?.closest?.('dialog:modal') || [...document.querySelectorAll('dialog:modal')].pop() || null;
+  const raise = () => {
+    if (!topLayer || !stack?.isConnected) return;
+    const host = topModal() || document.body;
+    if (stack.parentElement !== host) {
+      if (stack.contains(document.activeElement)) return; // don't pull focus out from under a keyboard user
+      stack.querySelectorAll(':scope > .dd-toast').forEach((t) => t.classList.add('is-settled'));
+      host.append(stack); // leaving the DOM hides the popover
+    } else if (stack.matches(':popover-open')) return;
+    stack.showPopover();
+  };
+  document.addEventListener('close', (e) => {
+    if (!stack || !(e.target instanceof HTMLDialogElement) || !e.target.contains(stack)) return;
+    stack.querySelectorAll(':scope > .dd-toast').forEach((t) => t.classList.add('is-settled'));
+    document.body.append(stack);
+    if (stack.querySelector('.dd-toast')) raise();
+  }, true);
 
   // Toasts already in the stack glide to their new place instead of jumping when one is added (FLIP).
   const glide = (region, change) => {
@@ -2964,6 +3823,8 @@
     const region = toaster();
     // A brand-new live region needs a beat before content lands in it, or screen readers miss the first toast.
     const add = () => {
+      if (gone) return; // dismissed before it was shown
+      raise();
       glide(region, () => region.append(el));
       const shown = [...region.querySelectorAll(':scope > .dd-toast:not([data-leaving])')];
       shown.slice(0, Math.max(0, shown.length - MAX)).forEach((old) => old.ddToast?.dismiss());

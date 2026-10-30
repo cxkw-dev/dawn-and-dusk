@@ -46,6 +46,19 @@ const interactive = `
   </article>
 </div>`;
 
+const withAction = `
+<article class="dd-card dd-card--link" style="max-width: 360px">
+  <div class="dd-card__body">
+    <p class="dd-card__eyebrow">${i('terminal')}<span class="dd-mono">billing-worker</span></p>
+    <h3 class="dd-card__title"><a class="dd-card__stretch" href="#">Replay failed invoices</a></h3>
+    <p class="dd-card__text">Re-run every charge that failed in the last 24 hours, oldest first.</p>
+    <div class="dd-card__foot">
+      <span class="dd-card__meta">Runbook · 6 steps</span>
+      <button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-label="Save runbook" data-dd-toast="Runbook saved" data-dd-toast-description="Replay failed invoices is in your saved list.">${i('bookmark')}</button>
+    </div>
+  </div>
+</article>`;
+
 const media = `
 <div class="dd-card-grid" style="max-width: 600px">
   <article class="dd-card dd-card--link">
@@ -166,7 +179,10 @@ const grid = `
 
   <h2 id="interactive">Interactive</h2>
   <p>When the whole card goes somewhere, make the card the link: an <code>&lt;a class="dd-card dd-card--link"&gt;</code>, or keep the card an <code>&lt;article&gt;</code> and give its title a <code>.dd-card__stretch</code> link that covers the card. Hover lifts the card toward ink and nudges the arrow; keyboard focus draws the ring. On dusk’s grain page, which reads lighter than the cards, the lift is larger, so a hovered card always stands clear of the page.</p>
-  <Example code={interactive} />
+  <Example code={interactive} description="Try it: hover a card, click anywhere on it, or Tab through — each card is one stop. The middle card is pinned in its hover state for reference." />
+
+  <p>A stretched-link card can still hold its own controls: buttons and links inside it sit above the link’s hit area and keep their own click.</p>
+  <Example code={withAction} description="Try it: click the card to follow its link; the bookmark saves without opening it." />
 
   <h2 id="media">With media</h2>
   <p>A tonal cover (or an <code>&lt;img class="dd-card__media"&gt;</code>) sits on top. <code>--inset-media</code> pulls it in with its own rounded corners.</p>
@@ -199,13 +215,23 @@ const grid = `
     ['.dd-card__media', 'Cover panel or image. <code>.dd-card__media--warm</code> for the Golden hour gradient.'],
     ['.dd-card--link', 'Interactive card: lifts toward ink on hover and focus (<code>--dd-card-hover</code>).'],
     ['--dd-card-hover', 'The hover tone: 6% toward ink in dawn, 14% on dusk’s grain page. <code>.dd-app-shell</code> (a plain page, no grain) uses 6% in both. Set it yourself if cards sit on another surface.'],
-    ['.dd-card__stretch', 'A link whose hit area covers the whole card.'],
+    ['.dd-card__stretch', 'A link whose hit area covers the whole card. Other buttons and links in the card stay clickable above it.'],
     ['.dd-card--inset-media', 'Media inset with its own corners.'],
     ['.dd-card--stat', 'With <code>.dd-card__stat</code>, <code>.dd-card__label</code>, <code>.dd-card__delta</code> (<code>is-up</code> / <code>is-down</code>).'],
     ['.dd-card--row', 'Media beside the body; wraps to stacked when narrow.'],
     ['.dd-card--compact', 'Tighter padding, smaller title, hides body text.'],
     ['.dd-card-grid', 'Responsive auto-fill grid of cards (min 220px).'],
   ]} />
+
+  <script>
+    // Docs only: the demo cards link nowhere (href="#"), so following one shows where it would have gone.
+    document.addEventListener('click', (e) => {
+      const link = (e.target as Element).closest?.('.ex-stage a[href="#"]:is(.dd-card--link, .dd-card__stretch, .dd-card__link)');
+      if (!link) return;
+      const name = link.closest('.dd-card')?.querySelector('.dd-card__title')?.textContent?.trim() || 'the card';
+      (window as any).dd?.toast?.({ title: `Opening ${name}`, description: 'In an app this card is a link to its page.', intent: 'neutral', duration: 2500 });
+    });
+  </script>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides

@@ -61,6 +61,8 @@
     } else {
       open.delete(pop);
       document.querySelectorAll(`[popovertarget="${CSS.escape(pop.id)}"]`).forEach((b) => { if (!pop.contains(b)) b.setAttribute('aria-expanded', 'false'); });
+      // An anchor passed to dd.popover.open() hears about the close too.
+      if (a && !pop.contains(a) && a.hasAttribute('aria-expanded')) a.setAttribute('aria-expanded', 'false');
     }
   }, true);
 

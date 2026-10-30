@@ -568,7 +568,7 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
 @container dd-app-shell (max-width: 767px) {
   .dd-app-shell > .dd-side-nav {
     position: fixed; inset-block: 0; top: 0; left: calc(-1 * (var(--dd-side-nav-rail) + var(--dd-side-nav-panel)) - 48px);
-    z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden;
+    z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden; pointer-events: none;
     transition: left var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
   }
   .dd-app-shell > .dd-side-nav::before {
@@ -577,7 +577,7 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
   }
   .dd-app-shell > .dd-side-nav .dd-side-nav__panel { width: var(--dd-side-nav-panel); min-width: 0; flex-shrink: 1; visibility: inherit; }
   .dd-app-shell > .dd-side-nav .dd-side-nav__collapse > .dd-icon { rotate: 0deg; }
-  .dd-app-shell > .dd-side-nav.is-mobile-open { left: 0; visibility: visible; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
+  .dd-app-shell > .dd-side-nav.is-mobile-open { left: 0; visibility: visible; pointer-events: auto; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
   .dd-app-shell > .dd-side-nav.is-mobile-open::before { opacity: 1; pointer-events: auto; }
   .dd-app-shell .dd-top-bar__nav-btn { display: inline-flex; }
   .dd-app-shell .dd-top-bar__narrow { display: inline-flex !important; }
@@ -694,6 +694,8 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
   --_c: color-mix(in oklab, var(--_k) 82%, var(--dd-text));
   --_soft: color-mix(in oklab, var(--_k) 18%, transparent);
 }
+
+.dd-badge[hidden] { display: none; }
 
 /* Styles */
 .dd-badge--soft { background: var(--_soft); color: var(--_c); }
@@ -1093,6 +1095,8 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 .dd-card__stretch::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
 .dd-card__stretch:focus-visible { outline: none; }
 .dd-card:has(.dd-card__stretch:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+/* Controls inside a stretched-link card sit above the link's hit area, so they keep their own click. */
+.dd-card:has(.dd-card__stretch) :is(a[href], button, input, select, textarea, label, summary, [tabindex]):not(.dd-card__stretch) { position: relative; z-index: 1; }
 
 /* Stat: a big display figure, its label and a delta. */
 .dd-card__stat {
@@ -1402,6 +1406,32 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 .dd-chart__data td { font-family: var(--dd-font-mono); }
 .dd-chart__data td:first-child { font-family: inherit; }
 
+/* ---------- behaviour: chart.js on [data-dd-chart] ---------- */
+/* The mark under the pointer, finger or keyboard is .is-active: it gets the same tooltip, band and dimming as hover.
+   Esc adds .is-tip-off to hide the tooltip until the next move. */
+.dd-chart[data-dd-chart] { position: relative; }
+.dd-chart { overflow-x: clip; } /* closed tooltips beside the last marks never widen the page */
+:is(.dd-chart__slot, .dd-chart__hit).is-active > .dd-chart__tip { opacity: 1; visibility: visible; transform: none; }
+.dd-chart__slot.is-active { background: color-mix(in oklab, var(--dd-text) 5%, transparent); }
+.dd-chart__cols:has(> .is-active) .dd-chart__slot:not(.is-active) > :is(.dd-chart__col, .dd-chart__stackcol) { opacity: .45; }
+.dd-chart__hit.is-active::before, .dd-chart__hit.is-active .dd-chart__dot { opacity: 1; }
+.dd-chart__stack:has(> .is-active) .dd-chart__seg:not(.is-active) { opacity: .5; }
+.dd-chart__stack--thin:has(> :focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; } /* it clips its segments */
+.dd-chart__donut svg:has(.dd-chart__arc.is-active) .dd-chart__arc:not(.is-active) { opacity: .45; }
+.dd-chart__arc.is-active { stroke-width: 6.5; }
+.dd-chart__arc:focus-visible { outline: none; }
+.dd-chart__donut:has(.dd-chart__arc:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 4px; border-radius: 50%; }
+:is(.dd-chart__slot, .dd-chart__hit).is-tip-off > .dd-chart__tip { opacity: 0; visibility: hidden; transform: translateY(3px); }
+/* Floating tip for segments and arcs, placed by the script. */
+.dd-chart__tip--float { left: 0; top: 0; }
+.dd-chart__tip--float.is-open { opacity: 1; visibility: visible; transform: none; }
+
+/* View as table: [data-dd-chart-view] swaps the plot for its table. */
+.dd-chart [data-dd-chart-view][aria-pressed="true"] { background: var(--dd-wash-strong); color: var(--dd-text); }
+.dd-chart.is-table :is(.dd-chart__frame, .dd-chart__pie, .dd-chart__stack, .dd-chart__hbars) { display: none; }
+.dd-chart__data--swap .dd-chart__data-scroll { margin-top: 0; max-height: calc(var(--_h) + 2.5rem); overflow: auto; }
+.dd-chart__data--swap thead th { position: sticky; top: 0; background: var(--_bg); }
+
 /* ---------- narrow ---------- */
 /* Minor x ticks go first: below ~760px a dozen time labels start to touch. */
 @container (max-width: 760px) { .dd-chart__x > .is-minor { visibility: hidden; } }
@@ -1588,7 +1618,11 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 /* A row of chips. */
 .dd-chip-group { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5); }
 
-@media (prefers-reduced-motion: reduce) { .dd-chip.is-duplicate { animation: none; } }
+/* Reduced motion: no nudge, but the tint still deepens for a moment (chip.js holds the class ~0.6s), so a duplicate
+   is never silently ignored. */
+@media (prefers-reduced-motion: reduce) {
+  .dd-chip.is-duplicate { animation: none; background-color: color-mix(in oklab, color-mix(in oklab, var(--_c) var(--_t), transparent), var(--dd-text) 16%); }
+}
 
 
 /* ===== components/code.css ===== */
@@ -1793,6 +1827,11 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 .dd-input--sm .dd-combobox__chip { padding-block: 0; }
 @keyframes dd-combobox-chip { from { opacity: 0; transform: scale(.92); } }
 
+/* "Create …" row (data-dd-combobox-create): the typed text as a new value, at the end of the list. */
+.dd-combobox__create > .dd-icon { flex: none; color: var(--dd-muted); }
+.dd-combobox__create q { font-weight: 600; }
+.dd-combobox__create.is-active > .dd-icon { color: var(--dd-text); }
+
 
 /* ===== components/command-palette.css ===== */
 /* Command palette — the ⌘K dialog: a large borderless search field, grouped results, kbd hints, one selected row
@@ -1977,6 +2016,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   background: var(--_on); color: var(--dd-accent); box-shadow: none;
 }
 .dd-data-table__chip:is([aria-pressed="true"], .is-active):hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
+.dd-data-table__chip[hidden] { display: none; }
 .dd-data-table__chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint)); }
 
 .dd-data-table__tools { display: flex; align-items: center; gap: calc(var(--dd-u) * 1); margin-left: auto; }
@@ -2000,6 +2040,8 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   border-radius: var(--dd-r-ctl); font-size: var(--dd-fs-sm); cursor: pointer; white-space: nowrap;
 }
 .dd-data-table__menu-panel label:hover { background: var(--dd-float-hover); }
+/* --start: a menu at the left of the toolbar (a filter chip) opens from its left edge */
+.dd-data-table__menu--start .dd-data-table__menu-panel { right: auto; left: 0; }
 @keyframes dd-data-table-pop { from { opacity: 0; transform: translateY(-4px); } }
 
 /* ---------- bulk-action bar ---------- */
@@ -2692,6 +2734,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   max-width: 52ch; margin-inline: auto; padding: calc(var(--dd-u) * 10) calc(var(--dd-u) * 5);
   text-align: center; color: var(--dd-text);
 }
+.dd-empty-state[hidden] { display: none; }
 .dd-empty-state__icon {
   display: grid; place-items: center; flex: none; width: calc(var(--dd-u) * 9.6); height: calc(var(--dd-u) * 9.6);
   margin-bottom: calc(var(--dd-u) * 2); border-radius: var(--dd-r-box);
@@ -2863,6 +2906,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-field__hint, .dd-field__error { margin: 0; font-size: var(--dd-fs-xs); line-height: 1.45; color: var(--dd-muted); overflow-wrap: anywhere; }
 .dd-field__error { display: flex; align-items: flex-start; gap: calc(var(--dd-u) * 1.25); color: var(--dd-bad); font-weight: 500; }
 .dd-field__error > .dd-icon { margin-top: .1em; }
+.dd-field__error[hidden] { display: none; }
 .dd-field__counter {
   flex: none; margin-left: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); line-height: 1.45;
   font-variant-numeric: tabular-nums; color: var(--dd-muted); transition: color var(--dd-dur-fast) var(--dd-ease);
@@ -3252,6 +3296,233 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-link[aria-disabled='true'] > span { text-decoration-color: var(--dd-faint); }
 
 
+/* ===== components/loader.css ===== */
+/* Loader — the ampersand from the logo, set moving: the brand's own way to say "loading". It is the real Outfit 800
+   "&" (traced from the font, so it matches the wordmark exactly). Ten variants share one outer element and differ only in
+   what's inside — copy a variant's markup from the docs page, then swap sizes freely. The outer element carries
+   role="status" and the label; everything inside is aria-hidden. Ink is currentColor (--dd-text, like the logo); the
+   accent is --dd-loader-accent (apricot primary); the faint "track" glyph is --dd-loader-track. Every loop is built
+   from --dd-dur and --dd-ease and moves only transform, opacity, stroke-dashoffset and masks. Under reduced motion each
+   variant settles into a still glyph that fades slowly, so a paused loader never reads as "done". Glyph geometry:
+   viewBox "-2 -755 740 800" (baseline at y=0, 1000-unit em). */
+.dd-loader {
+  --_s: 32px;                              /* height; the box is 0.925 of it wide */
+  --_k: 1;                                 /* stroke scale: thin lines stay legible at every size */
+  --_t: calc(var(--dd-dur) * 8);           /* loop period */
+  --_ink: currentColor;
+  --_acc: var(--dd-loader-accent, var(--dd-primary));
+  --_track: var(--dd-loader-track, color-mix(in oklab, currentColor 14%, transparent));
+  --_glyph: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -755 740 800'><path d='M499 0L179 -353Q142 -395 125.5 -433Q109 -471 109 -516Q109 -570 137 -616.5Q165 -663 214 -692Q263 -721 328 -721Q379 -721 418.5 -706.5Q458 -692 486 -670Q514 -648 528 -625L415 -514Q396 -540 376 -551Q356 -562 332 -562Q306 -562 289 -547Q272 -532 272 -511Q272 -494 280 -479.5Q288 -465 302 -448L702 0ZM272 11Q200 11 146.5 -18Q93 -47 63.5 -96.5Q34 -146 34 -207Q34 -274 68.5 -326.5Q103 -379 175 -412L248 -296Q221 -286 208 -265.5Q195 -245 195 -220Q195 -200 204.5 -183Q214 -166 232 -156Q250 -146 275 -146Q300 -146 320.5 -157.5Q341 -169 357 -194L477 -76Q461 -56 430.5 -36Q400 -16 359.5 -2.5Q319 11 272 11Z'/></svg>");
+  --_glyph-a: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -755 740 800'><path d='M499 0L179 -353Q142 -395 125.5 -433Q109 -471 109 -516Q109 -570 137 -616.5Q165 -663 214 -692Q263 -721 328 -721Q379 -721 418.5 -706.5Q458 -692 486 -670Q514 -648 528 -625L415 -514Q396 -540 376 -551Q356 -562 332 -562Q306 -562 289 -547Q272 -532 272 -511Q272 -494 280 -479.5Q288 -465 302 -448L702 0Z'/></svg>");
+  --_glyph-b: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -755 740 800'><path d='M272 11Q200 11 146.5 -18Q93 -47 63.5 -96.5Q34 -146 34 -207Q34 -274 68.5 -326.5Q103 -379 175 -412L248 -296Q221 -286 208 -265.5Q195 -245 195 -220Q195 -200 204.5 -183Q214 -166 232 -156Q250 -146 275 -146Q300 -146 320.5 -157.5Q341 -169 357 -194L477 -76Q461 -56 430.5 -36Q400 -16 359.5 -2.5Q319 11 272 11Z'/></svg>");
+  position: relative; display: inline-block; flex: none; box-sizing: border-box; vertical-align: middle;
+  width: calc(var(--_s) * .925); height: var(--_s);
+  color: var(--dd-text);
+}
+.dd-loader > * { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.dd-loader svg { overflow: visible; }
+.dd-loader path { fill: var(--_ink); }
+/* The glyph as a window: anything inside it (gradients, bands, strokes) shows only within the ampersand. */
+.dd-loader__glyph {
+  overflow: hidden;
+  -webkit-mask: var(--_glyph) center / 100% 100% no-repeat;
+  mask: var(--_glyph) center / 100% 100% no-repeat;
+}
+.dd-loader__glyph > i { position: absolute; display: block; }
+.dd-loader__glyph::before { content: none; position: absolute; inset: 0; }
+
+/* Sizes. In a page loader the default is 64px; inside .dd-loading it follows the text. */
+:where(.dd-page-loader) > .dd-loader { --_s: 64px; --_k: .7; }
+:where(.dd-loading) > .dd-loader { --_s: 1.5em; --_k: 1.35; }
+.dd-loader--sm { --_s: 20px; --_k: 1.35; }
+.dd-loader--lg { --_s: 56px; --_k: .75; }
+.dd-loader--xl { --_s: 96px; --_k: .55; }
+
+/* #1 Ink — the & is written stroke by stroke (the main stroke, then the bowl) by a broad pen, holds, then lifts away in
+   the direction it was written. Each pen only paints its own stroke of the glyph. Markup: span.dd-loader__glyph (track),
+   then svg.dd-loader__b and svg.dd-loader__a, each holding one pen centreline. */
+.dd-loader--ink { --_t: calc(var(--dd-dur) * 9); }
+.dd-loader--ink .dd-loader__glyph { background: var(--_track); }
+.dd-loader--ink svg.dd-loader__a { -webkit-mask: var(--_glyph-a) center / 100% 100% no-repeat; mask: var(--_glyph-a) center / 100% 100% no-repeat; }
+.dd-loader--ink svg.dd-loader__b { -webkit-mask: var(--_glyph-b) center / 100% 100% no-repeat; mask: var(--_glyph-b) center / 100% 100% no-repeat; }
+.dd-loader--ink path {
+  fill: none; stroke: var(--_ink); stroke-width: 210; stroke-dasharray: 1 2; stroke-dashoffset: 0;
+  animation: dd-loader-ink-a var(--_t) var(--dd-ease) infinite;
+}
+.dd-loader--ink .dd-loader__b path { animation-name: dd-loader-ink-b; }
+@keyframes dd-loader-ink-a {
+  0% { stroke-dashoffset: 1; }
+  34%, 70% { stroke-dashoffset: 0; }
+  90%, 100% { stroke-dashoffset: -1; }
+}
+@keyframes dd-loader-ink-b {
+  0%, 27% { stroke-dashoffset: 1; }
+  52%, 76% { stroke-dashoffset: 0; }
+  95%, 100% { stroke-dashoffset: -1; }
+}
+
+/* #2 Trace — an apricot line traces the outline, the ink floods in behind it, then the glyph fades back to its track.
+   Markup: span.dd-loader__glyph + svg > path.dd-loader__line ×2 (outline, counter). */
+.dd-loader--trace .dd-loader__glyph { background: var(--_track); }
+.dd-loader--trace .dd-loader__glyph::before { content: ""; background: var(--_ink); animation: dd-loader-trace-fill var(--_t) var(--dd-ease) infinite; }
+.dd-loader--trace .dd-loader__line {
+  fill: none; stroke: var(--_acc); stroke-width: calc(34 * var(--_k)); stroke-linejoin: round;
+  stroke-dasharray: 1 2; stroke-dashoffset: 0; animation: dd-loader-trace-line var(--_t) var(--dd-ease) infinite;
+}
+@keyframes dd-loader-trace-line {
+  0% { stroke-dashoffset: 1; opacity: 1; }
+  46% { stroke-dashoffset: 0; opacity: 1; }
+  66%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes dd-loader-trace-fill {
+  0%, 30% { opacity: 0; }
+  56%, 74% { opacity: 1; }
+  96%, 100% { opacity: 0; }
+}
+
+/* #3 Sky — the golden-hour set drifts through the glyph on the angle of its leg, honey through wine and round again: a
+   sky going from dawn to dusk. Markup: span.dd-loader__glyph > i. */
+.dd-loader--sky { --_t: calc(var(--dd-dur) * 10); }
+.dd-loader--sky .dd-loader__glyph > i {
+  left: -200%; top: -100%; width: 500%; height: 300%;
+  background: repeating-linear-gradient(90deg, var(--dd-set-1) 0%, var(--dd-set-2) 6.67%, var(--dd-set-3) 13.33%,
+    var(--dd-set-4) 20%, var(--dd-set-5) 26.67%, var(--dd-set-6) 33.33%, var(--dd-set-1) 40%);
+  transform: rotate(-42deg);
+  animation: dd-loader-sky var(--_t) linear infinite;
+}
+@keyframes dd-loader-sky { from { transform: rotate(-42deg) translateX(20%); } to { transform: rotate(-42deg) translateX(-20%); } }
+
+/* #4 Sunrise — a big sun rises behind the & from the baseline (the horizon), stands behind it, and sets again: warm
+   at the horizon, honey overhead. The & is cut out of the sun by a gap, as the logo's second line is cut out of the first
+   — a real cut, so the page shows through it. Markup: span.dd-loader__sky > i, then span.dd-loader__glyph. */
+.dd-loader--sun { --_t: calc(var(--dd-dur) * 10); }
+.dd-loader--sun .dd-loader__glyph { background: var(--_ink); }
+.dd-loader__sky {
+  overflow: hidden; clip-path: inset(0 0 5.625% 0);
+  -webkit-mask: linear-gradient(#000 0 0), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -755 740 800'><path d='M499 0L179 -353Q142 -395 125.5 -433Q109 -471 109 -516Q109 -570 137 -616.5Q165 -663 214 -692Q263 -721 328 -721Q379 -721 418.5 -706.5Q458 -692 486 -670Q514 -648 528 -625L415 -514Q396 -540 376 -551Q356 -562 332 -562Q306 -562 289 -547Q272 -532 272 -511Q272 -494 280 -479.5Q288 -465 302 -448L702 0ZM272 11Q200 11 146.5 -18Q93 -47 63.5 -96.5Q34 -146 34 -207Q34 -274 68.5 -326.5Q103 -379 175 -412L248 -296Q221 -286 208 -265.5Q195 -245 195 -220Q195 -200 204.5 -183Q214 -166 232 -156Q250 -146 275 -146Q300 -146 320.5 -157.5Q341 -169 357 -194L477 -76Q461 -56 430.5 -36Q400 -16 359.5 -2.5Q319 11 272 11Z' stroke='black' stroke-width='76' stroke-linejoin='round'/></svg>") center / 100% 100% no-repeat;
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -755 740 800'><path d='M499 0L179 -353Q142 -395 125.5 -433Q109 -471 109 -516Q109 -570 137 -616.5Q165 -663 214 -692Q263 -721 328 -721Q379 -721 418.5 -706.5Q458 -692 486 -670Q514 -648 528 -625L415 -514Q396 -540 376 -551Q356 -562 332 -562Q306 -562 289 -547Q272 -532 272 -511Q272 -494 280 -479.5Q288 -465 302 -448L702 0ZM272 11Q200 11 146.5 -18Q93 -47 63.5 -96.5Q34 -146 34 -207Q34 -274 68.5 -326.5Q103 -379 175 -412L248 -296Q221 -286 208 -265.5Q195 -245 195 -220Q195 -200 204.5 -183Q214 -166 232 -156Q250 -146 275 -146Q300 -146 320.5 -157.5Q341 -169 357 -194L477 -76Q461 -56 430.5 -36Q400 -16 359.5 -2.5Q319 11 272 11Z' stroke='black' stroke-width='76' stroke-linejoin='round'/></svg>") center / 100% 100% no-repeat;
+  mask-composite: exclude;
+}
+.dd-loader__sky > i {
+  position: absolute; left: 6%; top: 8%; display: block; width: 88%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, var(--dd-set-1) 0 30%, var(--dd-set-2) 100%);
+  animation: dd-loader-sun var(--_t) var(--dd-ease) infinite;
+}
+.dd-loader__sky > i::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; opacity: 0;
+  background: radial-gradient(circle at 50% 40%, var(--dd-set-3) 0 25%, var(--dd-set-4) 100%);
+  animation: dd-loader-sun-low var(--_t) var(--dd-ease) infinite;
+}
+@keyframes dd-loader-sun {
+  0% { transform: translateY(112%); }
+  42%, 58% { transform: translateY(0); }
+  100% { transform: translateY(112%); }
+}
+@keyframes dd-loader-sun-low {
+  0% { opacity: 1; }
+  42%, 58% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* #5 Horizon — dawn light rises through the & from the baseline; then dusk (ink) rises over it, and again. Markup:
+   span.dd-loader__glyph > i. */
+.dd-loader--horizon { --_t: calc(var(--dd-dur) * 10); }
+.dd-loader--horizon .dd-loader__glyph > i {
+  left: 0; top: 0; width: 100%; height: 300%;
+  background: linear-gradient(to bottom, var(--_ink) 0 32.5%, var(--dd-set-1) 33.33%, var(--_acc) 38%,
+    var(--_acc) 65.8%, var(--_ink) 66.67%);
+  transform: translateY(-33.333%);
+  animation: dd-loader-horizon var(--_t) var(--dd-ease) infinite;
+}
+@keyframes dd-loader-horizon {
+  0% { transform: translateY(0); }
+  40%, 50% { transform: translateY(-33.333%); }
+  90%, 100% { transform: translateY(-66.667%); }
+}
+
+/* #6 Breathe — the & breathes from Outfit Black down to Thin and back (the font's own outlines, interpolated). Markup:
+   svg > path.dd-loader__morph with an <animate> on d, then span.dd-loader__glyph (the still glyph for reduced motion). */
+.dd-loader--weight .dd-loader__glyph { display: none; background: var(--_ink); }
+
+/* #7 Firefly — a small apricot light with a short tail runs round the outline of a faint &. Markup:
+   span.dd-loader__glyph + svg > path.dd-loader__tail + path.dd-loader__spark (the outline). */
+.dd-loader--firefly .dd-loader__glyph { background: var(--_track); }
+.dd-loader--firefly :is(.dd-loader__tail, .dd-loader__spark) {
+  fill: none; stroke: var(--_acc); stroke-linecap: round; stroke-linejoin: round;
+  animation: dd-loader-run var(--_t) linear infinite;
+}
+.dd-loader--firefly .dd-loader__tail { stroke-width: calc(30 * var(--_k)); stroke-dasharray: .2 .8; opacity: .45; }
+/* The spark runs a fifth of a lap ahead, so it sits at the head of the tail. */
+.dd-loader--firefly .dd-loader__spark { stroke-width: calc(76 * var(--_k)); stroke-dasharray: 0 1; stroke-dashoffset: -.62; animation-delay: calc(var(--_t) * -.2); }
+@keyframes dd-loader-run { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1; } }
+
+/* #8 Tones — the & turns through all eight golden-hour colours, honey to sand; the bowl follows the main stroke half a
+   beat behind. Markup: svg > path.dd-loader__b + path.dd-loader__a (the two strokes of the glyph). */
+.dd-loader--tones { --_t: calc(var(--dd-dur) * 12); }
+.dd-loader--tones path { fill: var(--_acc); animation: dd-loader-tones var(--_t) var(--dd-ease) infinite; }
+.dd-loader--tones .dd-loader__b { animation-delay: calc(var(--_t) * -15 / 16); }
+@keyframes dd-loader-tones {
+  0%, 100% { fill: var(--dd-set-1); } 12.5% { fill: var(--dd-set-2); } 25% { fill: var(--dd-set-3); }
+  37.5% { fill: var(--dd-set-4); } 50% { fill: var(--dd-set-5); } 62.5% { fill: var(--dd-set-6); }
+  75% { fill: var(--dd-set-7); } 87.5% { fill: var(--dd-set-8); }
+}
+
+/* #9 Cut — the logo's knocked-out gap slides through the ink &, parallel to its leg, like the lockup's second line
+   passing over the first. A real cut: the page shows through it. Markup: span.dd-loader__glyph > i. */
+.dd-loader--cut { --_t: calc(var(--dd-dur) * 7); --_g: calc(var(--_s) * .03); }
+.dd-loader--cut .dd-loader__glyph > i {
+  left: 0; top: 0; width: 300%; height: 100%; background: var(--_ink);
+  -webkit-mask: linear-gradient(48deg, #000 calc(50% - var(--_g)), transparent 0 calc(50% + var(--_g)), #000 0);
+  mask: linear-gradient(48deg, #000 calc(50% - var(--_g)), transparent 0 calc(50% + var(--_g)), #000 0);
+  transform: translateX(-66.667%);
+  animation: dd-loader-cut var(--_t) var(--dd-ease) infinite;
+}
+@keyframes dd-loader-cut {
+  0% { transform: translateX(-66.667%); }
+  76%, 100% { transform: translateX(0); }
+}
+
+/* #10 Join — the &'s two strokes drift in from opposite corners, settle into the glyph, hold, then drift apart. Markup:
+   span.dd-loader__glyph (track) + svg > path.dd-loader__b + path.dd-loader__a. */
+.dd-loader--join { --_t: calc(var(--dd-dur) * 9); }
+.dd-loader--join .dd-loader__glyph { background: var(--_track); }
+.dd-loader--join .dd-loader__a { animation: dd-loader-join-a var(--_t) var(--dd-ease) infinite; }
+.dd-loader--join .dd-loader__b { animation: dd-loader-join-b var(--_t) var(--dd-ease) infinite; }
+@keyframes dd-loader-join-a {
+  0% { transform: translate(60px, -60px); opacity: 0; }
+  14% { opacity: 1; }
+  36%, 70% { transform: none; opacity: 1; }
+  88% { opacity: 1; }
+  100% { transform: translate(60px, -60px); opacity: 0; }
+}
+@keyframes dd-loader-join-b {
+  0% { transform: translate(-60px, 60px); opacity: 0; }
+  14% { opacity: 1; }
+  36%, 70% { transform: none; opacity: 1; }
+  88% { opacity: 1; }
+  100% { transform: translate(-60px, 60px); opacity: 0; }
+}
+
+/* Reduced motion: nothing travels. Each variant rests on a whole glyph (Horizon in dawn light, Tones in apricot,
+   Sunrise with the sun up behind it, Firefly with its light parked on the terminal) and the loader fades slowly instead. */
+@keyframes dd-loader-rest { from { opacity: 1; } to { opacity: .4; } }
+@media (prefers-reduced-motion: reduce) {
+  /* base.css shortens every animation under reduced motion; the slow fade is the point here, so it opts back out. */
+  .dd-loader {
+    animation: dd-loader-rest calc(var(--dd-dur) * 6) var(--dd-ease) infinite alternate;
+    animation-duration: calc(var(--dd-dur) * 6) !important; animation-iteration-count: infinite !important;
+  }
+  .dd-loader *, .dd-loader *::before, .dd-loader *::after { animation: none !important; }
+  .dd-loader :is(.dd-loader__line, .dd-loader__tail) { opacity: 0; }
+  .dd-loader--weight > svg { display: none; }
+  .dd-loader--weight .dd-loader__glyph { display: block; }
+}
+@media (forced-colors: active) {
+  .dd-loader { forced-color-adjust: none; color: CanvasText; --dd-loader-accent: Highlight; --dd-loader-track: GrayText; }
+}
+
+
 /* ===== components/log-viewer.css ===== */
 /* Log viewer — a monospace stream with timestamps, level badges and a service column; a bar to search, filter by
    level and toggle wrapping (behaviors/log-viewer.js). Columns line up across lines via subgrid. */
@@ -3303,8 +3574,10 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint));
 }
 .dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='false']::before { opacity: .35; }
-.dd-log-viewer__toggle--wrap { height: 30px; background-color: var(--dd-surface-2); }
-.dd-log-viewer__toggle--wrap[aria-pressed='true'] { background-color: var(--dd-surface-3); }
+.dd-log-viewer__toggle:is(.dd-log-viewer__toggle--wrap, .dd-log-viewer__toggle--follow) { height: 30px; background-color: var(--dd-surface-2); }
+.dd-log-viewer__toggle:is(.dd-log-viewer__toggle--wrap, .dd-log-viewer__toggle--follow)[aria-pressed='true'] { background-color: var(--dd-surface-3); }
+/* Follow (stay on the newest line) is icon-only so the bar keeps to one line; name it with aria-label. */
+.dd-log-viewer__toggle--follow { width: 30px; padding: 0; justify-content: center; }
 .dd-log-viewer__n { font-family: var(--dd-font-mono); font-size: 10.5px; color: var(--dd-muted); }
 .dd-log-viewer__count { margin-left: auto; font-family: var(--dd-font-mono); font-size: 11px; color: var(--dd-muted); white-space: nowrap; }
 .dd-log-viewer__live { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); font-weight: 600; color: var(--dd-text); white-space: nowrap; }
@@ -4290,7 +4563,9 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
   font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1.2; white-space: nowrap; pointer-events: none; opacity: 0;
   transition: opacity var(--dd-dur-fast) var(--dd-ease), translate var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-side-nav__item[data-label]:is(:hover, :focus-visible)::after { opacity: 1; translate: 0 -50%; transition-delay: 120ms; }
+/* Hover only where there is a real hover: on touch, :hover sticks after a tap and the label would sit over the panel. */
+.dd-side-nav__item[data-label]:focus-visible::after { opacity: 1; translate: 0 -50%; transition-delay: 120ms; }
+@media (hover: hover) { .dd-side-nav__item[data-label]:hover::after { opacity: 1; translate: 0 -50%; transition-delay: 120ms; } }
 
 /* The collapse chevron sits at the foot of the rail; it points the way the panel will move. */
 .dd-side-nav__collapse > .dd-icon { transition: rotate var(--dd-dur) var(--dd-ease); }
@@ -4383,6 +4658,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-side-nav--offcanvas {
   position: fixed; inset-block: 0; top: 0; left: calc(-1 * (var(--dd-side-nav-rail) + var(--dd-side-nav-panel)) - 48px);
   z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden;
+  pointer-events: none; /* while it slides out, a tap goes to the page (e.g. the menu button again), not the leaving nav */
   transition: left var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
 }
 .dd-side-nav--offcanvas::before {
@@ -4391,7 +4667,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 }
 .dd-side-nav--offcanvas .dd-side-nav__panel { width: var(--dd-side-nav-panel); min-width: 0; flex-shrink: 1; visibility: inherit; }
 .dd-side-nav--offcanvas .dd-side-nav__collapse > .dd-icon { rotate: 0deg; }
-.dd-side-nav--offcanvas.is-mobile-open { left: 0; visibility: visible; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
+.dd-side-nav--offcanvas.is-mobile-open { left: 0; visibility: visible; pointer-events: auto; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
 .dd-side-nav--offcanvas.is-mobile-open::before { opacity: 1; pointer-events: auto; }
 
 /* Restoring a persisted state on load: no animation. */
@@ -4438,6 +4714,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 /* A loading region: aria-busy content area. */
 .dd-skeleton-group { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 3); min-width: 0; }
 .dd-skeleton-group[aria-busy="true"] { cursor: progress; }
+:is(.dd-skeleton, .dd-skeleton-lines, .dd-skeleton-group)[hidden] { display: none; }
 
 @keyframes dd-skeleton-shimmer { from { background-position: 120% 0; } to { background-position: -20% 0; } }
 @media (prefers-reduced-motion: reduce) { .dd-skeleton { animation: none; background-image: none; } }
@@ -4589,9 +4866,11 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
    header or open menus. */
 :where(:has(> .dd-page-loader--overlay:not(.dd-page-loader--fixed))) { isolation: isolate; }
 .dd-page-loader.dd-page-loader--fixed { position: fixed; z-index: var(--dd-z-overlay); }
+/* They all set a display, so say again that [hidden] hides them: a loader is shown and hidden with the attribute. */
+:is(.dd-spinner, .dd-loading, .dd-page-loader)[hidden] { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .dd-spinner:not(.dd-spinner--dots) { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
+  .dd-spinner:not(.dd-spinner--dots), .dd-btn__spinner { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
   .dd-spinner--dots > i { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
 }
 
@@ -4933,6 +5212,8 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
   font-size: var(--dd-fs-sm); color: var(--dd-text);
   scrollbar-width: thin; scrollbar-color: var(--dd-surface-3) transparent;
 }
+/* A wide table scrolls inside the card; with tabindex="0" the arrow keys scroll it, and focus rings the card. */
+.dd-table:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 .dd-table > table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
 .dd-table :is(th, td) {
   padding: var(--_py) var(--_px); text-align: left; white-space: nowrap; vertical-align: middle;
@@ -4973,6 +5254,13 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-table--interactive tbody tr { cursor: pointer; transition: background-color var(--dd-dur-fast) var(--dd-ease); }
 .dd-table--interactive tbody tr:is(:hover, :focus-within) { background-color: var(--dd-wash); }
 .dd-table--interactive tbody tr:active { background-color: var(--dd-wash-strong); }
+/* The row's one link stretches over the whole row (position: relative on the row anchors it), keeping the cell's look.
+   Keyboard focus rings the row instead of the text. */
+.dd-table--interactive tbody tr:has(.dd-table__row-link) { position: relative; }
+.dd-table__row-link { color: inherit; text-decoration: none; }
+.dd-table__row-link::after { content: ""; position: absolute; inset: 0; }
+.dd-table__row-link:focus-visible { outline: none; }
+.dd-table--interactive tbody tr:has(.dd-table__row-link:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: -2px; }
 
 /* Variants */
 .dd-table--compact { --_py: calc(var(--dd-u) * 1.5); --_px: calc(var(--dd-u) * 3); }
@@ -5009,6 +5297,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
   padding: calc(var(--dd-u) * 8) calc(var(--dd-u) * 5); text-align: center; color: var(--dd-muted); font-size: var(--dd-fs-sm);
   white-space: normal;
 }
+.dd-table__empty[hidden] { display: none; }
 .dd-table > table + .dd-table__empty { border-top: 1px solid var(--_line); }
 .dd-table__empty-icon {
   display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: calc(var(--dd-u) * 1);
@@ -5408,11 +5697,13 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 
 /* The stack. Newest at the bottom, nearest the corner; full width on small screens. */
 .dd-toaster {
-  position: fixed; z-index: var(--dd-z-toast); right: calc(var(--dd-u) * 5); bottom: calc(var(--dd-u) * 5);
+  position: fixed; z-index: var(--dd-z-toast); inset: auto; right: calc(var(--dd-u) * 5); bottom: calc(var(--dd-u) * 5);
   display: flex; flex-direction: column; align-items: flex-end; gap: calc(var(--dd-u) * 2);
   width: min(400px, calc(100vw - var(--dd-u) * 6)); margin: 0; padding: 0;
   pointer-events: none;
 }
+/* The stack is a manual popover where supported (top layer, above modal dialogs): undo the UA popover box. */
+.dd-toaster[popover] { height: auto; border: 0; background: none; color: inherit; overflow: visible; }
 .dd-toaster:empty { display: none; }
 @media (max-width: 520px) {
   .dd-toaster { right: calc(var(--dd-u) * 3); left: calc(var(--dd-u) * 3); bottom: calc(var(--dd-u) * 3); width: auto; }
@@ -5435,6 +5726,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
   transition: translate var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-toaster > .dd-toast.is-swiping { transition: none; cursor: grabbing; user-select: none; }
+.dd-toaster > .dd-toast.is-settled { animation: none; } /* re-shown above a modal: no second entrance */
 .dd-toast--info { --_c: var(--dd-info); }
 .dd-toast--ok { --_c: var(--dd-ok); }
 .dd-toast--warn { --_c: var(--dd-warn); }

@@ -171,6 +171,48 @@ ${glue}
     code={page}
     stage="flush"
   />
+  <script is:inline>
+    // Docs only: show the browser's validation the dawn & dusk way (aria-invalid + .dd-field__error), and pretend to send.
+    (() => {
+      const form = document.querySelector('.ex-stage .dd-pattern-landing form');
+      if (!form) return;
+      const MSG = { 'landing-name': 'Add your name, so I know who to reply to.', 'landing-email': 'Add an email address I can reply to.', 'landing-msg': 'Write a few lines about the project.' };
+      const message = (c) => (c.validity.typeMismatch ? 'That doesn’t look like an email address — try name@studio.dev.' : MSG[c.id] || c.validationMessage);
+      const mark = (c) => {
+        const field = c.closest('.dd-field');
+        let err = field.querySelector('.dd-field__error');
+        if (c.validity.valid) {
+          c.removeAttribute('aria-invalid');
+          c.removeAttribute('aria-describedby');
+          err?.remove();
+          return;
+        }
+        if (!err) {
+          err = document.createElement('p');
+          err.className = 'dd-field__error';
+          err.id = `${c.id}-error`;
+          c.closest('.dd-input').after(err);
+        }
+        err.innerHTML = `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-error"/></svg>${message(c)}`;
+        c.setAttribute('aria-invalid', 'true');
+        c.setAttribute('aria-describedby', err.id);
+      };
+      let first = null;
+      // The browser fires "invalid" on each failing control when Send is pressed; show our message instead of its bubble.
+      form.addEventListener('invalid', (e) => {
+        e.preventDefault();
+        mark(e.target);
+        if (!first) { first = e.target; requestAnimationFrame(() => { first.focus(); first = null; }); }
+      }, true);
+      // Once a field has complained, it re-checks as you type, and clears as soon as it is right.
+      form.addEventListener('input', (e) => { if (e.target.hasAttribute('aria-invalid')) mark(e.target); });
+      form.addEventListener('submit', () => {
+        const name = form.querySelector('#landing-name').value.trim().split(/\s+/)[0];
+        window.dd?.toast?.({ title: 'Message sent', description: `Thanks, ${name} — expect a reply within two working days.`, intent: 'ok', from: form });
+        form.reset();
+      });
+    })();
+  </script>
 
   <h2 id="anatomy">Anatomy</h2>
   <ol>

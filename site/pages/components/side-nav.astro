@@ -154,24 +154,41 @@ const mobile = `
     .sn-ph i { display: block; height: 110px; border-radius: var(--dd-r-box); background: var(--dd-surface); }
     @media (max-width: 560px) { .sn-frame:not(.sn-frame--phone):has(.dd-side-nav:not(.is-collapsed)) .sn-page { display: none; } .sn-page { padding: 20px; } }
   </style>
+  <script is:inline>
+    // Docs only: the demo links act like navigation — the one you follow becomes the current page, and the page beside
+    // the nav shows its name. (In an app the next page renders with aria-current on its own link.)
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('.sn-frame .dd-side-nav__link[href="#"]');
+      if (!link) return;
+      const nav = link.closest('.dd-side-nav');
+      nav.querySelectorAll('.dd-side-nav__link[aria-current="page"]').forEach((a) => a.removeAttribute('aria-current'));
+      link.setAttribute('aria-current', 'page');
+      const page = nav.parentElement.querySelector('.sn-page');
+      const title = page?.querySelector(':is(h3, .dd-h2, .dd-h3)');
+      if (title) title.textContent = (link.querySelector('.dd-side-nav__label') || link).textContent.trim();
+      const eyebrow = page?.querySelector('.dd-eyebrow');
+      const section = link.closest('.dd-side-nav__group')?.querySelector('summary .dd-side-nav__label') || link.closest('.dd-side-nav__pane')?.querySelector('.dd-side-nav__title');
+      if (eyebrow && section) eyebrow.textContent = section.textContent.trim();
+    });
+  </script>
 
   <Example
     title="Two-level"
-    description="Sections in the rail, pages in the panel. Press another rail icon to switch the panel; press the active one, or the chevron, to fold it. Hover the rail for labels. Shown in a 560px frame — in an app it is 100dvh."
+    description="Sections in the rail, pages in the panel. Try it: press another rail icon to switch the panel; press the active one, or the chevron, to fold it; follow a page link to make it current. Hover the rail for labels. Shown in a 560px frame — in an app it is 100dvh."
     code={main}
     stage="flush"
   />
 
   <h2 id="collapsed">Collapsed</h2>
-  <p>Folded, only the rail remains: 60px of icons with ink tooltips. The choice is remembered per nav <code>id</code> in <code>localStorage</code>, so it survives reloads and page changes. Add <code>is-collapsed</code> in the markup to start folded.</p>
+  <p>Folded, only the rail remains: 60px of icons with ink tooltips. The choice is remembered per nav <code>id</code> in <code>localStorage</code>, so it survives reloads and page changes. Add <code>is-collapsed</code> in the markup to start folded. Try it: hover or tab through the rail for its labels, unfold it with the chevron, then reload the page.</p>
   <Example code={collapsed} stage="flush" />
 
   <h2 id="groups">Groups, counts and status</h2>
-  <p>Inside the panel, section headings in mono caps divide the list, native <code>&lt;details&gt;</code> make collapsible groups, and the right edge carries a count, a badge or a status dot. The active page is in ink on a deeper tone.</p>
+  <p>Inside the panel, section headings in mono caps divide the list, native <code>&lt;details&gt;</code> make collapsible groups, and the right edge carries a count, a badge or a status dot. The active page is in ink on a deeper tone. Try it: open billing-worker and pick one of its pages.</p>
   <Example code={groups} stage="flush" />
 
   <h2 id="mobile">Mobile · off-canvas</h2>
-  <p>On small screens the whole nav slides in from the left over a scrim, opened by the top bar’s menu button (<code>data-dd-nav-open</code>). Esc, the scrim, the chevron or following a link close it. Inside an <a href="../app-shell">app shell</a> this happens automatically below 768px; on its own, add <code>dd-side-nav--offcanvas</code>.</p>
+  <p>On small screens the whole nav slides in from the left over a scrim, opened by the top bar’s menu button (<code>data-dd-nav-open</code>). Esc, the scrim, the chevron or following a link close it. Inside an <a href="../app-shell">app shell</a> this happens automatically below 768px; on its own, add <code>dd-side-nav--offcanvas</code>. Shown open — try it: tap the scrim to close it, then the menu button to bring it back; press Esc or follow a link.</p>
   <Example code={mobile} stage="flush" />
 
   <h2 id="api">Classes</h2>

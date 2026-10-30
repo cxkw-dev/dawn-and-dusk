@@ -7,7 +7,7 @@ import { i } from '../../lib/icon';
 
 const dropzone = `
 <div class="dd-stack" style="--dd-gap: 12px">
-  <label class="dd-dropzone" data-dd-dropzone="#fu-list-1">
+  <label class="dd-dropzone" data-dd-dropzone="#fu-list-1" data-dd-max-size="20MB">
     <input type="file" multiple accept=".png,.jpg,.svg,.pdf,.csv,.json">
     <span class="dd-dropzone__icon">${i('upload')}</span>
     <p class="dd-dropzone__title">Drop files here or <span class="dd-dropzone__browse">browse</span></p>
@@ -37,18 +37,18 @@ const file = (o: { name: string; kind: string; ext: string; meta: string[]; stat
 const btn = (icon: string, label: string, attr = '') => `<button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" type="button" aria-label="${label}"${attr}>${i(icon)}</button>`;
 
 const list = `
-<ul class="dd-file-list">${file({ name: 'dockey-ui-hero@2x.png', kind: 'is-image', ext: 'png', meta: ['2.4 MB'], status: 'Uploading 64%', state: 'is-uploading', progress: 64, actions: btn('x', 'Cancel upload', ' data-dd-file-remove') })}${file({ name: 'billing-worker-usage-2026-10.csv', kind: 'is-data', ext: 'csv', meta: ['812 KB'], status: 'Uploaded', statusIcon: 'check', state: 'is-done', actions: btn('trash', 'Remove billing-worker-usage-2026-10.csv', ' data-dd-file-remove') })}${file({ name: 'auth-gateway-runbook.pdf', kind: 'is-doc', ext: 'pdf', meta: ['24.8 MB'], status: 'Too large — 20 MB max', statusIcon: 'alert', state: 'is-error', progress: 100, actions: btn('refresh', 'Retry upload') + btn('x', 'Remove auth-gateway-runbook.pdf', ' data-dd-file-remove') })}${file({ name: 'edge-cache.config.json', kind: 'is-code', ext: 'json', meta: ['3 KB'], status: 'Network lost at 30%', statusIcon: 'alert', state: 'is-error', progress: 30, actions: btn('refresh', 'Retry upload') + btn('x', 'Remove edge-cache.config.json', ' data-dd-file-remove') })}
+<ul class="dd-file-list">${file({ name: 'dockey-ui-hero@2x.png', kind: 'is-image', ext: 'png', meta: ['2.4 MB'], status: 'Uploading 64%', state: 'is-uploading', progress: 64, actions: btn('x', 'Cancel upload', ' data-dd-file-remove') })}${file({ name: 'billing-worker-usage-2026-10.csv', kind: 'is-data', ext: 'csv', meta: ['812 KB'], status: 'Uploaded', statusIcon: 'check', state: 'is-done', actions: btn('trash', 'Remove billing-worker-usage-2026-10.csv', ' data-dd-file-remove') })}${file({ name: 'auth-gateway-runbook.pdf', kind: 'is-doc', ext: 'pdf', meta: ['24.8 MB'], status: 'Too large — 20 MB max', statusIcon: 'alert', state: 'is-error', progress: 100, actions: btn('refresh', 'Retry upload', ' data-dd-toast="Still too large" data-dd-toast-description="auth-gateway-runbook.pdf is 24.8 MB; the limit is 20 MB." data-dd-toast-intent="bad"') + btn('x', 'Remove auth-gateway-runbook.pdf', ' data-dd-file-remove') })}${file({ name: 'edge-cache.config.json', kind: 'is-code', ext: 'json', meta: ['3 KB'], status: 'Network lost at 30%', statusIcon: 'alert', state: 'is-error', progress: 30, actions: btn('refresh', 'Retry upload', ' data-dd-toast="Retrying upload" data-dd-toast-description="edge-cache.config.json"') + btn('x', 'Remove edge-cache.config.json', ' data-dd-file-remove') })}
 </ul>`;
 
 const compact = `
 <div class="dd-field dd-field--above" style="max-width: 520px">
   <span class="dd-field__label" id="fu-c-label">Avatar</span>
-  <label class="dd-dropzone dd-dropzone--compact" data-dd-dropzone="#fu-list-2" aria-labelledby="fu-c-label">
+  <label class="dd-dropzone dd-dropzone--compact" data-dd-dropzone="#fu-list-2" data-dd-max-size="5MB" aria-labelledby="fu-c-label">
     <input type="file" accept="image/*">
     <span class="dd-dropzone__icon">${i('upload')}</span>
     <span class="dd-dropzone__text">
       <span class="dd-dropzone__title">Drop an image or <span class="dd-dropzone__browse">browse</span></span>
-      <span class="dd-dropzone__meta">Square, at least 256 × 256</span>
+      <span class="dd-dropzone__meta">Square, at least 256 × 256 · up to 5 MB</span>
     </span>
   </label>
   <ul class="dd-file-list" id="fu-list-2" aria-label="Chosen image"></ul>
@@ -57,7 +57,7 @@ const compact = `
 const invalid = `
 <div class="dd-field dd-field--above" style="max-width: 520px">
   <span class="dd-field__label" id="fu-i-label">TLS certificate</span>
-  <label class="dd-dropzone dd-dropzone--compact is-invalid" aria-labelledby="fu-i-label" aria-describedby="fu-i-err">
+  <label class="dd-dropzone dd-dropzone--compact is-invalid" data-dd-dropzone aria-labelledby="fu-i-label" aria-describedby="fu-i-err">
     <input type="file" accept=".pem,.crt" aria-invalid="true">
     <span class="dd-dropzone__icon">${i('shield')}</span>
     <span class="dd-dropzone__text">
@@ -69,22 +69,22 @@ const invalid = `
 </div>`;
 ---
 <Docs title="File upload" group="Forms" lead="Takes files by drop or by browsing, then shows each one with its size, progress and outcome. The dropzone is a label around a real file input, so click, keyboard and drop all work.">
-  <Example title="Dropzone" description="Click to browse or drop files. Chosen files appear in the list below it with a remove button — try it." code={dropzone} />
+  <Example title="Dropzone" description="Try it: click to browse, or drag files from your desktop onto it. Each file gets a row with a remove button; a type it doesn’t take, or a file over 20 MB, gets an error row instead." code={dropzone} />
 
   <h2 id="dragover">Drag state</h2>
   <p>While files hover the zone it gets <code>.is-dragover</code>: an accent tint, accent dashes and a lifted icon.</p>
-  <Example code={dragover} />
+  <Example code={dragover} description="Pinned in its drag state. To see it live, drag a file over the dropzone above." />
 
   <h2 id="list">File list</h2>
   <p>One row per file: a type tile (Color set by kind), name, mono meta and an outcome. Uploading rows show a progress bar; errors turn the tile, meta and bar red and offer a retry.</p>
-  <Example code={list} />
+  <Example code={list} description="Try it: remove a row with × (focus moves to the next one); retry gives feedback." />
 
   <h2 id="compact">Compact</h2>
   <p>A one-line zone for single files inside a form. Pair it with a label-above field.</p>
-  <Example code={compact} />
+  <Example code={compact} description="Try it: one image at a time — choosing another replaces it." />
 
   <h3 id="invalid">Invalid</h3>
-  <Example code={invalid} />
+  <Example code={invalid} description="Still a working zone: click to browse or drag a file over it." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -103,8 +103,9 @@ const invalid = `
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['data-dd-dropzone', 'Adds <code>.is-dragover</code> while files hover; dropped files go to the inner input, which fires <code>change</code>.'],
-    ['data-dd-dropzone="#list"', 'Also appends a <code>.dd-file</code> row per chosen file to that list.'],
-    ['data-dd-file-remove', 'On a button in a row: removes the row, moves focus to the next remove button (or back to the dropzone when the list is empty), fires <code>dd-file-remove</code>.'],
+    ['data-dd-dropzone="#list"', 'Also appends a <code>.dd-file</code> row per chosen file to that list. A <code>multiple</code> input adds to the list and its files are everything listed; a single one replaces its row.'],
+    ['accept · data-dd-max-size', 'Files that don’t match the input’s <code>accept</code>, or are bigger than <code>data-dd-max-size</code> on the zone (<code>"20MB"</code>, <code>"500KB"</code>), are listed as errors with the reason and kept out of the input. Dropping skips the browser’s own <code>accept</code> filter, so this check matters.'],
+    ['data-dd-file-remove', 'On a button in a row: removes the row, moves focus to the next remove button (or back to the dropzone when the list is empty), fires <code>dd-file-remove</code> on the list with <code>{ name }</code>.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

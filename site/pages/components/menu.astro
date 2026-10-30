@@ -34,7 +34,7 @@ const dropdown = `
   <div class="dd-menu__group" role="group" aria-labelledby="mn-p-project">
     <p class="dd-menu__label" id="mn-p-project">Project</p>
     <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Open<span class="dd-menu__desc">In a new window</span></span><kbd class="dd-menu__kbd">⌘O</kbd></button>
-    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Duplicate<span class="dd-menu__desc">Keeps history and comments</span></span><kbd class="dd-menu__kbd">⌘D</kbd></button>
+    <button class="dd-menu__item" role="menuitem" data-dd-toast="Duplicated as dawn-and-dusk-copy" data-dd-toast-intent="ok"><span class="dd-menu__body">Duplicate<span class="dd-menu__desc">Keeps history and comments</span></span><kbd class="dd-menu__kbd">⌘D</kbd></button>
     <button class="dd-menu__item" role="menuitem" data-dd-menu="mn-share"><span class="dd-menu__body">Share<span class="dd-menu__desc">Link, embed or export</span></span>${sub}</button>
   </div>
   <hr class="dd-menu__sep">
@@ -48,21 +48,27 @@ const dropdown = `
   <button class="dd-menu__item dd-menu__item--danger" role="menuitem"><span class="dd-menu__body">Delete project<span class="dd-menu__desc">This can’t be undone</span></span><kbd class="dd-menu__kbd">⌘⌫</kbd></button>
 </div>
 <div class="dd-menu" id="mn-share" role="menu" aria-label="Share" hidden>
-  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Copy link</span><kbd class="dd-menu__kbd">⌘⇧L</kbd></button>
+  <button class="dd-menu__item" role="menuitem" data-dd-toast="Link copied" data-dd-toast-intent="ok"><span class="dd-menu__body">Copy link</span><kbd class="dd-menu__kbd">⌘⇧L</kbd></button>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Embed…</span></button>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Export as ZIP</span></button>
 </div>`;
 
 const icons = `
-<div class="dd-menu" role="menu" aria-label="Account" style="width: min(260px, 100%)">
+<button class="dd-btn dd-btn--ghost" data-dd-menu="mn-account" aria-haspopup="menu" aria-expanded="false" aria-controls="mn-account">${i('user')}<span>atn</span>${i('chevron-down')}</button>
+<div class="dd-menu" id="mn-account" role="menu" aria-label="Account" style="width: min(260px, 100%)" hidden>
   <div class="dd-menu__header"><span>atn</span><span>cxkw.dev · personal workspace</span></div>
   <hr class="dd-menu__sep" style="margin-top: 0">
   <button class="dd-menu__item" role="menuitem">${ic('user')}<span class="dd-menu__body">Profile</span><kbd class="dd-menu__kbd">⌘,</kbd></button>
   <button class="dd-menu__item" role="menuitem">${ic('key')}<span class="dd-menu__body">API tokens</span></button>
   <button class="dd-menu__item" role="menuitem">${ic('users')}<span class="dd-menu__body">Team<span class="dd-menu__desc">4 members · cxkw</span></span></button>
-  <button class="dd-menu__item" role="menuitem">${ic('moon')}<span class="dd-menu__body">Theme</span>${sub}</button>
+  <button class="dd-menu__item" role="menuitem" data-dd-menu="mn-theme">${ic('moon')}<span class="dd-menu__body">Theme</span>${sub}</button>
   <hr class="dd-menu__sep">
-  <button class="dd-menu__item" role="menuitem">${ic('logout')}<span class="dd-menu__body">Sign out</span></button>
+  <button class="dd-menu__item" role="menuitem" data-dd-toast="Signed out" data-dd-toast-description="Not really — this is the docs.">${ic('logout')}<span class="dd-menu__body">Sign out</span></button>
+</div>
+<div class="dd-menu" id="mn-theme" role="menu" aria-label="Theme" hidden>
+  <button class="dd-menu__item" role="menuitemradio" aria-checked="true"><span class="dd-menu__body">Match system</span>${check}</button>
+  <button class="dd-menu__item" role="menuitemradio" aria-checked="false"><span class="dd-menu__body">Dawn</span>${check}</button>
+  <button class="dd-menu__item" role="menuitemradio" aria-checked="false"><span class="dd-menu__body">Dusk</span>${check}</button>
 </div>`;
 
 const checkable = `
@@ -84,24 +90,27 @@ const checkable = `
   </div>
 </div>`;
 
+const rows = [['auth-gateway', 'a3f9c21', 'deployed 4 min ago · iad1'], ['billing-worker', '7be04d2', 'deployed 1 h ago · fra1'], ['edge-cache', 'c41e9b0', 'deployed yesterday · hnd1']];
 const endAligned = `
-<div class="dd-surface" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px; max-width: 520px">
-  <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
-    <b style="font-weight: 600">auth-gateway</b>
-    <span class="dd-small dd-muted"><span class="dd-mono">a3f9c21</span> · deployed 4 min ago · iad1</span>
-  </span>
-  <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" data-dd-menu="mn-row" data-dd-placement="bottom-end" aria-haspopup="menu" aria-expanded="false" aria-controls="mn-row" aria-label="Deployment actions">${i('more')}</button>
-  <div class="dd-menu" id="mn-row" role="menu" aria-label="Deployment actions" hidden>
-    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">View logs</span><kbd class="dd-menu__kbd">L</kbd></button>
-    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Copy deployment URL</span><kbd class="dd-menu__kbd">⌘C</kbd></button>
-    <button class="dd-menu__item" role="menuitem" data-dd-menu="mn-row-promote"><span class="dd-menu__body">Promote to</span>${sub}</button>
-    <hr class="dd-menu__sep">
-    <button class="dd-menu__item dd-menu__item--danger" role="menuitem"><span class="dd-menu__body">Roll back</span></button>
-  </div>
-  <div class="dd-menu" id="mn-row-promote" role="menu" aria-label="Promote to" hidden>
-    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">staging</span></button>
-    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">production</span></button>
-  </div>
+<div class="dd-stack" style="--dd-gap: 5px; max-width: 520px">
+${rows.map(([name, sha, meta]) => `  <div class="dd-surface" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
+    <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
+      <b style="font-weight: 600">${name}</b>
+      <span class="dd-small dd-muted"><span class="dd-mono">${sha}</span> · ${meta}</span>
+    </span>
+    <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" data-dd-menu="mn-row" data-dd-placement="bottom-end" aria-haspopup="menu" aria-expanded="false" aria-controls="mn-row" aria-label="Actions for ${name}">${i('more')}</button>
+  </div>`).join('\n')}
+</div>
+<div class="dd-menu" id="mn-row" role="menu" aria-label="Deployment actions" hidden>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">View logs</span><kbd class="dd-menu__kbd">L</kbd></button>
+  <button class="dd-menu__item" role="menuitem" data-dd-toast="Deployment URL copied" data-dd-toast-intent="ok"><span class="dd-menu__body">Copy deployment URL</span><kbd class="dd-menu__kbd">⌘C</kbd></button>
+  <button class="dd-menu__item" role="menuitem" data-dd-menu="mn-row-promote"><span class="dd-menu__body">Promote to</span>${sub}</button>
+  <hr class="dd-menu__sep">
+  <button class="dd-menu__item dd-menu__item--danger" role="menuitem"><span class="dd-menu__body">Roll back</span></button>
+</div>
+<div class="dd-menu" id="mn-row-promote" role="menu" aria-label="Promote to" hidden>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">staging</span></button>
+  <button class="dd-menu__item" role="menuitem" data-dd-toast="Promoting to production" data-dd-toast-description="Checks run first; you can cancel for 30 s."><span class="dd-menu__body">production</span></button>
 </div>`;
 
 const context = `
@@ -111,7 +120,7 @@ const context = `
 </div>
 <div class="dd-menu" id="mn-ctx" role="menu" aria-label="Log file" hidden>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Open in log viewer</span><kbd class="dd-menu__kbd">↵</kbd></button>
-  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Copy path</span><kbd class="dd-menu__kbd">⌘⇧C</kbd></button>
+  <button class="dd-menu__item" role="menuitem" data-dd-toast="Path copied" data-dd-toast-description="/var/log/billing-worker.log" data-dd-toast-intent="ok"><span class="dd-menu__body">Copy path</span><kbd class="dd-menu__kbd">⌘⇧C</kbd></button>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Download</span></button>
   <hr class="dd-menu__sep">
   <button class="dd-menu__item dd-menu__item--danger" role="menuitem"><span class="dd-menu__body">Delete file</span><kbd class="dd-menu__kbd">⌫</kbd></button>
@@ -121,19 +130,19 @@ const context = `
   <Example title="Anatomy" description="Group labels, descriptions, shortcut hints, a submenu chevron, checked and disabled items, a divider and a danger item. Shown inline here; “Duplicate” is the highlighted row." code={anatomy} />
   <h2 id="dropdown">Dropdown</h2>
   <p>Put <code>data-dd-menu="menu-id"</code> on any button and <code>hidden</code> on the menu. The behaviour floats the menu below the trigger, flips it up when there’s no room, and moves focus into it. “Share” opens a submenu.</p>
-  <Example code={dropdown} />
+  <Example code={dropdown} description="Try it: click the button, or focus it and press ↓ / ↑. Type a letter to jump to an item; → on “Share” opens its submenu, ← closes it; Esc closes and returns focus." />
   <h2 id="checked">Checked items</h2>
   <p><code>role="menuitemradio"</code> checks one item per group; <code>role="menuitemcheckbox"</code> toggles. Both keep the menu open so you can set several options. The check sits at the end and the label turns semibold.</p>
-  <Example code={checkable} />
+  <Example code={checkable} description="Try it: pick a region and toggle what to show. The menu stays open; Space toggles the focused item." />
   <h2 id="icons">With icons</h2>
   <p>Icons are optional; add them to every item of a menu or to none. A <code>.dd-menu__header</code> can say who or what the menu is about.</p>
-  <Example code={icons} />
+  <Example code={icons} description="Try it: open the account menu and hover or → on “Theme” for a submenu of radio items." />
   <h2 id="overflow">Overflow menu</h2>
-  <p>A “more” button at the end of a row. <code>data-dd-placement="bottom-end"</code> aligns the menu’s right edge with the trigger.</p>
-  <Example code={endAligned} />
+  <p>A “more” button at the end of a row. <code>data-dd-placement="bottom-end"</code> aligns the menu’s right edge with the trigger. Every row’s button can share one menu: open it on one row, then click another row’s ⋯ and the menu moves there.</p>
+  <Example code={endAligned} description="Try it: open a ⋯ menu, then click the next row’s ⋯; “Promote to” has a submenu." />
   <h2 id="context">Context menu</h2>
   <p><code>data-dd-contextmenu="menu-id"</code> on an area opens the menu at the pointer on right-click. Make the area focusable so keyboard users can open it with Shift F10 or the Menu key.</p>
-  <Example code={context} />
+  <Example code={context} description="Try it: right-click the file, or Tab to it and press Shift F10 or the Menu key." />
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
     ['.dd-menu', 'The floating panel. Add <code>role="menu"</code>, an <code>aria-label</code> and <code>hidden</code> until opened. Without the behaviour it renders inline.'],

@@ -92,10 +92,12 @@
     if (link) setMobile(link.closest('.dd-side-nav'), false);
   });
 
-  // Tabbing out of an open off-canvas nav closes it, so focus never sits on the page hidden behind the scrim.
-  document.addEventListener('focusin', (e) => {
-    const nav = document.querySelector('.dd-side-nav.is-mobile-open');
-    if (nav && !nav.contains(e.target) && !openers(nav).includes(e.target)) setMobile(nav, false);
+  // Tabbing out of an open off-canvas nav closes it, so focus never sits on the page hidden behind the scrim. Only focus
+  // that leaves the nav counts: focus elsewhere that never was inside it (another demo on the same page) leaves it open.
+  document.addEventListener('focusout', (e) => {
+    const nav = e.target.closest?.('.dd-side-nav.is-mobile-open');
+    const to = e.relatedTarget;
+    if (nav && to && !nav.contains(to) && !openers(nav).includes(to)) setMobile(nav, false);
   });
 
   document.addEventListener('keydown', (e) => {

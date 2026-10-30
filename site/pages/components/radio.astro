@@ -60,14 +60,14 @@ const rows = `
 </fieldset>`;
 ---
 <Docs title="Radio" group="Forms" lead="Picks exactly one option from a short set. A radio group lists options with descriptions; a radio box group turns each option into a selectable card.">
-  <Example title="Radio group" description="A fieldset with a legend. The 8px accent dot and accent edge mark the choice; hovering anywhere on an option lifts its edge; disabled options stay readable." code={group} />
+  <Example title="Radio group" description="A fieldset with a legend. The 8px accent dot and accent edge mark the choice; hovering anywhere on an option lifts its edge; disabled options stay readable. Try it: click an option, or Tab in and use the arrow keys (Shadow is skipped)." code={group} />
 
   <h2 id="inline">Inline</h2>
   <Example code={inline} />
 
   <h2 id="box-group">Radio box group</h2>
   <p>Selectable cards for choices that deserve weight — plans, regions, templates. The native radio is visually hidden but keeps focus, arrow keys and form submission; the chosen card tints with the accent and shows a check badge.</p>
-  <Example code={cards} />
+  <Example description="Try it: click a plan, or Tab to the group and use ← →; one Tab leaves it." code={cards} />
 
   <h3 id="rows">Row cards</h3>
   <p><code>.dd-radio-card--row</code> puts each option on one line. Set <code>--_min: 100%</code> on the group to stack them.</p>

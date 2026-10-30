@@ -86,10 +86,10 @@ const tagList = (id: string, chosen: string[], open: boolean) => `
       </li>`).join('')}
       <li class="dd-listbox__empty" role="presentation" hidden>No labels match.</li>
     </ul>`;
-const multiBox = (id: string, chosen: string[], open: boolean) => `
+const multiBox = (id: string, chosen: string[], open: boolean, create = false) => `
 <div class="dd-field" style="max-width: 420px">
   <label class="dd-field__label" for="${id}">Labels</label>
-  <div class="dd-combobox dd-combobox--multi${open ? ' is-open' : ''}" data-dd-combobox="multi">
+  <div class="dd-combobox dd-combobox--multi${open ? ' is-open' : ''}" data-dd-combobox="multi"${create ? ' data-dd-combobox-create' : ''}>
     <div class="dd-input">${tags.filter((t) => chosen.includes(t.value)).map(chip).join('')}
       <input class="dd-input__control" id="${id}" role="combobox" aria-autocomplete="list" aria-expanded="${open}" aria-controls="${id}-list" autocomplete="off" placeholder="Add a label">
       <span class="dd-input__affix"><button class="dd-input__btn dd-combobox__toggle" type="button" tabindex="-1" data-dd-combobox-toggle aria-label="Show labels">${i('chevron-down')}</button></span>
@@ -99,10 +99,11 @@ const multiBox = (id: string, chosen: string[], open: boolean) => `
 </div>`;
 
 const multi = multiBox('cbm-1', ['frontend', 'billing', 'design-system'], true);
+const creatable = multiBox('cbm-2', ['infra', 'incident'], false, true);
 
 const chips = `
 <div class="dd-row">${tags.map((t) => `
-  <span class="dd-combobox__chip" style="--dd-chip: var(--dd-set-${t.set})"><span>${t.value}</span><button class="dd-combobox__remove" type="button" aria-label="Remove ${t.value}">${i('x')}</button></span>`).join('')}
+  <span class="dd-combobox__chip" style="--dd-chip: var(--dd-set-${t.set})" data-dd-dismissible><span>${t.value}</span><button class="dd-combobox__remove" type="button" aria-label="Remove ${t.value}" data-dd-dismiss>${i('x')}</button></span>`).join('')}
 </div>`;
 
 const states = `
@@ -138,22 +139,26 @@ const states = `
 
   <h2 id="filtering">Filtering</h2>
   <p>The list narrows on every keystroke and the first match is active, so Enter picks it. The same markup, opened with “er” typed:</p>
-  <Example code={filtering} minHeight="370px" />
+  <Example code={filtering} description="Try it: type more letters, press ↓ ↑ to move and Enter to choose; Esc closes, Esc again clears." minHeight="370px" />
 
   <h3 id="empty">No matches</h3>
   <p>Include a <code>.dd-listbox__empty</code> row; the script shows it when nothing is left.</p>
-  <Example code={empty} minHeight="215px" />
+  <Example code={empty} description="Try it: delete a few letters and the matches come back." minHeight="215px" />
 
   <h2 id="multi">Multi select with chips</h2>
   <p>Add <code>data-dd-combobox="multi"</code> and <code>.dd-combobox--multi</code>. Each choice becomes a chip coloured from the option’s <code>data-set</code> (1–8, the Color set). Backspace in the empty input removes the last chip; the list stays open while you pick.</p>
-  <Example code={multi} minHeight="515px" />
+  <Example code={multi} description="Try it: click labels to add or remove them, type to filter, or press Backspace in the empty field." minHeight="515px" />
+
+  <h3 id="create">Creating new values</h3>
+  <p>Add <code>data-dd-combobox-create</code> when people may add values. Once the text matches no option exactly, a <code>.dd-combobox__create</code> row ends the list; choosing it adds the option and selects it, and the event’s detail carries <code>created: true</code>.</p>
+  <Example code={creatable} description="Try it: type a label that isn’t in the list, like “flaky-test”, and press Enter." minHeight="430px" />
 
   <h2 id="chips">Chips</h2>
   <p>The Soft wash chip: a 22% wash of a Color set hue with deep text in the same hue (34% on hover). Set <code>--dd-chip</code> to any <code>--dd-set-N</code>.</p>
-  <Example code={chips} />
+  <Example code={chips} description="Outside a combobox a chip can still go: give it data-dd-dismissible and its remove button data-dd-dismiss. Try removing one." />
 
   <h2 id="states">States</h2>
-  <Example code={states} minHeight="235px" />
+  <Example code={states} description="Invalid: the text matches no team; open the list and pick one. Disabled: the field takes no input." minHeight="235px" />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -162,16 +167,17 @@ const states = `
     ['.dd-combobox__toggle', 'Chevron button in an affix (<code>.dd-input__btn</code>); flips while open.'],
     ['.dd-combobox__chip', 'Soft wash chip. Colour from <code>--dd-chip</code> (default <code>var(--dd-set-1)</code>).'],
     ['.dd-combobox__remove', 'The chip’s remove button. Give it an <code>aria-label</code>.'],
+    ['.dd-combobox__create', 'The “Create …” row the script adds with <code>data-dd-combobox-create</code>.'],
     ['.dd-listbox · __option · __group · __empty', 'The option list, shared with the custom select (see Select).'],
     ['.dd-listbox__match', 'The underlined part of a label that matches the query (added by the script).'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <p>Add <code>data-dd-combobox</code> (or <code>="multi"</code>) to the wrapper and <code>role="combobox"</code> to the input. The script keeps <code>aria-expanded</code> and <code>aria-activedescendant</code> on the input, writes values into an optional hidden input, and fires a bubbling <code>dd-combobox</code> event with <code>{'{ value, values, option }'}</code>. Options may carry <code>data-keywords</code> to match on more than their label.</p>
+  <p>Add <code>data-dd-combobox</code> (or <code>="multi"</code>) to the wrapper and <code>role="combobox"</code> to the input. The script keeps <code>aria-expanded</code> and <code>aria-activedescendant</code> on the input, writes values into an optional hidden input, and fires a bubbling <code>dd-combobox</code> event with <code>{'{ value, values, option }'}</code> (plus <code>created: true</code> for a new value). Options may carry <code>data-keywords</code> to match on more than their label; <code>data-dd-combobox-create</code> on the wrapper allows new values.</p>
   <ClassTable head={['Key', 'What it does']} rows={[
     ['Typing', 'Filters and opens; the first match becomes active.'],
-    ['↓ · ↑', 'Open, then move through matches.'],
-    ['Enter', 'Choose the active option (multi: toggle it).'],
+    ['↓ · ↑', 'Open (on the typed text, if any), then move through matches.'],
+    ['Enter', 'Choose the active option (multi: toggle it), or create the typed value.'],
     ['Esc', 'Close; pressed again in single mode, clear the field.'],
     ['Backspace', 'Multi, empty input: remove the last chip.'],
     ['Tab · blur', 'Close. Single mode restores the chosen label if the text matches nothing.'],

@@ -12,12 +12,12 @@ const projects = [
   ['ai-focus', 'info', 'Draft', '96', '2w ago'],
   ['leetnode', 'muted', 'Archived', '41', '4mo ago'],
 ];
-const head = `<thead><tr><th>Project</th><th>Status</th><th class="is-num">Stars</th><th class="is-num">Updated</th></tr></thead>`;
+const head = `<thead><tr><th scope="col">Project</th><th scope="col">Status</th><th scope="col" class="is-num">Stars</th><th scope="col" class="is-num">Updated</th></tr></thead>`;
 const rows = (list) => list.map(([name, s, label, stars, when]) => `
       <tr><td><a href="#">${name}</a></td><td><span class="dd-table__status" data-status="${s}">${label}</span></td><td class="is-num">${stars}</td><td class="is-num is-muted">${when}</td></tr>`).join('');
 
 const basic = `
-<div class="dd-table">
+<div class="dd-table" tabindex="0" role="region" aria-label="Projects">
   <table>
     ${head}
     <tbody>${rows(projects)}
@@ -27,11 +27,11 @@ const basic = `
 
 const titled = `
 <header class="dd-table-header">
-  <h3 class="dd-table-header__title">Open source</h3>
+  <h3 class="dd-table-header__title" id="tb-open-source">Open source</h3>
   <span class="dd-table-header__meta">3 of 12</span>
-  <a class="dd-table-header__action" href="#">View all ${i('arrow-right')}</a>
+  <a class="dd-table-header__action" href="#" data-dd-toast="Opening all 12 projects" data-dd-toast-description="In an app this goes to the full list.">View all ${i('arrow-right')}</a>
 </header>
-<div class="dd-table">
+<div class="dd-table" tabindex="0" role="region" aria-labelledby="tb-open-source">
   <table>
     ${head}
     <tbody>${rows(projects.slice(0, 3))}
@@ -41,10 +41,10 @@ const titled = `
 
 const empty = `
 <header class="dd-table-header">
-  <h3 class="dd-table-header__title">Projects</h3>
-  <button class="dd-btn dd-btn--secondary dd-btn--sm">${i('plus')}<span>New project</span></button>
+  <h3 class="dd-table-header__title" id="tb-projects">Projects</h3>
+  <button class="dd-btn dd-btn--secondary dd-btn--sm" type="button" data-dd-toast="New project" data-dd-toast-description="In an app this opens the new-project form.">${i('plus')}<span>New project</span></button>
 </header>
-<div class="dd-table">
+<div class="dd-table" tabindex="0" role="region" aria-labelledby="tb-projects">
   <table>
     ${head}
   </table>
@@ -52,7 +52,7 @@ const empty = `
     <span class="dd-table__empty-icon">${i('folder')}</span>
     <p class="dd-table__empty-title">No projects yet</p>
     <p>Anything you publish shows up here, with its status and stars.</p>
-    <button class="dd-btn dd-btn--primary dd-btn--sm">${i('plus')}<span>New project</span></button>
+    <button class="dd-btn dd-btn--primary dd-btn--sm" type="button" data-dd-toast="New project" data-dd-toast-description="In an app this opens the new-project form.">${i('plus')}<span>New project</span></button>
   </div>
 </div>`;
 
@@ -64,9 +64,9 @@ const deploys = [
   ['e66a4b9', 'ai-focus', 'preview', '1m 07s', '07:55'],
 ];
 const compact = `
-<div class="dd-table dd-table--compact dd-table--mono">
+<div class="dd-table dd-table--compact dd-table--mono" tabindex="0" role="region" aria-label="Recent deploys">
   <table>
-    <thead><tr><th>Commit</th><th>Service</th><th>Environment</th><th class="is-num">Duration</th><th class="is-num">Started</th></tr></thead>
+    <thead><tr><th scope="col">Commit</th><th scope="col">Service</th><th scope="col">Environment</th><th scope="col" class="is-num">Duration</th><th scope="col" class="is-num">Started</th></tr></thead>
     <tbody>${deploys.map(([sha, svc, env, dur, at]) => `
       <tr><td class="is-mono is-muted">${sha}</td><td>${svc}</td><td>${env}</td><td class="is-num">${dur}</td><td class="is-num">${at}</td></tr>`).join('')}
     </tbody>
@@ -79,18 +79,18 @@ const invoices = [
   ['INV-2026-0119', 'Aug 1', '$968.25', 'warn', 'Overdue'],
 ];
 const mono = `
-<div class="dd-table dd-table--mono dd-table--interactive">
+<div class="dd-table dd-table--mono dd-table--interactive" tabindex="0" role="region" aria-label="Invoices">
   <table>
-    <thead><tr><th>Invoice</th><th>Issued</th><th>Status</th><th class="is-num">Amount</th></tr></thead>
+    <thead><tr><th scope="col">Invoice</th><th scope="col">Issued</th><th scope="col">Status</th><th scope="col" class="is-num">Amount</th></tr></thead>
     <tbody>${invoices.map(([id, at, amt, s, label]) => `
-      <tr><td class="is-mono">${id}</td><td class="is-muted">${at}</td><td><span class="dd-table__status" data-status="${s}">${label}</span></td><td class="is-num">${amt}</td></tr>`).join('')}
+      <tr><td class="is-mono"><a class="dd-table__row-link" href="#" data-dd-toast="Opening ${id}" data-dd-toast-description="The row is one link: the whole row opens the invoice.">${id}</a></td><td class="is-muted">${at}</td><td><span class="dd-table__status" data-status="${s}">${label}</span></td><td class="is-num">${amt}</td></tr>`).join('')}
     </tbody>
-    <tfoot><tr><td colspan="3">Total, last 3 months</td><td class="is-num">$3,388.75</td></tr></tfoot>
+    <tfoot><tr><th scope="row" colspan="3">Total, last 3 months</th><td class="is-num">$3,388.75</td></tr></tfoot>
   </table>
 </div>`;
 ---
 <Docs title="Table" group="Data display" lead="A quiet card for a handful of rows: single-line cells, hairlines between rows, a header that stays out of the way. For large or interactive data sets, use the data table.">
-  <Example title="Quiet card" description="The default. Numbers right-align with tabular figures; status is a dot plus a word, never colour alone." code={basic} />
+  <Example title="Quiet card" description="The default. Numbers right-align with tabular figures; status is a dot plus a word, never colour alone. Try it on a narrow screen: the card scrolls sideways on its own, never the page — Tab to it and use the arrow keys." code={basic} />
 
   <h2 id="title">With title and action</h2>
   <p>A lockup title sits above the card with an optional count and one action at the far edge, usually a link to the full list.</p>
@@ -105,18 +105,19 @@ const mono = `
   <Example code={compact} />
 
   <h2 id="mono">Mono figures and interactive rows</h2>
-  <p><code>--mono</code> sets numeric cells in DM Mono. <code>--interactive</code> adds a hover tone when the whole row opens something. A <code>&lt;tfoot&gt;</code> carries totals.</p>
-  <Example code={mono} />
+  <p><code>--mono</code> sets numeric cells in DM Mono. <code>--interactive</code> adds a hover tone when the whole row opens something; put a <code>.dd-table__row-link</code> in the first cell and it stretches over the row, so the row is one real link (middle-click and the keyboard work too). A <code>&lt;tfoot&gt;</code> carries totals.</p>
+  <Example code={mono} description="Try it: hover a row and click anywhere on it, or Tab to a row and press Enter." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
-    ['.dd-table', 'The card: <code>--dd-surface</code>, rounded, and the horizontal scroll container. Put a plain <code>&lt;table&gt;</code> inside.'],
+    ['.dd-table', 'The card: <code>--dd-surface</code>, rounded, and the horizontal scroll container. Put a plain <code>&lt;table&gt;</code> inside, with <code>scope="col"</code> on the header cells. Give it <code>tabindex="0"</code>, <code>role="region"</code> and a label (<code>aria-label</code>, or <code>aria-labelledby</code> pointing at the header title) so a wide table can be scrolled from the keyboard.'],
     ['th.is-num / td.is-num', 'Right-aligned figure column (tabular numbers).'],
     ['.is-muted · .is-strong · .is-mono · .is-shrink', 'Cell helpers: secondary text, emphasis, mono IDs/hashes, shrink-to-fit column.'],
     ['.dd-table__status[data-status]', 'Dot + label. <code>ok · warn · bad · info · muted</code>.'],
     ['.dd-table--compact', 'Tighter rows and padding.'],
     ['.dd-table--mono', 'Numeric cells in DM Mono.'],
     ['.dd-table--interactive', 'Rows get a pointer and a hover wash (a stronger one while pressed); a row also lights up while a link inside it has keyboard focus.'],
+    ['.dd-table__row-link', 'In an <code>--interactive</code> table: the row’s one link, stretched over the whole row. It keeps the cell’s text style; keyboard focus rings the row.'],
     ['.dd-table--plain', 'No card: hairlines on the page, flush to the text edge.'],
     ['.dd-table-header (+ __title, __meta, __action)', 'Title row above the card. A <code>.dd-btn</code> placed in it is pushed to the far edge.'],
     ['.dd-table__empty (+ __empty-icon, __empty-title)', 'Empty state inside the card, after a header-only table.'],

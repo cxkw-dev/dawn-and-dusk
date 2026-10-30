@@ -48,7 +48,14 @@ export async function open(browser, path, { theme = 'dawn', width = 1280, height
     return r.result.value;
   };
   const center = async (sel) => {
-    const b = await evaluate((s) => { const el = document.querySelector(s); if (!el) return null; el.scrollIntoView({ block: 'center', inline: 'center' }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height }; }, sel);
+    // Scroll the target into view and let the scroll event fire before any pointer input (a late scroll event would
+    // otherwise land after the hover and close things that hide on scroll, like tooltips).
+    const b = await evaluate(async (s) => {
+      const el = document.querySelector(s); if (!el) return null;
+      const before = scrollY + scrollX; el.scrollIntoView({ block: 'center', inline: 'center' });
+      if (scrollY + scrollX !== before) await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height };
+    }, sel);
     if (!b) throw new Error(`no element for ${sel}`);
     if (!b.w || !b.h) throw new Error(`element not visible: ${sel}`);
     return b;

@@ -37,6 +37,7 @@
 /* A loading region: aria-busy content area. */
 .dd-skeleton-group { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 3); min-width: 0; }
 .dd-skeleton-group[aria-busy="true"] { cursor: progress; }
+:is(.dd-skeleton, .dd-skeleton-lines, .dd-skeleton-group)[hidden] { display: none; }
 
 @keyframes dd-skeleton-shimmer { from { background-position: 120% 0; } to { background-position: -20% 0; } }
 @media (prefers-reduced-motion: reduce) { .dd-skeleton { animation: none; background-image: none; } }

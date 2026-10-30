@@ -41,8 +41,8 @@ const linesHTML = (rows: Line[]) => rows.map(([t, lvl, src, msg]) =>
 const levelBtn = (lvl: string, on = true) =>
   `<button class="dd-log-viewer__toggle" type="button" data-dd-log-viewer-level="${lvl}" aria-pressed="${on}">${lvl[0].toUpperCase() + lvl.slice(1)} <span class="dd-log-viewer__n">${count(lvl)}</span></button>`;
 
-const viewer = ({ value = '', on = ['debug', 'info', 'warn', 'error'], wrap = false, live = true, label = 'auth-gateway deploy logs', height = '' } = {}) => `
-<div class="dd-log-viewer${wrap ? ' is-wrapped' : ''}" data-dd-log-viewer${height ? ` style="--dd-log-viewer-height: ${height}"` : ''}>
+const viewer = ({ value = '', on = ['debug', 'info', 'warn', 'error'], wrap = false, live = true, label = 'auth-gateway deploy logs', height = '', id = '' } = {}) => `
+<div class="dd-log-viewer${wrap ? ' is-wrapped' : ''}"${id ? ` id="${id}"` : ''} data-dd-log-viewer${height ? ` style="--dd-log-viewer-height: ${height}"` : ''}>
   <div class="dd-log-viewer__bar">
     ${live ? '<span class="dd-log-viewer__live">Live</span>' : ''}
     <label class="dd-log-viewer__search">${i('search')}<input type="search" placeholder="Search logs" aria-label="Search logs" value="${value}" data-dd-log-viewer-search></label>
@@ -50,6 +50,7 @@ const viewer = ({ value = '', on = ['debug', 'info', 'warn', 'error'], wrap = fa
       ${['debug', 'info', 'warn', 'error'].map((l) => levelBtn(l, on.includes(l))).join('\n      ')}
     </div>
     <button class="dd-log-viewer__toggle dd-log-viewer__toggle--wrap" type="button" data-dd-log-viewer-wrap aria-pressed="${wrap}">${i('menu')}Wrap</button>
+    ${live ? `<button class="dd-log-viewer__toggle dd-log-viewer__toggle--follow" type="button" data-dd-log-viewer-follow aria-pressed="true" aria-label="Follow new lines" data-dd-tooltip="Follow new lines">${i('arrow-down')}</button>` : ''}
     <span class="dd-log-viewer__count" data-dd-log-viewer-count aria-live="polite">${LOGS.length} lines</span>
   </div>
   <div class="dd-log-viewer__scroll" tabindex="0" role="region" aria-label="${label}">
@@ -60,7 +61,7 @@ ${linesHTML(LOGS)}
   </div>
 </div>`;
 
-const main = viewer({ height: '360px' });
+const main = viewer({ height: '360px', id: 'logs-auth-gateway' });
 const filtered = viewer({ value: 'idp', on: ['warn', 'error'], wrap: true, live: false });
 const empty = viewer({ value: 'ledger-sync', live: false });
 const bare = `
@@ -73,7 +74,7 @@ ${linesHTML(LOGS.slice(0, 6))}
 </div>`;
 ---
 <Docs title="Log viewer" group="Data display" lead="A monospace stream for deploy and service logs: timestamps, level badges, the service that spoke, and a bar to search, filter by level and wrap long lines.">
-  <Example title="Live stream" description="Search filters and highlights; level toggles hide noise; Wrap breaks long messages instead of scrolling sideways. Errors carry a faint tint so they catch the eye while scrolling." code={main} />
+  <Example title="Live stream" description="Search filters and highlights; level toggles hide noise; Wrap breaks long messages instead of scrolling sideways; the arrow (Follow) keeps the newest line in view. Errors carry a faint tint so they catch the eye while scrolling. Try it: new lines arrive every few seconds — scroll up to read and Follow pauses, scroll back down (or press the arrow) to catch up, search “502” while it streams." code={main} />
 
   <h2 id="filtered">Filtered &amp; wrapped</h2>
   <p>State comes from the markup: a pre-filled search value, toggles with <code>aria-pressed="false"</code> and a pressed Wrap button are applied on load. The count shows what is hidden.</p>
@@ -106,10 +107,11 @@ ${linesHTML(LOGS.slice(0, 6))}
     ['data-dd-log-viewer-search', 'On the search input: filters lines by text and highlights matches. <kbd>Esc</kbd> clears it.'],
     ['data-dd-log-viewer-level="info"', 'On a toggle: shows or hides that level (<code>aria-pressed</code>).'],
     ['data-dd-log-viewer-wrap', 'On a toggle: wraps long messages (<code>aria-pressed</code> ↔ <code>.is-wrapped</code>).'],
+    ['data-dd-log-viewer-follow', 'On a toggle: while pressed, the stream stays on the newest line as lines arrive. Scrolling up to read pauses it; scrolling back to the bottom, or pressing it, resumes.'],
     ['data-dd-log-viewer-count', 'Receives “18 of 24 lines”. Give it <code>aria-live="polite"</code>.'],
     ['data-dd-log-viewer-empty / -query / -clear', 'Empty message, the slot that names the query, and a button that resets search and levels.'],
   ]} />
-  <p>The scroll area takes <code>tabindex="0"</code> so the stream can be scrolled with the arrow keys; toggles are buttons (Enter or Space).</p>
+  <p>Lines can be appended to the list at any time — a live tail. New lines are filtered, highlighted and counted like the rest, and followed when Follow is on. The scroll area takes <code>tabindex="0"</code> so the stream can be scrolled with the arrow keys; toggles are buttons (Enter or Space).</p>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides
@@ -117,3 +119,46 @@ ${linesHTML(LOGS.slice(0, 6))}
     dont={['Don’t colour whole lines by level; the badge and the error tint are enough.', 'Don’t let the stream grow the page — cap its height.', 'Don’t auto-scroll to the bottom while someone is reading higher up.']}
   />
 </Docs>
+
+<script>
+  // Docs demo only: the live example tails a new line every couple of seconds while it is on screen, so Follow
+  // has something to follow. An app appends real lines the same way.
+  const root = document.getElementById('logs-auth-gateway');
+  const list = root?.querySelector('.dd-log-viewer__lines');
+  const POOL: [string, string, string, string][] = [
+    ['info', 'auth-gateway', 'GET /v1/session 200', '71ms ip=203.0.113.24'],
+    ['debug', 'edge-cache', 'revalidated /assets/app.9f2c.js', 'etag match'],
+    ['info', 'billing-worker', 'invoice paid', 'invoice=in_2481 amount=€19.00 attempt=2/3'],
+    ['warn', 'auth-gateway', 'upstream idp slow', 'p95=544ms threshold=500ms'],
+    ['info', 'deployer', 'health probe ok', 'replica=auth-gw-3 latency=11ms'],
+    ['error', 'edge-cache', 'origin returned 502 for /auth/callback', 'region=eu-west-2 retry=1/2'],
+    ['info', 'auth-gateway', 'POST /v1/token 201', '98ms client=dockey-ui'],
+    ['debug', 'billing-worker', 'fetched batch', 'size=50 lag=4'],
+    ['info', 'notify-fanout', 'smtp-relay reconnected', 'queue=deploys depth=0'],
+    ['warn', 'edge-cache', 'hit ratio below target', 'ratio=0.79 target=0.85 region=eu-west-2'],
+    ['info', 'auth-gateway', 'GET /v1/me 200', '38ms'],
+    ['debug', 'deployer', 'metrics flushed', 'series=214 took=12ms'],
+  ];
+  if (root && list) {
+    let t = 9 * 3600e3 + 41 * 60e3 + 7390; // after the last line in the markup
+    let n = 0;
+    let onScreen = false;
+    const pad = (v: number, w = 2) => String(Math.floor(v)).padStart(w, '0');
+    const stamp = (ms: number) => `${pad(ms / 3600e3)}:${pad((ms / 60e3) % 60)}:${pad((ms / 1e3) % 60)}.${pad(ms % 1e3, 3)}`;
+    const el = (tag: string, cls: string, text: string) => Object.assign(document.createElement(tag), { className: cls, textContent: text });
+    new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; }).observe(root);
+    setInterval(() => {
+      if (!onScreen || document.hidden) return;
+      const [level, src, msg, detail] = POOL[n++ % POOL.length];
+      t += 300 + ((n * 7919) % 1700);
+      const li = el('li', 'dd-log-viewer__line', '');
+      li.dataset.level = level;
+      const m = el('span', 'dd-log-viewer__msg', `${msg} `);
+      m.append(el('span', 'dd-log-viewer__dim', detail));
+      li.append(el('time', 'dd-log-viewer__time', stamp(t)), el('span', 'dd-log-viewer__level', level), el('span', 'dd-log-viewer__src', src), m);
+      list.append(li);
+      // Keep the demo bounded: drop the oldest lines past 120.
+      while (list.children.length > 120) list.firstElementChild?.remove();
+    }, 2400);
+  }
+</script>

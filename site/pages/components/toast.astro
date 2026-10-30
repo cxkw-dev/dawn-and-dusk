@@ -6,26 +6,26 @@ import Guides from '../../components/Guides.astro';
 import { Code } from 'astro:components';
 import { i } from '../../lib/icon';
 
-const x = `<button class="dd-toast__dismiss" type="button" aria-label="Dismiss notification">${i('x')}</button>`;
+const x = `<button class="dd-toast__dismiss" type="button" aria-label="Dismiss notification" data-dd-dismiss>${i('x')}</button>`;
 
 const intents = `
 <div class="dd-stack" style="max-width: 400px; margin-inline: auto">
-  <div class="dd-toast dd-toast--ok">
+  <div class="dd-toast dd-toast--ok" data-dd-dismissible>
     ${i('success')}
     <div class="dd-toast__body"><p class="dd-toast__title">Deployed to production</p><p class="dd-toast__text">insomnia v2.8 is live in 3 regions.</p></div>
     ${x}
   </div>
-  <div class="dd-toast dd-toast--info">
+  <div class="dd-toast dd-toast--info" data-dd-dismissible>
     ${i('info')}
     <div class="dd-toast__body"><p class="dd-toast__title">Invite sent</p><p class="dd-toast__text">mai@cxkw.dev can join ai-focus until Friday.</p></div>
     ${x}
   </div>
-  <div class="dd-toast dd-toast--warn">
+  <div class="dd-toast dd-toast--warn" data-dd-dismissible>
     ${i('alert')}
     <div class="dd-toast__body"><p class="dd-toast__title">Running low on build minutes</p><p class="dd-toast__text">312 of 3,000 left this month.</p></div>
     ${x}
   </div>
-  <div class="dd-toast dd-toast--bad" role="alert">
+  <div class="dd-toast dd-toast--bad" role="alert" data-dd-dismissible>
     ${i('danger')}
     <div class="dd-toast__body"><p class="dd-toast__title">Couldn’t save</p><p class="dd-toast__text">edge-cache answered 503. Your changes are still here.</p></div>
     ${x}
@@ -34,16 +34,16 @@ const intents = `
 
 const actions = `
 <div class="dd-stack" style="max-width: 400px; margin-inline: auto">
-  <div class="dd-toast dd-toast--ok">
+  <div class="dd-toast dd-toast--ok" data-dd-dismissible>
     ${i('success')}
     <div class="dd-toast__body"><p class="dd-toast__title">Post archived</p></div>
-    <div class="dd-toast__actions"><button class="dd-toast__action" type="button">Undo</button></div>
+    <div class="dd-toast__actions"><button class="dd-toast__action" type="button" data-dd-dismiss data-dd-toast="Post restored" data-dd-toast-intent="neutral" data-dd-toast-duration="3000">Undo</button></div>
     ${x}
   </div>
-  <div class="dd-toast dd-toast--neutral">
+  <div class="dd-toast dd-toast--neutral" data-dd-dismissible>
     ${i('trash')}
     <div class="dd-toast__body"><p class="dd-toast__title">3 previews deleted</p><p class="dd-toast__text">dockey-ui · pr-41, pr-44, pr-45</p></div>
-    <div class="dd-toast__actions"><button class="dd-toast__action" type="button">Undo</button></div>
+    <div class="dd-toast__actions"><button class="dd-toast__action" type="button" data-dd-dismiss data-dd-toast="3 previews restored" data-dd-toast-intent="neutral" data-dd-toast-duration="3000">Undo</button></div>
     ${x}
     <span class="dd-toast__progress" aria-hidden="true" style="transform: scaleX(.62)"></span>
   </div>
@@ -52,6 +52,8 @@ const actions = `
 const live = `
 <div class="dd-row">
   <button class="dd-btn dd-btn--primary" type="button" data-dd-toast="Deployed to production" data-dd-toast-description="leetnode v1.4 is live in fra1, sfo3 and sgp1." data-dd-toast-intent="ok">${i('upload')}<span>Deploy</span></button>
+  <button class="dd-btn" type="button" data-dd-toast="Invite sent" data-dd-toast-description="mai@cxkw.dev can join ai-focus until Friday." data-dd-toast-intent="info">${i('mail')}<span>Invite</span></button>
+  <button class="dd-btn" type="button" data-dd-toast="Running low on build minutes" data-dd-toast-description="312 of 3,000 left this month." data-dd-toast-intent="warn">${i('clock')}<span>Check usage</span></button>
   <button class="dd-btn" type="button" data-dd-toast="Link copied" data-dd-toast-intent="neutral" data-dd-toast-duration="3000">${i('link')}<span>Copy link</span></button>
   <button class="dd-btn" type="button" data-dd-toast="Couldn’t reach billing-worker" data-dd-toast-description="The request timed out after 30s." data-dd-toast-intent="bad" data-dd-toast-duration="0">${i('refresh')}<span>Sync invoices</span></button>
   <button class="dd-btn dd-btn--ghost" type="button" onclick="dd.toast({ title: 'Post archived', intent: 'ok', action: { label: 'Undo', onClick: () => dd.toast({ title: 'Post restored', intent: 'neutral', duration: 3000 }) } })">${i('archive')}<span>Archive post</span></button>
@@ -72,18 +74,18 @@ t.dismiss();                            // close it early
 dd.toast.clear();                       // close them all`;
 ---
 <Docs title="Toast" group="Feedback & status" lead="A short confirmation that something happened, out of the way at the bottom-right. It leaves on its own, waits while you hover, and offers one action — usually undo.">
-  <Example title="Intents" description="Ok for done, info for news, warn for heads-up, bad for a failure the person should know about. The intent tints the icon and the timer line; the toast itself stays an ink slab in dawn and a raised dark surface in dusk." code={intents} stage="center" />
+  <Example title="Intents" description="Ok for done, info for news, warn for heads-up, bad for a failure the person should know about. The intent tints the icon and the timer line; the toast itself stays an ink slab in dawn and a raised dark surface in dusk. These sit in the page so you can see them side by side (× still works); raise the real ones under Try it." code={intents} stage="center" />
 
   <h2 id="actions">Action and undo</h2>
   <p>One action, a verb the person might want right now — almost always <b>Undo</b>. The hairline along the bottom shows the time left before the toast leaves.</p>
-  <Example code={actions} stage="center" />
+  <Example code={actions} stage="center" description="Try it: press Undo — the toast goes and a short confirmation takes its place." />
 
   <h2 id="live">Try it</h2>
   <p>Toasts stack at the bottom-right, newest nearest the corner, at most four at a time. Hover or focus the stack to pause every timer; swipe one sideways to dismiss it. On small screens the stack spans the width.</p>
-  <Example code={live} />
+  <Example code={live} description="Try it: raise a few (Archive post has an Undo), hover the stack to pause it, swipe one sideways, or Tab to a toast and press Esc. Sync invoices stays until you close it." />
 
   <h2 id="js">JavaScript</h2>
-  <p><code>dd.toast()</code> creates the stack on first use (a polite live region labelled “Notifications”), so there is nothing to put in your HTML. Text is set as text, never as HTML.</p>
+  <p><code>dd.toast()</code> creates the stack on first use (a polite live region labelled “Notifications”), so there is nothing to put in your HTML. Text is set as text, never as HTML. The stack lives in the top layer, so a toast raised while a modal dialog is open shows above its scrim — and its action still works.</p>
   <Code code={api} lang="js" theme="css-variables" wrap />
 
   <h2 id="api">Classes</h2>

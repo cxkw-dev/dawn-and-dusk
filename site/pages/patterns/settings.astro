@@ -235,6 +235,74 @@ ${glue}
     code={page}
     stage="flush"
   />
+  <script is:inline>
+    // Docs only: answer the demo the way the app would — validate and save the profile, confirm switches, keys and the delete.
+    (() => {
+      const page = document.querySelector('.ex-stage .dd-pattern-settings');
+      if (!page) return;
+      const say = (from, title, description, intent = 'ok', extra = {}) => window.dd?.toast?.({ title, description, intent, from, ...extra });
+
+      // Profile: the browser's validation shown as aria-invalid + .dd-field__error; Save confirms, Discard resets.
+      const form = page.querySelector('#set-profile form');
+      const MSG = { 'set-name': 'Add the name people see on your deploys.', 'set-email': 'Add the email you sign in with.' };
+      const mark = (c) => {
+        const field = c.closest('.dd-field');
+        let err = field.querySelector('.dd-field__error');
+        if (c.validity.valid) { c.removeAttribute('aria-invalid'); c.removeAttribute('aria-describedby'); err?.remove(); return; }
+        if (!err) { err = document.createElement('p'); err.className = 'dd-field__error'; err.id = `${c.id}-error`; c.closest('.dd-input').after(err); }
+        err.innerHTML = `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-error"/></svg>${c.validity.typeMismatch ? 'That doesn’t look like an email address.' : MSG[c.id] || c.validationMessage}`;
+        c.setAttribute('aria-invalid', 'true');
+        c.setAttribute('aria-describedby', err.id);
+      };
+      let first = null;
+      form.addEventListener('invalid', (e) => {
+        e.preventDefault();
+        mark(e.target);
+        if (!first) { first = e.target; requestAnimationFrame(() => { first.focus(); first = null; }); }
+      }, true);
+      form.addEventListener('input', (e) => { if (e.target.hasAttribute('aria-invalid')) mark(e.target); });
+      form.addEventListener('reset', () => setTimeout(() => form.querySelectorAll('[aria-invalid]').forEach(mark)));
+      form.addEventListener('submit', (e) => {
+        const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        const meta = form.querySelector('.dd-form__meta');
+        meta.lastChild.textContent = `Saved today, ${time}`;
+        // The saved values become the new defaults, so Discard goes back to them.
+        form.querySelectorAll('input, textarea').forEach((c) => { if (c.type !== 'file') c.defaultValue = c.value; });
+        form.querySelectorAll('select').forEach((s) => [...s.options].forEach((o) => { o.defaultSelected = o.selected; }));
+        say(e.submitter || form, 'Profile saved', 'Your name and bio show on the next deploy.');
+      });
+
+      page.addEventListener('change', (e) => {
+        const sw = e.target.closest('.dd-switch__input');
+        if (!sw) return;
+        const label = sw.closest('.dd-switch').querySelector('.dd-switch__label').textContent.trim();
+        say(sw, `${label} ${sw.checked ? 'on' : 'off'}`, '', 'neutral', { duration: 2500 });
+      });
+
+      page.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const label = btn.textContent.trim();
+        if (label === 'Revoke') {
+          const row = btn.closest('tr');
+          const name = row.querySelector('td').textContent.trim();
+          const status = row.querySelector('.dd-table__status');
+          const was = [status.dataset.status, status.textContent];
+          status.dataset.status = 'bad';
+          status.textContent = 'Revoked';
+          btn.disabled = true;
+          say(btn, `Revoked ${name}`, 'Requests with this key now fail with 401.', 'warn', {
+            action: { label: 'Undo', onClick: () => { [status.dataset.status, status.textContent] = was; btn.disabled = false; } },
+          });
+        } else if (label === 'Create key') say(btn, 'Key created', 'Copy it from the field above — it is shown once.');
+        else if (label === 'Export data') say(btn, 'Export started', 'A download link goes to andy@cxkw.dev within 10 minutes.', 'neutral');
+      });
+
+      page.querySelector('#set-delete-dialog')?.addEventListener('close', (e) => {
+        if (e.target.returnValue === 'delete') say(page.querySelector('[data-dd-dialog-open="#set-delete-dialog"]'), 'Account scheduled for deletion', 'It goes in 14 days. Sign in before then to keep it.', 'bad', { duration: 8000 });
+      });
+    })();
+  </script>
 
   <h2 id="anatomy">Anatomy</h2>
   <ol>

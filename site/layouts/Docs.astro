@@ -33,12 +33,13 @@ const sections: [string, string, string][] = [
     <script is:inline>
       // Apply the stored (or ?theme=) choice before paint to avoid a flash.
       (() => {
+        const valid = (v) => v === 'dawn' || v === 'dusk';
         const q = new URLSearchParams(location.search).get('theme');
-        let t = q;
+        let t = valid(q) ? q : null;
         if (!t) { try { t = localStorage.getItem('dd-theme'); } catch { t = null; } }
-        if (t === 'dawn' || t === 'dusk') document.documentElement.dataset.theme = t;
-        // a ?theme= link is a choice too: store it so the theme script doesn't swap back to an older one
-        if (q === t && t) { try { localStorage.setItem('dd-theme', t); } catch { /* storage unavailable */ } }
+        if (valid(t)) document.documentElement.dataset.theme = t;
+        // a valid ?theme= link is a choice too: store it so the theme script doesn't swap back to an older one
+        if (valid(q)) { try { localStorage.setItem('dd-theme', q); } catch { /* storage unavailable */ } }
       })();
     </script>
   </head>

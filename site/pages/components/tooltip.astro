@@ -45,15 +45,15 @@ const kbd = `
 
   <h2 id="placement">Placement</h2>
   <p>Top by default. <code>data-dd-tooltip-placement</code> asks for another side or an edge alignment; if it doesn’t fit, the tooltip flips to the opposite side and slides to stay on screen, and the arrow keeps pointing at the trigger.</p>
-  <Example code={placements} stage="center" />
+  <Example code={placements} stage="center" description="Try it: hover each button, or Tab along the row. Scroll so a button sits at the very edge of the window and its tooltip flips to the side that has room." />
 
   <h2 id="kbd">Shortcut hint</h2>
   <p><code>data-dd-tooltip-kbd</code> adds the keyboard shortcut after the label — one <code>&lt;kbd&gt;</code> per space-separated key.</p>
-  <Example code={kbd} stage="center" />
+  <Example code={kbd} stage="center" description="Try it: hover or Tab to a button to see its shortcut." />
 
   <h2 id="anatomy">Anatomy</h2>
   <p>An ink chip in dawn, a raised <code>--dd-surface-3</code> chip in dusk; 11px medium type, an 8px arrow. <code>--static</code> renders one in the flow for mockups and docs.</p>
-  <Example code={anatomy} stage="center" />
+  <Example code={anatomy} stage="center" description="Static renderings, pinned open for reference — the live ones are in the examples above." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[

@@ -95,7 +95,7 @@ const links = `
 </nav>`;
 ---
 <Docs title="Tabs" group="Navigation" lead="Switch between views of the same thing. A hairline baseline with an ink marker under the active tab; hover previews the marker in a softer tone.">
-  <Example title="Underline" description="The default. Click a tab, or focus one and use ← →, Home and End." code={basic} />
+  <Example title="Underline" description="The default. Try it: click a tab, or Tab to the selected one and use ← → (Home, End); the panel follows focus. Tab again moves into the panel." code={basic} />
 
   <h2 id="counts">With counts</h2>
   <p>Counts sit in a small mono pill and turn to ink on the active tab.</p>
@@ -105,23 +105,23 @@ const links = `
   <Example code={icons} />
 
   <h2 id="small">Small</h2>
-  <p>For chart ranges and dense toolbars. Disabled tabs stay in place but are skipped by the keyboard.</p>
+  <p>For chart ranges and dense toolbars. Disabled tabs stay in place but are skipped by the keyboard — try End: it stops on 30d, not Custom.</p>
   <Example code={small} />
 
   <h2 id="pill">Secondary · pill</h2>
-  <p>When a view already sits under underline tabs, use pills for the second level — filters, sub-views, ranges.</p>
+  <p>When a view already sits under underline tabs, use pills for the second level — filters, sub-views, ranges. Here the top row is page navigation (links) and the pills are real tabs.</p>
   <Example code={pill} />
 
   <h2 id="vertical">Vertical</h2>
-  <p>For settings. Set <code>aria-orientation="vertical"</code> on the list so ↑ ↓ move between tabs. The list moves above the panel when the space runs out.</p>
+  <p>For settings. Set <code>aria-orientation="vertical"</code> on the list so ↑ ↓ move between tabs (← → are left alone). The list moves above the panel when the space runs out.</p>
   <Example code={vertical} />
 
   <h2 id="overflow">Overflow</h2>
-  <p>When the tabs don’t fit, the list scrolls sideways and fades at the edge that has more. The selected tab is scrolled into view as you move.</p>
+  <p>When the tabs don’t fit, the list scrolls sideways and fades at the edge that has more. The selected tab is scrolled into view as you move — try End, then Home.</p>
   <Example code={overflow} />
 
   <h2 id="links">As page navigation</h2>
-  <p>For tabs that change the URL, use links with <code>aria-current="page"</code> inside a <code>&lt;nav&gt;</code> — no <code>data-dd-tabs</code>, no tab roles.</p>
+  <p>For tabs that change the URL, use links with <code>aria-current="page"</code> inside a <code>&lt;nav&gt;</code> — no <code>data-dd-tabs</code>, no tab roles. The script leaves them alone: they navigate like any link and the next page marks its own tab. (On this page the links go nowhere, so a click just moves <code>aria-current</code> to show the marker.)</p>
   <Example code={links} />
 
   <h2 id="api">Classes</h2>
@@ -138,12 +138,24 @@ const links = `
 
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute / key', 'What it does']} rows={[
-    ['data-dd-tabs', 'Wires the tabs inside: ids, <code>aria-controls</code>, <code>aria-labelledby</code>, roving <code>tabindex</code>. Panels pair with tabs by <code>aria-controls</code> or by order.'],
-    ['← → / ↑ ↓', 'Move to and select the previous / next tab (↑ ↓ with <code>aria-orientation="vertical"</code>). Wraps around.'],
-    ['Home / End', 'First / last tab.'],
-    ['dd:tabchange', 'Event on the wrapper after a change: <code>detail.tab</code>, <code>detail.panel</code>.'],
-    ['dd.tabs.select(tab)', 'Select a tab from script.'],
+    ['data-dd-tabs', 'Wires the tabs inside: ids, <code>aria-controls</code>, <code>aria-labelledby</code>, roving <code>tabindex</code>. Panels pair with tabs by <code>aria-controls</code> or by order. Only the selected tab is a Tab stop; Tab from it moves into its panel.'],
+    ['← → / ↑ ↓', 'Automatic activation: move focus to the previous / next tab and select it in one step (↑ ↓ with <code>aria-orientation="vertical"</code>). Wraps around; disabled tabs are skipped.'],
+    ['Home / End', 'First / last enabled tab.'],
+    ['dd:tabchange', 'Bubbling event on the wrapper when the selection changes (not on load, not when the current tab is pressed again): <code>detail.tab</code>, <code>detail.panel</code>, <code>detail.previous</code>.'],
+    ['dd.tabs.select(tab)', 'Select a tab from script — an element or a selector. Fires <code>dd:tabchange</code>.'],
+    ['dd.tabs.init()', 'Wire tabs added to the page after load (a click or key on them also wires them).'],
   ]} />
+
+  <script>
+    // Docs only: the link-tab demos point nowhere (href="#"), so a click moves aria-current to show the marker.
+    // In an app the link navigates and the next page marks its own tab.
+    document.addEventListener('click', (e) => {
+      const link = (e.target as Element).closest?.('.ex-stage .dd-tabs__list > a.dd-tabs__tab[href="#"]');
+      if (!link) return;
+      link.parentElement!.querySelectorAll('.dd-tabs__tab').forEach((t) => t.toggleAttribute('aria-current', false));
+      link.setAttribute('aria-current', 'page');
+    });
+  </script>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides

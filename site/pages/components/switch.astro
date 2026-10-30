@@ -55,7 +55,7 @@ const settings = `
 </div>`;
 ---
 <Docs title="Switch" group="Forms" lead="Turns a setting on or off right away. The classic pill: the track fills with the accent when on and the knob slides across.">
-  <Example title="States" description="On, off, and both disabled. Hovering anywhere on the row steps the track one tone; pressing stretches the knob toward where it is going. A native checkbox with role=&quot;switch&quot;, so the state is announced as on / off." code={states} />
+  <Example title="States" description="On, off, and both disabled. Hovering anywhere on the row steps the track one tone; pressing stretches the knob toward where it is going. A native checkbox with role=&quot;switch&quot;, so the state is announced as on / off. Try it: click a switch or its label, or Tab to one and press Space." code={states} />
 
   <h2 id="sizes">Sizes</h2>
   <p>Medium is the default. Small for dense tables and filters, large for touch-first settings. Switches without visible text need an <code>aria-label</code>.</p>
@@ -67,7 +67,16 @@ const settings = `
 
   <h2 id="settings">Settings rows</h2>
   <p><code>.dd-switch--end</code> puts the control after the text and stretches the row; stack rows in <code>.dd-form__choices--rows</code> for hairlines between them.</p>
-  <Example code={settings} />
+  <Example description="Try it: click anywhere on a row. A switch applies at once, so each change confirms with a toast here." code={settings} />
+  <script is:inline>
+    // Docs feedback: settings switches apply immediately, so say what changed.
+    document.addEventListener('change', (e) => {
+      const row = e.target.closest?.('.ex-stage .dd-switch--end');
+      if (!row || !window.dd?.toast) return;
+      const name = row.querySelector('.dd-switch__label')?.textContent.trim();
+      dd.toast({ title: `${name}: ${e.target.checked ? 'on' : 'off'}`, description: 'Saved. Switches apply right away; there is no save button.', intent: 'neutral', duration: 3000 });
+    });
+  </script>
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[

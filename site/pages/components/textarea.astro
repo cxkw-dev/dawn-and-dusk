@@ -17,13 +17,19 @@ const basic = `
 </div>`;
 
 const autogrow = `
-<div class="dd-field" style="max-width: 520px">
-  <label class="dd-field__label" for="ta-2">Comment</label>
-  <div class="dd-input dd-textarea">
-    <textarea class="dd-input__control" id="ta-2" data-dd-autogrow placeholder="Leave a note for the reviewer…"></textarea>
+<form class="dd-stack" id="ta-2-form" style="--dd-gap: 10px; max-width: 520px" onsubmit="return false">
+  <div class="dd-field">
+    <label class="dd-field__label" for="ta-2">Comment</label>
+    <div class="dd-input dd-textarea">
+      <textarea class="dd-input__control" id="ta-2" data-dd-autogrow required placeholder="Leave a note for the reviewer…"></textarea>
+    </div>
+    <p class="dd-field__hint">Grows as you type, up to ten lines.</p>
   </div>
-  <p class="dd-field__hint">Grows as you type, up to ten lines.</p>
-</div>`;
+  <div class="dd-row" style="justify-content: flex-end">
+    <button class="dd-btn dd-btn--ghost" type="reset">Discard</button>
+    <button class="dd-btn dd-btn--primary" type="submit">Comment</button>
+  </div>
+</form>`;
 
 const states = `
 <div class="dd-form__grid">
@@ -33,7 +39,7 @@ const states = `
       <textarea class="dd-input__control" id="ta-3" rows="2" aria-invalid="true" aria-describedby="ta-3-err ta-3-c">fix(edge-cache): respect stale-while-revalidate on 304s so purges stop racing the origin</textarea>
     </div>
     <div class="dd-field__foot">
-      <p class="dd-field__error" id="ta-3-err">Keep the subject line under 72 characters.</p>
+      <p class="dd-field__error" id="ta-3-err" data-dd-counter-error>Keep the subject line under 72 characters.</p>
       <span class="dd-field__counter is-over" id="ta-3-c" data-dd-counter="72">88 / 72</span>
     </div>
   </div>
@@ -58,15 +64,15 @@ LOG_LEVEL=info</textarea>
 </div>`;
 ---
 <Docs title="Textarea" group="Forms" lead="Several lines of text in the same tonal box as the text input. The label tucks in above the text, a counter keeps length honest, and auto-grow is one attribute away.">
-  <Example title="With counter" description="Put a .dd-field__counter in the field’s foot; it counts against the textarea’s maxlength as you type." code={basic} />
+  <Example title="With counter" description="Put a .dd-field__counter in the field’s foot; it counts against the textarea’s maxlength as you type. Try it: type, or paste a long text — it stops at 500." code={basic} />
 
   <h2 id="autogrow">Auto-grow</h2>
-  <p>Add <code>data-dd-autogrow</code>: the box starts at two lines, grows with the content up to ten, then scrolls.</p>
-  <Example code={autogrow} />
+  <p>Add <code>data-dd-autogrow</code>: the box starts at two lines, grows with the content up to ten, then scrolls. It shrinks back when the text is deleted or its form is reset.</p>
+  <Example description="Try it: press Enter a few times, keep going past ten lines, then Discard." code={autogrow} />
 
   <h2 id="states">Soft limit, error and disabled</h2>
-  <p><code>data-dd-counter="72"</code> sets a soft limit: typing past it is allowed, but the counter turns red and the control is marked invalid until it is back under.</p>
-  <Example code={states} />
+  <p><code>data-dd-counter="72"</code> sets a soft limit: typing past it is allowed, but the counter turns red and the control is marked invalid until it is back under. An error marked <code>data-dd-counter-error</code> shows only while the limit is passed.</p>
+  <Example description="Try it: trim the commit message under 72 characters — the error goes away." code={states} />
 
   <h2 id="mono">Code and config</h2>
   <p>Add <code>.dd-mono</code> to the control for config, keys and logs; turn spellcheck off.</p>
@@ -84,7 +90,16 @@ LOG_LEVEL=info</textarea>
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['textarea[data-dd-autogrow]', 'Resizes to fit on every input, up to the CSS max-height, then scrolls. Also refits after its form is reset.'],
     ['.dd-field__counter', 'Counts the field’s control: <code>n / maxlength</code>, or <code>n / data-dd-counter</code> as a soft limit. <code>.is-near</code> at 90%, <code>.is-over</code> past it. Re-counts when its form is reset.'],
+    ['[data-dd-counter-error]', 'On a <code>.dd-field__error</code> in the field: shown only while the soft limit is passed.'],
   ]} />
+  <script is:inline>
+    // Docs only: the comment demo posts, says so, and empties (the box shrinks back with the reset).
+    document.getElementById('ta-2-form')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      window.dd?.toast?.({ title: 'Comment posted', description: 'Mika will see it on the review.', intent: 'ok' });
+      e.currentTarget.reset();
+    });
+  </script>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides

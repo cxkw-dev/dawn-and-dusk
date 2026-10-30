@@ -148,23 +148,23 @@ const sizes = `
 ---
 <Docs title="Dialog" group="Overlays" lead="A modal moment: a centred card on a dim scrim that asks for one decision. Built on the native dialog element, so focus, Esc and the top layer come for free.">
   <p>Every example opens the real dialog; under each trigger is a still of it, so you can compare without clicking.</p>
-  <Example title="Confirm" description="The classic: eyebrow, title, one sentence of consequence, actions bottom-right with the primary last." code={confirm} />
+  <Example title="Confirm" description="The classic: eyebrow, title, one sentence of consequence, actions bottom-right with the primary last. Try it: Esc, a click on the scrim or Cancel close it; Publish closes with a value." code={confirm} />
 
   <h2 id="destructive">Destructive</h2>
   <p>Add <code>dd-dialog--danger</code> and an icon tile; the confirm button becomes <code>dd-btn--danger</code>. Use <code>role="alertdialog"</code> and put <code>autofocus</code> on the safe choice.</p>
-  <Example code={destructive} />
+  <Example code={destructive} description="Try it: focus starts on “Keep it”, so Enter is the safe answer." />
 
   <h2 id="form">Form</h2>
   <p>Wrap the parts in <code>&lt;form method="dialog" class="dd-dialog__form"&gt;</code> and use the same fields as any form, with tucked labels. Native validation runs first; a valid submit closes the dialog with the button’s <code>value</code> as <code>returnValue</code>.</p>
-  <Example code={form} />
+  <Example code={form} description="Try it: press Add domain with the field empty — validation holds the dialog open. Type a domain and press Enter." />
 
   <h2 id="long-content">Long content</h2>
   <p>The dialog stops at 85% of the screen height. Only the body scrolls; a hairline appears at the edge where content is hidden.</p>
-  <Example code={long} />
+  <Example code={long} description="Try it: scroll inside — the head and the foot stay put, and the page behind doesn’t move." />
 
   <h2 id="sizes">Sizes</h2>
   <p>Small (380px) for one-line confirms, medium (460px) by default, large (680px) when the body needs room. On a phone every size fills the screen width (less a 15px margin), and once the dialog is 360px or narrower the hint drops and the actions split the footer.</p>
-  <Example code={sizes} />
+  <Example code={sizes} description="Try it: Tab and Shift+Tab — focus cycles inside the dialog and never reaches the page." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -222,6 +222,18 @@ const sizes = `
     .dlg-scrim { position: absolute; inset: 0; z-index: 0; background: var(--dd-overlay); }
     .dlg-preview > dialog { position: relative; z-index: 1; inset: auto; margin: 0; width: min(var(--_w), 100%); max-height: 360px; animation: none; }
   </style>
+  <script is:inline>
+    // Docs only: react to each example's result the way an app would, so a visitor sees what returnValue carried.
+    document.addEventListener('close', (e) => {
+      const d = e.target, v = d instanceof HTMLDialogElement && d.closest('.ex-stage') ? d.returnValue : '';
+      const said = {
+        publish: 'Release v0.4.0 published', delete: 'leetnode deleted', restart: 'Restarting billing-worker',
+        promote: 'Promoting deploy #4821', rotate: 'Rotating API keys',
+        add: () => `${d.querySelector('[name="domain"]')?.value || 'Domain'} added`,
+      }[v];
+      if (said && window.dd?.toast) dd.toast({ title: typeof said === 'function' ? said() : said, description: `returnValue "${v}"`, intent: v === 'delete' ? 'neutral' : 'ok' });
+    }, true);
+  </script>
   <script is:inline>
     // Docs only: a still of each example's dialog, under its trigger.
     document.querySelectorAll('.ex-stage').forEach((stage) => {

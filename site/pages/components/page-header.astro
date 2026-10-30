@@ -71,7 +71,7 @@ const back = `
       </ul>
     </div>
     <div class="dd-page-header__actions">
-      <button class="dd-btn dd-btn--secondary dd-btn--icon" type="button" aria-label="Copy deploy ID">${i('copy')}</button>
+      <button class="dd-btn dd-btn--secondary dd-btn--icon" type="button" aria-label="Copy deploy ID" data-dd-copy="dpl_71be09" data-dd-toast="Copied dpl_71be09" data-dd-toast-intent="ok">${i('copy')}</button>
       <button class="dd-btn dd-btn--secondary" type="button">${i('terminal')}<span>Open logs</span></button>
       <button class="dd-btn dd-btn--primary" type="button">${i('refresh')}<span>Retry</span></button>
     </div>
@@ -100,7 +100,7 @@ const withMark = `
 </header>`;
 ---
 <Docs title="Page header" group="Layout" lead="The top of a view: where you are, what this is, what you can do here, and the views inside it. Title in the heading lockup, actions on the right, tabs underneath.">
-  <Example title="Full" description="Breadcrumbs, title and actions on one row, then the description, meta facts and tabs. Actions wrap under the title when space runs out." code={full} />
+  <Example title="Full" description="Breadcrumbs, title and actions on one row, then the description, meta facts and tabs. Actions wrap under the title when space runs out. Try it: press an action, or a tab — here a tab just moves aria-current; in an app it is a link to that view." code={full} />
 
   <h2 id="simple">Title and actions</h2>
   <p>Most index pages only need a title, one line of description and the main action.</p>
@@ -108,7 +108,7 @@ const withMark = `
 
   <h2 id="detail">Detail page</h2>
   <p>For a single object: a back link instead of breadcrumbs, a mono eyebrow, the ID as the title and a status in the meta row. <code>--sm</code> steps the title down.</p>
-  <Example code={back} />
+  <Example code={back} description="Try it: the copy button puts the deploy ID on the clipboard." />
 
   <h2 id="mark">Large, with a mark</h2>
   <p>For top-level areas: <code>--lg</code> title with a tonal icon mark, and pill tabs as filters underneath.</p>
@@ -130,6 +130,23 @@ const withMark = `
     ['__actions', 'Buttons. One primary at most.'],
     ['--sm / --lg', 'Title at 2xl / 4xl. Default is 3xl.'],
   ]} />
+
+  <script>
+    // Docs only: header actions say what they would do, and the placeholder tab links move aria-current to show the marker.
+    document.addEventListener('click', (e) => {
+      const t = e.target as Element;
+      const btn = t.closest?.('.ex-stage .dd-page-header__actions button:not([data-dd-toast])');
+      if (btn) {
+        const label = btn.textContent?.trim() || btn.getAttribute('aria-label') || 'Action';
+        (window as any).dd?.toast?.({ title: label, description: 'In an app this button runs the action.', intent: 'neutral', duration: 2500 });
+        return;
+      }
+      const link = t.closest?.('.ex-stage .dd-tabs__list > a.dd-tabs__tab[href="#"]');
+      if (!link) return;
+      link.parentElement!.querySelectorAll('.dd-tabs__tab').forEach((a) => a.removeAttribute('aria-current'));
+      link.setAttribute('aria-current', 'page');
+    });
+  </script>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides

@@ -12,7 +12,7 @@ const variants = `
   <button class="dd-btn dd-btn--ink">${i('download')}<span>Export</span></button>
   <button class="dd-btn dd-btn--ghost">${i('copy')}<span>Copy</span></button>
   <button class="dd-btn dd-btn--danger">${i('trash')}<span>Delete</span></button>
-  <a class="dd-btn dd-btn--link"><span>Read the docs</span>${i('arrow-right')}</a>
+  <a class="dd-btn dd-btn--link" href="#guidelines"><span>Read the docs</span>${i('arrow-right')}</a>
 </div>`;
 
 const sizes = `
@@ -53,10 +53,10 @@ const onSurface = `
     <b style="font-weight: 600">billing-worker</b>
     <span class="dd-small dd-muted"><span class="dd-mono">7be04d2</span> · failed 1h ago · iad1</span>
   </span>
-  <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" aria-label="Copy deployment ID">${i('copy')}</button>
+  <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" aria-label="Copy deployment ID" data-dd-toast="Deployment ID copied" data-dd-toast-description="7be04d2" data-dd-toast-intent="ok">${i('copy')}</button>
   <button class="dd-btn dd-btn--ghost dd-btn--sm">${i('terminal')}<span>Logs</span></button>
   <button class="dd-btn dd-btn--secondary dd-btn--sm">${i('arrow-left')}<span>Roll back</span></button>
-  <button class="dd-btn dd-btn--primary dd-btn--sm">${i('refresh')}<span>Redeploy</span></button>
+  <button class="dd-btn dd-btn--primary dd-btn--sm" id="bt-redeploy">${i('refresh')}<span>Redeploy</span></button>
 </div>`;
 
 const block = `
@@ -75,10 +75,10 @@ const block = `
   <Example code={iconOnly} />
   <h2 id="states">States</h2>
   <p>Hover steps each fill one tone (ghost buttons take a translucent wash, so they show on the page, on cards and in menus alike); pressing nudges the button down a pixel; keyboard focus draws the ring. Use the native <code>disabled</code> attribute (or <code>aria-disabled="true"</code> on links) to fade a button and stop clicks. While work is in flight, add <code>is-loading</code> and swap the icon for a spinner.</p>
-  <Example code={states} />
+  <Example code={states} description="Try it: the faded buttons ignore clicks and Tab skips them; the busy ones ignore clicks and Enter too. Press “Redeploy” in the next example to see the busy state live." />
   <h2 id="on-a-surface">On a surface</h2>
   <p>Every variant works on a <code>--dd-surface</code> card as well as on the page. Hover the ghost buttons in dusk: the wash still reads.</p>
-  <Example code={onSurface} />
+  <Example code={onSurface} description="Try it: “Redeploy” goes busy while it works, then confirms with a toast; clicking it again meanwhile does nothing. The copy button confirms too." />
   <h2 id="block">Full width</h2>
   <Example code={block} />
   <h2 id="api">Classes</h2>
@@ -93,12 +93,31 @@ const block = `
     ['.dd-btn--sm / --lg', 'Sizes. Medium has no modifier.'],
     ['.dd-btn--icon', 'Square icon-only button.'],
     ['.dd-btn--block', 'Fills its container.'],
-    ['.is-loading + .dd-btn__spinner', 'Busy state: ignores clicks; also set <code>aria-busy="true"</code>.'],
-    [':disabled / [aria-disabled="true"]', 'Faded to 45% and not clickable.'],
+    ['.is-loading + .dd-btn__spinner', 'Busy state: ignores clicks and the keyboard; also set <code>aria-busy="true"</code>.'],
+    [':disabled / [aria-disabled="true"]', 'Faded to 45% and not clickable. Native <code>disabled</code> also leaves the tab order; <code>aria-disabled</code> keeps it focusable, so keyboard users still find it.'],
   ]} />
+  <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/button.js</code> makes a busy (<code>.is-loading</code>) or <code>aria-disabled="true"</code> button ignore activation from the keyboard too: Enter, Space, a form’s implicit submit and an <code>aria-disabled</code> link’s navigation are all stopped before your own click handlers run. Without it, CSS still blocks pointer clicks.</p>
   <h2 id="guidelines">Guidelines</h2>
   <Guides
     do={['Lead with a verb: “New project”, “Export”, “Delete”.', 'Keep one primary button per view or dialog.', 'Put the icon first; it is part of the label’s rhythm.']}
     dont={['Don’t use primary for navigation — use a link.', 'Don’t stack two filled buttons side by side; make one secondary.', 'Don’t disable without saying why nearby.']}
   />
 </Docs>
+<script>
+  // Docs demo: “Redeploy” shows the busy state while the work runs, then confirms with a toast.
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as Element).closest<HTMLButtonElement>('#bt-redeploy');
+    if (!btn) return;
+    const before = btn.innerHTML;
+    btn.classList.add('is-loading');
+    btn.setAttribute('aria-busy', 'true');
+    btn.innerHTML = '<span class="dd-btn__spinner"></span><span>Redeploying</span>';
+    setTimeout(() => {
+      btn.classList.remove('is-loading');
+      btn.removeAttribute('aria-busy');
+      btn.innerHTML = before;
+      (window as any).dd?.toast({ title: 'Redeployed billing-worker', description: '7be04d2 · iad1 · 41s', intent: 'ok' });
+    }, 1400);
+  });
+</script>

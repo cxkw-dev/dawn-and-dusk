@@ -3,7 +3,9 @@
      the thumbs crossing.
    - <output for="inputId"> (anywhere) shows that input's value; data-unit on the output appends a unit.
    - .dd-slider__bubble[data-for="inputId"] rides above its thumb.
-   - .dd-slider__ticks > [data-value] gets .is-active when it matches a value. */
+   - .dd-slider__ticks > [data-value] gets .is-active when it matches a value.
+   - When a value is committed (thumb released, or a key step) the .dd-slider fires a bubbling `dd:change` event with
+     detail { value, input }: value is a number, or [low, high] for a range. */
 (() => {
   const frac = (el) => {
     const min = Number(el.min || 0); const max = Number(el.max || 100);
@@ -42,6 +44,13 @@
   document.addEventListener('input', (e) => {
     const input = e.target.closest?.('.dd-slider__input');
     if (input) sync(input.closest('.dd-slider'), input);
+  });
+  document.addEventListener('change', (e) => {
+    const input = e.target.closest?.('.dd-slider__input');
+    const slider = input?.closest('.dd-slider');
+    if (!slider) return;
+    const values = [...slider.querySelectorAll('.dd-slider__input')].map((el) => Number(el.value));
+    slider.dispatchEvent(new CustomEvent('dd:change', { bubbles: true, detail: { value: values.length > 1 ? values : values[0], input } }));
   });
   const init = () => document.querySelectorAll('.dd-slider').forEach((s) => sync(s));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();

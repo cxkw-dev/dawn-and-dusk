@@ -90,4 +90,8 @@
 /* A row of chips. */
 .dd-chip-group { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5); }
 
-@media (prefers-reduced-motion: reduce) { .dd-chip.is-duplicate { animation: none; } }
+/* Reduced motion: no nudge, but the tint still deepens for a moment (chip.js holds the class ~0.6s), so a duplicate
+   is never silently ignored. */
+@media (prefers-reduced-motion: reduce) {
+  .dd-chip.is-duplicate { animation: none; background-color: color-mix(in oklab, color-mix(in oklab, var(--_c) var(--_t), transparent), var(--dd-text) 16%); }
+}

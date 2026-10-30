@@ -22,11 +22,13 @@
 
 /* The stack. Newest at the bottom, nearest the corner; full width on small screens. */
 .dd-toaster {
-  position: fixed; z-index: var(--dd-z-toast); right: calc(var(--dd-u) * 5); bottom: calc(var(--dd-u) * 5);
+  position: fixed; z-index: var(--dd-z-toast); inset: auto; right: calc(var(--dd-u) * 5); bottom: calc(var(--dd-u) * 5);
   display: flex; flex-direction: column; align-items: flex-end; gap: calc(var(--dd-u) * 2);
   width: min(400px, calc(100vw - var(--dd-u) * 6)); margin: 0; padding: 0;
   pointer-events: none;
 }
+/* The stack is a manual popover where supported (top layer, above modal dialogs): undo the UA popover box. */
+.dd-toaster[popover] { height: auto; border: 0; background: none; color: inherit; overflow: visible; }
 .dd-toaster:empty { display: none; }
 @media (max-width: 520px) {
   .dd-toaster { right: calc(var(--dd-u) * 3); left: calc(var(--dd-u) * 3); bottom: calc(var(--dd-u) * 3); width: auto; }
@@ -49,6 +51,7 @@
   transition: translate var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-toaster > .dd-toast.is-swiping { transition: none; cursor: grabbing; user-select: none; }
+.dd-toaster > .dd-toast.is-settled { animation: none; } /* re-shown above a modal: no second entrance */
 .dd-toast--info { --_c: var(--dd-info); }
 .dd-toast--ok { --_c: var(--dd-ok); }
 .dd-toast--warn { --_c: var(--dd-warn); }

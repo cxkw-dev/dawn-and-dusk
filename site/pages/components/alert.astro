@@ -46,8 +46,8 @@ const actions = `
       <p class="dd-alert__text">Auto-renew is off. If it lapses, every project on the domain goes dark.</p>
     </div>
     <div class="dd-alert__actions">
-      <button class="dd-alert__action" type="button">Renew now</button>
-      <button class="dd-alert__action dd-alert__action--secondary" type="button">Remind me</button>
+      <button class="dd-alert__action" type="button" data-dd-dismiss data-dd-toast="cxkw.dev renewed" data-dd-toast-description="Paid until 30 Oct 2027. Auto-renew is back on." data-dd-toast-intent="ok">Renew now</button>
+      <button class="dd-alert__action dd-alert__action--secondary" type="button" data-dd-dismiss data-dd-toast="We’ll remind you tomorrow" data-dd-toast-intent="neutral" data-dd-toast-duration="3000">Remind me</button>
     </div>
     <button class="dd-alert__dismiss" type="button" data-dd-dismiss aria-label="Dismiss">${i('x')}</button>
   </div>
@@ -58,7 +58,7 @@ const actions = `
       <p class="dd-alert__text">leetnode · <span class="dd-mono">a91f3c2</span> · migrations exited with code 1.</p>
     </div>
     <div class="dd-alert__actions">
-      <button class="dd-alert__action" type="button">Retry</button>
+      <button class="dd-alert__action" type="button" data-dd-dismiss data-dd-toast="Retrying deploy" data-dd-toast-description="leetnode · a91f3c2 · from step 4 of 6">Retry</button>
       <a class="dd-alert__action dd-alert__action--secondary" href="#logs">View logs</a>
     </div>
     <button class="dd-alert__dismiss" type="button" data-dd-dismiss aria-label="Dismiss">${i('x')}</button>
@@ -113,8 +113,8 @@ const narrow = `
       <p class="dd-alert__text">Auto-renew is off for this domain.</p>
     </div>
     <div class="dd-alert__actions">
-      <button class="dd-alert__action" type="button">Renew now</button>
-      <button class="dd-alert__action dd-alert__action--secondary" type="button">Remind me</button>
+      <button class="dd-alert__action" type="button" data-dd-dismiss data-dd-toast="cxkw.dev renewed" data-dd-toast-description="Paid until 30 Oct 2027. Auto-renew is back on." data-dd-toast-intent="ok">Renew now</button>
+      <button class="dd-alert__action dd-alert__action--secondary" type="button" data-dd-dismiss data-dd-toast="We’ll remind you tomorrow" data-dd-toast-intent="neutral" data-dd-toast-duration="3000">Remind me</button>
     </div>
     <button class="dd-alert__dismiss" type="button" data-dd-dismiss aria-label="Dismiss">${i('x')}</button>
   </div>
@@ -137,7 +137,7 @@ const both = `
 
   <h2 id="actions">Actions and dismiss</h2>
   <p>Actions are dotted text links on the right — the first is the way forward, <code>--secondary</code> steps back. A dismiss button with <code>data-dd-dismiss</code> fades the alert out and collapses the space it took.</p>
-  <Example code={actions} />
+  <Example code={actions} description="Try it: press × to dismiss an alert (or Tab to it and press Enter), or choose an action — here each one answers with a toast and clears the alert, since the problem is dealt with." />
 
   <h2 id="compact">Compact</h2>
   <p>One line, title and text running together. For forms, panels and table toolbars where a full alert would shout.</p>

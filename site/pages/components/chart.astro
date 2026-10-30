@@ -11,14 +11,25 @@ const fmt = (n: number) => n.toLocaleString('en-US');
 const yAxis = (ticks: string[]) => `<div class="dd-chart__y" aria-hidden="true">${ticks.map((t) => `<span>${t}</span>`).join('')}</div>`;
 const legend = (items: [string, string][], mod = '') =>
   `<ul class="dd-chart__legend">${items.map(([s, n]) => `<li class="dd-chart__key${mod} ${s}">${n}</li>`).join('')}</ul>`;
-const table = (head: string[], rows: (string | number)[][]) => `
+const tbody = (head: string[], rows: (string | number)[][]) => `
+      <thead><tr>${head.map((h) => `<th scope="col">${h}</th>`).join('')}</tr></thead>
+      <tbody>${rows.map((r) => `<tr>${r.map((c, k) => (k ? `<td>${c}</td>` : `<th scope="row">${c}</th>`)).join('')}</tr>`).join('')}</tbody>`;
+const table = (caption: string, head: string[], rows: (string | number)[][]) => `
   <details class="dd-chart__data">
     <summary>View as table</summary>
     <div class="dd-chart__data-scroll"><table>
-      <thead><tr>${head.map((h) => `<th scope="col">${h}</th>`).join('')}</tr></thead>
-      <tbody>${rows.map((r) => `<tr>${r.map((c, k) => (k ? `<td>${c}</td>` : `<th scope="row">${c}</th>`)).join('')}</tr>`).join('')}</tbody>
+      <caption class="dd-visually-hidden">${caption}</caption>${tbody(head, rows)}
     </table></div>
   </details>`;
+// Swap form: a [data-dd-chart-view] toggle in the head replaces the plot with this table.
+const swapTable = (id: string, caption: string, head: string[], rows: (string | number)[][]) => `
+  <div class="dd-chart__data dd-chart__data--swap" id="${id}" hidden>
+    <div class="dd-chart__data-scroll" tabindex="0" role="region" aria-label="${caption}"><table>
+      <caption class="dd-visually-hidden">${caption}</caption>${tbody(head, rows)}
+    </table></div>
+  </div>`;
+const viewToggle = (id: string) =>
+  `<button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" data-dd-chart-view aria-controls="${id}" aria-pressed="false">${i('list')}<span>Table</span></button>`;
 
 /* ---------- grouped columns ---------- */
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -29,7 +40,7 @@ const builds: [string, string, number[]][] = [
 ];
 const barMax = 80;
 const grouped = `
-<figure class="dd-chart">
+<figure class="dd-chart" data-dd-chart>
   <figcaption class="dd-chart__head">
     <div><p class="dd-chart__title">Build minutes per day</p><p class="dd-chart__sub">Last 7 days · minutes on shared runners</p></div>
     ${legend(builds.map(([s, n]) => [s, n]))}
@@ -46,7 +57,7 @@ const grouped = `
     </div>
     <div class="dd-chart__x" aria-hidden="true">${days.map((d) => `<span>${d}</span>`).join('')}</div>
   </div>
-  ${table(['Day', ...builds.map(([, n]) => n)], days.map((d, k) => [`${d} ${dates[k]}`, ...builds.map(([, , v]) => v[k])]))}
+  ${table('Build minutes per day, by project', ['Day', ...builds.map(([, n]) => n)], days.map((d, k) => [`${d} ${dates[k]}`, ...builds.map(([, , v]) => v[k])]))}
 </figure>`;
 
 /* ---------- line (two series) ---------- */
@@ -68,7 +79,7 @@ const hits = (labels: string[], series: [string, string, number[]][], max: numbe
       </div>`;
 const kUnit = (v: number) => `${v}K`;
 const line = `
-<figure class="dd-chart">
+<figure class="dd-chart" data-dd-chart>
   <figcaption class="dd-chart__head">
     <div><p class="dd-chart__title">Requests / min</p><p class="dd-chart__sub">Last 12 hours · us-east-1</p></div>
     ${legend(lines.map(([s, n]) => [s, n]), ' dd-chart__key--line')}
@@ -85,7 +96,7 @@ const line = `
     <div class="dd-chart__end" aria-hidden="true">${lines.map(([s, n, v]) => `<span class="${s}" style="--y:${yOf(v[v.length - 1], lineMax)}">${n} <b>${v[v.length - 1]}K</b></span>`).join('')}</div>
     <div class="dd-chart__x dd-chart__x--points" aria-hidden="true">${hours.map((h, k) => `<span${k % 3 ? ' class="is-minor"' : ''}>${h}</span>`).join('')}</div>
   </div>
-  ${table(['Hour', ...lines.map(([, n]) => `${n} (K/min)`)], hours.map((h, k) => [h, ...lines.map(([, , v]) => v[k])]))}
+  ${table('Requests per minute, last 12 hours', ['Hour', ...lines.map(([, n]) => `${n} (K/min)`)], hours.map((h, k) => [h, ...lines.map(([, , v]) => v[k])]))}
 </figure>`;
 
 /* ---------- area (single series + SLO rule) ---------- */
@@ -94,9 +105,10 @@ const areaMax = 250;
 const hourLabels = p95.map((_, k) => `${String((10 + k) % 24).padStart(2, '0')}:00`);
 const areaPath = path(p95, areaMax);
 const area = `
-<figure class="dd-chart">
+<figure class="dd-chart" data-dd-chart>
   <figcaption class="dd-chart__head">
     <div><p class="dd-chart__title">p95 latency · auth-gateway</p><p class="dd-chart__sub">Last 24 hours · milliseconds</p><p class="dd-chart__total">142 ms</p></div>
+    ${viewToggle('p95-table')}
   </figcaption>
   <div class="dd-chart__frame">
     ${yAxis(['250', '200', '150', '100', '50', '0'])}
@@ -111,6 +123,7 @@ const area = `
     </div>
     <div class="dd-chart__x dd-chart__x--points" aria-hidden="true"><span>10:00</span><span>16:00</span><span>22:00</span><span>04:00</span><span>now</span></div>
   </div>
+  ${swapTable('p95-table', 'auth-gateway p95 latency by hour', ['Hour', 'p95 (ms)'], hourLabels.map((h, k) => [h, p95[k]]))}
 </figure>`;
 
 /* ---------- horizontal bars ---------- */
@@ -119,7 +132,7 @@ const services: [string, number][] = [
 ];
 const hmax = services[0][1];
 const hbars = `
-<figure class="dd-chart">
+<figure class="dd-chart" data-dd-chart>
   <figcaption class="dd-chart__head">
     <div><p class="dd-chart__title">Busiest services</p><p class="dd-chart__sub">Requests / min · now · top 6 of 24</p></div>
   </figcaption>
@@ -136,7 +149,7 @@ const regions: [string, string, number[]][] = [
 ];
 const stackMax = 100;
 const stacked = `
-<figure class="dd-chart">
+<figure class="dd-chart" data-dd-chart>
   <figcaption class="dd-chart__head">
     <div><p class="dd-chart__title">Requests by region</p><p class="dd-chart__sub">Last 7 days · millions</p></div>
     ${legend(regions.map(([s, n]) => [s, n]))}
@@ -170,21 +183,21 @@ const minutes: [string, string, number][] = [
 const minutesTotal = minutes.reduce((a, [, , v]) => a + v, 0);
 const share = `
 <div class="dd-stack" style="--dd-gap: 20px">
-  <figure class="dd-chart">
+  <figure class="dd-chart" data-dd-chart>
     <figcaption class="dd-chart__head">
       <div><p class="dd-chart__title">Storage by project</p><p class="dd-chart__sub">${storageTotal.toFixed(1)} TB across 7 projects</p></div>
       ${legend(storage.map(([s, n]) => [s, n]))}
     </figcaption>
-    <div class="dd-chart__stack" role="img" aria-label="Storage by project: ${storage.map(([, n, v]) => `${n} ${v} TB (${pct(v, storageTotal)}%)`).join(', ')}">
-      ${storage.map(([s, n, v]) => `<span class="dd-chart__seg ${s}${pct(v, storageTotal) < 14 ? ' is-quiet' : ''}" style="--v:${v}" title="${n} · ${v} TB">${pct(v, storageTotal)}%</span>`).join('\n      ')}
+    <div class="dd-chart__stack" role="group" aria-label="Storage by project">
+      ${storage.map(([s, n, v]) => `<span class="dd-chart__seg ${s}${pct(v, storageTotal) < 14 ? ' is-quiet' : ''}" style="--v:${v}" tabindex="0" role="img" aria-label="${n} ${v} TB, ${pct(v, storageTotal)}%" data-dd-chart-label="${n}" data-dd-chart-value="${v} TB · ${pct(v, storageTotal)}%">${pct(v, storageTotal)}%</span>`).join('\n      ')}
     </div>
   </figure>
-  <figure class="dd-chart">
+  <figure class="dd-chart" data-dd-chart>
     <figcaption class="dd-chart__head">
       <div><p class="dd-chart__title">Build minutes · October</p><p class="dd-chart__sub">${fmt(minutesTotal)} of 3,000 included minutes</p></div>
     </figcaption>
-    <div class="dd-chart__stack dd-chart__stack--thin" role="img" aria-label="Build minutes by project: ${minutes.map(([, n, v]) => `${n} ${v}`).join(', ')}">
-      ${minutes.map(([s, n, v]) => `<span class="dd-chart__seg ${s}" style="--v:${v}" title="${n} · ${fmt(v)} min"></span>`).join('')}
+    <div class="dd-chart__stack dd-chart__stack--thin" role="group" aria-label="Build minutes by project">
+      ${minutes.map(([s, n, v]) => `<span class="dd-chart__seg ${s}" style="--v:${v}" tabindex="0" role="img" aria-label="${n} ${fmt(v)} min" data-dd-chart-label="${n}" data-dd-chart-value="${fmt(v)} min"></span>`).join('')}
     </div>
     <ul class="dd-chart__legend">${minutes.map(([s, n, v]) => `<li class="dd-chart__key dd-chart__key--dot ${s}">${n} <span class="dd-chart__key-value" style="padding-left:0">${fmt(v)}</span></li>`).join('')}</ul>
   </figure>
@@ -195,21 +208,21 @@ const GAP = 0.8;
 let cum = 0;
 const arcs = storage.map(([s, n, v]) => {
   const len = (v / storageTotal) * 100;
-  const arc = `<circle class="dd-chart__arc ${s}" cx="21" cy="21" r="15.9155" pathLength="100" stroke-dasharray="${r1(len - GAP)} ${r1(100 - len + GAP)}" stroke-dashoffset="${r1(-(cum + GAP / 2))}"><title>${n} · ${v} TB</title></circle>`;
+  const arc = `<circle class="dd-chart__arc ${s}" cx="21" cy="21" r="15.9155" pathLength="100" stroke-dasharray="${r1(len - GAP)} ${r1(100 - len + GAP)}" stroke-dashoffset="${r1(-(cum + GAP / 2))}" tabindex="0" role="img" aria-label="${n} ${v} TB, ${pct(v, storageTotal)}%" data-dd-chart-label="${n}" data-dd-chart-value="${v} TB · ${pct(v, storageTotal)}%"></circle>`;
   cum += len;
   return arc;
 });
 const donut = `
-<figure class="dd-chart">
+<figure class="dd-chart" data-dd-chart>
   <figcaption class="dd-chart__head">
     <div><p class="dd-chart__title">Storage by project</p><p class="dd-chart__sub">Object storage · all regions</p></div>
   </figcaption>
   <div class="dd-chart__pie">
-    <div class="dd-chart__donut" role="img" aria-label="Storage by project, ${storageTotal.toFixed(1)} TB total: ${storage.map(([, n, v]) => `${n} ${v} TB`).join(', ')}">
-      <svg viewBox="0 0 42 42" aria-hidden="true">
+    <div class="dd-chart__donut" role="group" aria-label="Storage by project, ${storageTotal.toFixed(1)} TB total">
+      <svg viewBox="0 0 42 42" role="none">
         ${arcs.join('\n        ')}
       </svg>
-      <div class="dd-chart__donut-center"><b>${storageTotal.toFixed(1)} TB</b><span>stored</span></div>
+      <div class="dd-chart__donut-center" aria-hidden="true"><b>${storageTotal.toFixed(1)} TB</b><span>stored</span></div>
     </div>
     <ul class="dd-chart__legend dd-chart__legend--stack">${storage.map(([s, n, v]) => `
       <li class="dd-chart__key ${s}">${n}<span class="dd-chart__key-value">${v} TB</span><span class="dd-chart__key-share">${pct(v, storageTotal)}%</span></li>`).join('')}
@@ -248,13 +261,13 @@ const tooltip = `
 
 /* ---------- empty ---------- */
 const empty = `
-<figure class="dd-chart">
+<figure class="dd-chart" data-dd-chart>
   <figcaption class="dd-chart__head">
     <div><p class="dd-chart__title">Cache hit ratio · edge-cache</p><p class="dd-chart__sub">ap-south-1 · last 7 days</p></div>
   </figcaption>
   <div class="dd-chart__frame">
     <div class="dd-chart__plot is-empty">
-      <div class="dd-chart__empty">${i('chart')}<b>No data for this range</b><span>edge-cache hasn’t reported metrics from ap-south-1 since Oct 24.</span><button class="dd-btn dd-btn--secondary dd-btn--sm" type="button">${i('calendar')}<span>Change range</span></button></div>
+      <div class="dd-chart__empty">${i('chart')}<b>No data for this range</b><span>edge-cache hasn’t reported metrics from ap-south-1 since Oct 24.</span><button class="dd-btn dd-btn--secondary dd-btn--sm" type="button" data-dd-toast="Range picker opens here" data-dd-toast-description="Pick dates before Oct 24 to see edge-cache’s last ap-south-1 metrics.">${i('calendar')}<span>Change range</span></button></div>
     </div>
     <div class="dd-chart__x" aria-hidden="true">${days.map((d) => `<span>${d}</span>`).join('')}</div>
   </div>
@@ -273,15 +286,15 @@ const order = `
 </div>`;
 ---
 <Docs title="Chart" group="Data display" lead="Conventions for charts in dawn & dusk: recessive axes and grid, thin marks, the Golden hour series in a fixed order, and text that never wears a series colour. Static HTML and inline SVG — the same classes style SVG from D3 or any charting library.">
-  <Example title="Anatomy — grouped columns" description="Title, subtitle and legend on top; y ticks in mono, solid hairline gridlines and a firmer baseline; bars ≤24px with a 4px rounded data end and 2px surface gaps. Hover or focus a day for its tooltip; the table view carries every value." code={grouped} />
+  <Example title="Anatomy — grouped columns" description="Title, subtitle and legend on top; y ticks in mono, solid hairline gridlines and a firmer baseline; bars ≤24px with a 4px rounded data end and 2px surface gaps. The table view carries every value. Try it: hover a day, or Tab into the plot and use ← → Home End; Esc hides the tooltip. Open “View as table”." code={grouped} />
 
   <h2 id="line">Line</h2>
   <p>Lines are inline SVG on a 0–100 viewBox with <code>preserveAspectRatio="none"</code>, so the plot stretches to any width while <code>vector-effect: non-scaling-stroke</code> keeps every line at 2px. Markers, crosshair and end labels are HTML positioned by <code>--x</code> / <code>--y</code> percentages, so they stay round. End labels drop out on narrow cards — the legend stays.</p>
-  <Example code={line} />
+  <Example description="Try it: hover the plot or Tab in and step through the hours with the arrow keys." code={line} />
 
   <h2 id="area">Area and reference rule</h2>
   <p>A single series needs no legend — the title names it. The area is the series hue as a ~14% wash under its line. A <code>.dd-chart__rule</code> marks a target or SLO; label it, don’t colour it.</p>
-  <Example code={area} />
+  <Example description="Try it: press Table in the corner to swap the plot for its data, and again to swap back." code={area} />
 
   <h2 id="bar-horizontal">Horizontal bars</h2>
   <p>For ranked categories with long names. Pure HTML: label, bar, value in mono. Below 460px the label moves above its bar.</p>
@@ -289,13 +302,13 @@ const order = `
 
   <h2 id="stacked">Stacked</h2>
   <p>Stacked columns show a total and its parts over time; segments are separated by a 2px surface gap, and only the top one is rounded. The tooltip adds the total.</p>
-  <Example code={stacked} />
+  <Example description="Try it: hover or arrow through the days — the tooltip adds the total." code={stacked} />
   <p>A 100% bar shows one whole split into parts. The tall bar (28px) prints each share inside in dark or light ink chosen per series; parts too narrow for a label get <code>.is-quiet</code> and leave it to the legend. The thin bar (8px) is a quiet figure for cards and quotas.</p>
-  <Example code={share} />
+  <Example description="Try it: hover, tap or Tab to a segment for its name and value." code={share} />
 
   <h2 id="donut">Donut</h2>
   <p>SVG circles with <code>pathLength="100"</code>: each arc’s <code>stroke-dasharray</code> is its share minus a 0.8 gap, offset by the running total. Keep it to 3–4 parts plus “Other”, and always pair it with a legend that carries the values.</p>
-  <Example code={donut} />
+  <Example description="Try it: hover an arc, or Tab in and use the arrow keys." code={donut} />
 
   <h2 id="legend">Legend</h2>
   <p>Every chart with two or more series has a legend. Keys are swatches (bars, areas), short lines (line charts) or dots (scatter, small figures); the label stays in text colour. The stacked legend adds values and shares for donuts and parts-of-a-whole.</p>
@@ -303,11 +316,11 @@ const order = `
 
   <h2 id="tooltip">Tooltip</h2>
   <p>A floating layer: <code>--dd-float-bg</code> with <code>--dd-shadow-float</code>, so it lifts off the chart card in both themes. A mono title for the x value, one row per series with a key, values right-aligned in mono, and an optional total. In charts it opens beside the hovered slot or crosshair; add <code>.is-flip</code> to open it to the left near the right edge.</p>
-  <Example code={tooltip} />
+  <Example description="Pinned with .is-static for reference — the charts above show the same tooltip live." code={tooltip} />
 
   <h2 id="empty">Empty</h2>
   <p>Keep the plot height, a faint baseline and the x axis so the space still reads as a chart; drop the gridlines and say why there’s nothing, with a way forward.</p>
-  <Example code={empty} />
+  <Example description="Try it: Change range gives feedback here; in an app it opens the range picker." code={empty} />
 
   <h2 id="colour-order">Colour order</h2>
   <p>Series take the Golden hour set in this fixed order — never cycled, never re-sorted by rank, and a series keeps its colour when filters remove its neighbours. The order was chosen by measuring separation (OKLab ΔE, normal vision plus protan and deutan simulation, in both modes) because the set is warm-only:</p>
@@ -322,6 +335,16 @@ const order = `
 
   <h2 id="dusk">Dusk</h2>
   <p>Nothing changes in markup. The set tokens are lifted for dusk, so marks keep their contrast on dark surfaces; gridlines and the baseline are mixed from <code>--dd-text</code> and follow it; the 2px gaps and marker rings use the chart’s own surface (<code>--_bg</code>), so they cut cleanly in both modes. Ink inside a filled segment comes from <code>--dd-series-ink</code>: dark on every hue, except wine (3), which flips to light ink in dawn. Use “View in dusk” on any example above to compare.</p>
+
+  <h2 id="behaviour">Behaviour</h2>
+  <p>Charts work as static HTML: tooltips open on hover and keyboard focus with CSS alone. Add <code>data-dd-chart</code> to the <code>.dd-chart</code> figure and the script adds the rest:</p>
+  <ul>
+    <li><b>One tab stop per plot.</b> Slots, line points (<code>__hit</code>), 100% segments (<code>__seg</code>) and donut arcs (<code>__arc</code>) — or any element with <code>data-dd-chart-point</code> — share a roving <code>tabindex</code>. <kbd class="dd-kbd">←</kbd> <kbd class="dd-kbd">→</kbd> (or <kbd class="dd-kbd">↑</kbd> <kbd class="dd-kbd">↓</kbd>) step through them, <kbd class="dd-kbd">Home</kbd> / <kbd class="dd-kbd">End</kbd> jump to the ends, <kbd class="dd-kbd">Esc</kbd> hides the tooltip until the next move.</li>
+    <li><b>Touch.</b> Tapping a mark opens its tooltip; tapping anywhere else closes it. Tooltips flip to the side with room.</li>
+    <li><b>Floating tooltips.</b> Marks without a <code>.dd-chart__tip</code> inside get one built from <code>data-dd-chart-label</code>, <code>data-dd-chart-value</code> and an optional <code>data-dd-chart-title</code>, keyed by the mark’s series class. Give each mark <code>role="img"</code> and an <code>aria-label</code>, and its container <code>role="group"</code>.</li>
+    <li><b>Table view.</b> A <code>&lt;details class="dd-chart__data"&gt;</code> “View as table” needs no script. To swap the plot for its table instead, add a toggle button <code>data-dd-chart-view aria-pressed="false" aria-controls="ID"</code> and a <code>.dd-chart__data.dd-chart__data--swap</code> container with that ID and <code>hidden</code>; the figure gets <code>.is-table</code> and fires <code>dd:change</code> with <code>detail.view</code> = <code>"table"</code> or <code>"chart"</code>.</li>
+    <li>The active mark has <code>.is-active</code> (same look as hover); use it to style custom marks.</li>
+  </ul>
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -347,7 +370,8 @@ const order = `
     ['.dd-chart__stack / __seg', '100% bar; segments weighted by <code>--v</code>. <code>__stack--thin</code> for the 8px form; <code>.is-quiet</code> hides a label that won’t fit.'],
     ['.dd-chart__pie / __donut / __arc', 'Donut layout, SVG wrapper (<code>--dd-chart-donut</code> size) and arcs; <code>__donut-center</code> for the total.'],
     ['.dd-chart__empty', 'Centered empty message over a faded plot (<code>__plot.is-empty</code>).'],
-    ['.dd-chart__data', '<code>&lt;details&gt;</code> “View as table” with every value.'],
+    ['.dd-chart__data', '<code>&lt;details&gt;</code> “View as table” with every value. <code>__data--swap</code>: a hidden container the <code>data-dd-chart-view</code> toggle swaps in for the plot.'],
+    ['.dd-chart[data-dd-chart]', 'Opts into the script: roving focus, touch and floating tooltips, table swap. <code>.is-active</code> marks the current mark, <code>.is-table</code> the swapped figure.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

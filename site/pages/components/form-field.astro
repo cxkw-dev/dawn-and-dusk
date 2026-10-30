@@ -51,6 +51,29 @@ const messages = `
   </div>
 </div>`;
 
+const limits = `
+<form class="dd-form" onsubmit="return false" style="max-width: 460px">
+  <div class="dd-field">
+    <label class="dd-field__label" for="ff-9">Status message</label>
+    <div class="dd-input"><input class="dd-input__control" id="ff-9" value="All systems normal" aria-describedby="ff-9-hint ff-9-c"></div>
+    <div class="dd-field__foot">
+      <p class="dd-field__hint" id="ff-9-hint">Shown on status.cxkw.dev. Aim for 40 characters or fewer.</p>
+      <span class="dd-field__counter" id="ff-9-c" data-dd-counter="40">18 / 40</span>
+    </div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ff-10">Deploy note</label>
+    <div class="dd-input dd-textarea"><textarea class="dd-input__control" id="ff-10" rows="2" maxlength="120" placeholder="Why this deploy?">Rolls edge-cache back to 2.3.1</textarea></div>
+    <div class="dd-field__foot">
+      <p class="dd-field__hint">Hard limit: typing stops at 120.</p>
+      <span class="dd-field__counter">30 / 120</span>
+    </div>
+  </div>
+  <div class="dd-form__footer dd-form__footer--plain">
+    <button class="dd-btn dd-btn--ghost" type="reset">Reset</button>
+  </div>
+</form>`;
+
 const any = `
 <div class="dd-form__grid">
   <div class="dd-field">
@@ -74,7 +97,7 @@ const any = `
 </div>`;
 ---
 <Docs title="Form field" group="Forms" lead="The wrapper around one control: its label, hint, error and counter. By default the label tucks into the tonal box; a label-above variant is there for long labels and dense settings.">
-  <Example title="Anatomy" description="Label, box, then a foot with a hint and a counter. Hints and errors indent to the value’s left edge." code={anatomy} />
+  <Example title="Anatomy" description="Label, box, then a foot with a hint and a counter. Hints and errors indent to the value’s left edge. Try it: type in the box and watch the counter." code={anatomy} />
 
   <h2 id="above">Label above</h2>
   <p><code>.dd-field--above</code> puts a regular label over the box — better for long labels, an <code>optional</code> marker, or a description line (<code>.dd-field__desc</code>) between label and box.</p>
@@ -83,6 +106,10 @@ const any = `
   <h2 id="messages">Hint, error and counter</h2>
   <p>Set <code>aria-invalid="true"</code> on the control and the label, box and status icon turn red; put the reason in <code>.dd-field__error</code> and link it with <code>aria-describedby</code>. The counter updates as you type.</p>
   <Example code={messages} />
+
+  <h3 id="limits">Soft and hard limits</h3>
+  <p><code>maxlength</code> is a hard limit: the browser stops the typing. <code>data-dd-counter</code> on the counter is a soft one: the draft can run over, but the counter and label turn red and the control is marked invalid until it is back under. Both re-count when the form is reset.</p>
+  <Example description="Try it: type past 40 characters in the status message, trim it back, then press Reset." code={limits} />
 
   <h2 id="controls">Any control</h2>
   <p>The field works with every box-based control: text input, select, combobox, date picker and textarea. The tucked label finds the box directly inside the field or one wrapper deep.</p>
@@ -106,6 +133,7 @@ const any = `
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['.dd-field__counter', 'Counts the field’s input or textarea on every keystroke, and again after a form reset: <code>n / maxlength</code>.'],
     ['data-dd-counter="280"', 'Soft limit instead of <code>maxlength</code>: typing past it is allowed but marks the control invalid until it is back under.'],
+    ['data-dd-counter-error', 'On a <code>.dd-field__error</code> in the same field: shown only while the soft limit is passed.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

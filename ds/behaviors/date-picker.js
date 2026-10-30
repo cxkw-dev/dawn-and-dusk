@@ -50,8 +50,12 @@
     const start = addDays(first, -lead);
     const inMonth = (d) => d.getMonth() === first.getMonth();
     // Roving tabindex: selected day, else today, else the 1st — whichever is in this month.
-    const anchors = [s.value, s.start, s.today].filter((v) => v && v.slice(0, 7) === iso(first).slice(0, 7));
-    const focusDay = anchors[0] || iso(first);
+    const ym = iso(first).slice(0, 7);
+    const allowed = (v) => !(s.min && v < s.min) && !(s.max && v > s.max);
+    const anchors = [s.value, s.start, s.today].filter((v) => v && v.slice(0, 7) === ym && allowed(v));
+    // …or the 1st, or data-min when the month starts before it.
+    let focusDay = anchors[0] || iso(first);
+    if (!allowed(focusDay) && s.min && s.min.slice(0, 7) === ym) focusDay = s.min;
     let rows = '';
     for (let w = 0; w < 6; w++) {
       rows += '<tr>';
@@ -112,14 +116,22 @@
     render(cal);
   };
 
+  const sameDay = (d, n) => new Date(d.getFullYear(), d.getMonth() + n, Math.min(d.getDate(), new Date(d.getFullYear(), d.getMonth() + n + 1, 0).getDate()));
+
   const focusDate = (cal, d) => {
-    const day = iso(d);
+    const { min, max } = cal.dataset;
+    let day = iso(d);
+    // Arrows stop at data-min / data-max instead of landing on a day that can't be chosen.
+    if (min && day < min) day = min;
+    if (max && day > max) day = max;
     if (!cal.querySelector(`[data-date="${day}"]:not(.is-outside)`)) { cal.dataset.month = day.slice(0, 7); render(cal); }
     const btn = cal.querySelector(`[data-date="${day}"]`);
     if (!btn) return;
     cal.querySelectorAll('.dd-calendar__day[tabindex="0"]').forEach((b) => { b.tabIndex = -1; });
     btn.tabIndex = 0;
     btn.focus();
+    // Picking a range by keyboard previews it like hovering does.
+    if (cal.dataset.mode === 'range' && cal.dataset.start && !cal.dataset.end) { cal.dataset.ddHover = day; paintHover(cal, day); }
   };
 
   // ---------- picker ----------
@@ -151,6 +163,7 @@
       if (!v) return false;
       input.value = short(v);
     }
+    input.removeAttribute('aria-invalid');
     const hidden = root.querySelector('input[type="hidden"]');
     if (hidden) hidden.value = s.mode === 'range' ? `${s.start}/${s.end}` : s.value;
     input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -170,6 +183,14 @@
     if (row && on && row.scrollWidth > row.clientWidth) row.scrollLeft = on.offsetLeft - row.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
   };
 
+  // What Esc, Cancel or a click outside goes back to: the calendar's value and the pressed preset.
+  const save = (root) => {
+    const { cal } = pickerParts(root);
+    if (!cal) return;
+    const presets = [...root.querySelectorAll('.dd-date-picker__preset')];
+    root.dataset.ddSaved = JSON.stringify({ value: cal.dataset.value, start: cal.dataset.start, end: cal.dataset.end, preset: presets.findIndex((p) => p.getAttribute('aria-pressed') === 'true') });
+  };
+
   const openPicker = (root) => {
     const { toggle, pop, cal, input } = pickerParts(root);
     if (!pop || input?.disabled) return;
@@ -178,7 +199,7 @@
     root.classList.add('is-open');
     toggle?.setAttribute('aria-expanded', 'true');
     if (cal) {
-      root.dataset.ddSaved = JSON.stringify({ value: cal.dataset.value, start: cal.dataset.start, end: cal.dataset.end });
+      save(root);
       const s = state(cal);
       const sel = s.value || s.start;
       if (sel) cal.dataset.month = sel.slice(0, 7);
@@ -195,6 +216,7 @@
     if (revert && cal && root.dataset.ddSaved) {
       const saved = JSON.parse(root.dataset.ddSaved);
       for (const k of ['value', 'start', 'end']) { if (saved[k] === undefined) delete cal.dataset[k]; else cal.dataset[k] = saved[k]; }
+      root.querySelectorAll('.dd-date-picker__preset').forEach((p, n) => p.setAttribute('aria-pressed', String(n === saved.preset)));
     }
     pop.hidden = true;
     root.classList.remove('is-open');
@@ -241,6 +263,7 @@
       root.querySelectorAll('.dd-date-picker__preset').forEach((p) => p.setAttribute('aria-pressed', String(p === preset)));
       summarise(root);
       emit(cal);
+      if (!root.querySelector('[data-dd-date-apply]')) { commit(root); closePicker(root, false); pickerParts(root).input?.focus(); }
       return;
     }
     if (t.closest('[data-dd-date-toggle]') || (t.matches('.dd-input__control') && t.readOnly)) {
@@ -270,8 +293,8 @@
     const ws = Number(cal.dataset.weekStart ?? 1);
     const moves = {
       ArrowLeft: () => addDays(d, -1), ArrowRight: () => addDays(d, 1), ArrowUp: () => addDays(d, -7), ArrowDown: () => addDays(d, 7),
-      PageUp: () => new Date(d.getFullYear(), d.getMonth() - 1, Math.min(d.getDate(), 28)),
-      PageDown: () => new Date(d.getFullYear(), d.getMonth() + 1, Math.min(d.getDate(), 28)),
+      // Same day of the previous / next month, or its last day when the month is shorter (Jan 31 → Feb 28).
+      PageUp: () => sameDay(d, -1), PageDown: () => sameDay(d, 1),
       Home: () => addDays(d, -((d.getDay() - ws + 7) % 7)), End: () => addDays(d, 6 - ((d.getDay() - ws + 7) % 7)),
     };
     if (moves[e.key]) { e.preventDefault(); focusDate(cal, moves[e.key]()); }
@@ -283,21 +306,44 @@
     if (root && e.relatedTarget && !root.contains(e.relatedTarget)) closePicker(root, false, true);
   });
 
-  // Typed dates: anything Date can parse ("2026-10-14", "Oct 14, 2026") moves the calendar.
+  // Typed dates: anything Date can parse ("2026-10-14", "Oct 14, 2026") moves the calendar. ISO dates are read as
+  // local days (Date.parse would take them as UTC midnight, the day before west of Greenwich). A date outside
+  // data-min / data-max marks the field invalid; clearing the field clears the value.
   document.addEventListener('change', (e) => {
     const root = e.target.closest?.('[data-dd-date-picker]');
     if (!root || e.target !== pickerParts(root).input || !e.isTrusted) return;
     const { cal } = pickerParts(root);
-    const t = Date.parse(e.target.value);
-    if (!cal || Number.isNaN(t) || (cal.dataset.mode || 'single') === 'range') return;
+    if (!cal || (cal.dataset.mode || 'single') === 'range') return;
+    const text = e.target.value.trim();
+    const hidden = root.querySelector('input[type="hidden"]');
+    if (!text) {
+      e.target.removeAttribute('aria-invalid');
+      if (!cal.dataset.value) return;
+      delete cal.dataset.value;
+      if (hidden) hidden.value = '';
+      render(cal); emit(cal);
+      return;
+    }
+    const t = /^\d{4}-\d{1,2}-\d{1,2}$/.test(text) ? parse(text)?.getTime() : Date.parse(text);
+    if (t === undefined || Number.isNaN(t)) { e.target.setAttribute('aria-invalid', 'true'); return; }
     const v = iso(new Date(t));
+    const { min, max } = cal.dataset;
+    if ((min && v < min) || (max && v > max)) { e.target.setAttribute('aria-invalid', 'true'); return; }
+    e.target.removeAttribute('aria-invalid');
     Object.assign(cal.dataset, { value: v, month: v.slice(0, 7) });
+    if (hidden) hidden.value = v;
     render(cal);
     e.target.value = short(parse(v));
+    emit(cal);
   });
 
   const placeOpen = () => document.querySelectorAll('[data-dd-date-picker].is-open').forEach(place);
   addEventListener('resize', placeOpen);
-  const init = () => { document.querySelectorAll('[data-dd-calendar]').forEach((c) => render(c)); placeOpen(); };
+  const init = () => {
+    document.querySelectorAll('[data-dd-calendar]').forEach((c) => render(c));
+    // A picker rendered open has nothing saved yet: remember its state now, so closing it without applying restores it.
+    document.querySelectorAll('[data-dd-date-picker]').forEach((r) => { const { pop } = pickerParts(r); if (pop && !pop.hidden) save(r); });
+    placeOpen();
+  };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

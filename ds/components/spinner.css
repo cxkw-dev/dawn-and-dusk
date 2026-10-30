@@ -50,8 +50,10 @@
    header or open menus. */
 :where(:has(> .dd-page-loader--overlay:not(.dd-page-loader--fixed))) { isolation: isolate; }
 .dd-page-loader.dd-page-loader--fixed { position: fixed; z-index: var(--dd-z-overlay); }
+/* They all set a display, so say again that [hidden] hides them: a loader is shown and hidden with the attribute. */
+:is(.dd-spinner, .dd-loading, .dd-page-loader)[hidden] { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .dd-spinner:not(.dd-spinner--dots) { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
+  .dd-spinner:not(.dd-spinner--dots), .dd-btn__spinner { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
   .dd-spinner--dots > i { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
 }

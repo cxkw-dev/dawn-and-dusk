@@ -16,6 +16,20 @@ const linear = `
 <div class="dd-stack" style="--dd-gap: var(--dd-space-6); max-width: 520px">${bar('up-1', 'Uploading build artefacts', 62, '<b>62%</b>', '38 MB of 61 MB · about 12 s left')}${bar('mig-1', 'Migrating <span class="dd-mono">ledger-sync</span> to eu-west-2', 18, '<b>1,840</b> / 10,212 rows')}
 </div>`;
 
+// A live upload for visitors to drive; the page script below moves it (your app sets --dd-value and aria-valuenow).
+const live = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-4); max-width: 520px" data-progress-demo>
+  <div class="dd-progress">
+    <div class="dd-progress__head"><span class="dd-progress__label" id="live-1">Uploading <span class="dd-mono">dockey-ui</span> build artefacts</span><span class="dd-progress__value"><b data-progress-pct>0%</b></span></div>
+    <div class="dd-progress__track" role="progressbar" aria-labelledby="live-1" aria-describedby="live-1-hint" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="--dd-value:0"><div class="dd-progress__fill"></div></div>
+    <p class="dd-progress__hint" id="live-1-hint" data-progress-hint>61 MB queued.</p>
+  </div>
+  <div class="dd-row" style="--dd-gap: var(--dd-space-2)">
+    <button class="dd-btn dd-btn--primary dd-btn--sm" type="button" data-progress-act="toggle">${i('upload')}<span>Start upload</span></button>
+    <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" data-progress-act="reset" disabled>${i('refresh')}<span>Reset</span></button>
+  </div>
+</div>`;
+
 const sizes = `
 <div class="dd-stack" style="--dd-gap: var(--dd-space-5); max-width: 520px">
   <div class="dd-progress dd-progress--sm">
@@ -134,6 +148,7 @@ const quota = `
 ---
 <Docs title="Progress" group="Data display" lead="How far along something is, or how full. Bars for work in flight, meters for levels against a threshold, rings where space is square, steps for pipelines and quotas for usage.">
   <Example title="Linear" description="Label and value above, optional hint below. The value is mono; the fill reads --dd-value (0–100)." code={linear} />
+  <Example title="Live" description="Try it: start the upload, pause it, reset it. The fill eases to each new value and aria-valuenow follows; the hint says what’s left." code={live} />
 
   <h2 id="sizes">Sizes</h2>
   <p>Small (4px) for inline and dense rows, medium (6px) by default, large (10px) for meters and hero progress.</p>
@@ -194,3 +209,41 @@ const quota = `
     dont={['Don’t colour progress by status unless it is a status.', 'Don’t animate determinate bars backwards; start a new bar instead.', 'Don’t use more than four or five quota segments — fold the rest into “Other”.']}
   />
 </Docs>
+
+<script>
+  // Docs demo only: drive the “Live” example. In an app, set --dd-value and aria-valuenow from real progress.
+  const TOTAL = 61;
+  document.querySelectorAll<HTMLElement>('[data-progress-demo]').forEach((demo) => {
+    const track = demo.querySelector<HTMLElement>('[role="progressbar"]')!;
+    const pct = demo.querySelector<HTMLElement>('[data-progress-pct]')!;
+    const hint = demo.querySelector<HTMLElement>('[data-progress-hint]')!;
+    const toggle = demo.querySelector<HTMLButtonElement>('[data-progress-act="toggle"]')!;
+    const reset = demo.querySelector<HTMLButtonElement>('[data-progress-act="reset"]')!;
+    const label = toggle.querySelector('span')!;
+    const icon = toggle.querySelector('use')!;
+    let value = 0;
+    let timer = 0;
+    const render = () => {
+      track.style.setProperty('--dd-value', String(value));
+      track.setAttribute('aria-valuenow', String(value));
+      pct.textContent = `${value}%`;
+      const mb = Math.round((value / 100) * TOTAL);
+      hint.textContent = value >= 100 ? `Done — ${TOTAL} MB uploaded.` : value === 0 ? `${TOTAL} MB queued.` : `${mb} MB of ${TOTAL} MB${timer ? ` · about ${Math.max(1, Math.ceil((100 - value) * 0.03))} s left` : ' · paused'}`;
+      label.textContent = value >= 100 ? 'Upload again' : timer ? 'Pause' : value ? 'Resume' : 'Start upload';
+      icon.setAttribute('href', `#dd-i-${timer ? 'pause' : value && value < 100 ? 'play' : 'upload'}`);
+      reset.disabled = value === 0;
+    };
+    const stop = () => { clearInterval(timer); timer = 0; };
+    toggle.addEventListener('click', () => {
+      if (timer) { stop(); render(); return; }
+      if (value >= 100) value = 0;
+      timer = window.setInterval(() => {
+        value = Math.min(100, value + 2 + Math.round(Math.random() * 4));
+        if (value >= 100) stop();
+        render();
+      }, 120);
+      render();
+    });
+    reset.addEventListener('click', () => { stop(); value = 0; render(); toggle.focus(); });
+  });
+</script>

@@ -80,6 +80,7 @@
   background: var(--_on); color: var(--dd-accent); box-shadow: none;
 }
 .dd-data-table__chip:is([aria-pressed="true"], .is-active):hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
+.dd-data-table__chip[hidden] { display: none; }
 .dd-data-table__chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint)); }
 
 .dd-data-table__tools { display: flex; align-items: center; gap: calc(var(--dd-u) * 1); margin-left: auto; }
@@ -103,6 +104,8 @@
   border-radius: var(--dd-r-ctl); font-size: var(--dd-fs-sm); cursor: pointer; white-space: nowrap;
 }
 .dd-data-table__menu-panel label:hover { background: var(--dd-float-hover); }
+/* --start: a menu at the left of the toolbar (a filter chip) opens from its left edge */
+.dd-data-table__menu--start .dd-data-table__menu-panel { right: auto; left: 0; }
 @keyframes dd-data-table-pop { from { opacity: 0; transform: translateY(-4px); } }
 
 /* ---------- bulk-action bar ---------- */

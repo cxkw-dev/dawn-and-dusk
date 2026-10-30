@@ -40,8 +40,8 @@ const iconCount = `
 
 const counts = `
 <div class="dd-row" style="--dd-gap: var(--dd-space-6)">
-  <button class="dd-btn dd-btn--ghost dd-btn--icon" type="button" aria-label="Notifications, 3 unread">${i('bell')}<span class="dd-badge dd-badge--count dd-badge--solid dd-badge--bad dd-badge--corner" aria-hidden="true">3</span></button>
-  <button class="dd-btn dd-btn--ghost dd-btn--icon" type="button" aria-label="Messages, new">${i('chat')}<span class="dd-badge dd-badge--solid dd-badge--accent dd-badge--corner" aria-hidden="true"></span></button>
+  <button class="dd-btn dd-btn--ghost dd-btn--icon" type="button" id="bd-notifications" aria-label="Notifications, 3 unread">${i('bell')}<span class="dd-badge dd-badge--count dd-badge--solid dd-badge--bad dd-badge--corner" aria-hidden="true">3</span></button>
+  <button class="dd-btn dd-btn--ghost dd-btn--icon" type="button" id="bd-messages" aria-label="Messages, new">${i('chat')}<span class="dd-badge dd-badge--solid dd-badge--accent dd-badge--corner" aria-hidden="true"></span></button>
   <span class="dd-row" style="--dd-gap: var(--dd-space-2)">Deploys <span class="dd-badge dd-badge--count">128</span></span>
   <span class="dd-row" style="--dd-gap: var(--dd-space-2)">Open issues <span class="dd-badge dd-badge--count dd-badge--warn">7</span></span>
   <span class="dd-row" style="--dd-gap: var(--dd-space-2)">Failing <span class="dd-badge dd-badge--count dd-badge--solid dd-badge--bad">2</span></span>
@@ -76,7 +76,7 @@ const context = `
 
   <h2 id="counts">Counts</h2>
   <p><code>--count</code> is a bare mono number in a pill — totals in navigation and tabs. <code>--corner</code> pins a count, or an empty dot, to the corner of an icon button (the button already has <code>position: relative</code>). Say the number in the button’s <code>aria-label</code>.</p>
-  <Example code={counts} />
+  <Example code={counts} description="Try it: click the bell or the chat button to mark them read — the badge goes and the button’s label follows it; click again to bring them back." />
 
   <h2 id="in-context">In context</h2>
   <Example code={context} />
@@ -93,7 +93,7 @@ const context = `
     ['> .dd-icon', 'Leading icon, sized to the caps.'],
     ['.dd-badge__count', 'Mono number after a hairline.'],
     ['.dd-badge--count', 'Bare number pill (no caps, no tracking).'],
-    ['.dd-badge--corner', 'Pinned to the top-right of a positioned parent, ringed in <code>--dd-badge-ring</code> (default <code>--dd-bg</code>). Empty = dot.'],
+    ['.dd-badge--corner', 'Pinned to the top-right of a positioned parent, ringed in <code>--dd-badge-ring</code> (default <code>--dd-bg</code>). Empty = dot. Hide it with <code>hidden</code> when the count reaches zero, and update the host’s label with it.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>
@@ -102,3 +102,18 @@ const context = `
     dont={['Don’t make badges clickable unless they filter; use a chip.', 'Don’t rely on colour alone — the word carries the meaning.', 'Don’t use badges for categories and tags; chips in the Color set do that.']}
   />
 </Docs>
+
+<script>
+  // Docs demo: the corner badges mark read and unread again. The badge and the button's aria-label change together,
+  // so a screen reader hears the same count the eye sees.
+  const unread = new Map<Element, string>();
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as Element).closest('#bd-notifications, #bd-messages');
+    const badge = btn?.querySelector<HTMLElement>('.dd-badge--corner');
+    if (!btn || !badge) return;
+    if (!unread.has(btn)) unread.set(btn, btn.getAttribute('aria-label') || '');
+    badge.hidden = !badge.hidden;
+    const label = unread.get(btn)!;
+    btn.setAttribute('aria-label', badge.hidden ? label.split(',')[0] : label);
+  });
+</script>

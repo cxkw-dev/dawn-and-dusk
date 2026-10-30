@@ -67,6 +67,8 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 .dd-card__stretch::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
 .dd-card__stretch:focus-visible { outline: none; }
 .dd-card:has(.dd-card__stretch:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+/* Controls inside a stretched-link card sit above the link's hit area, so they keep their own click. */
+.dd-card:has(.dd-card__stretch) :is(a[href], button, input, select, textarea, label, summary, [tabindex]):not(.dd-card__stretch) { position: relative; z-index: 1; }
 
 /* Stat: a big display figure, its label and a delta. */
 .dd-card__stat {

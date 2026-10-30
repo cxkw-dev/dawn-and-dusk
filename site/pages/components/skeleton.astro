@@ -3,6 +3,7 @@ import Docs from '../../layouts/Docs.astro';
 import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
 
 const lines = `
 <div class="dd-skeleton-group" aria-busy="true" style="max-width: 560px">
@@ -45,6 +46,35 @@ const cards = `
   ${card('55%')}
 </div>`;
 
+const member = (ini: string, set: number, name: string, role: string) => `<li style="display: flex; align-items: center; gap: var(--dd-space-3)">
+          <span class="dd-avatar dd-avatar--set-${set}" aria-hidden="true">${ini}</span>
+          <span style="font-size: var(--dd-fs-sm); line-height: var(--dd-lh)"><b>${name}</b><br><span class="dd-muted">${role}</span></span>
+        </li>`;
+const live = `
+<div class="dd-surface" style="max-width: 560px; padding: var(--dd-space-4) var(--dd-space-5)">
+  <div class="dd-row" style="justify-content: space-between; margin-bottom: var(--dd-space-4)">
+    <span class="dd-small dd-muted">cxkw.dev · members</span>
+    <button class="dd-btn dd-btn--sm" type="button" data-sk-reload aria-controls="sk-members">${i('refresh')}<span>Reload</span></button>
+  </div>
+  <div id="sk-members" aria-busy="false">
+    <div data-sk-loading hidden>
+      <div class="dd-skeleton-group">
+        <span class="dd-visually-hidden">Loading members…</span>
+        ${item}
+        ${item}
+        ${item}
+      </div>
+    </div>
+    <div data-sk-loaded>
+      <ul class="dd-stack" style="--dd-gap: calc(var(--dd-u) * 3); margin: 0; padding: 0; list-style: none">
+        ${member('AN', 3, 'Andy Nguyen', 'Owner · andy@cxkw.dev')}
+        ${member('MK', 6, 'Mira K.', 'Maintainer · mira@cxkw.dev')}
+        ${member('RL', 1, 'Ravi L.', 'Admin · ravi@cxkw.dev')}
+      </ul>
+    </div>
+  </div>
+</div>`;
+
 const tr = (a: string, b: string, c: string) => `<div style="display: grid; grid-template-columns: 28px minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: var(--dd-space-4); align-items: center; padding: var(--dd-space-3) var(--dd-space-4); box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--dd-text) 8%, transparent)">
       <span class="dd-skeleton dd-skeleton--circle" style="--dd-skeleton-size: 20px"></span>
       <span class="dd-skeleton dd-skeleton--text" style="width: ${a}"></span>
@@ -81,6 +111,7 @@ const table = `
 
   <h2 id="a11y">Accessibility and motion</h2>
   <p>Put <code>aria-busy="true"</code> on the region that’s loading with a visually hidden “Loading …” inside, and hide the shapes with <code>aria-hidden</code>; swap the whole region when the data arrives. With reduced motion the shimmer stops and the shapes stay as flat tone.</p>
+  <Example code={live} description="Try it: press Reload. The list turns into skeleton rows while the region is aria-busy, and the real rows land in exactly the same place a moment later." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -101,3 +132,22 @@ const table = `
     dont={['Don’t show a skeleton and a spinner for the same thing.', 'Don’t keep skeletons up after an error — show the empty or error state.', 'Don’t skeleton things that load instantly.']}
   />
 </Docs>
+
+<script>
+  // Docs demo: Reload swaps the members list for its skeleton while it "loads", then swaps it back. Pressing it again
+  // mid-load just starts the wait over.
+  let timer = 0;
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as Element).closest('[data-sk-reload]');
+    const region = btn && document.getElementById(btn.getAttribute('aria-controls') || '');
+    if (!region) return;
+    const set = (busy: boolean) => {
+      region.setAttribute('aria-busy', String(busy));
+      region.querySelector<HTMLElement>('[data-sk-loading]')!.hidden = !busy;
+      region.querySelector<HTMLElement>('[data-sk-loaded]')!.hidden = busy;
+    };
+    set(true);
+    clearTimeout(timer);
+    timer = window.setTimeout(() => set(false), 1400);
+  });
+</script>

@@ -98,11 +98,11 @@ const expand = `
 </div>`;
 ---
 <Docs title="Accordion" group="Layout" lead="Sections that fold away. Built on native details and summary, so it works with no JavaScript, opens with the keyboard and finds text inside closed sections.">
-  <Example title="Default" description="Hairlines between sections; the chevron turns when a section opens. Several can be open at once." code={faq} />
+  <Example title="Default" description="Hairlines between sections; the chevron turns when a section opens. Several can be open at once. Try it: click a question, or Tab to one and press Enter or Space." code={faq} />
 
   <h2 id="exclusive">One open at a time</h2>
   <p>Give every <code>&lt;details&gt;</code> in the group the same <code>name</code> and the browser closes the others for you. Add <code>--icons</code> when summaries lead with an icon, so the body lines up with the text.</p>
-  <Example code={exclusive} />
+  <Example code={exclusive} description="Try it: open Secrets and Environment closes." />
 
   <h2 id="boxed">Boxed</h2>
   <p>Each section on its own tonal fill instead of hairlines — for settings pages and lists that sit directly on the page.</p>

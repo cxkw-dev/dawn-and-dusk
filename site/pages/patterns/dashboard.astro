@@ -111,6 +111,7 @@ const services: [string, string, string, string, string, number, number | null, 
   ['webhook-relay', 'ok', 'Healthy', 'ap-south-1', 'v2.7.1', 4380, 0.21, 117, 38, '09:40:21'],
 ];
 const fmt = (n: number) => n.toLocaleString('en-US');
+const menuIcon = (n: string) => `<svg class="dd-icon dd-menu__icon" aria-hidden="true"><use href="#dd-i-${n}"/></svg>`;
 const dash = '<span class="is-faint">—</span>';
 const sortTh = (label: string, col: string, cls = '') =>
   `<th${cls ? ` class="${cls}"` : ''} data-col="${col}" aria-sort="none"><button class="dd-data-table__sort" type="button">${label}${i('chevron-down')}</button></th>`;
@@ -126,7 +127,7 @@ const rows = services.map(([name, s, label, region, ver, req, err, p95, cpu, at]
                   ${p95 === null ? `<td class="is-num">${dash}</td>` : `<td class="is-num${p95 >= 400 ? ' is-warn' : ''}" data-value="${p95}">${p95}<span class="dd-data-table__unit">ms</span></td>`}
                   <td class="is-num${cpu >= 85 ? ' is-warn' : ''}">${cpu}%</td>
                   <td class="is-num is-muted">${at}</td>
-                  <td class="is-actions"><button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-label="Actions for ${name}">${i('more')}</button></td>
+                  <td class="is-actions"><button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-label="Actions for ${name}" data-dd-menu="dash-row-menu" data-dd-placement="bottom-end" aria-haspopup="menu" aria-controls="dash-row-menu" aria-expanded="false">${i('more')}</button></td>
                 </tr>`).join('');
 const table = `
           <div class="dd-data-table" data-dd-data-table>
@@ -141,8 +142,8 @@ const table = `
             </div>
             <div class="dd-data-table__bulk" role="region" aria-label="Bulk actions" hidden>
               <span class="dd-data-table__bulk-count"><span data-dd-data-table-selected>0</span> selected</span>
-              <button class="dd-btn dd-btn--sm" type="button">${i('refresh')}<span>Restart</span></button>
-              <button class="dd-btn dd-btn--sm" type="button">${i('pause')}<span>Pause</span></button>
+              <button class="dd-btn dd-btn--sm" type="button" data-action="restart">${i('refresh')}<span>Restart</span></button>
+              <button class="dd-btn dd-btn--sm" type="button" data-action="pause">${i('pause')}<span>Pause</span></button>
               <button class="dd-btn dd-btn--sm dd-data-table__bulk-end" type="button" data-dd-data-table-clear>Clear</button>
             </div>
             <div class="dd-data-table__scroll" tabindex="0" role="region" aria-label="Services">
@@ -173,6 +174,11 @@ const table = `
                 </tr>
                 </tbody>
               </table>
+            </div>
+            <div class="dd-menu" id="dash-row-menu" role="menu" aria-label="Service actions" hidden>
+              <button class="dd-menu__item" role="menuitem" type="button" data-action="logs">${menuIcon('terminal')}<span class="dd-menu__body">View logs</span></button>
+              <button class="dd-menu__item" role="menuitem" type="button" data-action="restart">${menuIcon('refresh')}<span class="dd-menu__body">Restart</span></button>
+              <button class="dd-menu__item" role="menuitem" type="button" data-action="pause">${menuIcon('pause')}<span class="dd-menu__body">Pause</span></button>
             </div>
           </div>`;
 
@@ -327,6 +333,42 @@ ${glue}
     code={page}
     stage="flush"
   />
+  <script is:inline>
+    // Docs only: answer the demo's buttons with a toast, as the app would after the request went out.
+    (() => {
+      const shell = document.querySelector('.ex-stage .dd-app-shell');
+      if (!shell) return;
+      let rowFor = null; // the service whose row menu is open
+      const say = (from, title, description, intent = 'info') => window.dd?.toast?.({ title, description, intent, from });
+      const list = (names) => (names.length > 3 ? `${names.slice(0, 3).join(', ')} and ${names.length - 3} more` : names.join(', '));
+      const verbs = { restart: ['Restarting', 'Rolling restart, one replica at a time.'], pause: ['Paused', 'Traffic drains to the other regions.'] };
+      shell.addEventListener('click', (e) => {
+        const more = e.target.closest('[data-dd-menu="dash-row-menu"]');
+        if (more) { rowFor = more.closest('tr')?.querySelector('[data-col="service"]')?.textContent.trim() || null; return; }
+        const item = e.target.closest('#dash-row-menu [data-action]');
+        if (item && rowFor) {
+          const a = item.dataset.action;
+          if (a === 'logs') say(item, `Opening logs for ${rowFor}`, 'Live tail, last 15 minutes.', 'neutral');
+          else say(item, `${verbs[a][0]} ${rowFor}`, verbs[a][1], a === 'pause' ? 'warn' : 'ok');
+          return;
+        }
+        const bulk = e.target.closest('.dd-data-table__bulk [data-action]');
+        if (bulk) {
+          const names = [...shell.querySelectorAll('tbody tr.is-selected [data-col="service"]')].map((td) => td.textContent.trim());
+          const [verb, text] = verbs[bulk.dataset.action];
+          say(bulk, `${verb} ${names.length} service${names.length === 1 ? '' : 's'}`, `${list(names)}. ${text}`, bulk.dataset.action === 'pause' ? 'warn' : 'ok');
+          return;
+        }
+        const btn = e.target.closest('.dd-page-header__actions .dd-btn, .dd-data-table__tools .dd-btn, .dd-alert__action');
+        if (!btn) return;
+        const label = btn.textContent.trim();
+        if (label === 'New deploy') say(btn, 'Deploy queued', 'production · main@9f2c41e to 3 regions.', 'ok');
+        else if (label === 'Export') say(btn, 'Exported services.csv', '10 services, current filters applied.', 'neutral');
+        else if (label === 'Open incident') say(btn, 'Incident INC-212 opened', 'notify-fanout · eu-west-2 — on-call paged.', 'warn');
+        else if (label === 'View logs') say(btn, 'Opening logs for notify-fanout', 'Filtered to errors since 09:39.', 'neutral');
+      });
+    })();
+  </script>
 
   <h2 id="anatomy">Anatomy</h2>
   <ol>

@@ -4,8 +4,8 @@
    - Filter: <button class="dd-chip dd-chip--filter" aria-pressed="false"> toggles aria-pressed on click and fires
      "dd:chip-toggle" (detail.pressed).
    - Input: .dd-chip-input with a .dd-chip-input__field. Enter or a comma turns the text into a chip (colour picked
-     from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes instead of being
-     added twice; Backspace in an empty field removes the last chip.
+     from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes (a still, deeper
+     tint under reduced motion) instead of being added twice; Backspace in an empty field removes the last chip.
      The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x).
    When a chip goes, the chips after it glide into its place (not under reduced motion). */
 (() => {
@@ -96,7 +96,10 @@
         twin.classList.remove('is-duplicate');
         void twin.offsetWidth;
         twin.classList.add('is-duplicate');
-        twin.addEventListener('animationend', () => twin.classList.remove('is-duplicate'), { once: true });
+        // Motion: the nudge animation clears it. Reduced motion: a still, deeper tint held briefly.
+        clearTimeout(twin.ddDuplicate);
+        if (still()) twin.ddDuplicate = setTimeout(() => twin.classList.remove('is-duplicate'), 600);
+        else twin.addEventListener('animationend', () => twin.classList.remove('is-duplicate'), { once: true });
       } else {
         field.before(create(text));
         changed(box);

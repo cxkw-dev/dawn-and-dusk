@@ -12,5 +12,6 @@ export default { group: 'Feedback & status', order: 50, items: [
   { title: 'Empty state', href: 'components/empty-state' },
   { title: 'Skeleton', href: 'components/skeleton' },
   { title: 'Spinner', href: 'components/spinner' },
+  { title: 'Loader', href: 'components/loader' },
   { title: 'Guide cue', href: 'components/guide-cue' },
 ] };

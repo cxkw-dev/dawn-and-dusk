@@ -28,6 +28,8 @@
   --_soft: color-mix(in oklab, var(--_k) 18%, transparent);
 }
 
+.dd-badge[hidden] { display: none; }
+
 /* Styles */
 .dd-badge--soft { background: var(--_soft); color: var(--_c); }
 .dd-badge--solid { background: var(--_solid); color: var(--_on); }

@@ -86,10 +86,10 @@ const interactive = `
     <div class="dd-menu" id="av-account" role="menu" aria-label="Account" hidden>
       <div class="dd-menu__header"><span>Andy Nguyen</span><span>andy@cxkw.dev</span></div>
       <hr class="dd-menu__sep">
-      <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Profile</span></button>
-      <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Settings</span></button>
+      <button class="dd-menu__item" role="menuitem" data-dd-toast="Opening your profile" data-dd-toast-description="In an app this goes to cxkw.dev/people/andy."><span class="dd-menu__body">Profile</span></button>
+      <button class="dd-menu__item" role="menuitem" data-dd-toast="Opening settings" data-dd-toast-description="In an app this opens account settings."><span class="dd-menu__body">Settings</span></button>
       <hr class="dd-menu__sep">
-      <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Sign out</span></button>
+      <button class="dd-menu__item" role="menuitem" data-dd-toast="Signed out" data-dd-toast-description="Not really — this is the docs." data-dd-toast-intent="neutral"><span class="dd-menu__body">Sign out</span></button>
     </div>
   </div>
   <div class="dd-avatar-group" role="group" aria-label="Reviewers">
@@ -134,7 +134,7 @@ const label = `
 
   <h2 id="interactive">Interactive</h2>
   <p>Make an avatar a <code>&lt;button&gt;</code> (an account menu) or an <code>&lt;a&gt;</code> (a profile) and it answers the pointer with a soft halo, which stays while its menu is open. In a group, the avatar under the pointer or keyboard focus comes to the front and lifts 2px, so it is whole and its focus ring is never covered by a neighbour. Name each one with <code>aria-label</code> and a tooltip.</p>
-  <Example code={interactive} minHeight="240px" />
+  <Example code={interactive} minHeight="240px" description="Try it: open the account menu (click, or Tab to it and press Enter or ↓); hover or Tab along the reviewers to bring each one forward with its name." />
 
   <h2 id="label">With a name</h2>
   <Example code={label} />

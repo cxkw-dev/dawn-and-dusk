@@ -9,12 +9,29 @@ import { i } from '../../lib/icon';
 const step = (n, label, desc, state = '') => {
   const marker = state === 'done' ? i('success') : state === 'error' ? i('error') : n;
   const cls = state && state !== 'upcoming' ? ` is-${state}` : '';
+  const sr = state === 'done' || state === 'error' ? `<span class="dd-visually-hidden"> (${state})</span>` : '';
   return `
   <li class="dd-stepper__step${cls}"${state === 'current' ? ' aria-current="step"' : ''}>
     <span class="dd-stepper__marker">${marker}</span>
-    <span class="dd-stepper__text"><span class="dd-stepper__label">${label}</span>${desc ? `<span class="dd-stepper__desc">${desc}</span>` : ''}</span>
+    <span class="dd-stepper__text"><span class="dd-stepper__label">${label}${sr}</span>${desc ? `<span class="dd-stepper__desc">${desc}</span>` : ''}</span>
   </li>`;
 };
+
+const live = `
+<div class="dd-stack" style="--dd-gap: 22px" data-stepper-demo>
+  <ol class="dd-stepper" aria-label="Launch leetnode" aria-describedby="stepper-demo-status">${[
+    step(1, 'Repository', 'cxkw/leetnode', 'current'),
+    step(2, 'Build', 'Go 1.23'),
+    step(3, 'Domains', 'leetnode.dev'),
+    step(4, 'Review', ''),
+  ].join('')}
+  </ol>
+  <div class="dd-row" style="--dd-gap: 10px">
+    <button class="dd-btn dd-btn--secondary dd-btn--sm" type="button" data-stepper-go="back" disabled>${i('arrow-left')}<span>Back</span></button>
+    <button class="dd-btn dd-btn--primary dd-btn--sm" type="button" data-stepper-go="next"><span>Next</span>${i('arrow-right')}</button>
+    <span class="dd-small dd-muted" id="stepper-demo-status" aria-live="polite">Step 1 of 4</span>
+  </div>
+</div>`;
 
 const horizontal = `
 <ol class="dd-stepper" aria-label="New project">${[
@@ -113,6 +130,10 @@ const pipelineStates = `
 <Docs title="Stepper" group="Navigation" lead="Shows where someone is in an ordered flow — a setup wizard, a migration, a deploy. Steps are done, current, upcoming or in error; the pipeline flavour shows live stage status.">
   <Example title="Horizontal" description="Connectors fill the space between steps and turn green behind finished ones. Below about 520px only the current step (and any error) keeps its label." code={horizontal} />
 
+  <h2 id="live">Moving through the steps</h2>
+  <p>The stepper has no script of its own — the flow it sits in moves it. On each step change, set <code>is-done</code> on the finished steps (with the success mark), <code>is-current</code> and <code>aria-current="step"</code> on the new one, and announce the step in a polite live region.</p>
+  <Example code={live} description="Try it: Next and Back walk the flow; the markers ease between states and the status line is announced." />
+
   <h2 id="states">States</h2>
   <p>Done steps get the success mark, the current one is filled with the accent and carries <code>aria-current="step"</code>, upcoming steps show their number, and an error replaces the number with the error mark and says what went wrong.</p>
   <Example code={states} />
@@ -146,6 +167,37 @@ const pipelineStates = `
     ['.dd-stepper--pipeline', 'Deploy-style stage chips with status-coloured connectors.'],
     ['.dd-stepper__spinner', 'Running indicator for a pipeline marker (uses <code>dd-spin</code>).'],
   ]} />
+
+  <script>
+    // Docs only: drives the live example the way an app's wizard would.
+    const done = '<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-success"/></svg>';
+    document.addEventListener('click', (e) => {
+      const btn = (e.target as Element).closest?.<HTMLButtonElement>('[data-stepper-go]');
+      const box = btn?.closest('[data-stepper-demo]');
+      if (!btn || !box) return;
+      const steps = [...box.querySelectorAll<HTMLElement>('.dd-stepper__step')];
+      const back = box.querySelector<HTMLButtonElement>('[data-stepper-go="back"]')!;
+      const next = box.querySelector<HTMLButtonElement>('[data-stepper-go="next"]')!;
+      const total = steps.length;
+      let at = steps.findIndex((s) => s.classList.contains('is-current'));
+      if (at < 0) at = total; // everything done
+      at = btn === back ? Math.max(0, at - 1) : at === total ? 0 : at + 1;
+      steps.forEach((s, n) => {
+        s.classList.toggle('is-done', n < at);
+        s.classList.toggle('is-current', n === at);
+        if (n === at) s.setAttribute('aria-current', 'step'); else s.removeAttribute('aria-current');
+        s.querySelector('.dd-stepper__marker')!.innerHTML = n < at ? done : String(n + 1);
+        const label = s.querySelector('.dd-stepper__label')!;
+        label.querySelector('.dd-visually-hidden')?.remove();
+        if (n < at) label.insertAdjacentHTML('beforeend', '<span class="dd-visually-hidden"> (done)</span>');
+      });
+      const backHadFocus = document.activeElement === back;
+      back.disabled = at === 0;
+      next.querySelector('span')!.textContent = at === total ? 'Start over' : at === total - 1 ? 'Finish' : 'Next';
+      box.querySelector('[aria-live]')!.textContent = at === total ? `All ${total} steps done` : `Step ${at + 1} of ${total}`;
+      if (back.disabled && backHadFocus) next.focus();
+    });
+  </script>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides

@@ -2,6 +2,7 @@
    [data-dd-contextmenu="menu-id"] on an area opens the menu at the pointer on right-click, Shift+F10 or the Menu key.
    An item inside a menu with [data-dd-menu] opens a submenu to its side. Optional [data-dd-placement] on the trigger:
    bottom-start (default) · bottom-end · top-start · top-end. Menus flip when they would leave the viewport.
+   Several triggers may share one menu (a ⋯ button per row): clicking another one moves the open menu to it.
    Keyboard: ↓ / ↑ on the trigger open at the first / last item; in the menu ↑ ↓ Home End move, a letter jumps,
    → opens a submenu, ← closes it, Esc closes and returns focus, Tab closes. Clicking outside closes.
    role=menuitemcheckbox toggles aria-checked; role=menuitemradio checks one per group — both keep the menu open. */
@@ -106,7 +107,9 @@
   const toggleFromTrigger = (t, focus) => {
     const menu = menuFor(t);
     if (!menu) return;
-    if (entryOf(menu)) { closeAbove(t.closest('.dd-menu.is-floating') || null); t.focus({ preventScroll: true }); }
+    // Open from this trigger: close it. Open from another trigger sharing the menu (one menu for every row's
+    // ⋯ button): move it here instead.
+    if (entryOf(menu)?.trigger === t) { closeAbove(t.closest('.dd-menu.is-floating') || null); t.focus({ preventScroll: true }); }
     else open(menu, t, { focus });
   };
 
@@ -145,19 +148,34 @@
     }
   });
 
-  document.addEventListener('contextmenu', (e) => {
-    const area = e.target.closest('[data-dd-contextmenu]');
-    const menu = area && byId(area.getAttribute('data-dd-contextmenu'));
-    if (!menu) return;
-    e.preventDefault();
-    let x = e.clientX, y = e.clientY;
-    if (!x && !y) { const r = (document.activeElement || area).getBoundingClientRect(); x = r.left + 12; y = r.bottom; }
+  // Context menus: right-click opens at the pointer; from the keyboard (Menu key, Shift F10) under the focused element.
+  const openContext = (area, menu, x, y) => {
+    // Re-opening keeps the original return target, not an item of the menu that is about to close.
+    const prev = entryOf(menu);
+    const ret = prev ? prev.ret : document.activeElement;
+    if (!x && !y) {
+      const from = ret && area.contains(ret) ? ret : area;
+      const r = from.getBoundingClientRect(); x = r.left + 12; y = r.bottom;
+    }
     closeAll(false);
-    open(menu, area, { at: { x, y }, ret: document.activeElement });
+    open(menu, area, { at: { x, y }, ret });
+  };
+  const contextOf = (el) => {
+    const area = el?.closest?.('[data-dd-contextmenu]');
+    const menu = area && byId(area.getAttribute('data-dd-contextmenu'));
+    return menu && !menu.contains(el) ? { area, menu } : null;
+  };
+  document.addEventListener('contextmenu', (e) => {
+    const c = contextOf(e.target);
+    if (!c) return;
+    e.preventDefault();
+    openContext(c.area, c.menu, e.clientX, e.clientY);
   });
 
   // Hover moves focus within floating menus and opens / closes submenus after a short pause.
   document.addEventListener('pointerover', (e) => {
+    // Touch has no hover: a finger held past the delay would open a submenu that the tap's click then closes.
+    if (e.pointerType === 'touch') return;
     const item = e.target.closest(ITEM);
     const menu = item?.closest('.dd-menu.is-floating');
     if (!menu) return;
@@ -166,7 +184,7 @@
     hoverTimer = setTimeout(() => {
       if (!entryOf(menu)) return;
       const sub = item.matches('[data-dd-menu]') && !disabled(item) ? menuFor(item) : null;
-      if (sub && entryOf(sub)) { closeAbove(sub); return; }
+      if (sub && entryOf(sub)?.trigger === item) { closeAbove(sub); return; }
       closeAbove(menu);
       if (sub) open(sub, item, { focus: 'none' });
     }, 140);
@@ -174,11 +192,16 @@
 
   document.addEventListener('keydown', (e) => {
     const t = e.target;
+    // Shift F10 opens a context menu; macOS browsers don't turn it into a contextmenu event themselves.
+    if (e.key === 'F10' && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const c = contextOf(t);
+      if (c) { e.preventDefault(); openContext(c.area, c.menu, 0, 0); return; }
+    }
     // Root trigger: ↓ / ↑ open at the first / last item.
     if (t.matches?.('[data-dd-menu]') && !t.closest('.dd-menu') && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       e.preventDefault();
       const menu = menuFor(t);
-      if (menu && !entryOf(menu)) open(menu, t, { focus: e.key === 'ArrowUp' ? 'last' : 'first' });
+      if (menu && entryOf(menu)?.trigger !== t) open(menu, t, { focus: e.key === 'ArrowUp' ? 'last' : 'first' });
       else if (menu) { const l = itemsOf(menu); (e.key === 'ArrowUp' ? l[l.length - 1] : l[0])?.focus(); }
       return;
     }

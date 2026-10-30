@@ -60,15 +60,15 @@ const more = `
 </div>`;
 ---
 <Docs title="Slider" group="Forms" lead="Sets a number, or a range, by dragging along a track. Native range inputs on a thin tonal rail that fills with the accent, with ticks and live value labels.">
-  <Example title="Single, with ticks" description="The heading output and the active tick follow the thumb. Hovering the thumb grows it with a soft halo, dragging grows it more, and keyboard focus rings it. Arrow keys step, Page Up / Down jump, Home / End go to the ends." code={single} />
+  <Example title="Single, with ticks" description="The heading output and the active tick follow the thumb. Hovering the thumb grows it with a soft halo, dragging grows it more, and keyboard focus rings it. Try it: drag the thumb or click the track; Tab to it and use the arrow keys, Page Up / Down to jump, Home / End for the ends." code={single} />
 
   <h2 id="range">Range</h2>
   <p>Two inputs share one rail; the fill sits between the thumbs and they can’t cross. Bubbles ride above each thumb.</p>
-  <Example code={range} />
+  <Example description="Try it: drag either thumb, or Tab to one and use the arrow keys; push one into the other and it stops." code={range} />
 
   <h2 id="bubble">Value bubble</h2>
   <p>A <code>.dd-slider__bubble</code> with <code>data-for</code> shows the value above its thumb — useful when there is no room for a heading.</p>
-  <Example code={bubble} />
+  <Example description="Try it: drag the thumb; the bubble follows in steps of 5%." code={bubble} />
 
   <h2 id="sizes">Small and disabled</h2>
   <Example code={more} />
@@ -86,10 +86,12 @@ const more = `
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <ClassTable head={['Attribute', 'What it does']} rows={[
+  <ClassTable head={['Attribute / event', 'What it does']} rows={[
     ['output[for="id"]', 'Shows the input’s value (grouped with commas). <code>data-unit</code> appends a unit.'],
     ['.dd-slider__bubble[data-for="id"]', 'Moves above that input’s thumb and shows its value.'],
     ['.dd-slider__ticks > [data-value]', 'Gets <code>.is-active</code> at the value (single) or inside the range.'],
+    ['dd:change', 'Bubbling event on the <code>.dd-slider</code> when a value is committed (thumb released, or a key step). <code>detail.value</code> is a number, or <code>[low, high]</code> for a range; <code>detail.input</code> is the input that moved.'],
+    ['Keys', 'Native range keys: ← ↓ / → ↑ step, Page Up / Down jump a tenth of the range, Home / End go to the ends. Range thumbs can’t pass each other.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

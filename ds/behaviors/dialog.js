@@ -5,7 +5,9 @@
    - A click on the backdrop closes it, unless the dialog has data-dd-dialog-backdrop="static". Esc closes (native).
    - Closing plays the exit animation (.is-closing), then calls close(); focus returns to the opener.
    - Tab / Shift+Tab wrap inside the open dialog instead of leaving for the browser's own UI.
-   - Inside a role="menu" list (sheet actions / choices): ↑ ↓ move between rows, Home / End jump to the ends.
+   - Inside a role="menu" list (sheet actions / choices): ↑ ↓ move between rows, Home / End jump to the ends. Choosing a
+     role="menuitemradio" row marks it aria-checked (and unmarks the others); a menuitemcheckbox row flips.
+   - Reopening a dialog while it plays its exit animation cancels the exit.
    - Global: dd.dialog.open('#id'), dd.dialog.close('#id', value). Listen for the native "close" event for the result. */
 (() => {
   const SEL = 'dialog.dd-dialog, dialog.dd-drawer, dialog.dd-sheet';
@@ -14,7 +16,12 @@
   const resolve = (target) => (typeof target === 'string' ? document.querySelector(target) : target);
 
   const open = (dlg, opener) => {
-    if (!(dlg instanceof HTMLDialogElement) || dlg.open) return;
+    if (!(dlg instanceof HTMLDialogElement)) return;
+    // Reopened while its exit animation plays: cancel the exit and keep it open (and the original opener).
+    if (dlg.open) {
+      if (dlg.classList.contains('is-closing')) { pending.get(dlg)?.(); dlg.classList.remove('is-closing'); }
+      return;
+    }
     pending.get(dlg)?.();
     dlg.classList.remove('is-closing');
     dlg.returnValue = '';
@@ -57,6 +64,13 @@
       const dlg = resolve(opener.getAttribute('data-dd-dialog-open'));
       if (dlg) { e.preventDefault(); open(dlg, opener); }
       return;
+    }
+    // Choices in a sheet / dialog list: a menuitemradio becomes the checked one, a menuitemcheckbox flips.
+    const choice = e.target.closest(`:is(${SEL}) :is([role="menuitemradio"], [role="menuitemcheckbox"])`);
+    if (choice && !choice.disabled && choice.getAttribute('aria-disabled') !== 'true') {
+      if (choice.getAttribute('role') === 'menuitemcheckbox') choice.setAttribute('aria-checked', String(choice.getAttribute('aria-checked') !== 'true'));
+      else (choice.closest('[role="group"], [role="menu"]') || choice.parentElement).querySelectorAll('[role="menuitemradio"]')
+        .forEach((r) => r.setAttribute('aria-checked', String(r === choice)));
     }
     const closer = e.target.closest('[data-dd-dialog-close]');
     if (closer) {

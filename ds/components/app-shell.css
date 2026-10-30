@@ -36,7 +36,7 @@
 @container dd-app-shell (max-width: 767px) {
   .dd-app-shell > .dd-side-nav {
     position: fixed; inset-block: 0; top: 0; left: calc(-1 * (var(--dd-side-nav-rail) + var(--dd-side-nav-panel)) - 48px);
-    z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden;
+    z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden; pointer-events: none;
     transition: left var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
   }
   .dd-app-shell > .dd-side-nav::before {
@@ -45,7 +45,7 @@
   }
   .dd-app-shell > .dd-side-nav .dd-side-nav__panel { width: var(--dd-side-nav-panel); min-width: 0; flex-shrink: 1; visibility: inherit; }
   .dd-app-shell > .dd-side-nav .dd-side-nav__collapse > .dd-icon { rotate: 0deg; }
-  .dd-app-shell > .dd-side-nav.is-mobile-open { left: 0; visibility: visible; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
+  .dd-app-shell > .dd-side-nav.is-mobile-open { left: 0; visibility: visible; pointer-events: auto; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
   .dd-app-shell > .dd-side-nav.is-mobile-open::before { opacity: 1; pointer-events: auto; }
   .dd-app-shell .dd-top-bar__nav-btn { display: inline-flex; }
   .dd-app-shell .dd-top-bar__narrow { display: inline-flex !important; }

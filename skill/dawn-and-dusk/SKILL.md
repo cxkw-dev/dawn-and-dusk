@@ -53,7 +53,7 @@ Theme: `<html data-theme="dawn">` or `"dusk"`; omit it to follow the OS. Any `[d
 search it — the system covers app shells, side nav, top bar, tabs, breadcrumbs, steppers, buttons, menus, command palette,
 every form control (tucked-label inputs, combobox, date picker, file upload), tables and dense data tables (sort, select,
 expand, pagination), stats, charts, progress, code/JSON/log viewers, timelines, alerts, banners, toasts, tooltips,
-popovers, badges, chips, avatars, empty states, skeletons, dialogs, drawers, cards and accordions.
+popovers, badges, chips, avatars, empty states, skeletons, spinners, the ampersand loader (`.dd-loader`), dialogs, drawers, cards and accordions.
 
 Live examples with copyable HTML for each: `https://cxkw-dev.github.io/dawn-and-dusk/components/<name>`.
 Page recipes (dashboard, data explorer, settings, landing): `references/patterns.md`.

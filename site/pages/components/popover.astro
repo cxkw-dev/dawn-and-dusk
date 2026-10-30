@@ -28,7 +28,7 @@ const basic = `
   </div>
   <div class="dd-popover__actions">
     <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" popovertarget="pop-promote" popovertargetaction="hide">Cancel</button>
-    <button class="dd-btn dd-btn--primary dd-btn--sm" type="button" popovertarget="pop-promote" popovertargetaction="hide">${i('upload')}<span>Promote</span></button>
+    <button class="dd-btn dd-btn--primary dd-btn--sm" type="button" popovertarget="pop-promote" popovertargetaction="hide" data-dd-toast="Promoting c41d9e0" data-dd-toast-description="dockey-ui moves to production in fra1, sfo3 and sgp1." data-dd-toast-intent="ok">${i('upload')}<span>Promote</span></button>
   </div>
 </div>`;
 
@@ -75,19 +75,19 @@ dd.popover.close(panel);
 panel.addEventListener('toggle', (e) => console.log(e.newState)); // 'open' | 'closed'`;
 ---
 <Docs title="Popover" group="Feedback & status" lead="A small panel that opens on click, next to the thing that opened it: a confirmation, a short explanation, a couple of settings. It closes on Esc, on a click outside, or from its own buttons.">
-  <Example title="Confirm in place" description="Press Promote. Header with an eyebrow and a close button, a sentence of body, and actions. Built on the native popover attribute: the browser handles open, Esc and outside clicks, and the panel floats above everything." code={basic} />
+  <Example title="Confirm in place" description="Try it: press Promote, then Tab into the panel, press Esc or click outside. Header with an eyebrow and a close button, a sentence of body, and actions. Built on the native popover attribute: the browser handles open, Esc and outside clicks, and the panel floats above everything." code={basic} />
 
   <h2 id="anatomy">Anatomy</h2>
   <p>A floating layer on <code>--dd-float-bg</code> with <code>--dd-shadow-float</code>: a shade lighter than the page in dawn, so it reads as raised paper, and a clear step up in dusk. 8px radius, 20px padding, an arrow aimed at the trigger. <code>--static</code> shows one in the flow.</p>
-  <Example code={anatomy} stage="center" />
+  <Example code={anatomy} stage="center" description="A static rendering, pinned open for reference — open the live ones above and below." />
 
   <h2 id="info">Explain a term</h2>
   <p>Body only, no header — for a “what’s this?” next to a label.</p>
-  <Example code={info} stage="center" />
+  <Example code={info} stage="center" description="Try it: press the ? button." />
 
   <h2 id="placement">Placement</h2>
   <p>Below the trigger by default. <code>data-dd-placement</code> on the popover asks for <code>top</code>, <code>left</code> or <code>right</code>, with <code>-start</code> / <code>-end</code> to align to an edge. It flips when there isn’t room and follows the trigger as the page scrolls.</p>
-  <Example code={placements} stage="center" minHeight="220px" />
+  <Example code={placements} stage="center" minHeight="220px" description="Try it: open each one. Opening a second closes the first; scroll the page while one is open and it follows its button." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[

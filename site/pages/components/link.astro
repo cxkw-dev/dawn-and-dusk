@@ -53,7 +53,7 @@ const states = `
 </div>`;
 ---
 <Docs title="Link" group="Actions" lead="Moves you somewhere. Fine dotted underlines in a soft grey sit close under the text; on hover the link takes the accent and the dots join into a line.">
-  <Example title="Inline" description="Links inside running text inherit the text colour; the dots alone say “this goes somewhere”." code={inline} />
+  <Example title="Inline" description="Links inside running text inherit the text colour; the dots alone say “this goes somewhere”. Try it: hover a link, or Tab to it for the focus ring." code={inline} />
   <h2 id="standalone">Standalone</h2>
   <p>A link on its own line, at the end of a card or section. A little heavier, with a trailing arrow that nudges forward on hover. Wrap the label in a <code>&lt;span&gt;</code> so only the words are underlined.</p>
   <Example code={standalone} />
@@ -65,7 +65,7 @@ const states = `
   <Example code={muted} />
   <h2 id="nav">Nav</h2>
   <p>Top-level navigation. Muted with no underline at rest, dotted on hover, solid when it is the current page (<code>aria-current="page"</code>). Lay a row out with <code>.dd-link-nav</code>.</p>
-  <Example code={nav} />
+  <Example code={nav} description="Try it: click a link; it becomes the current page (the docs move aria-current for you here, as a new page load would)." />
   <h2 id="inverse">On ink</h2>
   <p>On a panel filled with <code>--dd-text</code>, <code>--inverse</code> switches the dots to the background colour.</p>
   <Example code={inverse} />
@@ -89,3 +89,13 @@ const states = `
     dont={['Don’t colour inline links; the dots are enough and keep paragraphs calm.', 'Don’t use <code>--nav</code> inside running text.', 'Don’t underline non-links with dots; that pattern now means “link”.']}
   />
 </Docs>
+<script>
+  // Docs demo: a nav link click makes that link current, as loading its page would.
+  document.addEventListener('click', (e) => {
+    const a = (e.target as Element).closest('.ex-stage .dd-link-nav .dd-link--nav');
+    if (!a) return;
+    e.preventDefault();
+    a.parentElement?.querySelectorAll('.dd-link--nav').forEach((l) => l.removeAttribute('aria-current'));
+    a.setAttribute('aria-current', 'page');
+  });
+</script>

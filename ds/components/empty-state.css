@@ -6,6 +6,7 @@
   max-width: 52ch; margin-inline: auto; padding: calc(var(--dd-u) * 10) calc(var(--dd-u) * 5);
   text-align: center; color: var(--dd-text);
 }
+.dd-empty-state[hidden] { display: none; }
 .dd-empty-state__icon {
   display: grid; place-items: center; flex: none; width: calc(var(--dd-u) * 9.6); height: calc(var(--dd-u) * 9.6);
   margin-bottom: calc(var(--dd-u) * 2); border-radius: var(--dd-r-box);

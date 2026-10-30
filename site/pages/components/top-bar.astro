@@ -42,9 +42,14 @@ const app = bar();
 const menuOpen = `<div style="padding-bottom: 300px">${bar({ open: true })}</div>`;
 const narrow = `<div class="tb-phone">${bar()}</div>`;
 
-const site = `
+const site = (id: string) => `
 <header class="dd-top-bar">
-  <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" aria-label="Open menu">${i('menu')}</button>
+  <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-menu="${id}" aria-haspopup="menu" aria-expanded="false" aria-controls="${id}" aria-label="Open menu">${i('menu')}</button>
+  <div class="dd-menu" id="${id}" role="menu" aria-label="Sections" hidden>
+    <a class="dd-menu__item" role="menuitem" href="#">Components</a>
+    <a class="dd-menu__item" role="menuitem" href="#">Patterns</a>
+    <a class="dd-menu__item" role="menuitem" href="#">Changelog</a>
+  </div>
   <a class="dd-top-bar__brand" href="#"><span class="dd-logo">dawn &amp; dusk</span></a>
   <nav aria-label="Sections">
     <ul class="dd-top-bar__links">
@@ -60,6 +65,8 @@ const site = `
     <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__narrow" type="button" data-dd-theme-toggle aria-label="Toggle dusk">${i('moon')}</button>
   </div>
 </header>`;
+const siteWide = site('tb-site-menu');
+const siteNarrow = `<div class="tb-phone tb-phone--short">${site('tb-site-menu-narrow')}</div>`;
 ---
 <Docs title="Top bar" group="Navigation" lead="The app header. Logo and context on the left, then a search trigger, actions and the avatar menu. It sits on the page tone with a hairline underneath, and stays put while the page scrolls.">
   <style is:global>
@@ -74,12 +81,27 @@ const site = `
     .tb-phone { max-width: 380px; height: 340px; margin: 24px auto; border-radius: var(--dd-r-lg); contain: layout;
       box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 10%, transparent); }
     .tb-phone > .dd-top-bar { border-radius: var(--dd-r-lg) var(--dd-r-lg) 0 0; }
+    .tb-phone--short { height: 220px; }
   </style>
+  <script is:inline>
+    // Docs only: buttons in these demos say what they would do in an app, instead of doing nothing.
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('.ex-stage .dd-top-bar button:not([data-dd-theme-toggle], [data-dd-menu], [data-dd-nav-open])');
+      if (!b || !window.dd?.toast) return;
+      const say =
+        b.matches('.dd-top-bar__nav-btn') ? ['Open navigation', 'In an app this slides the side nav in — try it in App shell, on a phone.'] :
+        b.matches('.dd-top-bar__search, [aria-label="Search"]') ? ['Search', 'In an app this opens the command palette (⌘K).'] :
+        b.matches('.dd-top-bar__switch') ? [`Switch ${b.querySelector('span:not(.dd-top-bar__mark)')?.textContent ?? ''}`, 'In an app this opens a menu of workspaces or projects.'] :
+        b.matches('.dd-top-bar__icon-btn') ? ['3 new notifications', 'In an app this opens your inbox.'] :
+        b.matches('.dd-btn--primary') ? ['Deploy', 'In an app this starts a deploy of auth-gateway.'] : null;
+      if (say) window.dd.toast({ title: say[0], description: say[1], duration: 3500 });
+    });
+  </script>
 
-  <Example title="App header" description="Logo, workspace / project switcher, search, Docs, notifications, the primary action and the avatar menu. Click the avatar." code={app} stage="flush" />
+  <Example title="App header" description="Logo, workspace / project switcher, search, Docs, notifications, the primary action and the avatar menu. Try it: click the avatar, or focus it and press ↓; the other buttons say what they would do." code={app} stage="flush" />
 
   <h2 id="avatar-menu">Avatar menu</h2>
-  <p>A <code>&lt;details data-dd-autoclose&gt;</code>: it closes on a click outside, on Esc or after choosing an item, and ↓ ↑ move through the items. Who you are sits at the top in mono.</p>
+  <p>A <code>&lt;details data-dd-autoclose&gt;</code>: it closes on a click outside, on Esc or after choosing an item, and ↓ ↑ move through the items. Who you are sits at the top in mono. Shown open; click anywhere else to close it, then the avatar to bring it back.</p>
   <Example code={menuOpen} stage="flush" />
 
   <h2 id="narrow">Narrow</h2>
@@ -87,8 +109,9 @@ const site = `
   <Example code={narrow} stage="flush" />
 
   <h2 id="site">Site header</h2>
-  <p>For docs and marketing pages: links instead of a context switcher. The links fold away on narrow screens; give the menu button somewhere to go (a sheet or the side nav).</p>
-  <Example code={site} stage="flush" />
+  <p>For docs and marketing pages: links instead of a context switcher. On narrow screens the links fold into the menu button — here a <a href="../menu">menu</a> (<code>data-dd-menu</code>) with the same links; a sheet or the side nav work too.</p>
+  <Example code={siteWide} stage="flush" />
+  <Example description="Narrow. Try it: open the menu button and pick a section with ↓ ↑ and Enter, or flip dusk from the moon." code={siteNarrow} stage="flush" />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[

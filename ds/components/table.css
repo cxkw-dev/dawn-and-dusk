@@ -9,6 +9,8 @@
   font-size: var(--dd-fs-sm); color: var(--dd-text);
   scrollbar-width: thin; scrollbar-color: var(--dd-surface-3) transparent;
 }
+/* A wide table scrolls inside the card; with tabindex="0" the arrow keys scroll it, and focus rings the card. */
+.dd-table:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 .dd-table > table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
 .dd-table :is(th, td) {
   padding: var(--_py) var(--_px); text-align: left; white-space: nowrap; vertical-align: middle;
@@ -49,6 +51,13 @@
 .dd-table--interactive tbody tr { cursor: pointer; transition: background-color var(--dd-dur-fast) var(--dd-ease); }
 .dd-table--interactive tbody tr:is(:hover, :focus-within) { background-color: var(--dd-wash); }
 .dd-table--interactive tbody tr:active { background-color: var(--dd-wash-strong); }
+/* The row's one link stretches over the whole row (position: relative on the row anchors it), keeping the cell's look.
+   Keyboard focus rings the row instead of the text. */
+.dd-table--interactive tbody tr:has(.dd-table__row-link) { position: relative; }
+.dd-table__row-link { color: inherit; text-decoration: none; }
+.dd-table__row-link::after { content: ""; position: absolute; inset: 0; }
+.dd-table__row-link:focus-visible { outline: none; }
+.dd-table--interactive tbody tr:has(.dd-table__row-link:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: -2px; }
 
 /* Variants */
 .dd-table--compact { --_py: calc(var(--dd-u) * 1.5); --_px: calc(var(--dd-u) * 3); }
@@ -85,6 +94,7 @@
   padding: calc(var(--dd-u) * 8) calc(var(--dd-u) * 5); text-align: center; color: var(--dd-muted); font-size: var(--dd-fs-sm);
   white-space: normal;
 }
+.dd-table__empty[hidden] { display: none; }
 .dd-table > table + .dd-table__empty { border-top: 1px solid var(--_line); }
 .dd-table__empty-icon {
   display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: calc(var(--dd-u) * 1);

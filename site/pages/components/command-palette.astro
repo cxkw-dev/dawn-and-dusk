@@ -70,8 +70,8 @@ const filtered: Group[] = [
     { icon: 'arrow-left', name: 'Roll back last deploy', meta: 'edge-cache · 2h ago' },
   ] },
   { label: 'Recent deploys', rows: [
-    { icon: 'clock', name: '<span class="dd-mono">dpl_a3f9c21</span>', meta: 'auth-gateway · 4 min ago · ready' },
-    { icon: 'clock', name: '<span class="dd-mono">dpl_7be04d2</span>', meta: 'billing-worker · 1h ago · failed' },
+    { icon: 'clock', name: '<span class="dd-mono">dpl_a3f9c21</span>', meta: 'auth-gateway · 4 min ago · ready', kw: 'deploy' },
+    { icon: 'clock', name: '<span class="dd-mono">dpl_7be04d2</span>', meta: 'billing-worker · 1h ago · failed', kw: 'deploy' },
   ] },
 ];
 
@@ -84,16 +84,16 @@ const live = `
 ${palette('cp-live', all, { tag: 'dialog', hotkey: true })}`;
 ---
 <Docs title="Command palette" group="Actions" lead="The ⌘K dialog: jump to any project, service or command by typing. A large search field, grouped results with shortcut hints, one selected row, and a calm empty state.">
-  <Example title="Open" description="Shown inline. The selected row takes the deeper tone and trades its shortcut for ↵. Type in the field to filter, or use ↑ ↓." code={open} stage="center" />
+  <Example title="Open" description="Shown inline. The selected row takes the deeper tone and trades its shortcut for ↵. Try it: type “service” or “deploy” in the field, move with ↑ ↓, press Enter or click a row to run it." code={open} stage="center" />
   <h2 id="filtered">Filtered</h2>
   <p>Typing narrows every group at once; groups with no matches disappear and the first match is selected. Rows also match their <code>data-keywords</code>, so “service” finds auth-gateway.</p>
-  <Example code={search} stage="center" />
+  <Example description="Try it: add or delete letters in the search; rows also match their keywords, so “deploy” finds the recent deploys." code={search} stage="center" />
   <h2 id="empty">Empty state</h2>
   <p>When nothing matches, the list hides and <code>.dd-command__empty</code> echoes the query and suggests what to try.</p>
-  <Example code={empty} stage="center" />
+  <Example description="Try it: type in the field and the query echoes in the message." code={empty} stage="center" />
   <h2 id="dialog">As a dialog</h2>
   <p>Make it a <code>&lt;dialog class="dd-command"&gt;</code> and open it from any <code>[data-dd-command]</code> button, or press <kbd class="dd-kbd-combo"><kbd class="dd-kbd">⌘</kbd><kbd class="dd-kbd">K</kbd></kbd> (Ctrl K on Windows and Linux) anywhere on this page. It opens a third of the way down over a dimmed page.</p>
-  <Example code={live} />
+  <Example description="Try it: click the button or press ⌘K / Ctrl K, type to filter, Enter runs the selected row. Esc clears the search, a second Esc closes." code={live} />
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
     ['.dd-command', 'The panel. A <code>&lt;dialog&gt;</code> for the real thing, a <code>&lt;div&gt;</code> to show it inline.'],
@@ -119,6 +119,10 @@ ${palette('cp-live', all, { tag: 'dialog', hotkey: true })}`;
     ['Enter / click', 'Runs the row: clicks it (links navigate), fires a bubbling <code>dd:command</code> event with <code>detail.item</code> and <code>detail.value</code>, and closes the dialog.'],
     ['Esc', 'Clears the search; a second Esc closes. Clicking the backdrop closes too, and focus returns to the opener.'],
   ]} />
+  <script is:inline>
+    // Docs feedback: running a row in any example says what it would have done.
+    document.addEventListener('dd:command', (e) => window.dd?.toast?.({ title: `Ran “${e.detail.value}”`, description: 'In an app this would open it or run the command.', intent: 'neutral', duration: 3000 }));
+  </script>
   <h2 id="guidelines">Guidelines</h2>
   <Guides
     do={['Lead with what people jump to most: recent projects, then services, then commands.', 'Show the shortcut beside each command so the palette teaches the keyboard.', 'Keep result names short and put detail in the muted meta.']}

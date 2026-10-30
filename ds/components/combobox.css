@@ -43,3 +43,8 @@
 .dd-combobox__remove > .dd-icon { width: 12px; height: 12px; vertical-align: 0; }
 .dd-input--sm .dd-combobox__chip { padding-block: 0; }
 @keyframes dd-combobox-chip { from { opacity: 0; transform: scale(.92); } }
+
+/* "Create …" row (data-dd-combobox-create): the typed text as a new value, at the end of the list. */
+.dd-combobox__create > .dd-icon { flex: none; color: var(--dd-muted); }
+.dd-combobox__create q { font-weight: 600; }
+.dd-combobox__create.is-active > .dd-icon { color: var(--dd-text); }

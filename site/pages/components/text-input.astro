@@ -214,15 +214,15 @@ const standalone = `
 
   <h2 id="password">Password with reveal</h2>
   <p>A <code>data-dd-reveal</code> button flips the control between <code>password</code> and <code>text</code> and keeps <code>aria-pressed</code> and its label in sync.</p>
-  <Example code={password} />
+  <Example description="Try it: press the eye to show the secret, again to hide it. Each field toggles on its own." code={password} />
 
   <h2 id="search">Search with clear</h2>
   <p>The clear button hides itself while the field is empty (the input needs a placeholder). Escape also clears a native search field.</p>
-  <Example code={search} />
+  <Example description="Try it: press × to clear (focus stays in the field), or press Esc while typing." code={search} />
 
   <h2 id="number">Number with steppers</h2>
   <p>Native spinners are hidden; the minus and plus buttons call <code>stepDown()</code> / <code>stepUp()</code>, so <code>min</code>, <code>max</code> and <code>step</code> are honoured, and each dims at its end of the range. Arrow keys still work in the field.</p>
-  <Example code={number} />
+  <Example description="Try it: step Retries up to 5 — plus dims at the end of the range — or use ↑ ↓ in the field." code={number} />
 
   <h2 id="sizes">Sizes</h2>
   <p>Medium is the default. Small for dense filters and table toolbars; large for sign-in and onboarding.</p>

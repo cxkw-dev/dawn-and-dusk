@@ -5,44 +5,51 @@ import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
 
-const pages = (current, list, total) => list.map((p) => p === '…'
+// Same window the behaviour draws: first, last, the current page and its neighbours, a gap for the rest (≤ 7 slots).
+const slots = (p, n) => n <= 7 ? Array.from({ length: n }, (_, k) => k + 1)
+  : p <= 4 ? [1, 2, 3, 4, 5, '…', n]
+  : p >= n - 3 ? [1, '…', n - 4, n - 3, n - 2, n - 1, n]
+  : [1, '…', p - 1, p, p + 1, '…', n];
+const pages = (current, total) => slots(current, total).map((p) => p === '…'
   ? `\n    <li class="dd-pagination__gap" aria-hidden="true">…</li>`
-  : `\n    <li><a class="dd-pagination__page" href="#"${p === current ? ' aria-current="page"' : ''} aria-label="Page ${p}">${p}</a></li>`).join('')
+  : `\n    <li><button class="dd-pagination__page" type="button"${p === current ? ' aria-current="page"' : ''} aria-label="Page ${p}">${p}</button></li>`).join('')
   + `\n    <li class="dd-pagination__status">Page ${current} of ${total}</li>`;
+const prev = (off = false) => `<li><button class="dd-pagination__step" type="button" aria-label="Previous page"${off ? ' aria-disabled="true"' : ''}>${i('chevron-left')}</button></li>`;
+const next = (off = false) => `<li><button class="dd-pagination__step" type="button" aria-label="Next page"${off ? ' aria-disabled="true"' : ''}>${i('chevron-right')}</button></li>`;
 
 const numbered = `
-<nav class="dd-pagination" aria-label="Pagination">
+<nav class="dd-pagination" aria-label="Pagination" data-dd-pagination data-pages="50" data-page="6">
   <ul class="dd-pagination__pages">
-    <li><a class="dd-pagination__step" href="#" aria-label="Previous page">${i('chevron-left')}</a></li>${pages(4, [1, '…', 3, 4, 5, '…', 50], 50)}
-    <li><a class="dd-pagination__step" href="#" aria-label="Next page">${i('chevron-right')}</a></li>
+    ${prev()}${pages(6, 50)}
+    ${next()}
   </ul>
 </nav>`;
 
 const first = `
-<nav class="dd-pagination" aria-label="Pagination">
+<nav class="dd-pagination" aria-label="Pagination" data-dd-pagination data-pages="50" data-page="1">
   <ul class="dd-pagination__pages">
-    <li><a class="dd-pagination__step" aria-disabled="true" aria-label="Previous page">${i('chevron-left')}</a></li>${pages(1, [1, 2, 3, 4, 5, '…', 50], 50)}
-    <li><a class="dd-pagination__step" href="#" aria-label="Next page">${i('chevron-right')}</a></li>
+    ${prev(true)}${pages(1, 50)}
+    ${next()}
   </ul>
 </nav>`;
 
 const labelled = `
-<nav class="dd-pagination" aria-label="Pagination">
+<nav class="dd-pagination" aria-label="Pagination" data-dd-pagination data-pages="6" data-page="2">
   <ul class="dd-pagination__pages">
-    <li><a class="dd-pagination__step dd-pagination__step--label" href="#">${i('arrow-left')}<span>Previous</span></a></li>${pages(2, [1, 2, 3, 4, 5, 6], 6)}
-    <li><a class="dd-pagination__step dd-pagination__step--label" href="#"><span>Next</span>${i('arrow-right')}</a></li>
+    <li><button class="dd-pagination__step dd-pagination__step--label" type="button">${i('arrow-left')}<span>Previous</span></button></li>${pages(2, 6)}
+    <li><button class="dd-pagination__step dd-pagination__step--label" type="button"><span>Next</span>${i('arrow-right')}</button></li>
   </ul>
 </nav>`;
 
 const compact = `
-<nav class="dd-pagination dd-pagination--compact" aria-label="Pagination">
+<nav class="dd-pagination dd-pagination--compact" aria-label="Pagination" data-dd-pagination data-total="2481" data-page-size="50">
   <span class="dd-pagination__range"><b>1–50</b> of 2,481</span>
-  <button class="dd-pagination__step" type="button" aria-label="Previous page" disabled>${i('chevron-left')}</button>
+  <button class="dd-pagination__step" type="button" aria-label="Previous page" aria-disabled="true">${i('chevron-left')}</button>
   <button class="dd-pagination__step" type="button" aria-label="Next page">${i('chevron-right')}</button>
 </nav>`;
 
 const size = `
-<div class="dd-pagination dd-pagination--spread">
+<div class="dd-pagination dd-pagination--spread" data-dd-pagination data-total="2481" data-page="2">
   <label class="dd-pagination__size">Rows per page
     <span class="dd-pagination__select">
       <select aria-label="Rows per page">
@@ -55,13 +62,13 @@ const size = `
   </label>
   <nav class="dd-pagination dd-pagination--compact" aria-label="Pagination">
     <span class="dd-pagination__range"><b>51–100</b> of 2,481</span>
-    <a class="dd-pagination__step" href="#" aria-label="Previous page">${i('chevron-left')}</a>
-    <a class="dd-pagination__step" href="#" aria-label="Next page">${i('chevron-right')}</a>
+    <button class="dd-pagination__step" type="button" aria-label="Previous page">${i('chevron-left')}</button>
+    <button class="dd-pagination__step" type="button" aria-label="Next page">${i('chevron-right')}</button>
   </nav>
 </div>`;
 
 const full = `
-<div class="dd-pagination dd-pagination--spread">
+<div class="dd-pagination dd-pagination--spread" data-dd-pagination data-total="2481" data-page="4">
   <div class="dd-pagination">
     <label class="dd-pagination__size">Rows
       <span class="dd-pagination__select">
@@ -72,29 +79,33 @@ const full = `
   </div>
   <nav class="dd-pagination" aria-label="Pagination">
     <ul class="dd-pagination__pages">
-      <li><a class="dd-pagination__step" href="#" aria-label="Previous page">${i('chevron-left')}</a></li>${pages(4, [1, '…', 3, 4, 5, '…', 50], 50)}
-      <li><a class="dd-pagination__step" href="#" aria-label="Next page">${i('chevron-right')}</a></li>
+      ${prev()}${pages(4, 50)}
+      ${next()}
     </ul>
   </nav>
 </div>`;
+
 ---
 <Docs title="Pagination" group="Data display" lead="Moves through pages of results. Numbered for browsing, compact when the range matters more than the page number, with a page-size select for data tables.">
-  <Example title="Numbered" description="Show the first and last page, the current page and its neighbours; collapse the rest into a gap. The current page sits on a tone." code={numbered} />
+  <Example title="Numbered" description="Show the first and last page, the current page and its neighbours; collapse the rest into a gap. The current page sits on a tone. Try it: click a page or the arrows, or Tab to them and press Enter." code={numbered} />
 
   <h2 id="edges">At the edges</h2>
-  <p>On the first or last page, keep the arrow in place and disable it so the control does not shift.</p>
-  <Example code={first} />
+  <p>On the first or last page, keep the arrow in place and disable it so the control does not shift. The behaviour uses <code>aria-disabled</code>, so a keyboard user who pressed it keeps their focus.</p>
+  <Example code={first} description="Try it: step forward, then back to page 1. The previous arrow dims again." />
   <p>For short sets, label the arrows and show every page.</p>
   <Example code={labelled} />
 
   <h2 id="compact">Compact</h2>
   <p>The range and two arrows. Use it in table footers, side panels and anywhere the total matters more than the page number.</p>
-  <Example code={compact} />
+  <Example code={compact} description="Try it: step through the range; the arrows stop at 1–50 and 2,451–2,481." />
 
   <h2 id="page-size">With page size</h2>
   <p>A native <code>&lt;select&gt;</code> for rows per page, the range, then the arrows. <code>--spread</code> pushes the groups to opposite edges; they stack when space runs out.</p>
-  <Example code={size} />
-  <Example title="Table footer" description="Page size and range on the left, numbered pages on the right. Under 560px the numbers collapse to “Page 4 of 50” between the arrows." code={full} />
+  <Example code={size} description="Try it: change the page size; the range keeps its first row in view." />
+  <Example title="Table footer" description="Page size and range on the left, numbered pages on the right. Under 560px the numbers collapse to “Page 4 of 50” between the arrows. Try it: every control here moves the same state." code={full} />
+
+  <h2 id="links">Server-rendered pages</h2>
+  <p>When each page has its own URL, render the same markup with links (<code>&lt;a class="dd-pagination__page" href="?page=3"&gt;</code>) and leave <code>data-dd-pagination</code> off: the browser navigates, and people can share a page or open it in a new tab. The styles are the same for <code>&lt;a&gt;</code> and <code>&lt;button&gt;</code>.</p>
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -109,6 +120,19 @@ const full = `
     ['.dd-pagination__size + __select', 'Label and native select for rows per page; the wrapper adds the chevron.'],
     ['.dd-pagination--compact', 'Range and arrows only.'],
     ['.dd-pagination--spread', 'Space-between, for a footer with two groups.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <p>For pages that change in the browser, add <code>data-dd-pagination</code> to the pager, or to a wrapper that also holds the page-size select. The script keeps every part in step.</p>
+  <ClassTable head={['Attribute / API', 'Behaviour']} rows={[
+    ['data-page', 'The current page, from 1. Kept up to date.'],
+    ['data-pages', 'How many pages, when you don’t know the item count.'],
+    ['data-total + data-page-size', 'Item count and page size; pages and the range (“151–200 of 2,481”) follow. A <code>.dd-pagination__size</code> select inside sets the size.'],
+    ['Pages and arrows', 'Clicking a page or an arrow moves there. The numbers redraw around the current page (never more than seven slots), <code>aria-current="page"</code> moves, and the arrows take <code>aria-disabled="true"</code> at either end. The first <code>__step</code> goes back, the last goes forward.'],
+    ['Page size', 'Changing the select keeps the first visible row on screen.'],
+    ['Keyboard', '<kbd>Tab</kbd> to a page or arrow, <kbd>Enter</kbd> or <kbd>Space</kbd> to go. Focus stays on the page you chose, and on an arrow even when it disables.'],
+    ['dd:pagechange', 'Bubbles after a user changes page or size: <code>{ page, pages, pageSize, total, from, to }</code>. Fetch the page here.'],
+    ['dd.pagination(el, { page, pages, total, pageSize })', 'Set state from script (no event); returns the state. The <a href="data-table">data table</a> uses it to page its rows.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

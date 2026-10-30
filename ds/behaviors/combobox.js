@@ -4,7 +4,9 @@
    Single: choosing fills the input. Multi: choosing toggles the option and adds / removes a chip
    (.dd-combobox__chip, coloured from the option's data-set="1…8" or by position). Matches are underlined.
    An optional <input type="hidden"> receives the value (comma-separated for multi).
-   Fires a bubbling "dd-combobox" event with detail { value, values, option }.
+   Fires a bubbling "dd-combobox" event with detail { value, values, option } (+ created: true for a new value).
+   data-dd-combobox-create on the wrapper allows new values: when the text matches no option exactly, a
+   "Create “…”" row (.dd-combobox__create) ends the list; choosing it adds that option and selects it.
    Keyboard: ↓ / ↑ open and move · Enter chooses · Esc closes, then clears · Backspace on empty removes the last chip. */
 (() => {
   let uid = 0;
@@ -14,8 +16,9 @@
     box: root.querySelector('.dd-input'),
   });
   const multi = (root) => root.dataset.ddCombobox === 'multi';
-  const options = (list) => [...list.querySelectorAll('[role="option"]')];
-  const usable = (list) => options(list).filter((o) => !o.hidden && o.getAttribute('aria-disabled') !== 'true');
+  // The "Create …" row is a listbox option for the keyboard, but never a value.
+  const options = (list) => [...list.querySelectorAll('[role="option"]:not([data-dd-create])')];
+  const usable = (list) => [...list.querySelectorAll('[role="option"]')].filter((o) => !o.hidden && o.getAttribute('aria-disabled') !== 'true');
   const labelEl = (opt) => opt.querySelector('.dd-listbox__label') || opt;
   const labelOf = (opt) => (opt.dataset.label || labelEl(opt).dataset.text || labelEl(opt).textContent).trim();
   const valueOf = (opt) => opt.dataset.value ?? labelOf(opt);
@@ -39,7 +42,7 @@
     const closeGroup = () => { if (group) group.hidden = groupHits === 0; };
     for (const el of list.children) {
       if (el.classList.contains('dd-listbox__group')) { closeGroup(); group = el; groupHits = 0; continue; }
-      if (el.getAttribute('role') !== 'option') continue;
+      if (el.getAttribute('role') !== 'option' || el.hasAttribute('data-dd-create')) continue;
       const lab = labelEl(el);
       if (lab.dataset.text === undefined) lab.dataset.text = lab.textContent;
       const text = lab.dataset.text;
@@ -52,9 +55,50 @@
       if (show) { hits++; groupHits++; }
     }
     closeGroup();
+    const creating = createRow(root, query.trim());
     const empty = list.querySelector('.dd-listbox__empty');
-    if (empty) empty.hidden = hits > 0;
+    if (empty) empty.hidden = hits > 0 || creating;
     setActive(root, usable(list)[0]);
+  };
+
+  // data-dd-combobox-create: offer the typed text as a new option unless an option already has that label.
+  const createRow = (root, text) => {
+    const { list } = parts(root);
+    let row = list.querySelector(':scope > [data-dd-create]');
+    const show = root.hasAttribute('data-dd-combobox-create') && !!text
+      && !options(list).some((o) => labelOf(o).toLowerCase() === text.toLowerCase());
+    if (!show) { if (row) row.hidden = true; return false; }
+    if (!row) {
+      row = document.createElement('li');
+      row.className = 'dd-listbox__option dd-combobox__create';
+      row.setAttribute('role', 'option');
+      row.setAttribute('aria-selected', 'false');
+      row.dataset.ddCreate = '';
+      list.insertBefore(row, list.querySelector(':scope > .dd-listbox__empty'));
+    }
+    row.dataset.value = text;
+    row.innerHTML = `${icon('plus')}<span class="dd-listbox__text"><span>Create <q>${esc(text)}</q></span></span>`;
+    row.hidden = false;
+    return true;
+  };
+
+  // Turns the "Create …" row into a real option (placed before it) and returns that option.
+  const create = (root, row) => {
+    const { list } = parts(root);
+    const text = row.dataset.value;
+    const all = options(list);
+    const swatched = !!list.querySelector('.dd-listbox__swatch');
+    const n = (all.length % 8) + 1;
+    const opt = document.createElement('li');
+    opt.className = 'dd-listbox__option';
+    opt.setAttribute('role', 'option');
+    opt.setAttribute('aria-selected', 'false');
+    opt.dataset.value = text;
+    if (swatched) opt.dataset.set = String(n);
+    opt.innerHTML = `${swatched ? `<span class="dd-listbox__swatch" style="--dd-chip: var(--dd-set-${n})"></span>` : ''}<span class="dd-listbox__text"><span class="dd-listbox__label">${esc(text)}</span></span><span class="dd-listbox__check">${icon('check')}</span>`;
+    list.insertBefore(opt, row);
+    row.hidden = true;
+    return opt;
   };
 
   const open = (root, query) => {
@@ -81,12 +125,12 @@
     root.classList.remove('is-open');
   };
 
-  const sync = (root, opt) => {
+  const sync = (root, opt, created = false) => {
     const { list } = parts(root);
     const values = options(list).filter((o) => o.getAttribute('aria-selected') === 'true').map(valueOf);
     const hidden = root.querySelector('input[type="hidden"]');
     if (hidden) { hidden.value = values.join(','); hidden.dispatchEvent(new Event('change', { bubbles: true })); }
-    root.dispatchEvent(new CustomEvent('dd-combobox', { bubbles: true, detail: { value: values[0] ?? '', values, option: opt } }));
+    root.dispatchEvent(new CustomEvent('dd-combobox', { bubbles: true, detail: { value: values[0] ?? '', values, option: opt, ...(created ? { created } : {}) } }));
   };
 
   const chipFor = (root, opt) => {
@@ -103,6 +147,8 @@
 
   const choose = (root, opt) => {
     if (!opt || opt.getAttribute('aria-disabled') === 'true') return;
+    const created = opt.hasAttribute('data-dd-create');
+    if (created) opt = create(root, opt);
     const { input, list, box } = parts(root);
     if (multi(root)) {
       const on = opt.getAttribute('aria-selected') !== 'true';
@@ -120,7 +166,7 @@
       input.value = labelOf(opt);
       close(root);
     }
-    sync(root, opt);
+    sync(root, opt, created);
   };
 
   const removeChip = (root, chip) => {
@@ -139,8 +185,9 @@
   };
 
   document.addEventListener('mousedown', (e) => {
-    // Keep focus in the input while clicking options or chips.
-    if (e.target.closest('[data-dd-combobox] [role="listbox"]')) e.preventDefault();
+    // Keep focus in the input while clicking options or the toggle (a focusable toggle would blur the input first,
+    // and in browsers that don't focus buttons on click that blur would close the list before the toggle runs).
+    if (e.target.closest('[data-dd-combobox] [role="listbox"], [data-dd-combobox-toggle]')) e.preventDefault();
   });
 
   document.addEventListener('click', (e) => {
@@ -181,10 +228,15 @@
     if (e.target !== input) return;
     const isOpen = !list.hidden;
     switch (e.key) {
-      case 'ArrowDown':
+      case 'ArrowDown': {
         e.preventDefault();
-        if (!isOpen) open(root, multi(root) ? input.value : undefined); else move(root, 1);
+        if (isOpen) { move(root, 1); break; }
+        // Reopen on what was typed; on the chosen label (or nothing), show every option with the choice active.
+        const chosen = list.querySelector('[role="option"][aria-selected="true"]');
+        const showAll = !multi(root) && (!input.value || (chosen && labelOf(chosen) === input.value));
+        open(root, showAll ? undefined : input.value);
         break;
+      }
       case 'ArrowUp':
         e.preventDefault();
         if (isOpen) move(root, -1);

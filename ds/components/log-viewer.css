@@ -48,8 +48,10 @@
   content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint));
 }
 .dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='false']::before { opacity: .35; }
-.dd-log-viewer__toggle--wrap { height: 30px; background-color: var(--dd-surface-2); }
-.dd-log-viewer__toggle--wrap[aria-pressed='true'] { background-color: var(--dd-surface-3); }
+.dd-log-viewer__toggle:is(.dd-log-viewer__toggle--wrap, .dd-log-viewer__toggle--follow) { height: 30px; background-color: var(--dd-surface-2); }
+.dd-log-viewer__toggle:is(.dd-log-viewer__toggle--wrap, .dd-log-viewer__toggle--follow)[aria-pressed='true'] { background-color: var(--dd-surface-3); }
+/* Follow (stay on the newest line) is icon-only so the bar keeps to one line; name it with aria-label. */
+.dd-log-viewer__toggle--follow { width: 30px; padding: 0; justify-content: center; }
 .dd-log-viewer__n { font-family: var(--dd-font-mono); font-size: 10.5px; color: var(--dd-muted); }
 .dd-log-viewer__count { margin-left: auto; font-family: var(--dd-font-mono); font-size: 11px; color: var(--dd-muted); white-space: nowrap; }
 .dd-log-viewer__live { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); font-weight: 600; color: var(--dd-text); white-space: nowrap; }

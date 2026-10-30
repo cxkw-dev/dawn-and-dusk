@@ -48,7 +48,7 @@ const sizes = `
 const split = `
 <div class="dd-row" style="--dd-gap: 15px">
   <div class="dd-btn-group dd-btn-group--split">
-    <button class="dd-btn dd-btn--primary">${i('play')}<span>Deploy to production</span></button>
+    <button class="dd-btn dd-btn--primary" data-dd-toast="Deploying a3f9c21 to production" data-dd-toast-description="auth-gateway · 3 regions">${i('play')}<span>Deploy to production</span></button>
     <button class="dd-btn dd-btn--primary dd-btn--icon dd-btn-group__caret" data-dd-menu="bg-deploy-menu" data-dd-placement="bottom-end" aria-label="More deploy options">${i('chevron-down')}</button>
   </div>
   <div class="dd-btn-group dd-btn-group--split">
@@ -60,18 +60,18 @@ const split = `
     <button class="dd-btn dd-btn--ink dd-btn--sm dd-btn--icon dd-btn-group__caret" data-dd-menu="bg-redeploy-menu" data-dd-placement="bottom-end" aria-label="Redeploy options">${i('chevron-down')}</button>
   </div>
 </div>
-<div class="dd-menu" id="bg-deploy-menu" role="menu" hidden>
-  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Deploy to preview<span class="dd-menu__desc">preview-a3f9c21.cxkw.dev</span></span><kbd class="dd-menu__kbd">⌘⇧↵</kbd></button>
+<div class="dd-menu" id="bg-deploy-menu" role="menu" aria-label="Deploy options" hidden>
+  <button class="dd-menu__item" role="menuitem" data-dd-toast="Deploying a3f9c21 to preview" data-dd-toast-description="preview-a3f9c21.cxkw.dev"><span class="dd-menu__body">Deploy to preview<span class="dd-menu__desc">preview-a3f9c21.cxkw.dev</span></span><kbd class="dd-menu__kbd">⌘⇧↵</kbd></button>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Deploy without cache<span class="dd-menu__desc">Rebuilds every dependency</span></span></button>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Schedule…<span class="dd-menu__desc">Pick a quiet hour</span></span></button>
 </div>
-<div class="dd-menu" id="bg-export-menu" role="menu" hidden>
+<div class="dd-menu" id="bg-export-menu" role="menu" aria-label="Export formats" hidden>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Export JSON</span></button>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Export Parquet</span></button>
   <hr class="dd-menu__sep">
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Copy as Markdown table</span><kbd class="dd-menu__kbd">⌘⇧C</kbd></button>
 </div>
-<div class="dd-menu" id="bg-redeploy-menu" role="menu" hidden>
+<div class="dd-menu" id="bg-redeploy-menu" role="menu" aria-label="Redeploy options" hidden>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Redeploy iad1 only</span></button>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Redeploy all regions</span></button>
 </div>`;
@@ -109,10 +109,10 @@ const block = `
   <Example title="Attached" description="Related actions that share a seam. The 1px gap lets the surface behind draw the line, so there are no borders." code={attached} />
   <h2 id="toggles">Toggle buttons</h2>
   <p>For independent on/off options, such as which log levels to show, give each button <code>aria-pressed</code>. Pressed buttons take the deeper tone and full-strength text. For a single choice, use a <a href="segmented-control">segmented control</a> instead.</p>
-  <Example code={toggles} />
+  <Example code={toggles} description="Try it: click the levels and columns on and off; each button flips on its own. Enter and Space work too." />
   <h2 id="split">Split button</h2>
   <p>A main action plus a narrow chevron (<code>.dd-btn-group__caret</code>) that opens a <a href="menu">menu</a> of variations. The seam is a soft line in the button’s own ink. Click a chevron to try it.</p>
-  <Example code={split} />
+  <Example code={split} description="Try it: the main half runs the action; the chevron (or ↓ on it) opens the alternatives, Esc closes them." />
   <p>Open, the chevron flips and keeps its pressed tone while the menu floats below, aligned to the end.</p>
   <Example code={splitOpen} />
   <h2 id="sizes">Sizes</h2>

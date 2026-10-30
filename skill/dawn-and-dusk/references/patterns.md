@@ -209,11 +209,15 @@ Reading the skeletons:
               <td class="is-frozen" data-col="service"><a href="#">search-indexer</a></td>
               <td data-col="status" data-value="warn"><span class="dd-data-table__status" data-status="warn">Degraded</span></td>
               <td class="is-num is-warn" data-value="611">611<span class="dd-data-table__unit">ms</span></td>
-              <td class="is-actions"><button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-label="Actions for search-indexer">[i:more]</button></td>
+              <td class="is-actions"><button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-label="Actions for search-indexer" data-dd-menu="row-menu" data-dd-placement="bottom-end" aria-haspopup="menu" aria-controls="row-menu" aria-expanded="false">[i:more]</button></td>
             </tr>
             …
           </tbody>
         </table>
+      </div>
+      <div class="dd-menu" id="row-menu" role="menu" aria-label="Service actions" hidden>   <!-- one menu shared by every row -->
+        <button class="dd-menu__item" role="menuitem" type="button" data-action="logs"><svg class="dd-icon dd-menu__icon" aria-hidden="true"><use href="#dd-i-terminal"/></svg><span class="dd-menu__body">View logs</span></button>
+        <button class="dd-menu__item" role="menuitem" type="button" data-action="restart"><svg class="dd-icon dd-menu__icon" aria-hidden="true"><use href="#dd-i-refresh"/></svg><span class="dd-menu__body">Restart</span></button>
       </div>
     </div>
   </section>
@@ -229,7 +233,8 @@ Reading the skeletons:
 ```
 
 **Key rules**
-- Primary = the page's job (New deploy); Export is secondary; rows get a ghost `[i:more]`.
+- Primary = the page's job (New deploy); Export is secondary; rows get a ghost `[i:more]` that opens one shared
+  row menu (`data-dd-menu`); remember which row opened it to know what the item acts on.
 - At most four KPIs up top. Colour a delta by whether the change is good for that metric (latency up = `--bad`,
   errors down = `--ok`), never by its sign, and always name the comparison period.
 - Sparklines have no axes — the chart carries values. Series take `dd-chart-s1…` in order; keep to ≤ 3.

@@ -90,7 +90,7 @@ const closed = `
   </div>
   <div class="dd-form__footer">
     <button class="dd-btn dd-btn--ghost" type="button">Cancel</button>
-    <button class="dd-btn dd-btn--primary" type="submit">${i('lock')}<span>Schedule freeze</span></button>
+    <button class="dd-btn dd-btn--primary" type="submit" data-dd-toast="Freeze scheduled" data-dd-toast-description="No deploys to billing-worker or edge-cache until it lifts." data-dd-toast-intent="ok">${i('lock')}<span>Schedule freeze</span></button>
   </div>
 </form>`;
 
@@ -137,23 +137,23 @@ const rangePicker = `
 </div>`;
 ---
 <Docs title="Date picker" group="Forms" lead="Picks a day or a range. A text input with a calendar popover, a calendar on its own, and a range picker with presets for log and deploy filters.">
-  <Example title="Input with calendar" description="Shown open. Today (Oct 30) carries the apricot dot; the chosen day fills with the accent. Click the calendar button to close and reopen it." code={staticOpen} minHeight="475px" />
+  <Example title="Input with calendar" description="Shown open. Today (Oct 30) carries the apricot dot; the chosen day fills with the accent. Try it: pick a day, or click the calendar button to close and reopen it." code={staticOpen} minHeight="475px" />
 
   <h2 id="interactive">Opening and choosing</h2>
   <p>The calendar button (or ↓ in the input) opens the popover with focus on the chosen day. Choosing a day fills the input and closes it; Esc, a click outside or tabbing away closes without changes. Typed dates are parsed on change.</p>
-  <Example code={closed} minHeight="560px" />
+  <Example code={closed} description="Try it: open a calendar with the button or ↓, move with the arrow keys, Enter to choose. Or type a date like 2026-12-01 and press Tab." minHeight="560px" />
 
   <h2 id="inline">Inline calendar</h2>
   <p>The calendar works on its own; <code>.dd-calendar--panel</code> gives it a tonal panel. The second one starts weeks on Sunday (<code>data-week-start="0"</code>) and limits choices with <code>data-min</code> / <code>data-max</code>.</p>
-  <Example code={inline} />
+  <Example code={inline} description="Try it: click a day, or Tab into the grid and use ← → ↑ ↓, Page Up / Down. The second calendar stops at its limits." />
 
   <h2 id="range">Range</h2>
   <p><code>data-mode="range"</code>: the first click sets the start, the second the end (in either order), and a lighter band previews the range while you hover. The ends fill with the accent; the days between sit on a soft accent band.</p>
-  <Example code={rangeCal} />
+  <Example code={rangeCal} description="Try it: click a start day, hover to see the band, click an end day." />
 
   <h3 id="presets">Range picker with presets</h3>
   <p>Presets set common windows in one click — give them <code>data-start</code> / <code>data-end</code>, or <code>data-days="7"</code> to count back from today. With an Apply button the input only changes when you apply.</p>
-  <Example code={rangePicker} minHeight="clamp(535px, (561px - 100vw) * 1000, 625px)" />
+  <Example code={rangePicker} description="Try it: pick a preset or two days, then Apply; Cancel, Esc or a click outside puts the old range back." minHeight="clamp(535px, (561px - 100vw) * 1000, 625px)" />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -173,11 +173,12 @@ const rangePicker = `
     ['data-dd-calendar', 'Renders the month from <code>data-month</code>, <code>data-value</code> or <code>data-start</code> / <code>data-end</code>, <code>data-mode</code>, <code>data-today</code>, <code>data-min</code>, <code>data-max</code>, <code>data-week-start</code>. Fires <code>dd-date</code>.'],
     ['data-dd-date-picker', 'On the wrapper: popover, filling the input, optional hidden input (ISO, ranges as <code>start/end</code>).'],
     ['data-dd-date-toggle', 'Button that opens / closes the popover.'],
-    ['data-dd-date-apply · data-dd-date-cancel', 'Range footer buttons: commit, or close and restore.'],
+    ['data-dd-date-apply · data-dd-date-cancel', 'Range footer buttons: commit, or close and restore. Without an Apply button, the second day or a preset commits and closes.'],
     ['← → ↑ ↓', 'Move a day or a week; crossing a month edge turns the page.'],
     ['Page Up · Page Down · Home · End', 'Previous / next month; start / end of the week.'],
     ['Enter · Space', 'Choose the focused day.'],
     ['Esc · Tab out · click outside', 'Close the popover without changes; Esc returns focus to the calendar button.'],
+    ['Typing a date', 'Parsed on change (<code>2026-12-01</code>, <code>Dec 1, 2026</code>). A date outside <code>data-min</code> / <code>data-max</code>, or text that isn’t a date, sets <code>aria-invalid</code>.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

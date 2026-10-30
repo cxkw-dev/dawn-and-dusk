@@ -51,7 +51,7 @@ const regions = [
   ['hnd1', 'Tokyo'], ['sin1', 'Singapore'], ['syd1', 'Sydney'], ['gru1', 'São Paulo'], ['bom1', 'Mumbai'],
 ];
 const choices = `
-<button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#region-sheet">${i('globe')}<span>fra1 · Frankfurt</span>${i('chevron-down')}</button>
+<button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#region-sheet" id="region-trigger">${i('globe')}<span>fra1 · Frankfurt</span>${i('chevron-down')}</button>
 <dialog class="dd-sheet" id="region-sheet" aria-labelledby="region-title">
   <span class="dd-sheet__handle" aria-hidden="true"></span>
   <header class="dd-sheet__head">
@@ -73,15 +73,15 @@ ${regions.map(([code, city, on]) => `      <button class="dd-sheet__item" type="
 ---
 <Docs title="Sheet" group="Overlays" lead="A bottom sheet for small screens: it rises from the bottom edge with a grab handle, keeps actions within thumb reach, and never covers more than 85% of the screen.">
   <p>Every example opens the real sheet; under the trigger is a still of it on a phone-sized frame. On wide screens a sheet stays a centred 560px column.</p>
-  <Example title="Confirm" description="A title, one or two sentences, and full-width actions with the primary on the right." code={confirm} />
+  <Example title="Confirm" description="A title, one or two sentences, and full-width actions with the primary on the right. Try it: a click on the scrim or Esc slides it away." code={confirm} />
 
   <h2 id="actions">List of actions</h2>
   <p>The mobile stand-in for a menu: big touch rows with a leading icon, an optional shortcut or count, and the destructive action last, apart.</p>
-  <Example code={actions} />
+  <Example code={actions} description="Try it: Tab to the first row, then ↑ ↓ Home End move between rows and Enter picks one." />
 
   <h2 id="choices">Choices · long content</h2>
   <p>For picking one of many. Mark the current row with <code>aria-checked="true"</code>; past 85% of the screen the body scrolls and the footer stays.</p>
-  <Example code={choices} />
+  <Example code={choices} description="Try it: pick a region — the check moves and the button shows your choice." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -129,6 +129,27 @@ ${regions.map(([code, city, on]) => `      <button class="dd-sheet__item" type="
     .sht-scrim { position: absolute; inset: 0; z-index: 0; background: var(--dd-overlay); }
     .sht-preview > dialog { position: absolute; z-index: 1; inset: auto 0 0 0; width: 100%; max-height: 85%; animation: none; }
   </style>
+  <script is:inline>
+    // Docs only: react to each example's result the way an app would — a toast for actions, the new region on its button.
+    document.addEventListener('close', (e) => {
+      const d = e.target, v = d instanceof HTMLDialogElement && d.closest('.ex-stage') ? d.returnValue : '';
+      if (!v) return;
+      if (d.id === 'region-sheet') {
+        const row = d.querySelector(`[data-dd-dialog-close="${v}"]`);
+        const label = document.querySelector('#region-trigger > span');
+        if (row && label) label.textContent = `${v} · ${row.querySelector('.dd-sheet__item-label').textContent}`;
+        // keep the still under the trigger in step with the choice
+        d.closest('.ex-stage').querySelectorAll('.sht-preview [role="menuitemradio"]')
+          .forEach((r) => r.setAttribute('aria-checked', String(r.getAttribute('data-dd-dialog-close') === v)));
+        return;
+      }
+      const said = {
+        rollback: 'Rolling back billing-worker', share: 'Share link copied', duplicate: 'dawn-and-dusk duplicated',
+        pin: 'Pinned to the sidebar', archive: 'dawn-and-dusk archived', delete: 'dawn-and-dusk deleted',
+      }[v];
+      if (said && window.dd?.toast) dd.toast({ title: said, description: `returnValue "${v}"`, intent: v === 'delete' ? 'neutral' : 'ok' });
+    }, true);
+  </script>
   <script is:inline>
     // Docs only: a still of the example's sheet, on a phone-sized frame under its trigger.
     document.querySelectorAll('.ex-stage').forEach((stage) => {

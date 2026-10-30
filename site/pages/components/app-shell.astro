@@ -192,16 +192,47 @@ const skeleton = `
     .as-phone { max-width: 380px; margin: 28px auto; border-radius: var(--dd-r-lg); overflow: hidden;
       box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 10%, transparent); }
   </style>
+  <script is:inline>
+    // Docs only: inside the demo shells, nav links and tabs act like navigation (the one you follow becomes current and the
+    // page header follows), and buttons say what they would do in an app instead of doing nothing.
+    document.addEventListener('click', (e) => {
+      const shell = e.target.closest('.ex-stage .dd-app-shell');
+      if (!shell) return;
+      const link = e.target.closest('.dd-side-nav__link[href="#"], .dd-tabs__tab[href="#"]');
+      if (link) {
+        link.closest('.dd-side-nav, .dd-tabs__list').querySelectorAll('[aria-current="page"]').forEach((a) => a.removeAttribute('aria-current'));
+        link.setAttribute('aria-current', 'page');
+        if (link.matches('.dd-side-nav__link')) {
+          const name = link.querySelector('.dd-side-nav__label')?.textContent.trim() ?? link.textContent.trim();
+          const section = link.closest('.dd-side-nav__pane')?.querySelector('.dd-side-nav__title')?.textContent.trim();
+          shell.querySelectorAll('.dd-page-header__title, .dd-breadcrumbs__link[aria-current] > span').forEach((el) => { el.textContent = name; });
+          const crumb = shell.querySelector('.dd-breadcrumbs__item:first-child .dd-breadcrumbs__link > span');
+          if (crumb && section) crumb.textContent = section;
+        }
+        return;
+      }
+      const b = e.target.closest('button:not([data-dd-nav-toggle], [data-dd-nav-section], [data-dd-nav-open], [data-dd-theme-toggle])');
+      if (!b || !window.dd?.toast) return;
+      const name = shell.querySelector('.dd-page-header__title')?.textContent.trim();
+      const say =
+        b.matches('.dd-top-bar__search') ? ['Search', 'In an app this opens the command palette (⌘K).'] :
+        b.matches('.dd-top-bar__switch') ? ['Switch workspace / environment', 'In an app this opens a menu to pick one.'] :
+        b.matches('.dd-top-bar__icon-btn') ? ['3 new notifications', 'In an app this opens your inbox.'] :
+        b.matches('.dd-page-header__actions .dd-btn--primary') ? ['Promote', `In an app this promotes ${name}’s latest preview to production.`] :
+        b.matches('.dd-page-header__actions .dd-btn') ? ['Redeploy', `In an app this redeploys ${name}.`] : null;
+      if (say) window.dd.toast({ title: say[0], description: say[1], duration: 3500 });
+    });
+  </script>
 
   <Example
     title="Full shell"
-    description="Side nav, top bar, page header and content. The chevron at the foot of the rail folds the panel; the services and projects icons switch it. Shown 700px tall — in an app the shell is the viewport (100dvh) and only the content scrolls."
+    description="Side nav, top bar, page header and content. Try it: the chevron at the foot of the rail folds the panel and the page reflows; the services and projects icons switch it; a service link becomes the page. Shown 700px tall — in an app the shell is the viewport (100dvh) and only the content scrolls."
     code={full}
     stage="flush"
   />
 
   <h2 id="mobile">On a phone</h2>
-  <p>Under 768px of shell width the side nav leaves the flow. The top bar shows its menu button and the logo (<code>dd-top-bar__narrow</code>); the button opens the nav over a scrim. Esc, the scrim or a link closes it.</p>
+  <p>Under 768px of shell width the side nav leaves the flow. The top bar shows its menu button and the logo (<code>dd-top-bar__narrow</code>); the button opens the nav over a scrim. Esc, the scrim or a link closes it. Try it: open the menu and pick a service.</p>
   <Example code={phone} stage="flush" />
 
   <h2 id="anatomy">Anatomy</h2>

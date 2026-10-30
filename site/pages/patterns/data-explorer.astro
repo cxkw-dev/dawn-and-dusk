@@ -38,7 +38,7 @@ const docs: [string, string, string, string, string, string, number | null, stri
 const sortTh = (label: string, col: string, cls = '') =>
   `<th${cls ? ` class="${cls}"` : ''} data-col="${col}" aria-sort="none"><button class="dd-data-table__sort" type="button">${label}${i('chevron-down')}</button></th>`;
 const rows = docs.map(([id, svc, s, label, , , , at], n) => `
-                    <tr${n === 0 ? ' class="is-selected"' : ''}>
+                    <tr${n === 0 ? ' class="is-selected"' : ''}${label === 'Superseded' ? ' hidden' : ''}>
                       <td class="is-frozen is-mono" data-col="id"><a href="#"${n === 0 ? ' aria-current="true"' : ''}>${id}</a></td>
                       <td data-col="service">${svc}</td>
                       <td data-col="status" data-value="${s}"><span class="dd-data-table__status" data-status="${s}">${label}</span></td>
@@ -63,6 +63,18 @@ const doc = {
   createdAt: '2026-10-30T09:40:51.008Z',
   finishedAt: '2026-10-30T09:41:07.214Z',
 };
+
+// Docs only: every result as a document, so the demo can open any row in the detail panel and show results as JSON.
+const messages = ['Cache JWKS for 10 minutes and retry on 429', 'Batch invoice writes per customer', 'Purge stale variants on deploy',
+  'Drag to reorder containers', 'Rebuild the trigram index nightly', 'Rotate signing keys every 24 hours', 'Summaries for the weekly standup',
+  'Fan out over a bounded queue', 'Add the spaced-repetition judge', 'Moon phase in the night view', 'Resize to AVIF when the client accepts it',
+  'Reconcile ledger rows in batches of 500'];
+const allDocs = docs.map(([id, svc, , label, region, sha, dur, at], n) => (n === 0 ? doc : {
+  _id: id, service: svc, env: 'production', region, status: label.toLowerCase(),
+  commit: { sha: `${sha}${'0a1b'.slice(0, 5 - (n % 3))}`.slice(0, 12), message: messages[n], author: 'andy@cxkw.dev' },
+  durationMs: dur === null ? null : Math.round(dur * 1000),
+  createdAt: `2026-10-30T${at}.000Z`,
+}));
 
 /* ---------- description list (from Description list) ---------- */
 const copy = (text: string, what: string) =>
@@ -215,11 +227,11 @@ ${glue}
                 ${chip('Ready', true)}
                 ${chip('Building', true)}
                 ${chip('Failed', true)}
+                ${chip('Rolled back', true)}
                 ${chip('Superseded', false)}
               </div>
               <div class="dd-segmented dd-segmented--sm" data-dd-segmented role="radiogroup" aria-label="View">
                 <button class="dd-segmented__item" role="radio" aria-checked="true">${i('list')}<span>Table</span></button>
-                <button class="dd-segmented__item" role="radio" aria-checked="false">${i('grid')}<span>Cards</span></button>
                 <button class="dd-segmented__item" role="radio" aria-checked="false">${i('code')}<span>JSON</span></button>
               </div>
             </div>
@@ -238,6 +250,13 @@ ${glue}
                     </tr>
                   </thead>
                   <tbody>${rows}
+                    <tr class="dd-data-table__empty-row" hidden>
+                      <td colspan="4"><div class="dd-data-table__empty">
+                        <span class="dd-data-table__empty-icon">${i('search')}</span>
+                        <p class="dd-data-table__empty-title">No documents match</p>
+                        <p>Loosen the query or turn a status back on.</p>
+                      </div></td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -331,6 +350,123 @@ ${logLines}
     code={page}
     stage="flush"
   />
+  <script type="application/json" id="explorer-demo-docs" set:html={JSON.stringify(allDocs)} />
+  <script is:inline>
+    // Docs only: a pretend query engine over the sample results, so the query bar, chips, rows and view switch answer.
+    (() => {
+      const page = document.querySelector('.ex-stage .dd-pattern-explorer');
+      const src = document.getElementById('explorer-demo-docs');
+      if (!page || !src) return;
+      const data = JSON.parse(src.textContent);
+      const byId = new Map(data.map((d) => [d._id, d]));
+      const table = page.querySelector('.dd-data-table');
+      const input = page.querySelector('input[aria-label="Query filter"]');
+      const chips = [...page.querySelectorAll('[aria-label="Status"] .dd-chip--filter')];
+      const range = page.querySelector('.dd-pagination__range');
+      const aside = page.querySelector('.dd-pattern-explorer__detail');
+      const rows = () => [...table.querySelectorAll('tbody tr:not(.dd-data-table__empty-row)')];
+      const idOf = (tr) => tr.querySelector('[data-col="id"]')?.textContent.trim();
+      const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+      const icon = (n) => `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-${n}"/></svg>`;
+      const at = (doc, path) => path.replace(/^\$/, '').split('.').reduce((o, k) => (o == null ? o : o[k]), doc);
+      let touched = false;
+      let json = null;
+
+      // { field: "value", "commit.sha": "…" } matches fields exactly; anything else searches the whole document.
+      const parse = (q) => {
+        q = q.trim();
+        if (!q || /^\{\s*\}$/.test(q)) return () => true;
+        if (q.startsWith('{')) {
+          const depth = [...q].reduce((n, c) => (n < 0 ? n : n + (c === '{') - (c === '}')), 0);
+          if (depth !== 0) return null;
+          const pairs = [...q.matchAll(/["']?([\w.$]+)["']?\s*:\s*["']([^"']*)["']/g)].map((m) => [m[1], m[2].toLowerCase()]);
+          return (doc) => pairs.every(([k, v]) => { const x = at(doc, k); return x != null && String(x).toLowerCase() === v; });
+        }
+        const t = q.toLowerCase();
+        return (doc) => JSON.stringify(doc).toLowerCase().includes(t);
+      };
+
+      const results = () => rows().filter((tr) => !tr.hidden).map((tr) => byId.get(idOf(tr))).filter(Boolean);
+      const renderJson = () => window.dd?.jsonViewer?.(json, results(), { depth: 2, label: 'Results' });
+      const apply = () => {
+        const match = parse(input.value);
+        if (!match) { input.setAttribute('aria-invalid', 'true'); return; }
+        input.removeAttribute('aria-invalid');
+        const on = new Set(chips.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => c.textContent.trim().toLowerCase()));
+        let n = 0;
+        rows().forEach((tr) => { const d = byId.get(idOf(tr)); const ok = !!d && on.has(d.status) && match(d); tr.hidden = !ok; n += ok; });
+        table.querySelector('.dd-data-table__empty-row').hidden = n > 0;
+        if (touched) range.innerHTML = n ? `<b>1–${n}</b> of ${n}` : '<b>0</b> of 0';
+        if (json && json.style.display !== 'none') renderJson();
+      };
+      const run = () => { touched = true; apply(); };
+
+      const STATUS = { ready: ['', 'ok'], failed: ['--bad', 'bad'], building: ['--warn', 'info'], 'rolled back': ['--warn', 'warn'], superseded: ['--warn', 'muted'] };
+      const replicas = (d) => {
+        if (d.replicas) { const ok = d.replicas.filter((r) => r.ready).length; return [ok === d.replicas.length ? 'ok' : 'warn', `${ok} of ${d.replicas.length} ready`]; }
+        return { ready: ['ok', '3 of 3 ready'], failed: ['bad', '0 of 3 ready'], building: ['info', 'rolling out'], 'rolled back': ['warn', 'back on the previous deploy'], superseded: ['muted', 'replaced by a newer deploy'] }[d.status];
+      };
+      const open = (tr) => {
+        const d = byId.get(idOf(tr));
+        if (!d) return;
+        rows().forEach((r) => {
+          r.classList.toggle('is-selected', r === tr);
+          const a = r.querySelector('[data-col="id"] a');
+          if (r === tr) a?.setAttribute('aria-current', 'true'); else a?.removeAttribute('aria-current');
+        });
+        const label = d.status[0].toUpperCase() + d.status.slice(1);
+        aside.querySelector('#explorer-doc-title').textContent = d._id;
+        aside.querySelector('.dd-page-header__eyebrow').textContent = `Document · ${data.indexOf(d) + 1} of 48,214`;
+        aside.querySelector('[aria-label="Copy _id"]').setAttribute('data-dd-copy', d._id);
+        const meta = aside.querySelectorAll('.dd-page-header__meta > li');
+        meta[0].innerHTML = `<span class="dd-page-header__status${STATUS[d.status][0] ? ` dd-page-header__status${STATUS[d.status][0]}` : ''}"></span>${label}`;
+        meta[1].querySelector('b').textContent = (d.finishedAt || d.createdAt).slice(11, 19);
+        const facts = {};
+        aside.querySelectorAll('.dd-description-list__item').forEach((it) => { facts[it.querySelector('dt').textContent.trim()] = it.querySelector('dd'); });
+        const [tone, reps] = replicas(d);
+        const secs = d.timings ? d.timings.rolloutMs : d.durationMs;
+        facts.Service.innerHTML = `<b>${esc(d.service)}</b>`;
+        facts.Region.textContent = `${d.region} · ${d.env}`;
+        facts.Commit.innerHTML = `<span class="dd-description-list__mono">${esc(d.commit.sha.slice(0, 7))}</span><span class="dd-description-list__muted">${esc(d.commit.message)}</span>`
+          + `<button class="dd-description-list__copy" type="button" data-dd-copy="${esc(d.commit.sha)}" aria-label="Copy commit SHA">${icon('copy')}${icon('check')}</button>`;
+        facts.Duration.innerHTML = secs == null ? '<span class="dd-description-list__muted">still building</span>'
+          : `<span class="dd-description-list__mono">${(secs / 1000).toFixed(1)} s</span>${d.timings ? `<span class="dd-description-list__muted">build ${(d.timings.buildMs / 1000).toFixed(1)} s</span>` : ''}`;
+        facts.Replicas.innerHTML = `<span class="dd-description-list__status" data-status="${tone}">${reps}</span>`;
+        const viewer = aside.querySelector('.dd-json-viewer');
+        viewer.setAttribute('aria-label', `Document ${d._id}`);
+        window.dd?.jsonViewer?.(viewer, d, { depth: 1, label: `Document ${d._id}` });
+      };
+
+      page.querySelector('.dd-pattern-explorer__query .dd-btn--primary').addEventListener('click', run);
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); run(); } });
+      input.addEventListener('input', () => { input.removeAttribute('aria-invalid'); if (!input.value) run(); });
+      page.addEventListener('dd:chip-toggle', run);
+      table.querySelector('tbody').addEventListener('click', (e) => {
+        const tr = e.target.closest('tr');
+        if (tr && !tr.classList.contains('dd-data-table__empty-row')) open(tr);
+      });
+      page.querySelector('[data-dd-segmented][aria-label="View"]').addEventListener('dd:change', (e) => {
+        const asJson = /json/i.test(e.detail.value);
+        if (asJson && !json) {
+          json = document.createElement('div');
+          json.className = 'dd-json-viewer';
+          json.style.setProperty('--dd-json-viewer-height', '560px');
+          table.after(json);
+        }
+        table.style.display = asJson ? 'none' : '';
+        if (json) json.style.display = asJson ? '' : 'none';
+        if (asJson) renderJson();
+      });
+      page.addEventListener('click', (e) => {
+        const btn = e.target.closest('.dd-page-header__actions .dd-btn');
+        if (!btn || btn.closest('.dd-pattern-explorer__detail')) return;
+        const label = btn.textContent.trim();
+        const say = (title, description, intent) => window.dd?.toast?.({ title, description, intent, from: btn });
+        if (label === 'Export') say('Exported deployments.json', `${results().length} documents, current query applied.`, 'neutral');
+        else if (label === 'Insert document') say('Document inserted', 'deploys.deployments · _id dpl_0c9e41Fa', 'ok');
+      });
+    })();
+  </script>
 
   <h2 id="anatomy">Anatomy</h2>
   <ol>

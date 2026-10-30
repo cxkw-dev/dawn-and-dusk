@@ -28,26 +28,26 @@ const fieldset = `
 </form>`;
 
 const twoCol = `
-<form class="dd-form" onsubmit="return false">
-  <div class="dd-form__grid">${field('fc-1', 'Service name', input('fc-1', 'value="image-resizer"'), `
-      <p class="dd-field__hint">Lowercase and dashes.</p>`)}${field('fc-2', 'Region', select('fc-2', ['eu-central-1 · Frankfurt', 'eu-west-1 · Dublin', 'us-east-1 · N. Virginia']))}${field('fc-3', 'Instance size', select('fc-3', ['Small · 1 vCPU', 'Medium · 2 vCPU', 'Large · 4 vCPU'], 1))}${field('fc-4', 'Port', input('fc-4', 'type="number" class="dd-input__control dd-num" value="8080"', '', '<span class="dd-input__unit">TCP</span>'))}${field('fc-5', 'Repository', input('fc-5', 'value="github.com/cxkw-dev/image-resizer"', `<span class="dd-input__unit dd-input__prefix">https://</span>`), '', 'dd-form__span')}${field('fc-6', 'Description', '<div class="dd-input dd-textarea"><textarea class="dd-input__control" id="fc-6" rows="2" placeholder="Resizes and caches images for edge-cache."></textarea></div>', '', 'dd-form__span')}
+<form class="dd-form" id="fc-form" data-dd-validate novalidate onsubmit="return false">
+  <div class="dd-form__grid">${field('fc-1', 'Service name', input('fc-1', 'value="image-resizer" required pattern="[a-z0-9]+(-[a-z0-9]+)*" data-dd-error="Use lowercase letters, numbers and single dashes."'), `
+      <p class="dd-field__hint">Lowercase and dashes.</p>`)}${field('fc-2', 'Region', select('fc-2', ['eu-central-1 · Frankfurt', 'eu-west-1 · Dublin', 'us-east-1 · N. Virginia']))}${field('fc-3', 'Instance size', select('fc-3', ['Small · 1 vCPU', 'Medium · 2 vCPU', 'Large · 4 vCPU'], 1))}${field('fc-4', 'Port', input('fc-4', 'type="number" class="dd-input__control dd-num" value="8080" required min="1" max="65535"', '', '<span class="dd-input__unit">TCP</span>'))}${field('fc-5', 'Repository', input('fc-5', 'value="github.com/cxkw-dev/image-resizer" required data-dd-error="Add the repository to deploy from."', `<span class="dd-input__unit dd-input__prefix">https://</span>`), '', 'dd-form__span')}${field('fc-6', 'Description', '<div class="dd-input dd-textarea"><textarea class="dd-input__control" id="fc-6" rows="2" placeholder="Resizes and caches images for edge-cache."></textarea></div>', '', 'dd-form__span')}
   </div>
   <div class="dd-form__footer">
-    <button class="dd-btn dd-btn--ghost" type="button">Cancel</button>
+    <button class="dd-btn dd-btn--ghost" type="reset">Cancel</button>
     <button class="dd-btn dd-btn--primary" type="submit">${i('plus')}<span>Create service</span></button>
   </div>
 </form>`;
 
 const footers = `
 <div class="dd-stack" style="--dd-gap: 30px">
-  <form class="dd-form" onsubmit="return false">
+  <form class="dd-form" id="ff-save" onsubmit="return false">
     <div class="dd-form__footer">
       <span class="dd-form__meta">${i('clock')}Last saved 2 minutes ago</span>
-      <button class="dd-btn dd-btn--ghost" type="button">Discard</button>
+      <button class="dd-btn dd-btn--ghost" type="reset">Discard</button>
       <button class="dd-btn dd-btn--primary" type="submit">Save changes</button>
     </div>
   </form>
-  <form class="dd-form" onsubmit="return false">
+  <form class="dd-form" id="ff-next" onsubmit="return false">
     <div class="dd-form__footer dd-form__footer--plain" style="justify-content: space-between">
       <button class="dd-btn dd-btn--ghost" type="button">${i('arrow-left')}<span>Back</span></button>
       <button class="dd-btn dd-btn--primary" type="submit"><span>Continue</span>${i('arrow-right')}</button>
@@ -56,7 +56,7 @@ const footers = `
 </div>`;
 
 const settings = `
-<form class="dd-form dd-form--divided" onsubmit="return false">
+<form class="dd-form dd-form--divided" id="st-form" onsubmit="return false">
   <section class="dd-form__section dd-form__section--aside" aria-labelledby="st-general">
     <div class="dd-form__head">
       <h3 class="dd-form__title" id="st-general">General</h3>
@@ -68,7 +68,7 @@ const settings = `
       <div class="dd-field">
         <label class="dd-field__label" for="st-3">About</label>
         <div class="dd-input dd-textarea"><textarea class="dd-input__control" id="st-3" rows="2" maxlength="160">Small tools for focused work: dockey-ui, insomnia, ai-focus and leetnode.</textarea></div>
-        <div class="dd-field__foot"><p class="dd-field__hint">Shown on the public status page.</p><span class="dd-field__counter">74 / 160</span></div>
+        <div class="dd-field__foot"><p class="dd-field__hint">Shown on the public status page.</p><span class="dd-field__counter">73 / 160</span></div>
       </div>
     </div>
   </section>
@@ -115,13 +115,40 @@ const settings = `
 
   <div class="dd-form__footer">
     <span class="dd-form__meta">${i('clock')}Last saved Oct 30, 09:41</span>
-    <button class="dd-btn dd-btn--ghost" type="button">Discard</button>
+    <button class="dd-btn dd-btn--ghost" type="reset">Discard</button>
     <button class="dd-btn dd-btn--primary" type="submit">Save changes</button>
   </div>
 </form>`;
 
+const sticky = `
+<div class="dd-scroll" role="region" aria-label="Alert settings (scrolls)" tabindex="0" style="max-height: 360px; overflow: auto">
+<form class="dd-form" id="fs-form" data-dd-validate novalidate onsubmit="return false">
+  <fieldset class="dd-form__section">
+    <legend class="dd-form__legend">Uptime alert</legend>
+    <p class="dd-form__desc">Checks auth-gateway every minute from three regions.</p>
+    <div class="dd-form__grid">${field('fs-1', 'Check URL', input('fs-1', 'type="url" value="https://auth.cxkw.dev/health" required'))}${field('fs-2', 'Interval', input('fs-2', 'type="number" class="dd-input__control dd-num" value="60" min="30" max="3600" required', '', '<span class="dd-input__unit">s</span>'))}${field('fs-3', 'Fail after', input('fs-3', 'type="number" class="dd-input__control dd-num" value="3" min="1" max="10" required', '', '<span class="dd-input__unit">checks</span>'))}${field('fs-4', 'Regions', select('fs-4', ['All three', 'eu-west-1 only', 'us-east-1 only']))}
+    </div>
+  </fieldset>
+  <fieldset class="dd-form__section">
+    <legend class="dd-form__legend">Who hears about it</legend>
+    <div class="dd-form__grid">${field('fs-5', 'Email', input('fs-5', 'type="email" value="oncall@cxkw.dev" required'))}${field('fs-6', 'Slack channel', input('fs-6', 'value="#incidents"'))}${field('fs-7', 'Escalate to', input('fs-7', 'value="Andy Nguyen"'))}${field('fs-8', 'After', input('fs-8', 'type="number" class="dd-input__control dd-num" value="15" min="5" max="120"', '', '<span class="dd-input__unit">min</span>'))}
+    </div>
+  </fieldset>
+  <fieldset class="dd-form__section">
+    <legend class="dd-form__legend">Status page</legend>
+    <div class="dd-form__grid">${field('fs-9', 'Component name', input('fs-9', 'value="Sign-in"'))}${field('fs-10', 'Public message', input('fs-10', 'value="We are looking into it."'))}
+    </div>
+  </fieldset>
+  <div class="dd-form__footer dd-form__footer--sticky">
+    <span class="dd-form__meta">${i('clock')}Last saved Oct 30, 09:41</span>
+    <button class="dd-btn dd-btn--ghost" type="reset">Discard</button>
+    <button class="dd-btn dd-btn--primary" type="submit">Save alert</button>
+  </div>
+</form>
+</div>`;
+
 const panels = `
-<form class="dd-form" onsubmit="return false">
+<form class="dd-form" id="fp-form" onsubmit="return false">
   <fieldset class="dd-form__section dd-form__section--panel">
     <legend class="dd-form__legend">API key</legend>
     <p class="dd-form__desc">For CI and the dd CLI. Shown once — store it somewhere safe.</p>
@@ -138,19 +165,26 @@ const panels = `
 
   <h2 id="two-column">Two-column form</h2>
   <p><code>.dd-form__grid</code> gives up to two equal columns and folds to one below about 30rem; <code>.dd-form__span</code> takes the full row. Tucked fields share one height, so rows line up.</p>
-  <Example code={twoCol} />
+  <Example description="Try it: clear the service name, or set the port above 65535, and press Create service. Errors clear as you fix them; Cancel resets." code={twoCol} />
+
+  <h3 id="validation">Validation on submit</h3>
+  <p>Add <code>data-dd-validate novalidate</code> to the form. On submit the browser’s own constraints (<code>required</code>, <code>type</code>, <code>pattern</code>, <code>min</code> / <code>max</code>) are checked and every failing control gets <code>aria-invalid</code> and an error under its box — the control’s <code>data-dd-error</code>, or the browser’s message — while a hint in that spot steps aside. Focus goes to the first problem and the submit stops before your own handler runs. Errors clear the moment the value is fixed; reset clears them all.</p>
 
   <h2 id="footer">Footer</h2>
   <p>Actions sit at the end of the form, primary last. A <code>.dd-form__meta</code> line on the left carries save state. <code>--sticky</code> pins it to the bottom of a long page; <code>--plain</code> drops the hairline. Keep it inside the <code>.dd-form</code>: when the form is 420px or narrower the meta line takes its own row and the buttons share the width evenly.</p>
-  <Example code={footers} />
+  <Example description="Try it: Save and Continue confirm with a toast; Discard resets the form." code={footers} />
+
+  <h3 id="sticky">Sticky footer</h3>
+  <p>Add <code>.dd-form__footer--sticky</code> and the action row pins to the bottom of the nearest scrolling box (the page, or a panel like this one) until the end of the form scrolls into view. It takes the page’s tone and blurs what scrolls under it.</p>
+  <Example description="Try it: scroll the box — the footer stays put. Empty the email or set the interval to 5 and press Save alert: focus jumps to the problem." code={sticky} />
 
   <h2 id="panel">Panel section</h2>
   <p><code>.dd-form__section--panel</code> sets a section on a tonal panel — for a small form inside a bigger page.</p>
-  <Example code={panels} />
+  <Example description="Try it: Create key confirms with a toast." code={panels} />
 
   <h2 id="settings">Settings page</h2>
   <p>A full example. <code>.dd-form--divided</code> draws a hairline between sections; <code>--aside</code> sections put their title and description on the left once the form is 640px wide (a container query, so it works in any column).</p>
-  <Example code={settings} />
+  <Example description="Try it: change a few things, then Discard puts them all back (the counter re-counts)." code={settings} />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -167,6 +201,23 @@ const panels = `
     ['.dd-form__choices · --rows', 'Even stack of checkboxes or switches; <code>--rows</code> adds hairlines.'],
     ['.dd-form__footer · --sticky · --plain', 'Action row. <code>.dd-form__meta</code> holds status on the left.'],
   ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute', 'What it does']} rows={[
+    ['form[data-dd-validate][novalidate]', 'Checks the form’s controls on submit with the browser’s constraints. Invalid ones get <code>aria-invalid="true"</code> and a <code>.dd-field__error</code> linked by <code>aria-describedby</code>; focus moves to the first, and the submit event stops before other listeners. Errors clear on input once valid, re-check on change, and all clear on reset.'],
+    ['data-dd-error="…"', 'On a control: the error to show instead of the browser’s message.'],
+    ['formnovalidate', 'On a submit button: submit without checking (e.g. “Save draft”).'],
+  ]} />
+  <script is:inline>
+    // Docs only: valid submits say what they would have done.
+    {
+    const done = { 'fc-form': ['Service created', 'image-resizer is building.'], 'fs-form': ['Alert saved', 'auth-gateway is being watched.'], 'ff-save': ['Changes saved'], 'ff-next': ['On to the next step'], 'st-form': ['Settings saved'], 'fp-form': ['Key created', 'Copy it now — it is shown once.'] };
+    document.addEventListener('submit', (e) => {
+      const msg = done[e.target.id];
+      if (msg) window.dd?.toast?.({ title: msg[0], description: msg[1], intent: 'ok' });
+    });
+    }
+  </script>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides

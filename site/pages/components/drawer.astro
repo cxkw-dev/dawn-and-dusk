@@ -42,7 +42,7 @@ const details = `
   </div>
   <footer class="dd-drawer__foot">
     <span class="dd-drawer__hint">esc to close</span>
-    <button class="dd-btn dd-btn--secondary" type="button">${i('refresh')}<span>Redeploy</span></button>
+    <button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-close="redeploy">${i('refresh')}<span>Redeploy</span></button>
     <button class="dd-btn dd-btn--primary" type="button" data-dd-dialog-close="promote">${i('arrow-up')}<span>Promote</span></button>
   </footer>
 </dialog>`;
@@ -106,15 +106,15 @@ const sizes = `
 ---
 <Docs title="Drawer" group="Overlays" lead="A full-height panel from the right for looking closer or editing, while the page stays in view behind the scrim. Built on the native dialog element.">
   <p>Every example opens the real drawer; under the trigger is a still of it, framed as if it covered a page.</p>
-  <Example title="Details" description="Eyebrow and title name the thing; meta, a key/value list and a log fill the body. The footer never scrolls away." code={details} />
+  <Example title="Details" description="Eyebrow and title name the thing; meta, a key/value list and a log fill the body. The footer never scrolls away. Try it: Esc, the scrim or × close it; Redeploy and Promote close with a value." code={details} />
 
   <h2 id="editing">Editing</h2>
   <p>Wrap the parts in <code>&lt;form method="dialog" class="dd-drawer__form"&gt;</code>. A destructive action sits apart on the left with <code>dd-drawer__start</code>. With unsaved input, set <code>data-dd-dialog-backdrop="static"</code> so a stray click on the scrim doesn’t discard it.</p>
-  <Example code={editing} />
+  <Example code={editing} description="Try it: a click on the scrim does nothing here (static backdrop) — use Cancel or Esc. Empty the value and press Save to see validation." />
 
   <h2 id="sizes">Sizes</h2>
   <p>Small (360px) for a quick look, medium (480px) by default, large (720px) for wide content. Under 480px every drawer fills the screen.</p>
-  <Example code={sizes} />
+  <Example code={sizes} description="Try it: on a phone-width window every size fills the screen." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -162,6 +162,17 @@ const sizes = `
     .drw-scrim { position: absolute; inset: 0; z-index: 0; background: var(--dd-overlay); }
     .drw-preview > dialog { position: absolute; z-index: 1; inset: 0 0 0 auto; height: 100%; max-height: 100%; width: min(var(--_w), 90%); animation: none; }
   </style>
+  <script is:inline>
+    // Docs only: react to each example's result the way an app would, so a visitor sees what returnValue carried.
+    document.addEventListener('close', (e) => {
+      const d = e.target, v = d instanceof HTMLDialogElement && d.closest('.ex-stage') ? d.returnValue : '';
+      const said = {
+        promote: 'Promoting deploy #4821', redeploy: 'Redeploying auth-gateway',
+        save: () => `${d.querySelector('[name="key"]')?.value || 'Variable'} saved`, delete: 'Variable deleted',
+      }[v];
+      if (said && window.dd?.toast) dd.toast({ title: typeof said === 'function' ? said() : said, description: `returnValue "${v}"`, intent: v === 'delete' ? 'neutral' : 'ok' });
+    }, true);
+  </script>
   <script is:inline>
     // Docs only: a still of the example's drawer (examples with a single drawer), under its trigger.
     document.querySelectorAll('.ex-stage').forEach((stage) => {

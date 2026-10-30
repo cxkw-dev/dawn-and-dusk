@@ -107,7 +107,7 @@ const envs: Opt[] = [
   { value: 'development', label: 'Development', icon: 'code', desc: 'Local tunnels' },
 ];
 const customClosed = `
-<form class="dd-form" onsubmit="return false">
+<form class="dd-form" id="se-form" onsubmit="return false">
 <div class="dd-form__grid">
   <div class="dd-field">
     <span class="dd-field__label" id="se-label">Environment</span>
@@ -144,6 +144,27 @@ const customClosed = `
   <button class="dd-btn dd-btn--primary" type="submit">Save alert rule</button>
 </div>
 </form>`;
+
+const events: Opt[] = [
+  { value: 'deploy-failed', label: 'Failed deploys', icon: 'error', selected: true },
+  { value: 'rollback', label: 'Rollbacks', icon: 'refresh', selected: true },
+  { value: 'deploy-ok', label: 'Successful deploys', icon: 'success' },
+  { value: 'spend', label: 'Spend alerts', icon: 'chart' },
+  { value: 'incident', label: 'Incidents', icon: 'alert', desc: 'Always on for owners', disabled: true },
+];
+const multiple = `
+<div class="dd-field" style="max-width: 340px">
+  <span class="dd-field__label" id="sm-label">Notify me about</span>
+  <div class="dd-select-menu" data-dd-select>
+    <button class="dd-input dd-select" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="sm-label sm-value">
+      <span class="dd-input__control" id="sm-value" data-dd-select-value data-dd-placeholder="Nothing">Failed deploys, Rollbacks</span>
+      ${chev}
+    </button>
+    <ul class="dd-listbox" role="listbox" tabindex="-1" aria-labelledby="sm-label" aria-multiselectable="true" hidden>${events.map((o, n) => option(o, `sm-${n}`)).join('')}
+    </ul>
+    <input type="hidden" name="notify" value="deploy-failed,rollback">
+  </div>
+</div>`;
 
 const toolbar = `
 <div class="dd-stack" style="--dd-gap: 10px">
@@ -186,15 +207,19 @@ const toolbar = `
 
   <h2 id="custom">Custom select menu</h2>
   <p>A button that opens a <code>.dd-listbox</code>. Options can carry an icon, a colour swatch, a description and mono metadata; the chosen one shows a check and is copied into the trigger.</p>
-  <Example code={customClosed} />
+  <Example description="Try it: open Environment and pick with the mouse, or focus Owner and press ↓, type “j”, then Enter. Save shows what was chosen." code={customClosed} />
 
   <h3 id="open">Open, with groups and metadata</h3>
   <p>Group labels use the menu’s small caps. Disabled options stay visible so people learn why they can’t pick them.</p>
-  <Example code={customOpen} minHeight="520px" />
+  <Example description="Rendered open to show the anatomy; it works like the others. Try it: End skips the disabled Singapore option; type “e” twice to step through the eu- regions." code={customOpen} minHeight="520px" />
+
+  <h3 id="multiple">Multiple</h3>
+  <p>Add <code>aria-multiselectable="true"</code> to the listbox. Choosing toggles an option and keeps the list open; the trigger lists what is chosen (or its <code>data-dd-placeholder</code> when nothing is), and a hidden input gets the values joined by commas. Past a handful of options, or when people type to find them, use a multi-select combobox instead.</p>
+  <Example description="Try it: open the list, toggle a few with Space or a click, then Esc." code={multiple} minHeight="320px" />
 
   <h2 id="toolbar">In a toolbar</h2>
   <p>Without a field the trigger is button height; size it to its content with <code>width: auto</code>. The list floats over the content below.</p>
-  <Example code={toolbar} />
+  <Example description="Try it: pick a sort order; the list floats over the table." code={toolbar} />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -212,14 +237,23 @@ const toolbar = `
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <p>Add <code>data-dd-select</code> to the <code>.dd-select-menu</code>. The script wires <code>aria-expanded</code>, <code>aria-controls</code> and <code>aria-activedescendant</code>, writes the chosen label into <code>[data-dd-select-value]</code>, sets an optional hidden input, and fires a bubbling <code>dd-select</code> event with <code>{'{ value, label, option }'}</code>.</p>
+  <p>Add <code>data-dd-select</code> to the <code>.dd-select-menu</code>. The script wires <code>aria-expanded</code>, <code>aria-controls</code> and <code>aria-activedescendant</code>, writes the chosen label into <code>[data-dd-select-value]</code>, sets an optional hidden input, and fires a bubbling <code>dd-select</code> event with <code>{'{ value, label, option, values, selected }'}</code> — <code>values</code> is every chosen value (one, unless the list is multiple) and <code>selected</code> says whether the option was turned on or off.</p>
   <ClassTable head={['Key', 'What it does']} rows={[
     ['Enter · Space · ↓ · ↑', 'On the trigger: open the list on the selected option (↑ opens on the last).'],
-    ['↑ ↓ · Home · End', 'Move through enabled options.'],
-    ['a–z', 'Type to jump to the first option that starts with the letters.'],
-    ['Enter · Space', 'Choose the active option and close.'],
+    ['Home · End', 'On the trigger: open on the first or last option.'],
+    ['↑ ↓ · Home · End', 'Move through enabled options; disabled ones are skipped.'],
+    ['a–z', 'Type to jump to the option that starts with the letters; the same letter again moves to the next one. Typing on the closed trigger opens it there.'],
+    ['Enter · Space', 'Choose the active option and close. In a multiple list: toggle it and stay open.'],
     ['Esc · Tab', 'Close (Esc returns focus to the trigger). Clicking outside also closes.'],
   ]} />
+
+  <script is:inline>
+    // Docs only: the alert-rule form says what it would save.
+    document.getElementById('se-form')?.addEventListener('submit', () => {
+      const pick = (id) => document.getElementById(id)?.textContent.trim();
+      window.dd?.toast?.({ title: 'Alert rule saved', description: `${pick('se-value')} · owner: ${pick('sp-value')}`, intent: 'ok' });
+    });
+  </script>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides
