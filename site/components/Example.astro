@@ -25,7 +25,7 @@ const html = code.replace(/^\n+|\s+$/g, '');
       <Fragment set:html={html} />
     </div>
     <div class="ex-bar">
-      <button class="ex-btn" type="button" data-ex-theme>☾ View in dusk</button>
+      <button class="ex-btn" type="button" data-ex-theme><span class="ex-t-dusk">☾ View in dusk</span><span class="ex-t-dawn">☀ View in dawn</span></button>
       <button class="ex-btn" type="button" data-ex-code aria-expanded="false">‹/› Code</button>
       <button class="ex-btn" type="button" data-dd-copy={html}><span class="ex-copy">Copy HTML</span><span class="ex-copied">Copied ✓</span></button>
     </div>

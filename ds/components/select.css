@@ -21,7 +21,7 @@
 .dd-select[aria-expanded='true'] > .dd-select__chevron > .dd-icon { transform: rotate(180deg); }
 .dd-select__chevron > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-select .dd-select__placeholder,
-.dd-select > select.dd-input__control:enabled:has(> option:checked:disabled) { color: var(--dd-faint); }
+.dd-select > select.dd-input__control:enabled:has(> option:checked:disabled) { color: var(--dd-quiet); }
 .dd-select > select.dd-input__control > :is(option, optgroup) { color: var(--dd-text); }
 /* Button trigger: show a leading icon or swatch from the chosen option inline with the value. */
 button.dd-select { appearance: none; font: inherit; font-size: var(--dd-fs-sm); }
@@ -63,9 +63,14 @@ button.dd-select:focus-visible { outline: 0; }
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-listbox__option[hidden] { display: none; }
+/* One highlight at a time: the scripts make the hovered option the active one, so once an option is active
+   (keyboard or pointer) a resting pointer elsewhere doesn't light a second row. */
 .dd-listbox__option:hover, .dd-listbox__option.is-active { background: var(--dd-float-hover); }
+.dd-listbox:has(.is-active) > .dd-listbox__option:hover:not(.is-active) { background: none; }
 .dd-listbox__option[aria-selected='true'] { font-weight: 600; }
-.dd-listbox__option[aria-disabled='true'] { color: var(--dd-faint); cursor: not-allowed; }
+/* Disabled options stay readable (their description usually says why) but drop a step and never highlight. */
+.dd-listbox__option[aria-disabled='true'] { color: var(--dd-quiet); cursor: not-allowed; }
+.dd-listbox__option[aria-disabled='true'] :is(.dd-listbox__desc, .dd-listbox__meta, .dd-listbox__icon) { color: var(--dd-quiet); }
 .dd-listbox__option[aria-disabled='true']:hover { background: none; }
 .dd-listbox__icon { flex: none; color: var(--dd-muted); }
 .dd-listbox__swatch { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--dd-chip, var(--dd-muted)); }

@@ -32,7 +32,8 @@
   background: transparent; color: var(--dd-muted); font: inherit; font-size: var(--dd-fs-xs); font-weight: 500; cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-json-viewer__btn:hover { background: var(--dd-surface-2); color: var(--dd-text); }
+.dd-json-viewer__btn:hover { background: var(--dd-wash); color: var(--dd-text); }
+.dd-json-viewer__btn:active { background: var(--dd-wash-strong); }
 .dd-json-viewer__btn:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-json-viewer__btn--icon { padding: 0; }
 .dd-json-viewer__btn--icon > .dd-icon { grid-area: 1 / 1; }
@@ -61,8 +62,9 @@
   padding: 0 calc(var(--dd-u) * 1.5) 0 0; border-radius: 4px;
 }
 .dd-json-viewer__row { cursor: default; transition: background-color var(--dd-dur-fast) var(--dd-ease); }
-.dd-json-viewer__row:hover { background: var(--dd-surface-2); }
-.dd-json-viewer__node[aria-selected='true'] > .dd-json-viewer__row { background: color-mix(in oklab, var(--dd-accent) 13%, transparent); }
+.dd-json-viewer__row:hover { background: var(--dd-wash); }
+/* Selected is a clear step past hover (--dd-wash) in both themes. */
+.dd-json-viewer__node[aria-selected='true'] > .dd-json-viewer__row { background: color-mix(in oklab, var(--dd-accent) 19%, transparent); }
 .dd-json-viewer__node:focus-visible > .dd-json-viewer__row { outline: 2px solid var(--dd-ring); outline-offset: -2px; }
 .dd-json-viewer__close { padding-left: 18px; color: var(--dd-muted); }
 
@@ -70,7 +72,7 @@
   appearance: none; flex: none; align-self: center; display: inline-grid; place-items: center; width: 18px; height: 18px;
   padding: 0; border: 0; border-radius: 3px; background: none; color: var(--dd-muted); cursor: pointer;
 }
-.dd-json-viewer__toggle:hover { color: var(--dd-text); background: var(--dd-surface-3); }
+.dd-json-viewer__toggle:hover { color: var(--dd-text); background: var(--dd-wash-strong); }
 .dd-json-viewer__toggle::before {
   content: ''; width: 5px; height: 5px; margin-left: -2px; border: solid currentColor; border-width: 0 1.5px 1.5px 0;
   transform: rotate(-45deg); transition: transform var(--dd-dur-fast) var(--dd-ease);

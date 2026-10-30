@@ -93,7 +93,7 @@ const invalid = `
     ['.dd-dropzone--compact · __text', 'One-row zone; wrap the title and meta in <code>__text</code>.'],
     ['.is-dragover · .is-invalid', 'Drag-hover state (added by the script) and error state.'],
     ['.dd-file-list', 'List of files (<code>&lt;ul&gt;</code>).'],
-    ['.dd-file', 'One file row. <code>.is-done</code>, <code>.is-error</code>, <code>.is-uploading</code>.'],
+    ['.dd-file', 'One file row. <code>.is-done</code>, <code>.is-error</code>, <code>.is-uploading</code>; <code>.is-new</code> slides a freshly added row in (the script sets it).'],
     ['.dd-file__icon', 'Type tile; <code>data-ext</code> adds a badge. Tones: <code>.is-image</code>, <code>.is-doc</code>, <code>.is-data</code>, <code>.is-code</code>.'],
     ['.dd-file__body · __name · __meta · __status', 'Name (truncates), mono meta items separated by dots, and the outcome.'],
     ['.dd-file__progress', 'A native <code>&lt;progress&gt;</code>; turns red in an error row.'],
@@ -104,7 +104,7 @@ const invalid = `
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['data-dd-dropzone', 'Adds <code>.is-dragover</code> while files hover; dropped files go to the inner input, which fires <code>change</code>.'],
     ['data-dd-dropzone="#list"', 'Also appends a <code>.dd-file</code> row per chosen file to that list.'],
-    ['data-dd-file-remove', 'On a button in a row: removes the row, moves focus to the next remove button, fires <code>dd-file-remove</code>.'],
+    ['data-dd-file-remove', 'On a button in a row: removes the row, moves focus to the next remove button (or back to the dropzone when the list is empty), fires <code>dd-file-remove</code>.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

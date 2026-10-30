@@ -4,8 +4,10 @@
    - Filter: <button class="dd-chip dd-chip--filter" aria-pressed="false"> toggles aria-pressed on click and fires
      "dd:chip-toggle" (detail.pressed).
    - Input: .dd-chip-input with a .dd-chip-input__field. Enter or a comma turns the text into a chip (colour picked
-     from the Color set by the text, so a tag keeps its colour); Backspace in an empty field removes the last chip.
-     The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x). */
+     from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes instead of being
+     added twice; Backspace in an empty field removes the last chip.
+     The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x).
+   When a chip goes, the chips after it glide into its place (not under reduced motion). */
 (() => {
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const valueOf = (chip) => chip.dataset.value || chip.textContent.trim();
@@ -16,13 +18,34 @@
     if (!chip || chip.classList.contains('is-leaving')) return;
     if (!chip.dispatchEvent(new CustomEvent('dd:chip-remove', { bubbles: true, cancelable: true, detail: { value: valueOf(chip) } }))) return;
     const box = chip.closest('.dd-chip-input');
+    const parent = chip.parentElement;
     if (chip.contains(document.activeElement)) {
-      const peers = [...chip.parentElement.querySelectorAll(':scope > .dd-chip .dd-chip__remove')];
+      const peers = [...parent.querySelectorAll(':scope > .dd-chip:not(.is-leaving) .dd-chip__remove')];
       const i = peers.indexOf(chip.querySelector('.dd-chip__remove'));
       const next = peers[i + 1] || peers[i - 1] || box?.querySelector('.dd-chip-input__field');
-      next?.focus();
+      if (next) next.focus();
+      else {
+        // Last chip in a plain group: keep focus nearby instead of dropping it on <body>.
+        if (!parent.hasAttribute('tabindex')) {
+          parent.setAttribute('tabindex', '-1');
+          parent.addEventListener('blur', () => parent.removeAttribute('tabindex'), { once: true });
+        }
+        parent.focus({ preventScroll: true });
+      }
     }
-    const gone = () => { chip.remove(); changed(box); };
+    const gone = () => {
+      // The chips after this one glide into the space it leaves (FLIP), even across a wrapped line.
+      const rest = still() ? [] : [...parent.children].filter((c) => c !== chip);
+      const before = rest.map((c) => c.getBoundingClientRect());
+      chip.remove();
+      rest.forEach((c, n) => {
+        const r = c.getBoundingClientRect();
+        const dx = before[n].left - r.left;
+        const dy = before[n].top - r.top;
+        if (Math.abs(dx) + Math.abs(dy) > 0.5) c.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 160, easing: 'cubic-bezier(.45, 0, .55, 1)' });
+      });
+      changed(box);
+    };
     if (still()) return gone();
     chip.classList.add('is-leaving');
     setTimeout(gone, 170);
@@ -68,7 +91,13 @@
       const text = field.value.replace(/,/g, '').trim();
       e.preventDefault();
       if (!text) return;
-      if (!valuesIn(box).some((v) => v.toLowerCase() === text.toLowerCase())) {
+      const twin = [...box.querySelectorAll('.dd-chip:not(.is-leaving)')].find((c) => valueOf(c).toLowerCase() === text.toLowerCase());
+      if (twin) {
+        twin.classList.remove('is-duplicate');
+        void twin.offsetWidth;
+        twin.classList.add('is-duplicate');
+        twin.addEventListener('animationend', () => twin.classList.remove('is-duplicate'), { once: true });
+      } else {
         field.before(create(text));
         changed(box);
       }

@@ -43,7 +43,15 @@
     let x, y, side = s.side;
     if (side === 'right') {
       x = a.right - 2; y = a.top - GAP * 1.5;
-      if (x + w > vw - pad) { x = a.left - w + 2; side = 'left'; }
+      if (x + w > vw - pad) {
+        if (a.left - w + 2 >= pad) { x = a.left - w + 2; side = 'left'; }
+        else {
+          // No room on either side (phones): drop the submenu just under its item, nudged in, so the item that
+          // opened it stays visible instead of being covered.
+          x = a.left + GAP * 4; y = a.bottom - 2; side = 'bottom';
+          if (y + h > vh - pad && a.top - h + 2 >= pad) { y = a.top - h + 2; side = 'top'; }
+        }
+      }
     } else {
       x = s.align === 'end' ? a.right - w : a.left;
       const roomBelow = vh - pad - (a.bottom + gap), roomAbove = a.top - gap - pad;

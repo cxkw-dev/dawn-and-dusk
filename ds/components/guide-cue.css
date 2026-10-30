@@ -22,6 +22,20 @@
 .dd-guide-cue:popover-open { animation: dd-guide-cue-in var(--dd-dur) var(--dd-ease); }
 .dd-guide-cue:focus { outline: none; }
 .dd-guide-cue:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+/* Controls inside take a focus ring in the cue's own ink, so it shows on the dark dawn card as well as in dusk. */
+:is(.dd-guide-cue__actions, .dd-guide-cue__close) { --dd-ring: color-mix(in oklab, var(--dd-cue-fg) 60%, transparent); }
+
+/* Close (×): ends the tour from any step, for pointer users who don't reach for Esc. */
+.dd-guide-cue__close {
+  appearance: none; position: absolute; top: calc(var(--dd-u) * 2.5); right: calc(var(--dd-u) * 2.5);
+  display: inline-grid; place-items: center; width: calc(var(--dd-u) * 5); height: calc(var(--dd-u) * 5);
+  padding: 0; border: 0; border-radius: var(--dd-r-ctl); background: none; color: var(--dd-cue-muted); cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-guide-cue__close:hover { color: var(--dd-cue-fg); background: color-mix(in oklab, var(--dd-cue-fg) 12%, transparent); }
+.dd-guide-cue__close:active { background: color-mix(in oklab, var(--dd-cue-fg) 20%, transparent); }
+.dd-guide-cue__close:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
+.dd-guide-cue__close > .dd-icon { width: 1.05em; height: 1.05em; }
 
 .dd-guide-cue__step {
   display: flex; align-items: center; gap: calc(var(--dd-u) * 2); margin: 0 0 calc(var(--dd-u) * 2);
@@ -47,6 +61,7 @@
 /* Quiet actions inherit the inverted colours. */
 .dd-guide-cue .dd-btn--ghost { color: var(--dd-cue-muted); margin-left: calc(var(--dd-u) * -2); }
 .dd-guide-cue .dd-btn--ghost:hover { color: var(--dd-cue-fg); background: color-mix(in oklab, var(--dd-cue-fg) 12%, transparent); }
+.dd-guide-cue .dd-btn--ghost:active { background: color-mix(in oklab, var(--dd-cue-fg) 20%, transparent); }
 
 .dd-guide-cue__arrow {
   position: absolute; width: 12px; height: 12px; border-radius: 2px; background: inherit; rotate: 45deg; pointer-events: none;

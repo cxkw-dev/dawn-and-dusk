@@ -28,5 +28,7 @@
     try { localStorage.setItem(KEY, next); } catch { /* storage unavailable */ }
     sync();
   });
-  document.addEventListener('DOMContentLoaded', sync);
+  // The script may load deferred or late: sync now if the DOM is already there. Follow OS changes while nothing is stored.
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sync); else sync();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', sync);
 })();

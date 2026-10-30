@@ -1,6 +1,15 @@
 /* Accordion — native <details>/<summary>, no JS. Sections stack with hairlines between them; the chevron turns
    on open, and the body eases open where the browser supports animating to auto. Group items with the native
    name="…" attribute so only one stays open. Variants: --boxed (tonal fill) and .dd-expand (an expandable card). */
+/* Hover tone for the filled variants (boxed items, expand cards): a step further from the page, never toward it. In dusk
+   the page's grain reads lighter than --dd-surface, so --dd-surface-2 would land on the page tone and the box would
+   vanish — there the step goes darker. Dawn keeps --dd-surface-2. */
+:root, [data-theme="dawn"] { --dd-accordion-hover: var(--dd-surface-2); }
+[data-theme="dusk"] { --dd-accordion-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --dd-accordion-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+}
+
 .dd-accordion { display: flex; flex-direction: column; min-width: 0; interpolate-size: allow-keywords; }
 .dd-accordion__item { border-bottom: 1px solid color-mix(in oklab, var(--dd-text) 8%, transparent); }
 .dd-accordion__item:first-child { border-top: 1px solid color-mix(in oklab, var(--dd-text) 8%, transparent); }
@@ -20,10 +29,12 @@
   padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 1); font-size: var(--dd-fs-sm); font-weight: 600; color: var(--dd-text);
 }
 .dd-accordion__summary:hover { color: var(--dd-text); background: color-mix(in oklab, var(--dd-text) 4%, transparent); }
+.dd-accordion__summary:active { background: var(--dd-wash); }
 .dd-accordion__summary > .dd-icon:first-child { color: var(--dd-muted); }
 .dd-accordion__title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .dd-accordion__meta { flex: none; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 400; color: var(--dd-muted); }
-.dd-accordion__chevron, .dd-expand__chevron { flex: none; color: var(--dd-muted); transition: transform var(--dd-dur) var(--dd-ease); }
+.dd-accordion__chevron, .dd-expand__chevron { flex: none; color: var(--dd-muted); transition: transform var(--dd-dur) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease); }
+summary:hover :is(.dd-accordion__chevron, .dd-expand__chevron) { color: var(--dd-text); }
 details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { transform: rotate(180deg); }
 
 .dd-accordion__body {
@@ -47,16 +58,20 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
 .dd-accordion--boxed { gap: calc(var(--dd-u) * 1); }
 .dd-accordion--boxed .dd-accordion__item { border: 0; border-radius: var(--dd-r-box); background: var(--dd-surface);
   transition: background-color var(--dd-dur-fast) var(--dd-ease); }
-.dd-accordion--boxed .dd-accordion__item:hover:not([open]) { background: var(--dd-surface-2); }
-.dd-accordion--boxed .dd-accordion__summary { padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 4); }
-.dd-accordion--boxed .dd-accordion__summary:hover { background: none; }
+.dd-accordion--boxed .dd-accordion__item:hover:not([open]) { background: var(--dd-accordion-hover); }
+.dd-accordion--boxed .dd-accordion__summary { padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 4); border-radius: var(--dd-r-box); }
+.dd-accordion--boxed .dd-accordion__item:not([open]) > .dd-accordion__summary { background: none; }
+/* An open item keeps its fill; its summary takes a wash on hover so the row still reads as the way to close it. */
+.dd-accordion--boxed .dd-accordion__item[open] > .dd-accordion__summary:hover { background: var(--dd-wash); }
 .dd-accordion--boxed .dd-accordion__body { padding: 0 calc(var(--dd-u) * 4) calc(var(--dd-u) * 4); }
 .dd-accordion--boxed.dd-accordion--icons .dd-accordion__body { padding-left: calc(var(--dd-u) * 4 + 1.15em + var(--dd-u) * 2.5); }
 
 /* Expandable card: a card whose summary is a full row (title, meta, status) and whose body holds the detail. */
 .dd-expand { min-width: 0; border-radius: var(--dd-r-box); background: var(--dd-surface); color: var(--dd-text); interpolate-size: allow-keywords;
   transition: background-color var(--dd-dur-fast) var(--dd-ease); }
-.dd-expand:not([open]):hover { background: var(--dd-surface-2); }
+.dd-expand:not([open]):hover { background: var(--dd-accordion-hover); }
+.dd-expand[open] > .dd-expand__summary:hover { background: var(--dd-wash); }
+.dd-expand > .dd-expand__summary:active { background: var(--dd-wash-strong); }
 .dd-expand__summary { flex-wrap: wrap; row-gap: calc(var(--dd-u) * 1); padding: calc(var(--dd-u) * 3.5) calc(var(--dd-u) * 4); border-radius: var(--dd-r-box); }
 .dd-expand__lead { display: inline-grid; place-items: center; flex: none; width: 2.2em; height: 2.2em; border-radius: var(--dd-r-ctl);
   background: var(--dd-surface-2); color: var(--dd-muted); font-size: var(--dd-fs-sm); }

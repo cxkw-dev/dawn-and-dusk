@@ -3,7 +3,9 @@
      data-dd-tooltip-placement  top (default) · bottom · left · right, optionally -start / -end. Flips when it doesn't fit.
      data-dd-tooltip-kbd        a key hint, keys separated by spaces: "⌘ K" → <kbd>⌘</kbd><kbd>K</kbd>
    One shared .dd-tooltip (role="tooltip") lives at the end of <body>; while it is open the trigger points at it with
-   aria-describedby. It takes the dawn/dusk theme of its trigger. Pointer can move onto the tooltip without losing it. */
+   aria-describedby. It takes the dawn/dusk theme of its trigger. Pointer can move onto the tooltip without losing it.
+   Where the browser supports it the tooltip is a manual popover, so it shows in the top layer — above open dialogs,
+   drawers and popovers whose buttons it describes. */
 (() => {
   const DELAY = 450;
   const WARM = 500;
@@ -12,6 +14,8 @@
   let showTimer = 0;
   let hideTimer = 0;
   let lastHidden = 0;
+  let closeTimer = 0;
+  const topLayer = typeof HTMLElement !== 'undefined' && 'showPopover' in HTMLElement.prototype;
 
   // Place a fixed element beside an anchor: flip to the other side if it doesn't fit, keep it 8px inside the
   // viewport and aim --dd-arrow-x / --dd-arrow-y at the anchor's centre.
@@ -50,6 +54,7 @@
     tip.className = 'dd-tooltip';
     tip.id = 'dd-tooltip';
     tip.setAttribute('role', 'tooltip');
+    if (topLayer) tip.setAttribute('popover', 'manual');
     tip.addEventListener('pointerenter', () => clearTimeout(hideTimer));
     tip.addEventListener('pointerleave', () => hideSoon());
     document.body.append(tip);
@@ -74,8 +79,12 @@
     const scope = el.closest('[data-theme]');
     if (scope && scope !== document.documentElement) t.dataset.theme = scope.dataset.theme;
     else delete t.dataset.theme;
-    t.classList.remove('is-open');
+    clearTimeout(closeTimer);
+    if (topLayer && !t.matches(':popover-open')) t.showPopover();
+    const wasOpen = t.classList.contains('is-open');
     place(t, el, el.getAttribute('data-dd-tooltip-placement') || 'top');
+    // Opening from closed: commit the new side first, so the fade slides in from the side it ends up on.
+    if (!wasOpen) void t.offsetWidth;
     t.classList.add('is-open');
     current = el;
     if (el.getAttribute('aria-label') !== text) {
@@ -98,6 +107,9 @@
     current = null;
     tip?.classList.remove('is-open');
     lastHidden = Date.now();
+    // Leave the top layer once the fade-out has finished.
+    clearTimeout(closeTimer);
+    if (topLayer && tip) closeTimer = setTimeout(() => { if (!tip.classList.contains('is-open') && tip.matches(':popover-open')) tip.hidePopover(); }, 200);
   };
   const hideSoon = () => { clearTimeout(hideTimer); hideTimer = setTimeout(hide, 120); };
 

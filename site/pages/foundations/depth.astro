@@ -9,15 +9,15 @@ const radii = `
   <div class="dd-stack" style="--dd-gap: 6px"><button class="dd-btn dd-btn--primary">Control</button><code class="dd-caption dd-mono">--dd-r-ctl · ${base['r-ctl']}</code></div>
   <div class="dd-stack" style="--dd-gap: 6px"><div style="width: 140px; height: 80px; background: var(--dd-surface); border-radius: var(--dd-r-box)"></div><code class="dd-caption dd-mono">--dd-r-box · ${base['r-box']}</code></div>
   <div class="dd-stack" style="--dd-gap: 6px"><div style="width: 180px; height: 110px; background: var(--dd-surface); border-radius: var(--dd-r-lg)"></div><code class="dd-caption dd-mono">--dd-r-lg · ${base['r-lg']}</code></div>
-  <div class="dd-stack" style="--dd-gap: 6px"><span style="display:inline-block; padding: 6px 14px; background: var(--dd-surface-2); border-radius: var(--dd-r-pill)">Pill</span><code class="dd-caption dd-mono">--dd-r-pill</code></div>
+  <div class="dd-stack" style="--dd-gap: 6px"><span style="display:inline-block; padding: 6px 14px; background: var(--dd-surface); border-radius: var(--dd-r-pill)">Pill</span><code class="dd-caption dd-mono">--dd-r-pill</code></div>
 </div>`;
 
 const float = `
 <div style="position: relative; height: 200px; background: var(--dd-surface); border-radius: var(--dd-r-box); padding: var(--dd-space-5)">
   <p class="dd-small dd-muted">A card on the page — no shadow, no border.</p>
-  <div style="position: absolute; right: 28px; bottom: 24px; width: 230px; padding: var(--dd-space-3); background: var(--dd-bg); border-radius: var(--dd-r-box); box-shadow: var(--dd-shadow-float)">
+  <div style="position: absolute; right: 28px; bottom: 24px; width: min(270px, calc(100% - 40px)); padding: var(--dd-space-3); background: var(--dd-float-bg); border-radius: var(--dd-r-box); box-shadow: var(--dd-shadow-float)">
     <p class="dd-small" style="margin:0"><b>Floating layer</b></p>
-    <p class="dd-caption" style="margin:4px 0 0">Menus, popovers, toasts and dialogs use <code>--dd-shadow-float</code>.</p>
+    <p class="dd-caption" style="margin:4px 0 0">Menus, popovers, toasts and dialogs sit on <code>--dd-float-bg</code> with <code>--dd-shadow-float</code>.</p>
   </div>
 </div>`;
 ---
@@ -26,12 +26,19 @@ const float = `
   <Example code={radii} />
 
   <h2 id="layers">Layers</h2>
-  <p>Each step mixes a little more text colour into the page. In dawn that makes containers slightly darker than the page; in dusk, slightly lighter. Hierarchy reads without a single border.</p>
+  <p>Each step mixes a little more text colour into the page, so hierarchy reads without a single border. In dawn, containers sit a shade darker than the page. In dusk the film grain lifts the page to about the tone of <code>--dd-surface-2</code>, so containers read a shade <em>darker</em> than the page there too.</p>
   <div class="doc-layers">
-    <div style="background: var(--dd-bg)"><b>bg</b><code>--dd-bg</code><span class="dd-caption">Page</span></div>
+    <div class="doc-layer-page"><b>bg</b><code>--dd-bg</code><span class="dd-caption">Page, with the grain</span></div>
     <div style="background: var(--dd-surface)"><b>surface</b><code>--dd-surface</code><span class="dd-caption">Cards, inputs, sidebars</span></div>
-    <div style="background: var(--dd-surface-2)"><b>surface-2</b><code>--dd-surface-2</code><span class="dd-caption">Hover, inset, secondary</span></div>
+    <div style="background: var(--dd-surface-2)"><b>surface-2</b><code>--dd-surface-2</code><span class="dd-caption">Inset, secondary — inside a surface</span></div>
     <div style="background: var(--dd-surface-3)"><b>surface-3</b><code>--dd-surface-3</code><span class="dd-caption">Pressed, active</span></div>
+  </div>
+  <p>Hover and pressed fills that sit straight on the page can’t borrow a surface step — at dusk <code>--dd-surface-2</code> is the page. They use a wash: a translucent step toward the text colour that shows on any tone, shown here on the page and on a surface.</p>
+  <div class="doc-layers">
+    <div class="doc-layer-page" style="background-image: linear-gradient(var(--dd-wash), var(--dd-wash)), var(--dd-grain)"><b>wash</b><code>--dd-wash</code><span class="dd-caption">Hover, on the page</span></div>
+    <div class="doc-layer-page" style="background-image: linear-gradient(var(--dd-wash-strong), var(--dd-wash-strong)), var(--dd-grain)"><b>wash-strong</b><code>--dd-wash-strong</code><span class="dd-caption">Pressed, selected, on the page</span></div>
+    <div style="background: var(--dd-surface) linear-gradient(var(--dd-wash), var(--dd-wash))"><b>surface + wash</b><code>--dd-wash</code><span class="dd-caption">Hover, on a card</span></div>
+    <div style="background: var(--dd-surface) linear-gradient(var(--dd-wash-strong), var(--dd-wash-strong))"><b>surface + wash-strong</b><code>--dd-wash-strong</code><span class="dd-caption">Pressed, on a card</span></div>
   </div>
 
   <h2 id="floating">Floating layers</h2>
@@ -42,5 +49,5 @@ const float = `
   <p>The page carries a fine film grain (<code>--dd-grain</code>), applied by <code>base.css</code> to <code>&lt;body&gt;</code>. Solid surfaces cover it, which is what makes cards read as a shade apart — especially at dusk.</p>
 
   <h2 id="guidelines">Guidelines</h2>
-  <Guides do={['Use surface steps for grouping and hover.', 'Reserve <code>--dd-shadow-float</code> for layers that sit above content.']} dont={['Don’t add borders to cards or alerts.', 'Don’t stack more than three tonal steps in one area.']} />
+  <Guides do={['Use surface steps for grouping; washes for hover and pressed fills.', 'Reserve <code>--dd-shadow-float</code> for layers that sit above content.']} dont={['Don’t add borders to cards or alerts.', 'Don’t stack more than three tonal steps in one area.']} />
 </Docs>

@@ -109,7 +109,7 @@ const glue = `<style>
   /* Page glue only: lays the blocks out. Every visual comes from a component. */
   .dd-pattern-explorer { container: dd-pattern-explorer / inline-size; }
   .dd-pattern-explorer__query { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 2); }
-  .dd-pattern-explorer__query > .dd-input { flex: 1 1 260px; }
+  .dd-pattern-explorer__query > .dd-input { flex: 1 1 10rem; min-width: 0; }
   .dd-pattern-explorer__query > .dd-segmented { margin-left: auto; }
   .dd-pattern-explorer__split { display: grid; grid-template-columns: minmax(0, 1fr); gap: calc(var(--dd-u) * 6); align-items: start; }
   .dd-pattern-explorer__detail { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 4); min-width: 0; }

@@ -15,7 +15,9 @@ Generated from `ds/tokens.css` by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; 
 | `--dd-text` | `#1f1e1c` | `#ece7df` |  |
 | `--dd-muted` | `#6e675e` | `#a59e94` |  |
 | `--dd-faint` | `#a8a299` | `#635e57` |  |
-| `--dd-quiet` | `color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint))` | `color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint))` | secondary labels, hints, kbd: readable, quieter than muted |
+| `--dd-quiet` | `color-mix(in oklab, var(--dd-muted) 75%, var(--dd-faint))` | `color-mix(in oklab, var(--dd-muted) 75%, var(--dd-faint))` | secondary labels, hints, kbd: readable, quieter than muted |
+| `--dd-wash` | `color-mix(in oklab, var(--dd-text) 7%, transparent)` | `color-mix(in oklab, var(--dd-text) 7%, transparent)` |  |
+| `--dd-wash-strong` | `color-mix(in oklab, var(--dd-text) 12%, transparent)` | `color-mix(in oklab, var(--dd-text) 12%, transparent)` |  |
 | `--dd-accent` | `#6a5c4e` | `#d9cdbd` |  |
 | `--dd-accent-hover` | `#5d5146` | `#dcd1c2` |  |
 | `--dd-accent-soft` | `#e0d9d0` | `#322e2a` |  |
@@ -28,10 +30,10 @@ Generated from `ds/tokens.css` by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; 
 | `--dd-warn` | `#c8962c` | `#f1c36c` |  |
 | `--dd-bad` | `#b5523a` | `#e58770` |  |
 | `--dd-info` | `#5f7d97` | `#91aec6` |  |
-| `--dd-ok-soft` | `#e0e1d0` | `#2c2c23` |  |
+| `--dd-ok-soft` | `#e0e1d0` | `#35382a` |  |
 | `--dd-warn-soft` | `#ede1cc` | `#393023` |  |
 | `--dd-bad-soft` | `#edd9ce` | `#342721` |  |
-| `--dd-info-soft` | `#dededc` | `#2b2b2b` |  |
+| `--dd-info-soft` | `#dededc` | `#323537` |  |
 | `--dd-tone-1` | `#d4cbbf` | `#d4cbbf` |  |
 | `--dd-tone-2` | `#a39b8f` | `#8a8277` |  |
 | `--dd-tone-3` | `#c8bfae` | `#5c554d` |  |
@@ -45,8 +47,8 @@ Generated from `ds/tokens.css` by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; 
 | `--dd-set-8` | `#d6bf94` | `#d6c29c` | sand |
 | `--dd-ring` | `color-mix(in oklab, var(--dd-accent) 45%, transparent)` | `color-mix(in oklab, var(--dd-accent) 45%, transparent)` |  |
 | `--dd-overlay` | `rgb(31 30 28 / 0.32)` | `rgb(0 0 0 / 0.55)` |  |
-| `--dd-float-bg` | `#faf7f2` | `var(--dd-surface-2)` |  |
-| `--dd-float-hover` | `var(--dd-surface)` | `var(--dd-surface-3)` |  |
+| `--dd-float-bg` | `#faf7f2` | `var(--dd-surface-3)` |  |
+| `--dd-float-hover` | `var(--dd-surface)` | `#3e3a36` |  |
 | `--dd-btn-secondary` | `var(--dd-surface-2)` | `var(--dd-surface-3)` |  |
 | `--dd-btn-secondary-hover` | `var(--dd-surface-3)` | `color-mix(in oklab, var(--dd-text) 19%, var(--dd-bg))` |  |
 | `--dd-shadow-float` | `0 12px 32px -12px rgb(60 45 30 / 0.22), 0 2px 6px rgb(60 …` | `0 18px 40px -14px rgb(0 0 0 / 0.65), 0 2px 6px rgb(0 0 0 …` |  |

@@ -57,7 +57,7 @@
     for (const f of input.files) {
       const [cls, ext] = kind(f.name);
       const li = document.createElement('li');
-      li.className = 'dd-file is-done';
+      li.className = 'dd-file is-done is-new';
       li.innerHTML = `<span class="dd-file__icon ${cls}"${ext ? ` data-ext="${esc(ext)}"` : ''}>${icon('file')}</span>
         <span class="dd-file__body"><span class="dd-file__name">${esc(f.name)}</span>
         <span class="dd-file__meta"><span>${size(f.size)}</span><span class="dd-file__status">${icon('check')}Ready</span></span></span>
@@ -74,7 +74,9 @@
     const list = row.parentElement;
     const next = row.nextElementSibling?.querySelector('[data-dd-file-remove]') || row.previousElementSibling?.querySelector('[data-dd-file-remove]');
     row.classList.add('is-removing');
-    const done = () => { row.remove(); next?.focus(); list?.dispatchEvent(new CustomEvent('dd-file-remove', { bubbles: true })); };
+    // Focus moves to the neighbouring remove button, or back to the list's dropzone once the list is empty.
+    const zone = list?.id ? document.querySelector(`[data-dd-dropzone="#${CSS.escape(list.id)}"] input[type="file"]`) : null;
+    const done = () => { row.remove(); (next || zone)?.focus(); list?.dispatchEvent(new CustomEvent('dd-file-remove', { bubbles: true })); };
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) done(); else row.addEventListener('animationend', done, { once: true });
   });
 })();

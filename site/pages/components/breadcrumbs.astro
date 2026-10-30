@@ -86,6 +86,14 @@ const long = `
 </div>`;
 ---
 <Docs title="Breadcrumbs" group="Navigation" lead="Where you are and how you got there. Muted links divided by faint slashes; the current page is in ink and is not a link.">
+  <style is:global>
+    /* Docs only: an open dropdown spills out of its example frame instead of being clipped by it. */
+    .ex-frame:has(details[data-dd-autoclose][open]) { overflow: visible; }
+    .ex-frame:has(details[data-dd-autoclose][open]) > .ex-stage { overflow: visible; border-radius: var(--dd-r-lg) var(--dd-r-lg) 0 0; }
+    .ex-frame:has(details[data-dd-autoclose][open]) > .ex-stage > .dd-top-bar:first-child { border-radius: var(--dd-r-lg) var(--dd-r-lg) 0 0; }
+    .ex-frame:has(details[data-dd-autoclose][open]) > .ex-bar:has(+ .ex-code[hidden]),
+    .ex-frame:has(details[data-dd-autoclose][open]) > .ex-code:not([hidden]) { border-radius: 0 0 var(--dd-r-lg) var(--dd-r-lg); }
+  </style>
   <Example title="Default" code={basic} />
 
   <h2 id="icons">With icons and IDs</h2>

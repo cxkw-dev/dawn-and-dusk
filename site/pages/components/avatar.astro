@@ -79,6 +79,28 @@ const status = `
   <span class="dd-avatar dd-avatar--lg dd-avatar--square" role="img" aria-label="billing-worker, error">${i('server')}<span class="dd-status-dot dd-status-dot--error"></span></span>
 </div>`;
 
+const interactive = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-8); align-items: center">
+  <div>
+    <button class="dd-avatar dd-avatar--set-1" type="button" aria-label="Account: Andy Nguyen" data-dd-menu="av-account" data-dd-placement="bottom-start" aria-haspopup="menu" aria-expanded="false" aria-controls="av-account">AN<span class="dd-status-dot dd-status-dot--online"></span></button>
+    <div class="dd-menu" id="av-account" role="menu" aria-label="Account" hidden>
+      <div class="dd-menu__header"><span>Andy Nguyen</span><span>andy@cxkw.dev</span></div>
+      <hr class="dd-menu__sep">
+      <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Profile</span></button>
+      <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Settings</span></button>
+      <hr class="dd-menu__sep">
+      <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Sign out</span></button>
+    </div>
+  </div>
+  <div class="dd-avatar-group" role="group" aria-label="Reviewers">
+    <a class="dd-avatar dd-avatar--set-1" href="#people-andy" aria-label="Andy Nguyen" data-dd-tooltip="Andy Nguyen">AN</a>
+    <a class="dd-avatar" href="#people-mai" aria-label="Mai Kha" data-dd-tooltip="Mai Kha"><img src="${P1}" alt=""></a>
+    <a class="dd-avatar dd-avatar--set-4" href="#people-jonas" aria-label="Jonas Sauer" data-dd-tooltip="Jonas Sauer">JS</a>
+    <a class="dd-avatar" href="#people-rosa" aria-label="Rosa Lind" data-dd-tooltip="Rosa Lind"><img src="${P3}" alt=""></a>
+    <a class="dd-avatar dd-avatar--more" href="#reviewers" aria-label="3 more reviewers" data-dd-tooltip="Tomás Cruz, Elif Varol, Omar Bello">+3</a>
+  </div>
+</div>`;
+
 const label = `
 <div class="dd-stack" style="--dd-gap: var(--dd-space-4)">
   <span class="dd-avatar-label">
@@ -110,6 +132,10 @@ const label = `
   <p>Drop a <a href="status-dot">status dot</a> inside and it pins to the bottom-right, ringed like the group. Put the status in the label too.</p>
   <Example code={status} />
 
+  <h2 id="interactive">Interactive</h2>
+  <p>Make an avatar a <code>&lt;button&gt;</code> (an account menu) or an <code>&lt;a&gt;</code> (a profile) and it answers the pointer with a soft halo, which stays while its menu is open. In a group, the avatar under the pointer or keyboard focus comes to the front and lifts 2px, so it is whole and its focus ring is never covered by a neighbour. Name each one with <code>aria-label</code> and a tooltip.</p>
+  <Example code={interactive} minHeight="240px" />
+
   <h2 id="label">With a name</h2>
   <Example code={label} />
 
@@ -123,6 +149,7 @@ const label = `
     ['> .dd-status-dot', 'Presence, pinned bottom-right.'],
     ['.dd-avatar-group', 'Overlapping row. Ring colour: <code>--dd-avatar-ring</code> (default <code>--dd-bg</code>).'],
     ['.dd-avatar-label / __text', 'Avatar beside a name and a muted second line.'],
+    ['a.dd-avatar / button.dd-avatar', 'Interactive: a <code>--dd-wash-strong</code> halo on hover and while <code>aria-expanded="true"</code>; 1px press. In a group it comes to the front and lifts 2px on hover and focus.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

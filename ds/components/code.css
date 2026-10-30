@@ -28,7 +28,7 @@
 }
 .dd-code__title > .dd-icon { color: var(--dd-muted); }
 .dd-code__lang {
-  flex: none; padding: 1px calc(var(--dd-u) * 1.25); border-radius: 4px; background: var(--dd-surface-2);
+  flex: none; padding: 1px calc(var(--dd-u) * 1.25); border-radius: 4px; background: var(--dd-wash);
   font-family: var(--dd-font-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dd-muted);
 }
 .dd-code__copy {
@@ -36,7 +36,9 @@
   border: 0; border-radius: var(--dd-r-ctl); background: transparent; color: var(--dd-muted); cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-code__copy:hover { background: var(--dd-surface-2); color: var(--dd-text); }
+/* Washes, not --dd-surface-2: in dusk surface-2 is barely a step off the block's --dd-surface. */
+.dd-code__copy:hover { background: var(--dd-wash); color: var(--dd-text); }
+.dd-code__copy:active { background: var(--dd-wash-strong); }
 .dd-code__copy:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 .dd-code__copy > .dd-icon { grid-area: 1 / 1; }
 .dd-code__copy > .dd-icon:last-child { display: none; }
@@ -65,7 +67,7 @@
 .dd-code--numbered .dd-code__line::before {
   counter-increment: dd-code-line; content: counter(dd-code-line);
   display: inline-block; width: 3ch; margin-right: 2.5ch; text-align: right;
-  color: var(--dd-faint); user-select: none; -webkit-user-select: none;
+  color: var(--dd-quiet); user-select: none; -webkit-user-select: none;
 }
 .dd-code__line.is-highlight {
   background: color-mix(in oklab, var(--dd-accent) 14%, transparent);
@@ -116,7 +118,8 @@
   border: 0; border-radius: calc(var(--dd-r-ctl) - 1px); background: transparent; color: var(--dd-muted); cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-code-field__btn:hover { background: var(--dd-surface-2); color: var(--dd-text); }
+.dd-code-field__btn:hover { background: var(--dd-wash); color: var(--dd-text); }
+.dd-code-field__btn:active { background: var(--dd-wash-strong); }
 .dd-code-field__btn:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-code-field__btn > .dd-icon { grid-area: 1 / 1; }
 .dd-code-field__btn > .dd-icon:last-child:not(:first-child) { display: none; }

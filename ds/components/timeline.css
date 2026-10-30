@@ -57,7 +57,7 @@
 .dd-timeline__text :where(b, strong) { font-weight: 600; color: var(--dd-text); }
 .dd-timeline__text :where(a) {
   color: var(--dd-text); font-weight: 500; text-decoration: underline dotted; text-decoration-color: var(--dd-faint);
-  text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px; text-underline-offset: 3px; transition: text-decoration-color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-timeline__text :where(a:hover) { text-decoration-color: currentColor; }
 .dd-timeline__text :where(code), .dd-timeline__detail :where(code) {

@@ -40,15 +40,19 @@ const twoCol = `
 
 const footers = `
 <div class="dd-stack" style="--dd-gap: 30px">
-  <div class="dd-form__footer">
-    <span class="dd-form__meta">${i('clock')}Last saved 2 minutes ago</span>
-    <button class="dd-btn dd-btn--ghost" type="button">Discard</button>
-    <button class="dd-btn dd-btn--primary" type="submit">Save changes</button>
-  </div>
-  <div class="dd-form__footer dd-form__footer--plain" style="justify-content: space-between">
-    <button class="dd-btn dd-btn--ghost" type="button">${i('arrow-left')}<span>Back</span></button>
-    <button class="dd-btn dd-btn--primary" type="submit"><span>Continue</span>${i('arrow-right')}</button>
-  </div>
+  <form class="dd-form" onsubmit="return false">
+    <div class="dd-form__footer">
+      <span class="dd-form__meta">${i('clock')}Last saved 2 minutes ago</span>
+      <button class="dd-btn dd-btn--ghost" type="button">Discard</button>
+      <button class="dd-btn dd-btn--primary" type="submit">Save changes</button>
+    </div>
+  </form>
+  <form class="dd-form" onsubmit="return false">
+    <div class="dd-form__footer dd-form__footer--plain" style="justify-content: space-between">
+      <button class="dd-btn dd-btn--ghost" type="button">${i('arrow-left')}<span>Back</span></button>
+      <button class="dd-btn dd-btn--primary" type="submit"><span>Continue</span>${i('arrow-right')}</button>
+    </div>
+  </form>
 </div>`;
 
 const settings = `
@@ -137,7 +141,7 @@ const panels = `
   <Example code={twoCol} />
 
   <h2 id="footer">Footer</h2>
-  <p>Actions sit at the end of the form, primary last. A <code>.dd-form__meta</code> line on the left carries save state. <code>--sticky</code> pins it to the bottom of a long page; <code>--plain</code> drops the hairline.</p>
+  <p>Actions sit at the end of the form, primary last. A <code>.dd-form__meta</code> line on the left carries save state. <code>--sticky</code> pins it to the bottom of a long page; <code>--plain</code> drops the hairline. Keep it inside the <code>.dd-form</code>: when the form is 420px or narrower the meta line takes its own row and the buttons share the width evenly.</p>
   <Example code={footers} />
 
   <h2 id="panel">Panel section</h2>

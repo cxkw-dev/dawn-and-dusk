@@ -142,13 +142,14 @@ const context = `
     ['.dd-menu__group + .dd-menu__label', 'A <code>role="group"</code> with a small-caps label (<code>aria-labelledby</code> it).'],
     ['.dd-menu__sep', 'Full-bleed hairline divider. Use <code>&lt;hr&gt;</code>.'],
     ['.dd-menu__item', 'A row. Use <code>&lt;button&gt;</code> or <code>&lt;a&gt;</code> with <code>role="menuitem"</code>, <code>menuitemcheckbox</code> or <code>menuitemradio</code>.'],
+    ['.is-active', 'The highlighted row: one tone deeper. The behaviour highlights the focused row (hover moves focus in a floating menu); add the class yourself only in static demos. An item whose submenu is open keeps the highlight.'],
     ['.dd-menu__body', 'Holds the label and an optional <code>.dd-menu__desc</code> second line. Grows to push trailing parts to the end.'],
     ['.dd-menu__icon', 'Optional leading icon (<code>svg.dd-icon</code>).'],
-    ['.dd-menu__kbd', 'Shortcut hint, mono and faint. Use <code>&lt;kbd&gt;</code>.'],
+    ['.dd-menu__kbd', 'Shortcut hint, mono and quiet. Use <code>&lt;kbd&gt;</code>.'],
     ['.dd-menu__check', 'Check icon, visible when the item has <code>aria-checked="true"</code>.'],
     ['.dd-menu__sub', 'Chevron for an item that opens a submenu.'],
     ['.dd-menu__item--danger', 'Destructive item: red text, soft red highlight.'],
-    ['[aria-disabled="true"]', 'Disabled item: faint, skipped by the arrow keys.'],
+    ['[aria-disabled="true"]', 'Disabled item: dimmed to <code>--dd-quiet</code> (still readable), no highlight, skipped by the arrow keys.'],
   ]} />
   <h2 id="behaviour">Behaviour</h2>
   <p><code>ds/behaviors/menu.js</code>. It fills in <code>aria-haspopup</code>, <code>aria-expanded</code> and <code>aria-controls</code> on triggers if you leave them out.</p>

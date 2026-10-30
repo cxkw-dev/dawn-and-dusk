@@ -13,6 +13,7 @@ const anatomy = `
   </span>
   <div class="dd-guide-cue dd-guide-cue--static" data-placement="bottom" role="dialog" aria-labelledby="cue-static-title" style="--dd-arrow-x: 50%">
     <span class="dd-guide-cue__arrow"></span>
+    <button class="dd-guide-cue__close" type="button" aria-label="End tour">${i('x')}</button>
     <p class="dd-guide-cue__step"><span class="dd-guide-cue__count">1 of 3</span><span class="dd-guide-cue__pips"><i class="is-current"></i><i></i><i></i></span></p>
     <h3 class="dd-guide-cue__title" id="cue-static-title">Ship from here</h3>
     <p class="dd-guide-cue__text">Every deploy builds once and goes out to fra1, sfo3 and sgp1. Press <kbd>N</kbd> from anywhere.</p>
@@ -44,6 +45,7 @@ const tour = `
 
 <div class="dd-guide-cue" popover="manual" role="dialog" aria-labelledby="cue-1-title" data-dd-guide="deploys" data-dd-guide-target="#tour-new" data-dd-placement="bottom-start">
   <span class="dd-guide-cue__arrow"></span>
+  <button class="dd-guide-cue__close" type="button" data-dd-guide-dismiss aria-label="End tour">${i('x')}</button>
   <p class="dd-guide-cue__step"><span class="dd-guide-cue__count"></span><span class="dd-guide-cue__pips"></span></p>
   <h3 class="dd-guide-cue__title" id="cue-1-title">Ship from here</h3>
   <p class="dd-guide-cue__text">Every deploy builds once and goes out to fra1, sfo3 and sgp1. Press <kbd>N</kbd> from anywhere.</p>
@@ -54,6 +56,7 @@ const tour = `
 </div>
 <div class="dd-guide-cue" popover="manual" role="dialog" aria-labelledby="cue-2-title" data-dd-guide="deploys" data-dd-guide-target="#tour-filter" data-dd-placement="bottom">
   <span class="dd-guide-cue__arrow"></span>
+  <button class="dd-guide-cue__close" type="button" data-dd-guide-dismiss aria-label="End tour">${i('x')}</button>
   <p class="dd-guide-cue__step"><span class="dd-guide-cue__count"></span><span class="dd-guide-cue__pips"></span></p>
   <h3 class="dd-guide-cue__title" id="cue-2-title">Narrow it down</h3>
   <p class="dd-guide-cue__text">Filter by region, status or who pushed. Filters stay in the URL, so you can share a view.</p>
@@ -64,6 +67,7 @@ const tour = `
 </div>
 <div class="dd-guide-cue" popover="manual" role="dialog" aria-labelledby="cue-3-title" data-dd-guide="deploys" data-dd-guide-target="#tour-logs" data-dd-placement="bottom-end">
   <span class="dd-guide-cue__arrow"></span>
+  <button class="dd-guide-cue__close" type="button" data-dd-guide-dismiss aria-label="End tour">${i('x')}</button>
   <p class="dd-guide-cue__step"><span class="dd-guide-cue__count"></span><span class="dd-guide-cue__pips"></span></p>
   <h3 class="dd-guide-cue__title" id="cue-3-title">Logs, live</h3>
   <p class="dd-guide-cue__text">Tail every region at once while a deploy rolls out.</p>
@@ -74,7 +78,7 @@ const tour = `
 </div>`;
 ---
 <Docs title="Guide cue" group="Feedback & status" lead="An onboarding tip that points at one thing: what it is and why it matters, in a sentence. Steps link into a short tour with a count, Next and a way out.">
-  <Example title="Anatomy" description="Step count with pips, a title, one or two sentences and two actions — a quiet way out and Next. The arrow points at the target and an apricot beacon pulses on it. Ink in dawn, like a toast; a raised surface in dusk." code={anatomy} stage="center" />
+  <Example title="Anatomy" description="Step count with pips, a close ×, a title, one or two sentences and two actions — a quiet way out and Next. The arrow points at the target and an apricot beacon pulses on it. Ink in dawn, like a toast; a raised surface in dusk." code={anatomy} stage="center" />
 
   <h2 id="tour">A tour</h2>
   <p>Each step is a <code>.dd-guide-cue</code> with <code>popover="manual"</code>, the tour name in <code>data-dd-guide</code> and its target in <code>data-dd-guide-target</code>. Steps run in document order; the script fills the count and pips, scrolls the target into view, rings it, drops the beacon and moves focus into the cue.</p>
@@ -86,7 +90,8 @@ const tour = `
     ['.dd-guide-cue__arrow', 'Arrow toward the target (placed by the JS).'],
     ['.dd-guide-cue__step', 'Mono step line. An empty <code>__count</code> inside gets “2 of 3”; empty <code>__pips</code> get one pip per step.'],
     ['.dd-guide-cue__title / __text', 'Title and one or two sentences. <code>&lt;kbd&gt;</code> works inside.'],
-    ['.dd-guide-cue__actions', 'Quiet action on the left, Next on the right.'],
+    ['.dd-guide-cue__actions', 'Quiet action on the left (Skip on the first step, Back after), Next on the right. Focus rings inside use the cue’s own ink so they show on the dark dawn card.'],
+    ['.dd-guide-cue__close', 'Top-right × with <code>data-dd-guide-dismiss</code>: ends the tour from any step. Give it an <code>aria-label</code>.'],
     ['.dd-guide-beacon', 'Pulsing apricot dot on the target. <code>--static</code> for mockups.'],
     ['[data-dd-guide-active]', 'Set on the current target: a soft apricot ring.'],
     ['.dd-guide-cue--static', 'In-flow cue for docs and mockups (set <code>data-placement</code>).'],
@@ -99,7 +104,8 @@ const tour = `
     ['data-dd-guide-target="#selector"', 'On each cue: what it points at. Steps whose target is missing are skipped.'],
     ['data-dd-placement', 'On each cue: <code>bottom</code> (default), <code>top</code>, <code>left</code>, <code>right</code>, with <code>-start</code> / <code>-end</code>. Flips when it doesn’t fit.'],
     ['data-dd-guide-next / -back / -dismiss', 'Buttons inside a cue. Next on the last step finishes the tour.'],
-    ['Esc', 'Ends the tour. Focus returns to the button that started it.'],
+    ['Esc · ×', 'End the tour from any step. Focus returns to the button that started it.'],
+    ['Back', '<code>data-dd-guide-back</code> returns to the previous step; focus moves into that cue.'],
     ['dd:guide-step / dd:guide-end', 'Events on <code>document</code>: <code>detail.index</code>; <code>detail.completed</code> — store it so the tour doesn’t come back.'],
     ['dd.guide.start(name)', 'Start a tour from code, e.g. on first sign-in. Also <code>next()</code>, <code>back()</code> and <code>end()</code>.'],
   ]} />

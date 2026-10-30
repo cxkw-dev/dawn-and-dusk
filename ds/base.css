@@ -24,6 +24,8 @@
 :where(:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 
 /* ---------- typography ---------- */
+/* element defaults first, so a class on the element (e.g. <code class="dd-caption">) wins */
+:where(code, samp) { font-family: var(--dd-font-mono); font-size: .92em; }
 :where(.dd-display, .dd-h1, .dd-h2, .dd-h3) {
   margin: 0;
   font-family: var(--dd-font-display);
@@ -49,7 +51,6 @@
   letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-muted);
 }
 :where(.dd-mono) { font-family: var(--dd-font-mono); }
-:where(code, samp) { font-family: var(--dd-font-mono); font-size: .92em; }
 :where(.dd-muted) { color: var(--dd-muted); }
 :where(.dd-faint) { color: var(--dd-faint); }
 :where(.dd-num) { font-variant-numeric: tabular-nums; }

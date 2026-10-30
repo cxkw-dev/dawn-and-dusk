@@ -79,7 +79,7 @@ dd.toast.clear();                       // close them all`;
   <Example code={actions} stage="center" />
 
   <h2 id="live">Try it</h2>
-  <p>Toasts stack at the bottom-right, newest nearest the corner, at most four at a time. Hover or focus the stack to pause every timer. On small screens the stack spans the width.</p>
+  <p>Toasts stack at the bottom-right, newest nearest the corner, at most four at a time. Hover or focus the stack to pause every timer; swipe one sideways to dismiss it. On small screens the stack spans the width.</p>
   <Example code={live} />
 
   <h2 id="js">JavaScript</h2>
@@ -89,7 +89,7 @@ dd.toast.clear();                       // close them all`;
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
     ['.dd-toaster', 'The fixed stack, bottom-right (<code>--dd-z-toast</code>). Created by the JS; add your own to control where it sits.'],
-    ['.dd-toast', 'One toast. Ink in dawn, <code>--dd-float-bg</code> + <code>--dd-shadow-float</code> in dusk.'],
+    ['.dd-toast', 'One toast. Ink in dawn, <code>--dd-surface-3</code> + <code>--dd-shadow-float</code> in dusk. Inside a <code>.dd-toaster</code> it slides in and can be swiped away.'],
     ['.dd-toast--{intent}', 'Intent: <code>info</code> · <code>ok</code> · <code>warn</code> · <code>bad</code> · <code>neutral</code>. Tints the icon and the timer line.'],
     ['> .dd-icon', 'Leading icon. The JS picks <code>info</code>, <code>success</code>, <code>alert</code>, <code>danger</code> or <code>bell</code>.'],
     ['.dd-toast__body / __title / __text', 'Title (600) and a muted one-line description.'],
@@ -104,8 +104,11 @@ dd.toast.clear();                       // close them all`;
     ['dd.toast.clear()', 'Dismisses every toast.'],
     ['data-dd-toast="Title"', 'Click to show a toast. Add <code>data-dd-toast-description</code>, <code>-intent</code>, <code>-action</code> and <code>-duration</code>.'],
     ['Pause', 'Hovering or focusing the stack, or switching tabs, pauses every timer.'],
+    ['Stacking', 'New toasts slide in at the bottom; the ones above glide up to make room. Past four, the oldest leaves.'],
+    ['Swipe', 'Drag a toast sideways (touch, pen or mouse) past a third of its width, or flick it, to dismiss it. A short drag springs back.'],
     ['Theme', 'A toast takes the dawn/dusk theme of the element that raised it.'],
-    ['Keyboard', 'Tab reaches the action and the close button; focusing them pauses the timer.'],
+    ['Keyboard', 'Tab reaches the action and the close button; focusing them pauses the timer. Esc dismisses the focused toast, and focus moves to the next toast, or back to where it was before the stack.'],
+    ['Reduced motion', 'No slide, glide or swipe-out: toasts appear and leave in place, and the timer line is hidden.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

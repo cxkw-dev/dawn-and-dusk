@@ -9,7 +9,7 @@
 
 .dd-tooltip {
   --_shift: 3px;
-  position: fixed; top: 0; left: 0; z-index: var(--dd-z-tooltip);
+  position: fixed; inset: auto; top: 0; left: 0; z-index: var(--dd-z-tooltip); margin: 0; border: 0; overflow: visible;
   display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 2);
   width: max-content; max-width: min(280px, calc(100vw - 16px)); box-sizing: border-box;
   padding: calc(var(--dd-u) * 1.25) calc(var(--dd-u) * 2);

@@ -38,7 +38,8 @@
   background: none; color: var(--dd-muted); font-size: 17px; cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-sheet__close:hover { background: var(--dd-surface-2); color: var(--dd-text); }
+.dd-sheet__close:hover { background: var(--dd-wash); color: var(--dd-text); }
+.dd-sheet__close:active { background: var(--dd-wash-strong); }
 .dd-sheet__close:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 
 /* body — scrolls past 85% height; hairlines show at an edge only while content is hidden there */
@@ -63,16 +64,18 @@
   font: inherit; font-size: var(--dd-fs-base); font-weight: 500; line-height: 1.2; text-align: left; text-decoration: none; cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-sheet__item:hover { background: var(--dd-surface-2); }
-.dd-sheet__item:active { background: var(--dd-surface-3); }
+/* Washes, not surface steps, so hover / pressed / chosen stay three distinct tones in dusk as well as dawn. */
+.dd-sheet__item:hover { background: var(--dd-wash); }
+.dd-sheet__item:active { background: var(--dd-wash-strong); }
 .dd-sheet__item:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: -2px; }
 .dd-sheet__item > .dd-icon { font-size: 20px; color: var(--dd-muted); }
 .dd-sheet__item-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dd-sheet__item-meta { flex: none; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 400; color: var(--dd-muted); }
 .dd-sheet__item--danger, .dd-sheet__item--danger > .dd-icon { color: var(--dd-bad); }
 .dd-sheet__item--danger:hover { background: color-mix(in oklab, var(--dd-bad) 14%, var(--_bg)); }
+.dd-sheet__item--danger:active { background: color-mix(in oklab, var(--dd-bad) 22%, var(--_bg)); }
 /* choices: mark the current one with aria-checked="true" (role="menuitemradio") or .is-selected */
-.dd-sheet__item[aria-checked='true'], .dd-sheet__item.is-selected { background: var(--dd-surface-2); }
+.dd-sheet__item[aria-checked='true'], .dd-sheet__item.is-selected { background: var(--dd-wash-strong); }
 .dd-sheet__item .dd-sheet__check { margin-left: auto; color: var(--dd-accent); opacity: 0; }
 .dd-sheet__item[aria-checked='true'] .dd-sheet__check, .dd-sheet__item.is-selected .dd-sheet__check { opacity: 1; }
 .dd-sheet__sep { height: 1px; margin: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 2.5); background: var(--_line); border: 0; }

@@ -78,7 +78,7 @@ panel.addEventListener('toggle', (e) => console.log(e.newState)); // 'open' | 'c
   <Example title="Confirm in place" description="Press Promote. Header with an eyebrow and a close button, a sentence of body, and actions. Built on the native popover attribute: the browser handles open, Esc and outside clicks, and the panel floats above everything." code={basic} />
 
   <h2 id="anatomy">Anatomy</h2>
-  <p>A floating layer on <code>--dd-float-bg</code> with <code>--dd-shadow-float</code>: a shade lighter than the page in dawn, so it reads as raised paper, and a step up in dusk. 8px radius, 20px padding, an arrow aimed at the trigger. <code>--static</code> shows one in the flow.</p>
+  <p>A floating layer with <code>--dd-shadow-float</code>: on <code>--dd-float-bg</code> in dawn, a shade lighter than the page, so it reads as raised paper; on <code>--dd-surface-3</code> in dusk, a clear step above the grain-lit page (set <code>--dd-popover-bg</code> to change it). 8px radius, 20px padding, an arrow aimed at the trigger. <code>--static</code> shows one in the flow.</p>
   <Example code={anatomy} stage="center" />
 
   <h2 id="info">Explain a term</h2>

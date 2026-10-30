@@ -1,5 +1,6 @@
 /* Pagination — numbered pages, a compact prev/next with a range ("1–50 of 2,481") and a page-size select.
-   Tone, not lines: the current page sits on --dd-surface-2; hover steps one tone. Works with <a> or <button>. */
+   Tone, not lines: the current page sits on --dd-wash-strong; hover takes the lighter --dd-wash. Both are translucent steps
+   toward the text colour, so they read on the page, on a card and in dusk alike. Works with <a> or <button>. */
 .dd-pagination {
   display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 4);
   font-size: var(--dd-fs-sm); color: var(--dd-muted); font-variant-numeric: tabular-nums;
@@ -14,12 +15,12 @@
 }
 .dd-pagination__step { font-family: var(--dd-font-body); color: var(--dd-text); }
 .dd-pagination__step .dd-icon { width: 1.2em; height: 1.2em; }
-/* Tones mix from the text colour so they read on the page, on a card and in dusk alike. */
-.dd-pagination__page:hover, .dd-pagination__step:hover { background: color-mix(in oklab, var(--dd-text) 6%, transparent); color: var(--dd-text); }
-.dd-pagination__page[aria-current="page"] { background: color-mix(in oklab, var(--dd-text) 10%, transparent); color: var(--dd-text); font-weight: 500; cursor: default; }
+.dd-pagination__page:hover, .dd-pagination__step:hover { background: var(--dd-wash); color: var(--dd-text); }
+.dd-pagination__page:active, .dd-pagination__step:active { background: var(--dd-wash-strong); }
+.dd-pagination__page[aria-current="page"] { background: var(--dd-wash-strong); color: var(--dd-text); font-weight: 500; cursor: default; }
 .dd-pagination :is(.dd-pagination__page, .dd-pagination__step):focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-pagination__step:disabled, .dd-pagination__step[aria-disabled="true"] { opacity: .4; pointer-events: none; }
-.dd-pagination__gap { display: inline-grid; place-items: center; min-width: 22px; color: var(--dd-faint); user-select: none; }
+.dd-pagination__gap { display: inline-grid; place-items: center; min-width: 22px; color: var(--dd-quiet); user-select: none; }
 .dd-pagination__step--label { gap: calc(var(--dd-u) * 1); grid-auto-flow: column; padding: 0 calc(var(--dd-u) * 2.25); font-size: var(--dd-fs-sm); font-weight: 500; }
 
 /* Range text ("1–50 of 2,481") and the page-of-pages status used on narrow screens */

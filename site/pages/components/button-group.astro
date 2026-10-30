@@ -125,8 +125,8 @@ const block = `
   <Example code={block} />
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
-    ['.dd-btn-group', 'Attaches its <code>.dd-btn</code> children: inner corners square off, 1px seams. Add <code>role="group"</code> and an <code>aria-label</code>.'],
-    ['[aria-pressed]', 'Toggle buttons. <code>true</code> takes the pressed tone; <code>false</code> mutes the label.'],
+    ['.dd-btn-group', 'Attaches its <code>.dd-btn</code> children: inner corners square off, 1px seams. A press washes the button instead of nudging it, so the seams stay straight. Add <code>role="group"</code> and an <code>aria-label</code>.'],
+    ['[aria-pressed]', 'Toggle buttons. <code>true</code> takes the pressed tone (plus a wash when hovered); <code>false</code> mutes the label and goes only half way on hover. Ghost toggles use the translucent <code>--dd-wash</code> / <code>--dd-wash-strong</code>, so they read on any background.'],
     ['[data-dd-btn-toggle]', 'On the group: clicking an <code>aria-pressed</code> button flips it (<code>ds/behaviors/button-group.js</code>).'],
     ['.dd-btn-group--split', 'Main action + chevron. The seam is drawn in the button’s own ink.'],
     ['.dd-btn-group__caret', 'The chevron half. Use with <code>.dd-btn--icon</code> and <code>data-dd-menu</code>; it flips when <code>aria-expanded="true"</code>.'],

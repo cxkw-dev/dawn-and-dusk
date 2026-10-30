@@ -28,6 +28,7 @@
 .dd-callout :where(li + li) { margin-top: 2px; }
 .dd-callout :where(a:not([class])) { color: var(--dd-text); text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: .25em; }
 .dd-callout :where(a:not([class]):hover) { text-decoration-style: solid; }
+.dd-callout :where(a:not([class]):focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; border-radius: 2px; }
 .dd-callout :where(:not(pre) > code) {
   font-family: var(--dd-font-mono); font-size: .88em; padding: .08em .35em; border-radius: 4px;
   background: color-mix(in oklab, var(--dd-text) 7%, transparent);

@@ -95,7 +95,7 @@ ${regions.map(([code, city, on]) => `      <button class="dd-sheet__item" type="
     ['.dd-sheet__list', 'A column of touch rows; bleeds slightly into the padding so hovers line up with the edges.'],
     ['.dd-sheet__item', '50px touch row: icon, <code>__item-label</code>, optional <code>__item-meta</code> (mono shortcut, code, count).'],
     ['.dd-sheet__item--danger', 'Destructive row, in <code>--dd-bad</code>. Put it last, after a <code>__sep</code>.'],
-    ['[aria-checked="true"] / .is-selected', 'The current choice: a tonal row and a visible <code>.dd-sheet__check</code> icon.'],
+    ['[aria-checked="true"] / .is-selected', 'The current choice: a stronger wash than hover and a visible <code>.dd-sheet__check</code> icon.'],
     ['.dd-sheet__sep', 'A hairline between groups of rows (<code>&lt;hr&gt;</code>).'],
     ['.dd-sheet__foot', 'Full-width actions sharing the row. <code>--stack</code> stacks them, primary on top.'],
   ]} />
@@ -105,6 +105,7 @@ ${regions.map(([code, city, on]) => `      <button class="dd-sheet__item" type="
   <ClassTable head={['Key', 'What it does']} rows={[
     ['Esc', 'Closes the sheet.'],
     ['Tab / Shift+Tab', 'Stays inside the sheet; the page behind is inert.'],
+    ['↑ ↓ · Home / End', 'Move between the rows of a <code>role="menu"</code> list.'],
     ['Enter / Space', 'Activates the focused row.'],
   ]} />
 

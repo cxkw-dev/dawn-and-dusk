@@ -32,7 +32,9 @@
     try { localStorage.setItem(KEY, next); } catch { /* storage unavailable */ }
     sync();
   });
-  document.addEventListener('DOMContentLoaded', sync);
+  // The script may load deferred or late: sync now if the DOM is already there. Follow OS changes while nothing is stored.
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sync); else sync();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', sync);
 })();
 
 
@@ -132,8 +134,10 @@
    - Filter: <button class="dd-chip dd-chip--filter" aria-pressed="false"> toggles aria-pressed on click and fires
      "dd:chip-toggle" (detail.pressed).
    - Input: .dd-chip-input with a .dd-chip-input__field. Enter or a comma turns the text into a chip (colour picked
-     from the Color set by the text, so a tag keeps its colour); Backspace in an empty field removes the last chip.
-     The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x). */
+     from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes instead of being
+     added twice; Backspace in an empty field removes the last chip.
+     The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x).
+   When a chip goes, the chips after it glide into its place (not under reduced motion). */
 (() => {
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const valueOf = (chip) => chip.dataset.value || chip.textContent.trim();
@@ -144,13 +148,34 @@
     if (!chip || chip.classList.contains('is-leaving')) return;
     if (!chip.dispatchEvent(new CustomEvent('dd:chip-remove', { bubbles: true, cancelable: true, detail: { value: valueOf(chip) } }))) return;
     const box = chip.closest('.dd-chip-input');
+    const parent = chip.parentElement;
     if (chip.contains(document.activeElement)) {
-      const peers = [...chip.parentElement.querySelectorAll(':scope > .dd-chip .dd-chip__remove')];
+      const peers = [...parent.querySelectorAll(':scope > .dd-chip:not(.is-leaving) .dd-chip__remove')];
       const i = peers.indexOf(chip.querySelector('.dd-chip__remove'));
       const next = peers[i + 1] || peers[i - 1] || box?.querySelector('.dd-chip-input__field');
-      next?.focus();
+      if (next) next.focus();
+      else {
+        // Last chip in a plain group: keep focus nearby instead of dropping it on <body>.
+        if (!parent.hasAttribute('tabindex')) {
+          parent.setAttribute('tabindex', '-1');
+          parent.addEventListener('blur', () => parent.removeAttribute('tabindex'), { once: true });
+        }
+        parent.focus({ preventScroll: true });
+      }
     }
-    const gone = () => { chip.remove(); changed(box); };
+    const gone = () => {
+      // The chips after this one glide into the space it leaves (FLIP), even across a wrapped line.
+      const rest = still() ? [] : [...parent.children].filter((c) => c !== chip);
+      const before = rest.map((c) => c.getBoundingClientRect());
+      chip.remove();
+      rest.forEach((c, n) => {
+        const r = c.getBoundingClientRect();
+        const dx = before[n].left - r.left;
+        const dy = before[n].top - r.top;
+        if (Math.abs(dx) + Math.abs(dy) > 0.5) c.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 160, easing: 'cubic-bezier(.45, 0, .55, 1)' });
+      });
+      changed(box);
+    };
     if (still()) return gone();
     chip.classList.add('is-leaving');
     setTimeout(gone, 170);
@@ -196,7 +221,13 @@
       const text = field.value.replace(/,/g, '').trim();
       e.preventDefault();
       if (!text) return;
-      if (!valuesIn(box).some((v) => v.toLowerCase() === text.toLowerCase())) {
+      const twin = [...box.querySelectorAll('.dd-chip:not(.is-leaving)')].find((c) => valueOf(c).toLowerCase() === text.toLowerCase());
+      if (twin) {
+        twin.classList.remove('is-duplicate');
+        void twin.offsetWidth;
+        twin.classList.add('is-duplicate');
+        twin.addEventListener('animationend', () => twin.classList.remove('is-duplicate'), { once: true });
+      } else {
         field.before(create(text));
         changed(box);
       }
@@ -395,6 +426,14 @@
     const opt = e.target.closest('[role="option"]');
     if (opt && list.contains(opt)) { choose(root, opt); return; }
     if (e.target.closest('.dd-input') && !input.disabled) { input.focus(); if (list.hidden) open(root); }
+  });
+
+  // The pointer and the keyboard share one highlight: hovering an option makes it the active one.
+  document.addEventListener('mousemove', (e) => {
+    const opt = e.target.closest?.('[data-dd-combobox] [role="option"]');
+    if (!opt || opt.classList.contains('is-active') || opt.getAttribute('aria-disabled') === 'true') return;
+    const root = opt.closest('[data-dd-combobox]');
+    if (parts(root).list.contains(opt)) { const y = opt.parentElement.scrollTop; setActive(root, opt); opt.parentElement.scrollTop = y; }
   });
 
   document.addEventListener('input', (e) => {
@@ -864,7 +903,7 @@
    Date picker: [data-dd-date-picker] wraps a .dd-input (with a [data-dd-date-toggle] button) and a
    .dd-date-picker__popover holding a calendar. Choosing a day fills the input and closes; a range closes on its
    second click unless the popover has [data-dd-date-apply]. [data-start][data-end] or [data-days="7"] buttons with
-   .dd-date-picker__preset set a range. Esc or a click outside closes. */
+   .dd-date-picker__preset set a range. Esc, a click outside or tabbing out closes. */
 (() => {
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const DOW = ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa'];
@@ -1014,6 +1053,16 @@
     return true;
   };
 
+  // Keep an open popover inside the viewport: nudge it left when it would run off the right edge.
+  const place = (root) => {
+    const { pop } = pickerParts(root);
+    if (!pop || pop.hidden || pop.classList.contains('dd-date-picker__popover--static')) return;
+    pop.style.translate = '';
+    const r = pop.getBoundingClientRect();
+    const over = r.right - (document.documentElement.clientWidth - 8);
+    if (over > 0) pop.style.translate = `${-Math.min(over, Math.max(0, r.left - 8))}px 0`;
+  };
+
   const openPicker = (root) => {
     const { toggle, pop, cal, input } = pickerParts(root);
     if (!pop || input?.disabled) return;
@@ -1028,8 +1077,9 @@
       if (sel) cal.dataset.month = sel.slice(0, 7);
       render(cal);
       summarise(root);
-      cal.querySelector('.dd-calendar__day[tabindex="0"]')?.focus();
     }
+    place(root);
+    cal?.querySelector('.dd-calendar__day[tabindex="0"]')?.focus();
   };
 
   const closePicker = (root, refocus = true, revert = false) => {
@@ -1120,6 +1170,12 @@
     if (moves[e.key]) { e.preventDefault(); focusDate(cal, moves[e.key]()); }
   });
 
+  // Tabbing out of an open picker closes it like a click outside (pending range changes are dropped).
+  document.addEventListener('focusout', (e) => {
+    const root = e.target.closest?.('[data-dd-date-picker].is-open');
+    if (root && e.relatedTarget && !root.contains(e.relatedTarget)) closePicker(root, false, true);
+  });
+
   // Typed dates: anything Date can parse ("2026-10-14", "Oct 14, 2026") moves the calendar.
   document.addEventListener('change', (e) => {
     const root = e.target.closest?.('[data-dd-date-picker]');
@@ -1133,7 +1189,9 @@
     e.target.value = short(parse(v));
   });
 
-  const init = () => document.querySelectorAll('[data-dd-calendar]').forEach((c) => render(c));
+  const placeOpen = () => document.querySelectorAll('[data-dd-date-picker].is-open').forEach(place);
+  addEventListener('resize', placeOpen);
+  const init = () => { document.querySelectorAll('[data-dd-calendar]').forEach((c) => render(c)); placeOpen(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
@@ -1145,6 +1203,8 @@
    - <form method="dialog"> inside closes it on submit (after native validation) with the submitter's value.
    - A click on the backdrop closes it, unless the dialog has data-dd-dialog-backdrop="static". Esc closes (native).
    - Closing plays the exit animation (.is-closing), then calls close(); focus returns to the opener.
+   - Tab / Shift+Tab wrap inside the open dialog instead of leaving for the browser's own UI.
+   - Inside a role="menu" list (sheet actions / choices): ↑ ↓ move between rows, Home / End jump to the ends.
    - Global: dd.dialog.open('#id'), dd.dialog.close('#id', value). Listen for the native "close" event for the result. */
 (() => {
   const SEL = 'dialog.dd-dialog, dialog.dd-drawer, dialog.dd-sheet';
@@ -1225,6 +1285,38 @@
     if (!dlg) return;
     e.preventDefault();
     close(dlg, e.submitter && e.submitter.value ? e.submitter.value : undefined);
+  });
+
+  // Focus trap: Tab past the last control wraps to the first (and Shift+Tab back), so focus never leaves the modal.
+  const TABBABLE = 'a[href], button, input:not([type="hidden"]), select, textarea, summary, [tabindex], [contenteditable="true"]';
+  const tabbables = (dlg) => [...dlg.querySelectorAll(TABBABLE)].filter((el) => el.tabIndex >= 0 && !el.disabled
+    && !el.closest('[inert], details:not([open]) > :not(summary)') && el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden');
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab' || e.altKey || e.ctrlKey || e.metaKey) return;
+    const modal = (d) => { try { return d.matches(':modal'); } catch { return d.open; } };
+    const dlg = [...document.querySelectorAll(SEL)].reverse().find((d) => d.open && modal(d));
+    if (!dlg) return;
+    const list = tabbables(dlg);
+    if (!list.length) { e.preventDefault(); dlg.focus(); return; }
+    const first = list[0], last = list[list.length - 1], at = document.activeElement;
+    const outside = !dlg.contains(at) || at === dlg;
+    if (e.shiftKey && (at === first || outside)) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (at === last || outside)) { e.preventDefault(); first.focus(); }
+  });
+
+  // Arrow keys move through role="menu" rows inside an open dialog / sheet.
+  document.addEventListener('keydown', (e) => {
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
+    const item = e.target.closest?.('[role^="menuitem"]');
+    const menu = item?.closest('[role="menu"]');
+    if (!menu || !item.closest(SEL)) return;
+    const rows = [...menu.querySelectorAll('[role^="menuitem"]')].filter((r) => !r.disabled && r.getAttribute('aria-disabled') !== 'true');
+    let i = rows.indexOf(item);
+    if (e.key === 'ArrowDown') i = (i + 1) % rows.length;
+    else if (e.key === 'ArrowUp') i = (i - 1 + rows.length) % rows.length;
+    else i = e.key === 'Home' ? 0 : rows.length - 1;
+    e.preventDefault();
+    rows[i]?.focus();
   });
 
   // Focus goes back to whatever opened the dialog.
@@ -1354,7 +1446,7 @@
     for (const f of input.files) {
       const [cls, ext] = kind(f.name);
       const li = document.createElement('li');
-      li.className = 'dd-file is-done';
+      li.className = 'dd-file is-done is-new';
       li.innerHTML = `<span class="dd-file__icon ${cls}"${ext ? ` data-ext="${esc(ext)}"` : ''}>${icon('file')}</span>
         <span class="dd-file__body"><span class="dd-file__name">${esc(f.name)}</span>
         <span class="dd-file__meta"><span>${size(f.size)}</span><span class="dd-file__status">${icon('check')}Ready</span></span></span>
@@ -1371,7 +1463,9 @@
     const list = row.parentElement;
     const next = row.nextElementSibling?.querySelector('[data-dd-file-remove]') || row.previousElementSibling?.querySelector('[data-dd-file-remove]');
     row.classList.add('is-removing');
-    const done = () => { row.remove(); next?.focus(); list?.dispatchEvent(new CustomEvent('dd-file-remove', { bubbles: true })); };
+    // Focus moves to the neighbouring remove button, or back to the list's dropzone once the list is empty.
+    const zone = list?.id ? document.querySelector(`[data-dd-dropzone="#${CSS.escape(list.id)}"] input[type="file"]`) : null;
+    const done = () => { row.remove(); (next || zone)?.focus(); list?.dispatchEvent(new CustomEvent('dd-file-remove', { bubbles: true })); };
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) done(); else row.addEventListener('animationend', done, { once: true });
   });
 })();
@@ -1859,7 +1953,15 @@
     let x, y, side = s.side;
     if (side === 'right') {
       x = a.right - 2; y = a.top - GAP * 1.5;
-      if (x + w > vw - pad) { x = a.left - w + 2; side = 'left'; }
+      if (x + w > vw - pad) {
+        if (a.left - w + 2 >= pad) { x = a.left - w + 2; side = 'left'; }
+        else {
+          // No room on either side (phones): drop the submenu just under its item, nudged in, so the item that
+          // opened it stays visible instead of being covered.
+          x = a.left + GAP * 4; y = a.bottom - 2; side = 'bottom';
+          if (y + h > vh - pad && a.top - h + 2 >= pad) { y = a.top - h + 2; side = 'top'; }
+        }
+      }
     } else {
       x = s.align === 'end' ? a.right - w : a.left;
       const roomBelow = vh - pad - (a.bottom + gap), roomAbove = a.top - gap - pad;
@@ -2354,7 +2456,7 @@
    - [data-dd-nav-section="name"] on a rail item shows the pane [data-dd-nav-pane="name"]; pressing the active one again
      folds the panel, like the chevron.
    - [data-dd-nav-open="#id"] opens a nav that is off-canvas (mobile); [data-dd-nav-close] closes it. Esc, a click on the
-     scrim or following a link inside also close it, and focus returns to the opener. */
+     scrim or following a link inside also close it, and focus returns to the opener. Tabbing out of it closes it too. */
 (() => {
   const KEY = (id) => `dd-side-nav:${id}`;
   const store = {
@@ -2440,6 +2542,12 @@
     if (t.matches?.('.dd-side-nav.is-mobile-open')) { setMobile(t, false); return; }
     const link = t.closest('.dd-side-nav.is-mobile-open a[href]');
     if (link) setMobile(link.closest('.dd-side-nav'), false);
+  });
+
+  // Tabbing out of an open off-canvas nav closes it, so focus never sits on the page hidden behind the scrim.
+  document.addEventListener('focusin', (e) => {
+    const nav = document.querySelector('.dd-side-nav.is-mobile-open');
+    if (nav && !nav.contains(e.target) && !openers(nav).includes(e.target)) setMobile(nav, false);
   });
 
   document.addEventListener('keydown', (e) => {
@@ -2671,6 +2779,8 @@
      action    { label: 'Undo', onClick(toast) {} } — clicking it runs onClick, then dismisses the toast
      duration  ms before it leaves on its own (default 5000; 0 keeps it until dismissed). A hairline shows the time
                left; hovering or focusing the stack pauses every timer, and so does hiding the tab.
+   Swipe a toast sideways (or drag it with the mouse) to dismiss it; Esc dismisses the toast that has focus, and focus
+   then moves to the next toast or back to where it was before the stack.
      icon      any sprite name, to override the intent's icon
    Returns { el, dismiss() }. dd.toast('Saved') works too, and dd.toast.clear() empties the stack.
    Declarative: <button data-dd-toast="Title" data-dd-toast-description="…" data-dd-toast-intent="ok"
@@ -2703,6 +2813,7 @@
   const live = new Set(); // toasts with a running timer
   let stack;
   let held = false;
+  let returnTo = null; // where focus was before it entered the stack
   const hold = (on) => {
     held = on;
     live.forEach((t) => (on ? t.timer?.pause() : t.timer?.play()));
@@ -2718,11 +2829,30 @@
     stack.setAttribute('aria-live', 'polite');
     stack.addEventListener('pointerenter', () => hold(true));
     stack.addEventListener('pointerleave', () => { if (!stack.contains(document.activeElement)) hold(false); });
-    stack.addEventListener('focusin', () => hold(true));
+    stack.addEventListener('focusin', (e) => {
+      if (e.relatedTarget && !stack.contains(e.relatedTarget)) returnTo = e.relatedTarget;
+      hold(true);
+    });
+    stack.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      const t = e.target.closest?.('.dd-toast');
+      if (t?.ddToast) { e.preventDefault(); t.ddToast.dismiss(); }
+    });
     stack.addEventListener('focusout', (e) => { if (!stack.contains(e.relatedTarget) && !stack.matches(':hover')) hold(false); });
     return stack;
   };
-  document.addEventListener('visibilitychange', () => hold(document.hidden || !!stack?.matches(':hover')));
+  document.addEventListener('visibilitychange', () => hold(document.hidden || !!stack?.matches(':hover') || !!stack?.contains(document.activeElement)));
+
+  // Toasts already in the stack glide to their new place instead of jumping when one is added (FLIP).
+  const glide = (region, change) => {
+    const kids = still() ? [] : [...region.querySelectorAll(':scope > .dd-toast:not([data-leaving])')];
+    const before = kids.map((k) => k.getBoundingClientRect().top);
+    change();
+    kids.forEach((k, n) => {
+      const dy = before[n] - k.getBoundingClientRect().top;
+      if (Math.abs(dy) > 0.5) k.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.45, 0, .55, 1)', composite: 'add' });
+    });
+  };
 
   const toast = (opts = {}) => {
     if (typeof opts === 'string') opts = { title: opts };
@@ -2761,25 +2891,41 @@
     function leave() {
       if (gone) return;
       gone = true;
+      // Keep keyboard users in the stack: focus the neighbouring toast, or go back to where they came from.
+      // (After a mouse click focus is simply dropped, so the other timers start again when the pointer leaves.)
+      if (el.contains(document.activeElement) && !document.activeElement.matches(':focus-visible')) document.activeElement.blur();
+      else if (el.contains(document.activeElement)) {
+        const shown = [...(el.parentElement?.querySelectorAll(':scope > .dd-toast:not([data-leaving])') || [])];
+        const k = shown.indexOf(el);
+        const next = (shown[k + 1] || shown[k - 1])?.querySelector('button, a[href]');
+        if (next) next.focus();
+        else if (returnTo?.isConnected) returnTo.focus({ preventScroll: true });
+        else document.activeElement.blur();
+      }
       el.dataset.leaving = '';
       handle.timer?.cancel();
       live.delete(handle);
-      if (stack?.contains(document.activeElement) && el.contains(document.activeElement)) document.activeElement.blur();
       if (still() || !el.animate || !el.isConnected) return el.remove();
       const h = `${el.offsetHeight}px`;
       const gap = `${-(parseFloat(getComputedStyle(el.parentElement).rowGap) || 0)}px`;
+      // A swiped toast leaves from where the pointer let go, in the direction it was thrown.
+      const cs = getComputedStyle(el);
+      const at = parseFloat(cs.translate) || 0;
+      const from = `${at}px 0`;
+      const away = `${at + (at < 0 ? -32 : 32)}px 0`;
+      el.classList.remove('is-swiping');
       el.style.pointerEvents = 'none';
       el.animate([
-        { opacity: 1, transform: 'none', height: h, marginBottom: '0px' },
-        { opacity: 0, transform: 'translateX(24px)', height: h, marginBottom: '0px', offset: 0.5 },
-        { opacity: 0, transform: 'translateX(24px)', height: '0px', marginBottom: gap, paddingTop: '0px', paddingBottom: '0px' },
+        { opacity: Number(cs.opacity), translate: from, height: h, marginBottom: '0px' },
+        { opacity: 0, translate: away, height: h, marginBottom: '0px', offset: 0.5 },
+        { opacity: 0, translate: away, height: '0px', marginBottom: gap, paddingTop: '0px', paddingBottom: '0px' },
       ], { duration: 320, easing: 'cubic-bezier(.45, 0, .55, 1)' }).finished.then(() => el.remove(), () => el.remove());
     }
 
     const region = toaster();
     // A brand-new live region needs a beat before content lands in it, or screen readers miss the first toast.
     const add = () => {
-      region.append(el);
+      glide(region, () => region.append(el));
       const shown = [...region.querySelectorAll(':scope > .dd-toast:not([data-leaving])')];
       shown.slice(0, Math.max(0, shown.length - MAX)).forEach((old) => old.ddToast?.dismiss());
       if (duration > 0) {
@@ -2799,6 +2945,45 @@
   };
   toast.clear = () => document.querySelectorAll('.dd-toaster > .dd-toast').forEach((t) => (t.ddToast ? t.ddToast.dismiss() : t.remove()));
   dd.toast = toast;
+
+  // Swipe: drag a live toast sideways; past a third of its width (or a quick flick) it leaves, otherwise it springs back.
+  let drag = null;
+  document.addEventListener('pointerdown', (e) => {
+    const el = e.target.closest?.('.dd-toaster > .dd-toast');
+    if (!el || el.dataset.leaving || e.button !== 0 || e.target.closest('button, a, input, select, textarea')) return;
+    drag = { el, id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, t: performance.now(), on: false };
+  });
+  document.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x;
+    const dy = e.clientY - drag.y;
+    if (!drag.on) {
+      if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { drag = null; return; }
+      if (Math.abs(dx) < 6) return;
+      drag.on = true;
+      drag.el.setPointerCapture?.(e.pointerId);
+      drag.el.classList.add('is-swiping');
+    }
+    drag.dx = dx;
+    drag.el.style.translate = `${dx}px 0`;
+    drag.el.style.opacity = String(Math.max(0.15, 1 - Math.abs(dx) / (drag.el.offsetWidth * 0.8)));
+  });
+  const drop = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const { el, dx, t, on } = drag;
+    drag = null;
+    if (!on) return;
+    el.classList.remove('is-swiping');
+    const fling = Math.abs(dx) / Math.max(1, performance.now() - t) > 0.6;
+    if (e.type === 'pointerup' && (Math.abs(dx) > el.offsetWidth * 0.33 || (fling && Math.abs(dx) > 24)) && el.ddToast) {
+      el.ddToast.dismiss(); // leaves from where it was let go
+    } else {
+      el.style.translate = '';
+      el.style.opacity = '';
+    }
+  };
+  document.addEventListener('pointerup', drop);
+  document.addEventListener('pointercancel', drop);
 
   document.addEventListener('click', (e) => {
     const t = e.target.closest('[data-dd-toast]');
@@ -2822,7 +3007,9 @@
      data-dd-tooltip-placement  top (default) · bottom · left · right, optionally -start / -end. Flips when it doesn't fit.
      data-dd-tooltip-kbd        a key hint, keys separated by spaces: "⌘ K" → <kbd>⌘</kbd><kbd>K</kbd>
    One shared .dd-tooltip (role="tooltip") lives at the end of <body>; while it is open the trigger points at it with
-   aria-describedby. It takes the dawn/dusk theme of its trigger. Pointer can move onto the tooltip without losing it. */
+   aria-describedby. It takes the dawn/dusk theme of its trigger. Pointer can move onto the tooltip without losing it.
+   Where the browser supports it the tooltip is a manual popover, so it shows in the top layer — above open dialogs,
+   drawers and popovers whose buttons it describes. */
 (() => {
   const DELAY = 450;
   const WARM = 500;
@@ -2831,6 +3018,8 @@
   let showTimer = 0;
   let hideTimer = 0;
   let lastHidden = 0;
+  let closeTimer = 0;
+  const topLayer = typeof HTMLElement !== 'undefined' && 'showPopover' in HTMLElement.prototype;
 
   // Place a fixed element beside an anchor: flip to the other side if it doesn't fit, keep it 8px inside the
   // viewport and aim --dd-arrow-x / --dd-arrow-y at the anchor's centre.
@@ -2869,6 +3058,7 @@
     tip.className = 'dd-tooltip';
     tip.id = 'dd-tooltip';
     tip.setAttribute('role', 'tooltip');
+    if (topLayer) tip.setAttribute('popover', 'manual');
     tip.addEventListener('pointerenter', () => clearTimeout(hideTimer));
     tip.addEventListener('pointerleave', () => hideSoon());
     document.body.append(tip);
@@ -2893,8 +3083,12 @@
     const scope = el.closest('[data-theme]');
     if (scope && scope !== document.documentElement) t.dataset.theme = scope.dataset.theme;
     else delete t.dataset.theme;
-    t.classList.remove('is-open');
+    clearTimeout(closeTimer);
+    if (topLayer && !t.matches(':popover-open')) t.showPopover();
+    const wasOpen = t.classList.contains('is-open');
     place(t, el, el.getAttribute('data-dd-tooltip-placement') || 'top');
+    // Opening from closed: commit the new side first, so the fade slides in from the side it ends up on.
+    if (!wasOpen) void t.offsetWidth;
     t.classList.add('is-open');
     current = el;
     if (el.getAttribute('aria-label') !== text) {
@@ -2917,6 +3111,9 @@
     current = null;
     tip?.classList.remove('is-open');
     lastHidden = Date.now();
+    // Leave the top layer once the fade-out has finished.
+    clearTimeout(closeTimer);
+    if (topLayer && tip) closeTimer = setTimeout(() => { if (!tip.classList.contains('is-open') && tip.matches(':popover-open')) tip.hidePopover(); }, 200);
   };
   const hideSoon = () => { clearTimeout(hideTimer); hideTimer = setTimeout(hide, 120); };
 

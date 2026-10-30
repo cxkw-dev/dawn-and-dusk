@@ -3,26 +3,66 @@ import Docs from '../../layouts/Docs.astro';
 import Example from '../../components/Example.astro';
 import Guides from '../../components/Guides.astro';
 import { base } from '../../lib/tokens';
+import { i } from '../../lib/icon';
 
-const demo = `
-<div class="dd-row" style="--dd-gap: var(--dd-space-4)">
-  <button class="dd-btn dd-btn--primary">Hover me</button>
-  <div tabindex="0" style="padding: 18px 22px; background: var(--dd-surface); border-radius: var(--dd-r-box);
-    transition: transform var(--dd-dur) var(--dd-ease), background var(--dd-dur) var(--dd-ease)"
-    onmouseenter="this.style.transform='translateY(-4px)'; this.style.background='var(--dd-surface-2)'"
-    onmouseleave="this.style.transform=''; this.style.background='var(--dd-surface)'">Card lifts with --dd-dur</div>
+// Durations side by side. A real switch plays them (no script): each dot travels its track with one token.
+const lanes = `
+<style>
+  .motion-lanes { display: grid; gap: var(--dd-space-3); max-width: 560px; }
+  .motion-lane { display: grid; grid-template-columns: minmax(0, 10.5em) minmax(0, 1fr); align-items: center; gap: var(--dd-space-4); }
+  .motion-lane > span { display: flex; flex-direction: column; font-size: var(--dd-fs-sm); line-height: 1.3; }
+  .motion-lane small { font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+  .motion-track { container-type: inline-size; padding: 5px; border-radius: var(--dd-r-pill); background: var(--dd-surface); }
+  .motion-dot { display: block; width: 18px; height: 18px; border-radius: 50%; background: var(--dd-primary);
+    transition: transform var(--_dur) var(--dd-ease); }
+  .motion-lanes:has(:checked) .motion-dot { transform: translateX(calc(100cqi - 18px)); }
+</style>
+<div class="motion-lanes">
+  <label class="dd-switch"><input class="dd-switch__input" type="checkbox" role="switch"> Play</label>
+  <div class="motion-lane"><span><code class="dd-mono">--dd-dur-fast</code><small>${base['dur-fast']} · hover, press</small></span>
+    <span class="motion-track"><i class="motion-dot" style="--_dur: var(--dd-dur-fast)"></i></span></div>
+  <div class="motion-lane"><span><code class="dd-mono">--dd-dur</code><small>${base.dur} · reveal, lift</small></span>
+    <span class="motion-track"><i class="motion-dot" style="--_dur: var(--dd-dur)"></i></span></div>
+  <div class="motion-lane"><span><code class="dd-mono">reduced motion</code><small>0ms · straight to the end</small></span>
+    <span class="motion-track"><i class="motion-dot" style="--_dur: 0s"></i></span></div>
+</div>`;
+
+// Hover and lift: the button's own hover (--dd-dur-fast) next to a lifted card that rises with --dd-dur.
+// The tone step is a wash layered over --dd-surface, so it shows on the grain page in dusk as well as dawn.
+const lift = `
+<style>
+  .motion-lift { transition: transform var(--dd-dur) var(--dd-ease); }
+  .motion-lift:hover, .motion-lift:focus-visible {
+    transform: translateY(-4px);
+    background-image: linear-gradient(var(--dd-wash), var(--dd-wash));
+  }
+</style>
+<div class="dd-row" style="--dd-gap: var(--dd-space-6); align-items: center">
+  <button class="dd-btn dd-btn--primary" type="button">${i('bolt')}<span>Hover me</span></button>
+  <a class="dd-card motion-lift" href="../components/card" style="width: 260px">
+    <div class="dd-card__body">
+      <p class="dd-card__eyebrow"><code class="dd-mono">--dd-dur</code></p>
+      <h3 class="dd-card__title">card lifts</h3>
+      <p class="dd-card__text">Rises 4px and steps one tone on hover or focus.</p>
+    </div>
+  </a>
 </div>`;
 ---
 <Docs title="Motion" group="Foundations" lead="“Gentle”: a symmetric, unhurried ease. Motion confirms a change; it never performs.">
   <h2 id="tokens">Tokens</h2>
   <ul>
-    <li><code>--dd-dur</code> · {base.dur} — reveals, panels, theme changes, expanding rows.</li>
+    <li><code>--dd-dur</code> · {base.dur} — reveals, panels, lifts, expanding rows.</li>
     <li><code>--dd-dur-fast</code> · {base['dur-fast']} — hovers, presses, focus.</li>
     <li><code>--dd-ease</code> · <code>{base.ease}</code> — one curve for everything.</li>
   </ul>
-  <Example code={demo} />
+  <Example code={lanes} title="Durations" description="Flip the switch: each dot crosses its track with one duration and the same ease. The last lane is what visitors who prefer reduced motion get." />
+
+  <h2 id="hover">Hover and lift</h2>
+  <p>Colour changes on hover run at <code>--dd-dur-fast</code>; anything that moves runs at <code>--dd-dur</code>. Over a surface, a hover step is a <code>--dd-wash</code> layered on top, so it reads on the grain page at dusk as clearly as at dawn.</p>
+  <Example code={lift} description="The button’s hover and press are built in. The card is a plain .dd-card with a few lines of CSS that use the tokens." />
+
   <h2 id="reduced">Reduced motion</h2>
-  <p><code>base.css</code> collapses durations when the visitor prefers reduced motion. Spinners and shimmers keep running at a single iteration — state is still communicated.</p>
+  <p>When the visitor asks for reduced motion, <code>base.css</code> makes every transition and animation instant, so state still changes but nothing travels. Components that need motion to say “working” opt back in gently: spinners keep turning, slower. Shimmers, pulses and indeterminate bars settle into a still fill.</p>
   <h2 id="guidelines">Guidelines</h2>
-  <Guides do={['Animate opacity, transform and colour.', 'Move things a few pixels, not across the screen.']} dont={['Don’t animate layout properties on large areas.', 'Don’t add bounce or overshoot — it fights the calm tone.']} />
+  <Guides do={['Animate opacity, transform and colour.', 'Move things a few pixels, not across the screen.', 'Use <code>--dd-dur-fast</code> for colour, <code>--dd-dur</code> for movement.']} dont={['Don’t animate layout properties on large areas.', 'Don’t add bounce or overshoot — it fights the calm tone.', 'Don’t step a hover to <code>--dd-surface-2</code> on the page — at dusk it matches the grain. Layer <code>--dd-wash</code> instead.']} />
 </Docs>

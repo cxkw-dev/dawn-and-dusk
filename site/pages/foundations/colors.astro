@@ -6,18 +6,21 @@ import { dawn, dusk, setNames } from '../../lib/tokens';
 
 type Row = [token: string, use: string];
 const groups: { title: string; id: string; intro: string; rows: Row[] }[] = [
-  { title: 'Surfaces', id: 'surfaces', intro: 'Greige Gallery, warmer. Surfaces separate by tone — each step is the text colour mixed a little further into the page.', rows: [
+  { title: 'Surfaces', id: 'surfaces', intro: 'Greige Gallery, warmer. Surfaces separate by tone — each step is the text colour mixed a little further into the page. At dusk the film grain lifts the page to about the tone of <code>--dd-surface-2</code>, so containers read a shade <em>darker</em> than the page there. Fills that sit straight on the page — hover, pressed, chips — use a wash instead: a translucent step toward the text colour that shows on any tone.', rows: [
     ['bg', 'Page background (with the film grain on top).'],
     ['surface', 'Containers: cards, table cards, sidebars, inputs at rest.'],
-    ['surface-2', 'Inset fills, hover, secondary buttons, selected rows.'],
+    ['surface-2', 'Inset fills and secondary buttons inside a container. Not for fills on the page — at dusk it matches the grain.'],
     ['surface-3', 'Pressed, active, the strongest tonal step.'],
+    ['wash', 'Hover on any tone: the page, a surface or a floating layer. The fill of a transparent element, or layered over a filled one as a <code>linear-gradient(var(--dd-wash), var(--dd-wash))</code> background image.'],
+    ['wash-strong', 'Pressed or selected on any tone — one step past wash.'],
     ['border', 'The rare hairline — dense tables and dividers only.'],
     ['border-strong', 'Emphasised rules, e.g. under a table header.'],
   ] },
   { title: 'Text', id: 'text', intro: 'Warm near-black on cream; cream on warm near-black at dusk.', rows: [
     ['text', 'Body copy, headings, icons.'],
     ['muted', 'Secondary text, descriptions, table meta.'],
-    ['faint', 'Placeholders, disabled text, decorative rules.'],
+    ['quiet', 'Hints, shortcut keys, code comments, section labels — still readable, a step quieter than muted.'],
+    ['faint', 'Placeholders, disabled text, decorative rules. Never for text people must read.'],
   ] },
   { title: 'Accent & primary', id: 'accent', intro: 'Two roles. <b>Primary</b> (Golden hour apricot) fills the main action and nothing else. <b>Accent</b> (taupe ink) marks selection, focus and links.', rows: [
     ['primary', 'Primary button fill.'],
@@ -38,17 +41,36 @@ const groups: { title: string; id: string; intro: string; rows: Row[] }[] = [
     ['bad-soft', 'Error tint.'],
     ['info-soft', 'Info tint.'],
   ] },
+  { title: 'Focus & floating layers', id: 'floating', intro: 'Focus is drawn with the accent; anything that floats above the page gets its own fill, the float shadow and, for modal layers, a backdrop.', rows: [
+    ['ring', 'Focus ring: a 2px outline, 2px out, on <code>:focus-visible</code>.'],
+    ['float-bg', 'Menus, popovers, palettes and toasts (with <code>--dd-shadow-float</code>).'],
+    ['float-hover', 'Hovered or active row inside a floating layer.'],
+    ['overlay', 'Backdrop behind dialogs, drawers and sheets.'],
+  ] },
+  { title: 'Tones', id: 'tones', intro: 'Three supporting neutrals from the palette — greige, stone and putty — for illustration, empty states and quiet decoration.', rows: [
+    ['tone-1', 'Greige — the light end of media placeholders and illustrations.'],
+    ['tone-2', 'Stone — the neutral colour: default chips and avatars, offline dots, “other” in charts, sparklines.'],
+    ['tone-3', 'Putty — the deep end of media placeholders and illustrations.'],
+  ] },
 ];
+
+/** Token values that aren't plain colours, written short: var(--dd-surface-2) → "= surface-2", a mix → "text 7%". */
+const show = (v: string) => /^var\(/.test(v)
+  ? v.replace(/^var\(--dd-([\w-]+)\)$/, '= $1')
+  : v.replace(/^color-mix\(in oklab,\s*(.*)\)$/, '$1').replace(/var\(--dd-([\w-]+)\)/g, '$1').replace(/,\s*transparent$/, '').replace(/,\s*/g, ' + ');
 
 const swatches = (rows: Row[]) => rows;
 const setKeys = Object.keys(setNames);
 
 const usage = `
-<div class="dd-row">
-  <span style="background: var(--dd-surface); padding: 10px 14px; border-radius: var(--dd-r-box)">--dd-surface</span>
-  <span style="background: var(--dd-surface-2); padding: 10px 14px; border-radius: var(--dd-r-box)">--dd-surface-2</span>
-  <span style="background: var(--dd-primary); color: var(--dd-on-primary); padding: 10px 14px; border-radius: var(--dd-r-box)">--dd-primary</span>
-  <span style="background: var(--dd-ok-soft); color: var(--dd-ok); padding: 10px 14px; border-radius: var(--dd-r-box)">--dd-ok-soft</span>
+<div style="max-width: 380px; padding: var(--dd-space-5); background: var(--dd-surface); border-radius: var(--dd-r-box)">
+  <p style="margin: 0; font-weight: 650">auth-gateway</p>
+  <p style="margin: 4px 0 var(--dd-space-4); font-size: var(--dd-fs-sm); color: var(--dd-muted)">
+    <span style="color: var(--dd-ok)">● healthy</span> · <span class="dd-mono">84 ms</span> · eu-west-1</p>
+  <div class="dd-row">
+    <button class="dd-btn dd-btn--primary" type="button">Deploy</button>
+    <button class="dd-btn" type="button">Logs</button>
+  </div>
 </div>`;
 ---
 <Docs title="Colors" group="Foundations" lead="Two themes from one set of names: dawn (light) and dusk (dark). Components only read tokens, so everything switches together.">
@@ -65,9 +87,9 @@ const usage = `
         {swatches(g.rows).map(([t, use]) => (
           <div class="doc-sw-row">
             <span><code>--dd-{t}</code></span>
-            <span class="doc-sw-mode" data-theme="dawn"><i class="doc-sw-chip" style={`background:${dawn[t]}`} /><span class="doc-sw-hex">{dawn[t]}</span></span>
-            <span class="doc-sw-mode" data-theme="dusk"><i class="doc-sw-chip" style={`background:${dusk[t]}`} /><span class="doc-sw-hex">{dusk[t]}</span></span>
-            <span>{use}</span>
+            <span class="doc-sw-mode" data-theme="dawn"><i class="doc-sw-chip" style={`background:${dawn[t]}`} /><span class="doc-sw-hex">{show(dawn[t])}</span></span>
+            <span class="doc-sw-mode" data-theme="dusk"><i class="doc-sw-chip" style={`background:${dusk[t]}`} /><span class="doc-sw-hex">{show(dusk[t])}</span></span>
+            <span><span set:html={use} /></span>
           </div>
         ))}
       </div>
@@ -85,12 +107,9 @@ const usage = `
     ))}
   </div>
 
-  <h2 id="tones">Tones</h2>
-  <p>Three supporting neutrals from the palette — greige, stone and putty — for illustration, empty states and quiet decoration: <code>--dd-tone-1</code>, <code>--dd-tone-2</code>, <code>--dd-tone-3</code>.</p>
-
   <h2 id="guidelines">Guidelines</h2>
   <Guides
-    do={['Build hierarchy with surface steps before reaching for a border.', 'Keep <code>--dd-primary</code> for the single most important action.', 'Pair every status colour with an icon or word — never colour alone.', 'Check every screen in dusk; it is a first-class theme, not an afterthought.']}
+    do={['Build hierarchy with surface steps before reaching for a border.', 'Use <code>--dd-wash</code> / <code>--dd-wash-strong</code> for hover and pressed fills that sit on the page.', 'Keep <code>--dd-primary</code> for the single most important action.', 'Pair every status colour with an icon or word — never colour alone.', 'Check every screen in dusk; it is a first-class theme, not an afterthought.']}
     dont={['Don’t hard-code hex values in components — read tokens.', 'Don’t use the color set to mean success or failure.', 'Don’t put primary-coloured text on primary-soft backgrounds for long copy.']}
   />
 </Docs>

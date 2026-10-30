@@ -77,7 +77,7 @@ const people = `
   <Example title="The Color set" description="One chip per Golden hour colour, .dd-chip--set-1 to --set-8. In dusk the set lifts and the wash stays soft." code={set} />
 
   <h2 id="dot-icon">Dot, icon and link</h2>
-  <p>A neutral chip with a coloured dot names a category without colouring the whole row. Icons lead like they do in buttons. Chips that are links or buttons deepen on hover.</p>
+  <p>A neutral chip with a coloured dot names a category without colouring the whole row. Icons lead like they do in buttons. Chips that are links or buttons darken a step toward the text colour on hover, so even the palest hue answers the pointer.</p>
   <Example code={dots} />
 
   <h2 id="removable">Removable</h2>
@@ -85,11 +85,11 @@ const people = `
   <Example code={removable} />
 
   <h2 id="filter">Filter chips</h2>
-  <p>Toggle buttons with <code>aria-pressed</code>. Off is a lighter wash; on deepens it and slides in a check.</p>
+  <p>Toggle buttons with <code>aria-pressed</code>. Off is a lighter wash; on deepens it and slides in a check. Hover is a quieter step on top of either, so you can always tell hover from on.</p>
   <Example code={filter} />
 
   <h2 id="input">Input chips</h2>
-  <p>A field that turns what you type into chips. The colour comes from the text, so a tag keeps its colour wherever it shows up.</p>
+  <p>A field that turns what you type into chips, in the same tonal box as a text input. The colour comes from the text, so a tag keeps its colour wherever it shows up. Typing a tag that is already there makes it flash instead of adding a twin.</p>
   <Example code={input} />
 
   <h2 id="avatar">Avatar chips</h2>
@@ -107,15 +107,15 @@ const people = `
     ['.dd-chip--avatar', 'Pill chip that starts with a <code>.dd-avatar</code>.'],
     ['.dd-chip-input / __field', 'Chips plus a text field in one control.'],
     ['.dd-chip-group', 'A wrapping row of chips.'],
-    ['.is-selected', 'Selected look for chips that aren’t toggle buttons.'],
+    ['.is-selected', 'Selected look for chips that aren’t toggle buttons: a deeper tint than hover.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute / event', 'What it does']} rows={[
-    ['.dd-chip__remove', 'Click, Enter, Space, Delete or Backspace removes the chip (a short fade, instant under reduced motion).'],
+    ['.dd-chip__remove', 'Click, Enter, Space, Delete or Backspace removes the chip (a short fade, then the chips after it glide over; instant under reduced motion). Focus moves to the next chip’s ×, the previous one, the field, or the group.'],
     ['dd:chip-remove', 'Cancelable event on the chip before it goes; <code>detail.value</code> is its <code>data-value</code> or text.'],
     ['button.dd-chip[aria-pressed]', 'Click toggles <code>aria-pressed</code> and fires <code>dd:chip-toggle</code> (<code>detail.pressed</code>).'],
-    ['.dd-chip-input__field', 'Enter or comma adds a chip (no duplicates); Backspace in the empty field removes the last one. The container fires <code>dd:chips-change</code> with <code>detail.values</code>.'],
+    ['.dd-chip-input__field', 'Enter or comma adds a chip; a duplicate flashes the existing one instead. Backspace in the empty field removes the last one. The container fires <code>dd:chips-change</code> with <code>detail.values</code>.'],
     ['dd.chip.create(text) / remove(chip)', 'Make or remove a chip from code.'],
   ]} />
 

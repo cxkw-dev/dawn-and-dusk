@@ -370,7 +370,7 @@ Reading the skeletons:
 ```css
 .app-explorer { container: app-explorer / inline-size; }
 .app-query { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 2); }
-.app-query > .dd-input { flex: 1 1 260px; }
+.app-query > .dd-input { flex: 1 1 10rem; min-width: 0; }   /* Find stays beside the query on a phone */
 .app-query > .dd-segmented { margin-left: auto; }
 .app-split { display: grid; grid-template-columns: minmax(0, 1fr); gap: calc(var(--dd-u) * 6); align-items: start; }
 .app-detail { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 4); min-width: 0; }
@@ -395,9 +395,11 @@ Reading the skeletons:
 1. App shell; the side nav is just its rail (no panel) with Settings `aria-current="page"` — the page carries its own
    vertical nav, so there is never a second side nav in the content.
 2. `.dd-page-header`: title + one-line description, no actions (each section owns its own).
-3. `.dd-tabs.dd-tabs--vertical`: `<nav class="dd-tabs__list">` of anchor links (`.is-active` + `aria-current`) beside a
-   `.dd-tabs__panel` holding `.dd-form.dd-form--divided`, one section per topic. (One URL per section instead? Use
-   real tabs: `data-dd-tabs`, `role="tab"`, `aria-orientation="vertical"`.)
+3. `.dd-tabs.dd-tabs--vertical[data-dd-tabs]`: a `role="tablist"` with `aria-orientation="vertical"` of `role="tab"`
+   buttons beside one `.dd-tabs__panel` per topic, each holding a `.dd-form` with its section. Real tabs keep the
+   selected state right and give ↑ ↓ / Home / End. Don't use in-page anchor links with a fixed `aria-current`: the
+   mark never moves. (One URL per section? Then each section is its own page and the server sets
+   `aria-current="page"` on its link.)
 4. **Profile** `<form>`: avatar + compact dropzone, tucked inputs and a select in `.dd-form__grid`, textarea with
    counter, footer with the page's only primary. **Notifications**: `.dd-switch--end` with descriptions in
    `.dd-form__choices--rows` (+ a `.dd-checkbox-group--inline` for channels). **API keys**: `.dd-code-field` for the new key, `.dd-table` with a
@@ -410,15 +412,15 @@ Reading the skeletons:
     <h1 class="dd-page-header__title">settings</h1>
     <p class="dd-page-header__desc">Your profile, how cxkw.dev reaches you, and the keys that act on your behalf.</p>
   </div></div></header>
-  <div class="dd-tabs dd-tabs--vertical">
-    <nav class="dd-tabs__list" aria-label="Settings">
-      <a class="dd-tabs__tab is-active" href="#profile" aria-current="true">[i:user]<span>Profile</span></a>
-      <a class="dd-tabs__tab" href="#notifications">[i:bell]<span>Notifications</span></a>
-      <a class="dd-tabs__tab" href="#keys">[i:key]<span>API keys</span><span class="dd-tabs__count">3</span></a>
-      <a class="dd-tabs__tab" href="#danger">[i:danger]<span>Danger zone</span></a>
-    </nav>
-    <div class="dd-tabs__panel"><div class="dd-form dd-form--divided">
-      <form class="dd-form__section" id="profile" aria-labelledby="profile-title">
+  <div class="dd-tabs dd-tabs--vertical" data-dd-tabs>
+    <div class="dd-tabs__list" role="tablist" aria-label="Settings" aria-orientation="vertical">
+      <button class="dd-tabs__tab" role="tab" type="button" aria-selected="true" aria-controls="profile">[i:user]<span>Profile</span></button>
+      <button class="dd-tabs__tab" role="tab" type="button" aria-controls="notifications">[i:bell]<span>Notifications</span></button>
+      <button class="dd-tabs__tab" role="tab" type="button" aria-controls="keys">[i:key]<span>API keys</span><span class="dd-tabs__count">3</span></button>
+      <button class="dd-tabs__tab" role="tab" type="button" aria-controls="danger">[i:danger]<span>Danger zone</span></button>
+    </div>
+    <div class="dd-tabs__panel" role="tabpanel" id="profile"><div class="dd-form">
+      <form class="dd-form__section" aria-labelledby="profile-title">
         <div class="dd-form__head"><h2 class="dd-form__title" id="profile-title">Profile</h2><p class="dd-form__desc">Shown on deploys and comments.</p></div>
         <div class="app-avatar">
           <span class="dd-avatar dd-avatar--xl dd-avatar--set-3" role="img" aria-label="Andy Nguyen">AN</span>
@@ -428,7 +430,7 @@ Reading the skeletons:
           </label>
         </div>
         <div class="dd-form__grid">
-          <div class="dd-field"><label class="dd-field__label" for="name">Name</label><div class="dd-input"><input class="dd-input__control" id="name" value="Andy Nguyen"></div></div>
+          <div class="dd-field"><label class="dd-field__label" for="name">Name</label><div class="dd-input"><input class="dd-input__control" id="name" value="Andy Nguyen" required></div></div>
           <div class="dd-field"><label class="dd-field__label" for="user">Username</label><div class="dd-input"><span class="dd-input__unit dd-input__prefix">cxkw.dev/</span><input class="dd-input__control" id="user" value="andy"></div></div>
           <div class="dd-field"><label class="dd-field__label" for="tz">Time zone</label><div class="dd-input dd-select"><select class="dd-input__control" id="tz"><option>Europe/Berlin · UTC+1</option></select><span class="dd-select__chevron">[i:chevron-down]</span></div></div>
           <div class="dd-field dd-form__span">
@@ -443,7 +445,9 @@ Reading the skeletons:
           <button class="dd-btn dd-btn--primary" type="submit">Save profile</button>
         </div>
       </form>
-      <section class="dd-form__section" id="notifications" aria-labelledby="notif-title">
+    </div></div>
+    <div class="dd-tabs__panel" role="tabpanel" id="notifications" hidden><div class="dd-form">
+      <section class="dd-form__section" aria-labelledby="notif-title">
         <div class="dd-form__head"><h2 class="dd-form__title" id="notif-title">Notifications</h2><p class="dd-form__desc">Changes apply right away.</p></div>
         <div class="dd-form__choices dd-form__choices--rows">
           <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch" checked>
@@ -451,7 +455,9 @@ Reading the skeletons:
           …
         </div>
       </section>
-      <section class="dd-form__section" id="keys" aria-labelledby="keys-title">
+    </div></div>
+    <div class="dd-tabs__panel" role="tabpanel" id="keys" hidden><div class="dd-form">
+      <section class="dd-form__section" aria-labelledby="keys-title">
         <div class="dd-form__head"><h2 class="dd-form__title" id="keys-title">API keys</h2><p class="dd-form__desc">For CI and the dd CLI.</p></div>
         <div class="dd-code-field">
           <span class="dd-code-field__label" id="newkey">New key · github-actions</span>
@@ -472,7 +478,9 @@ Reading the skeletons:
         </table></div>
         <div class="dd-form__footer dd-form__footer--plain"><button class="dd-btn dd-btn--secondary" type="button">[i:plus]<span>Create key</span></button></div>
       </section>
-      <section class="dd-form__section" id="danger" aria-labelledby="danger-title">
+    </div></div>
+    <div class="dd-tabs__panel" role="tabpanel" id="danger" hidden><div class="dd-form">
+      <section class="dd-form__section" aria-labelledby="danger-title">
         <div class="dd-form__head"><h2 class="dd-form__title" id="danger-title">Danger zone</h2><p class="dd-form__desc">These can’t be undone.</p></div>
         <div class="dd-form__section dd-form__section--panel">
           <div class="dd-form__head"><h3 class="dd-form__title">Delete account</h3><p class="dd-form__desc">Removes your profile, 5 projects and every API key.</p></div>
@@ -512,6 +520,7 @@ Reading the skeletons:
   four characters (mono) and a status column (Active / Expiring / Revoked).
 - Destructive = two steps: `.dd-btn--danger` → `.dd-dialog--danger` (`role="alertdialog"`, `autofocus` on the safe
   choice). The danger zone is a neutral tonal panel — don't tint it red.
+- Fields that can't be empty (name, email) get `required`; mark the optional ones in words, never with an asterisk.
 - Mobile: the vertical tab list moves above the sections, the grid folds to one column, footer buttons stretch under
   ~420px, the key table scrolls sideways.
 
@@ -519,7 +528,8 @@ Reading the skeletons:
 
 **Structure** — no app shell; one wrapper with glue for the section rhythm:
 1. `.dd-top-bar` site variant: wordmark (`.dd-logo` with the site name), `.dd-top-bar__links`, ghost icon buttons
-   (GitHub, theme). Under 640px the links hide; the nav button opens a `.dd-menu` with the same links.
+   (GitHub, theme). Under 640px the links hide; the nav button opens a `.dd-menu` with the same links. The links are
+   in-page anchors, so none carries `aria-current` (on a multi-page site, the link to the page you're on does).
 2. Hero: `.dd-eyebrow`, `h1.dd-display` (the only display headline), `.dd-lead`, **primary** + secondary
    `.dd-btn--lg`, a `.dd-status-dot--online --live` availability line.
 3. `.dd-stat-grid--joined`: four figures, each naming its period.
@@ -538,7 +548,7 @@ Reading the skeletons:
     <div class="dd-menu" id="site-menu" role="menu" aria-label="Sections" hidden><a class="dd-menu__item" role="menuitem" href="#work">Work</a><a class="dd-menu__item" role="menuitem" href="#contact">Contact</a></div>
     <a class="dd-top-bar__brand" href="/"><span class="dd-logo">cxkw</span></a>
     <nav aria-label="Sections"><ul class="dd-top-bar__links">
-      <li><a class="dd-top-bar__link" href="#work" aria-current="page">Work</a></li><li><a class="dd-top-bar__link" href="#contact">Contact</a></li>
+      <li><a class="dd-top-bar__link" href="#work">Work</a></li><li><a class="dd-top-bar__link" href="#contact">Contact</a></li>
     </ul></nav>
     <div class="dd-top-bar__actions">
       <a class="dd-btn dd-btn--ghost dd-btn--icon" href="https://github.com/cxkw-dev" aria-label="GitHub">[i:code]</a>
@@ -585,9 +595,9 @@ Reading the skeletons:
       </div>
       <form class="dd-form">
         <div class="dd-form__grid">
-          <div class="dd-field"><label class="dd-field__label" for="c-name">Name</label><div class="dd-input"><input class="dd-input__control" id="c-name" autocomplete="name"></div></div>
-          <div class="dd-field"><label class="dd-field__label" for="c-email">Email</label><div class="dd-input"><input class="dd-input__control" id="c-email" type="email"></div></div>
-          <div class="dd-field dd-form__span"><label class="dd-field__label" for="c-msg">Message</label><div class="dd-input dd-textarea"><textarea class="dd-input__control" id="c-msg" rows="4"></textarea></div></div>
+          <div class="dd-field"><label class="dd-field__label" for="c-name">Name</label><div class="dd-input"><input class="dd-input__control" id="c-name" autocomplete="name" required></div></div>
+          <div class="dd-field"><label class="dd-field__label" for="c-email">Email</label><div class="dd-input"><input class="dd-input__control" id="c-email" type="email" autocomplete="email" required></div></div>
+          <div class="dd-field dd-form__span"><label class="dd-field__label" for="c-msg">Message</label><div class="dd-input dd-textarea"><textarea class="dd-input__control" id="c-msg" rows="4" required></textarea></div></div>
         </div>
         <div class="dd-form__footer"><span class="dd-form__meta">[i:lock]Only used to reply to you.</span><button class="dd-btn dd-btn--primary" type="submit">[i:send]<span>Send message</span></button></div>
       </form>

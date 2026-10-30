@@ -11,15 +11,22 @@
   width: 20px; height: 20px; margin: calc((1.45em - 20px) / 2) 0 0; padding: 0;
   border: 1px solid var(--dd-border-strong); border-radius: 3px; background: var(--dd-surface); color: var(--dd-on-accent);
   cursor: pointer; vertical-align: middle;
-  transition: background-color var(--dd-dur) var(--dd-ease), border-color var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), border-color var(--dd-dur-fast) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-checkbox__input::before {
   content: ''; width: 4px; height: 9px; box-sizing: content-box;
   border: solid currentColor; border-width: 0 1.5px 1.5px 0;
   transform: translateY(-1px) rotate(45deg) scale(0); transition: transform var(--dd-dur) var(--dd-ease);
 }
-.dd-checkbox__input:hover { border-color: var(--dd-muted); }
+/* Hover — on the box or anywhere on its label or card. Off: the edge steps up to --dd-muted. On / mixed: the fill
+   steps toward the text (dawn: --dd-accent-hover, darker; dusk: lighter, since its hover token is a hair off the accent). */
+.dd-checkbox__input:not(:disabled):hover, .dd-checkbox:hover > .dd-checkbox__input:not(:disabled),
+.dd-checkbox-card:hover > .dd-checkbox__input:not(:disabled) { border-color: var(--dd-muted); }
 .dd-checkbox__input:checked, .dd-checkbox__input:indeterminate { background: var(--dd-accent); border-color: var(--dd-accent); }
+:is(.dd-checkbox__input:not(:disabled):hover, .dd-checkbox:hover > .dd-checkbox__input:not(:disabled), .dd-checkbox-card:hover > .dd-checkbox__input:not(:disabled)):is(:checked, :indeterminate) {
+  --_on: light-dark(var(--dd-accent-hover), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
+  background: var(--_on); border-color: var(--_on);
+}
 .dd-checkbox__input:checked::before { transform: translateY(-1px) rotate(45deg) scale(1); }
 .dd-checkbox__input:indeterminate::before { width: 8px; height: 0; border-width: 0 0 1.5px 0; transform: none; }
 .dd-checkbox__input:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
@@ -48,16 +55,20 @@
   font-size: var(--dd-fs-sm); line-height: 1.45; color: var(--dd-text); cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-checkbox-card:hover { background: var(--dd-surface-2); }
-.dd-checkbox-card:has(.dd-checkbox__input:checked) { background: color-mix(in oklab, var(--dd-accent) 14%, var(--dd-surface)); }
-.dd-checkbox-card:has(.dd-checkbox__input:checked):hover { background: color-mix(in oklab, var(--dd-accent) 18%, var(--dd-surface)); }
+/* Hover one tone up. In dusk the grained page already reads as --dd-surface-2, so the card steps to --dd-surface-3
+   there; otherwise it would melt into the page. */
+.dd-checkbox-card:hover { background: light-dark(var(--dd-surface-2), var(--dd-surface-3)); }
+/* Chosen: an accent tint. Dusk takes a fuller tint so it stays clearly ahead of the hover tone. */
+.dd-checkbox-card:has(.dd-checkbox__input:checked) { background: light-dark(color-mix(in oklab, var(--dd-accent) 14%, var(--dd-surface)), color-mix(in oklab, var(--dd-accent) 22%, var(--dd-surface))); }
+.dd-checkbox-card:has(.dd-checkbox__input:checked):hover { background: light-dark(color-mix(in oklab, var(--dd-accent) 18%, var(--dd-surface)), color-mix(in oklab, var(--dd-accent) 26%, var(--dd-surface))); }
 .dd-checkbox-card:has(.dd-checkbox__input:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 .dd-checkbox-card .dd-checkbox__input:focus-visible { outline: 0; }
 .dd-checkbox-card:has(.dd-checkbox__input:disabled) { opacity: .6; cursor: not-allowed; }
+.dd-checkbox-card .dd-checkbox__input:disabled { opacity: 1; } /* the card already fades; don't fade the box twice */
 .dd-checkbox-card:has(.dd-checkbox__input:disabled):hover { background: var(--dd-surface); }
 .dd-checkbox-card .dd-checkbox__text { flex: 1; }
 .dd-checkbox-card__aside { flex: none; margin-left: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); white-space: nowrap; }
-.dd-checkbox-card__icon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; margin-top: -2px; border-radius: var(--dd-r-ctl); background: var(--dd-surface-2); color: var(--dd-muted); }
-.dd-checkbox-card:hover .dd-checkbox-card__icon { background: var(--dd-surface-3); }
+.dd-checkbox-card__icon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; margin-top: -2px; border-radius: var(--dd-r-ctl); background: light-dark(var(--dd-surface-2), var(--dd-wash)); color: var(--dd-muted); transition: background-color var(--dd-dur-fast) var(--dd-ease); }
+.dd-checkbox-card:hover .dd-checkbox-card__icon { background: light-dark(var(--dd-surface-3), var(--dd-wash-strong)); }
 .dd-checkbox-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: calc(var(--dd-u) * 2); min-width: 0; margin: 0; padding: 0; border: 0; }
 .dd-checkbox-cards > .dd-checkbox-group__legend { grid-column: 1 / -1; margin-bottom: calc(var(--dd-u) * 1); }

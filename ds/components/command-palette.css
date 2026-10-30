@@ -52,7 +52,8 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   transition: background-color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-command__item[aria-selected='true'] { background: var(--dd-menu-hover, var(--dd-surface-2)); }
-.dd-command__item[aria-disabled='true'] { color: var(--dd-faint); cursor: not-allowed; }
+.dd-command__item[aria-disabled='true'] { color: var(--dd-quiet); cursor: not-allowed; }
+.dd-command__item[aria-disabled='true'] :is(.dd-command__icon, .dd-command__meta) { color: var(--dd-quiet); }
 .dd-command__icon { flex: none; color: var(--dd-muted); transition: color var(--dd-dur-fast) var(--dd-ease); }
 .dd-command__item[aria-selected='true'] .dd-command__icon { color: var(--dd-text); }
 .dd-command__body { flex: 1 1 auto; min-width: 0; display: flex; align-items: baseline; gap: calc(var(--dd-u) * 2); overflow: hidden; white-space: nowrap; }

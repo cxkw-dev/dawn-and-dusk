@@ -14,7 +14,14 @@
   letter-spacing: .02em; text-transform: uppercase; text-decoration: none; vertical-align: middle; user-select: none;
 }
 .dd-avatar > img { display: block; width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
-:is(a, button).dd-avatar { appearance: none; border: 0; padding: 0; cursor: pointer; }
+/* Interactive (a link to a profile, a button that opens an account menu): hover and open draw a soft halo in a wash
+   of the text colour, so it shows on the page, on a surface and in both themes; pressed sinks it 1px like a button. */
+:is(a, button).dd-avatar {
+  appearance: none; border: 0; padding: 0; cursor: pointer;
+  transition: box-shadow var(--dd-dur-fast) var(--dd-ease), translate var(--dd-dur-fast) var(--dd-ease);
+}
+:is(a, button).dd-avatar:hover, :is(a, button).dd-avatar[aria-expanded="true"] { box-shadow: 0 0 0 3px var(--dd-wash-strong); }
+:is(a, button).dd-avatar:active { translate: 0 1px; }
 :is(a, button).dd-avatar:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 
 .dd-avatar--set-1 { --_c: var(--dd-set-1); }
@@ -48,10 +55,15 @@
 .dd-avatar--square > .dd-status-dot { right: -2px; bottom: -2px; }
 .dd-avatar > .dd-status-dot::before { box-shadow: 0 0 0 2px var(--dd-avatar-ring, var(--dd-bg)); }
 
-/* Group: overlapping, later avatars on top, each ringed so the overlap reads. */
+/* Group: overlapping, later avatars on top, each ringed so the overlap reads. An interactive avatar in a group comes
+   to the front and lifts 2px on hover or keyboard focus, so the one you are on is whole and its focus ring uncovered. */
 .dd-avatar-group { display: inline-flex; align-items: center; flex-direction: row; vertical-align: middle; }
 .dd-avatar-group > .dd-avatar { box-shadow: 0 0 0 2px var(--dd-avatar-ring, var(--dd-bg)); }
 .dd-avatar-group > .dd-avatar + .dd-avatar { margin-left: calc(var(--_av) * -.15); }
+.dd-avatar-group > :is(a, button).dd-avatar:is(:hover, :focus-visible, [aria-expanded="true"]) {
+  z-index: 1; translate: 0 -2px; box-shadow: 0 0 0 2px var(--dd-avatar-ring, var(--dd-bg));
+}
+.dd-avatar-group > :is(a, button).dd-avatar:active { translate: 0 -1px; }
 
 /* Avatar + name + meta, side by side. */
 .dd-avatar-label { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 2.5); min-width: 0; }
@@ -59,3 +71,5 @@
 .dd-avatar-label__text > :first-child { font-weight: 600; color: var(--dd-text); }
 .dd-avatar-label__text > :not(:first-child) { color: var(--dd-muted); font-size: var(--dd-fs-xs); }
 .dd-avatar-label__text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) { :is(a, button).dd-avatar { transition: none; } }

@@ -48,6 +48,7 @@
   transition: text-decoration-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-alert__action:hover { text-decoration-style: solid; text-decoration-color: currentColor; }
+.dd-alert__action:active { opacity: .7; }
 .dd-alert__action:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 3px; border-radius: 2px; }
 .dd-alert__action--secondary { color: color-mix(in oklab, var(--dd-text) 68%, var(--_c)); }
 
@@ -61,6 +62,7 @@
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-alert__dismiss:hover { color: var(--dd-text); background: color-mix(in oklab, var(--_c) 20%, transparent); }
+.dd-alert__dismiss:active { background: color-mix(in oklab, var(--_c) 34%, transparent); }
 .dd-alert__dismiss:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-alert__dismiss > .dd-icon { width: 1.05em; height: 1.05em; }
 

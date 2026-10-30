@@ -140,7 +140,7 @@ const rangePicker = `
   <Example title="Input with calendar" description="Shown open. Today (Oct 30) carries the apricot dot; the chosen day fills with the accent. Click the calendar button to close and reopen it." code={staticOpen} minHeight="475px" />
 
   <h2 id="interactive">Opening and choosing</h2>
-  <p>The calendar button (or ↓ in the input) opens the popover with focus on the chosen day. Choosing a day fills the input and closes it; Esc or a click outside closes without changes. Typed dates are parsed on change.</p>
+  <p>The calendar button (or ↓ in the input) opens the popover with focus on the chosen day. Choosing a day fills the input and closes it; Esc, a click outside or tabbing away closes without changes. Typed dates are parsed on change.</p>
   <Example code={closed} minHeight="560px" />
 
   <h2 id="inline">Inline calendar</h2>
@@ -164,7 +164,7 @@ const rangePicker = `
     ['.dd-calendar', 'One month. <code>--panel</code> adds a tonal panel for inline use.'],
     ['.dd-calendar__head · __title · __nav', 'Month title and previous / next buttons (<code>data-dd-cal-nav="-1|1"</code>).'],
     ['.dd-calendar__grid', 'The month <code>&lt;table&gt;</code>; weekday headers in mono.'],
-    ['.dd-calendar__day', 'A day button. <code>aria-pressed</code> (chosen), <code>aria-current="date"</code> (today), <code>.is-outside</code>, <code>disabled</code>.'],
+    ['.dd-calendar__day', 'A day button. <code>aria-pressed</code> (chosen, accent fill), <code>aria-current="date"</code> (today, apricot dot), <code>.is-outside</code> (quiet), <code>disabled</code> (quiet, struck through).'],
     ['td.is-range-start · is-in-range · is-range-end', 'Range band on the cells; <code>.is-preview</code> while hovering for an end.'],
   ]} />
 
@@ -176,7 +176,8 @@ const rangePicker = `
     ['data-dd-date-apply · data-dd-date-cancel', 'Range footer buttons: commit, or close and restore.'],
     ['← → ↑ ↓', 'Move a day or a week; crossing a month edge turns the page.'],
     ['Page Up · Page Down · Home · End', 'Previous / next month; start / end of the week.'],
-    ['Enter · Space', 'Choose the focused day. Esc closes the popover.'],
+    ['Enter · Space', 'Choose the focused day.'],
+    ['Esc · Tab out · click outside', 'Close the popover without changes; Esc returns focus to the calendar button.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

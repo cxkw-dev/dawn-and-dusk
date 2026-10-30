@@ -8,18 +8,21 @@
 /* Inner corners square off. */
 .dd-btn-group > .dd-btn:not(:first-child) { border-start-start-radius: 0; border-end-start-radius: 0; }
 .dd-btn-group > .dd-btn:not(:last-child) { border-start-end-radius: 0; border-end-end-radius: 0; }
-/* Pressed buttons don't jump inside a group — the seam would break. */
-.dd-btn-group > .dd-btn:active { transform: none; }
+/* Pressed buttons don't jump inside a group (the seam would break); a wash over their fill shows the press instead. */
+.dd-btn-group > .dd-btn:active { transform: none; background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
 
 /* Toggle buttons: pressed takes the deeper tone (one step past the tonal fill, in dawn and dusk alike); hover on an
-   unpressed button only goes half way, so it never reads as pressed. */
+   unpressed button only goes half way, so it never reads as pressed; hover on a pressed one adds a wash on top. */
 .dd-btn-group > .dd-btn[aria-pressed='true'] { background: var(--dd-btn-secondary-hover); }
 .dd-btn-group > .dd-btn[aria-pressed='false'] { color: var(--dd-muted); }
 .dd-btn-group > .dd-btn[aria-pressed='false']:hover {
   color: var(--dd-text); background: color-mix(in oklab, var(--dd-btn-secondary) 50%, var(--dd-btn-secondary-hover));
 }
-.dd-btn-group > .dd-btn--ghost[aria-pressed='true'] { background: var(--dd-btn-secondary); }
-.dd-btn-group > .dd-btn--ghost[aria-pressed='false']:hover { background: color-mix(in oklab, var(--dd-btn-secondary) 55%, transparent); }
+.dd-btn-group > .dd-btn[aria-pressed='true']:hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
+/* Ghost toggles sit straight on whatever is behind them, so they use the translucent washes: visible on the grained
+   page in dusk, where a --dd-surface-3 fill would vanish. */
+.dd-btn-group > .dd-btn--ghost[aria-pressed='true'] { background-color: var(--dd-wash-strong); }
+.dd-btn-group > .dd-btn--ghost[aria-pressed='false']:hover { background: var(--dd-wash); }
 
 /* Vertical stack. */
 .dd-btn-group--vertical { flex-direction: column; }
@@ -41,5 +44,6 @@
 .dd-btn-group__caret[aria-expanded='true'] > .dd-icon { transform: rotate(180deg); }
 /* Open: the caret keeps its own variant's hover tone (menu.css does the same for any open menu trigger). */
 .dd-btn-group__caret[aria-expanded='true'] { background: var(--dd-btn-secondary-hover); }
-.dd-btn-group__caret.dd-btn--primary[aria-expanded='true'] { background: var(--dd-primary-hover); }
+.dd-btn-group__caret.dd-btn--primary[aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
+.dd-btn-group__caret[aria-expanded='true']:hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
 .dd-btn-group__caret.dd-btn--ink[aria-expanded='true'] { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }

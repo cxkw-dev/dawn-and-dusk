@@ -4,7 +4,7 @@
    - [data-dd-nav-section="name"] on a rail item shows the pane [data-dd-nav-pane="name"]; pressing the active one again
      folds the panel, like the chevron.
    - [data-dd-nav-open="#id"] opens a nav that is off-canvas (mobile); [data-dd-nav-close] closes it. Esc, a click on the
-     scrim or following a link inside also close it, and focus returns to the opener. */
+     scrim or following a link inside also close it, and focus returns to the opener. Tabbing out of it closes it too. */
 (() => {
   const KEY = (id) => `dd-side-nav:${id}`;
   const store = {
@@ -90,6 +90,12 @@
     if (t.matches?.('.dd-side-nav.is-mobile-open')) { setMobile(t, false); return; }
     const link = t.closest('.dd-side-nav.is-mobile-open a[href]');
     if (link) setMobile(link.closest('.dd-side-nav'), false);
+  });
+
+  // Tabbing out of an open off-canvas nav closes it, so focus never sits on the page hidden behind the scrim.
+  document.addEventListener('focusin', (e) => {
+    const nav = document.querySelector('.dd-side-nav.is-mobile-open');
+    if (nav && !nav.contains(e.target) && !openers(nav).includes(e.target)) setMobile(nav, false);
   });
 
   document.addEventListener('keydown', (e) => {

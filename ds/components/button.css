@@ -17,16 +17,20 @@
 .dd-btn:active { transform: translateY(1px); }
 .dd-btn:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 
+/* Filled hovers: dawn uses the hover tokens; in dusk the apricot / red are already light, so a 12% step toward the
+   text barely shows — dusk takes a fuller step there (light-dark() follows the theme's color-scheme). */
 .dd-btn--primary { background: var(--dd-primary); color: var(--dd-on-primary); }
-.dd-btn--primary:hover { background: var(--dd-primary-hover); }
+.dd-btn--primary:hover { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
 .dd-btn--secondary { background: var(--dd-btn-secondary); color: var(--dd-text); }
 .dd-btn--secondary:hover { background: var(--dd-btn-secondary-hover); }
 .dd-btn--ink { background: var(--dd-text); color: var(--dd-bg); }
 .dd-btn--ink:hover { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }
+/* Ghost hover is a translucent wash, so it shows on the page, on cards and on floating layers in both themes
+   (--dd-surface-2 matches the grained page in dusk). */
 .dd-btn--ghost { background: transparent; }
-.dd-btn--ghost:hover { background: var(--dd-surface-2); }
+.dd-btn--ghost:hover { background: var(--dd-wash-strong); }
 .dd-btn--danger { background: var(--dd-bad); color: var(--dd-bg); }
-.dd-btn--danger:hover { background: color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)); }
+.dd-btn--danger:hover { background: light-dark(color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)), color-mix(in oklab, var(--dd-bad) 76%, var(--dd-text))); }
 .dd-btn--link { padding-inline: 0; background: none; border-radius: 0; }
 .dd-btn--link:hover { background: none; color: var(--dd-accent); }
 .dd-btn--link > span { text-decoration: underline dotted; text-decoration-color: var(--dd-faint); text-decoration-thickness: 1.5px; text-underline-offset: 4px; }

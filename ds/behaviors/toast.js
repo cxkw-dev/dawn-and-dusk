@@ -3,6 +3,8 @@
      action    { label: 'Undo', onClick(toast) {} } — clicking it runs onClick, then dismisses the toast
      duration  ms before it leaves on its own (default 5000; 0 keeps it until dismissed). A hairline shows the time
                left; hovering or focusing the stack pauses every timer, and so does hiding the tab.
+   Swipe a toast sideways (or drag it with the mouse) to dismiss it; Esc dismisses the toast that has focus, and focus
+   then moves to the next toast or back to where it was before the stack.
      icon      any sprite name, to override the intent's icon
    Returns { el, dismiss() }. dd.toast('Saved') works too, and dd.toast.clear() empties the stack.
    Declarative: <button data-dd-toast="Title" data-dd-toast-description="…" data-dd-toast-intent="ok"
@@ -35,6 +37,7 @@
   const live = new Set(); // toasts with a running timer
   let stack;
   let held = false;
+  let returnTo = null; // where focus was before it entered the stack
   const hold = (on) => {
     held = on;
     live.forEach((t) => (on ? t.timer?.pause() : t.timer?.play()));
@@ -50,11 +53,30 @@
     stack.setAttribute('aria-live', 'polite');
     stack.addEventListener('pointerenter', () => hold(true));
     stack.addEventListener('pointerleave', () => { if (!stack.contains(document.activeElement)) hold(false); });
-    stack.addEventListener('focusin', () => hold(true));
+    stack.addEventListener('focusin', (e) => {
+      if (e.relatedTarget && !stack.contains(e.relatedTarget)) returnTo = e.relatedTarget;
+      hold(true);
+    });
+    stack.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      const t = e.target.closest?.('.dd-toast');
+      if (t?.ddToast) { e.preventDefault(); t.ddToast.dismiss(); }
+    });
     stack.addEventListener('focusout', (e) => { if (!stack.contains(e.relatedTarget) && !stack.matches(':hover')) hold(false); });
     return stack;
   };
-  document.addEventListener('visibilitychange', () => hold(document.hidden || !!stack?.matches(':hover')));
+  document.addEventListener('visibilitychange', () => hold(document.hidden || !!stack?.matches(':hover') || !!stack?.contains(document.activeElement)));
+
+  // Toasts already in the stack glide to their new place instead of jumping when one is added (FLIP).
+  const glide = (region, change) => {
+    const kids = still() ? [] : [...region.querySelectorAll(':scope > .dd-toast:not([data-leaving])')];
+    const before = kids.map((k) => k.getBoundingClientRect().top);
+    change();
+    kids.forEach((k, n) => {
+      const dy = before[n] - k.getBoundingClientRect().top;
+      if (Math.abs(dy) > 0.5) k.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.45, 0, .55, 1)', composite: 'add' });
+    });
+  };
 
   const toast = (opts = {}) => {
     if (typeof opts === 'string') opts = { title: opts };
@@ -93,25 +115,41 @@
     function leave() {
       if (gone) return;
       gone = true;
+      // Keep keyboard users in the stack: focus the neighbouring toast, or go back to where they came from.
+      // (After a mouse click focus is simply dropped, so the other timers start again when the pointer leaves.)
+      if (el.contains(document.activeElement) && !document.activeElement.matches(':focus-visible')) document.activeElement.blur();
+      else if (el.contains(document.activeElement)) {
+        const shown = [...(el.parentElement?.querySelectorAll(':scope > .dd-toast:not([data-leaving])') || [])];
+        const k = shown.indexOf(el);
+        const next = (shown[k + 1] || shown[k - 1])?.querySelector('button, a[href]');
+        if (next) next.focus();
+        else if (returnTo?.isConnected) returnTo.focus({ preventScroll: true });
+        else document.activeElement.blur();
+      }
       el.dataset.leaving = '';
       handle.timer?.cancel();
       live.delete(handle);
-      if (stack?.contains(document.activeElement) && el.contains(document.activeElement)) document.activeElement.blur();
       if (still() || !el.animate || !el.isConnected) return el.remove();
       const h = `${el.offsetHeight}px`;
       const gap = `${-(parseFloat(getComputedStyle(el.parentElement).rowGap) || 0)}px`;
+      // A swiped toast leaves from where the pointer let go, in the direction it was thrown.
+      const cs = getComputedStyle(el);
+      const at = parseFloat(cs.translate) || 0;
+      const from = `${at}px 0`;
+      const away = `${at + (at < 0 ? -32 : 32)}px 0`;
+      el.classList.remove('is-swiping');
       el.style.pointerEvents = 'none';
       el.animate([
-        { opacity: 1, transform: 'none', height: h, marginBottom: '0px' },
-        { opacity: 0, transform: 'translateX(24px)', height: h, marginBottom: '0px', offset: 0.5 },
-        { opacity: 0, transform: 'translateX(24px)', height: '0px', marginBottom: gap, paddingTop: '0px', paddingBottom: '0px' },
+        { opacity: Number(cs.opacity), translate: from, height: h, marginBottom: '0px' },
+        { opacity: 0, translate: away, height: h, marginBottom: '0px', offset: 0.5 },
+        { opacity: 0, translate: away, height: '0px', marginBottom: gap, paddingTop: '0px', paddingBottom: '0px' },
       ], { duration: 320, easing: 'cubic-bezier(.45, 0, .55, 1)' }).finished.then(() => el.remove(), () => el.remove());
     }
 
     const region = toaster();
     // A brand-new live region needs a beat before content lands in it, or screen readers miss the first toast.
     const add = () => {
-      region.append(el);
+      glide(region, () => region.append(el));
       const shown = [...region.querySelectorAll(':scope > .dd-toast:not([data-leaving])')];
       shown.slice(0, Math.max(0, shown.length - MAX)).forEach((old) => old.ddToast?.dismiss());
       if (duration > 0) {
@@ -131,6 +169,45 @@
   };
   toast.clear = () => document.querySelectorAll('.dd-toaster > .dd-toast').forEach((t) => (t.ddToast ? t.ddToast.dismiss() : t.remove()));
   dd.toast = toast;
+
+  // Swipe: drag a live toast sideways; past a third of its width (or a quick flick) it leaves, otherwise it springs back.
+  let drag = null;
+  document.addEventListener('pointerdown', (e) => {
+    const el = e.target.closest?.('.dd-toaster > .dd-toast');
+    if (!el || el.dataset.leaving || e.button !== 0 || e.target.closest('button, a, input, select, textarea')) return;
+    drag = { el, id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, t: performance.now(), on: false };
+  });
+  document.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x;
+    const dy = e.clientY - drag.y;
+    if (!drag.on) {
+      if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { drag = null; return; }
+      if (Math.abs(dx) < 6) return;
+      drag.on = true;
+      drag.el.setPointerCapture?.(e.pointerId);
+      drag.el.classList.add('is-swiping');
+    }
+    drag.dx = dx;
+    drag.el.style.translate = `${dx}px 0`;
+    drag.el.style.opacity = String(Math.max(0.15, 1 - Math.abs(dx) / (drag.el.offsetWidth * 0.8)));
+  });
+  const drop = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const { el, dx, t, on } = drag;
+    drag = null;
+    if (!on) return;
+    el.classList.remove('is-swiping');
+    const fling = Math.abs(dx) / Math.max(1, performance.now() - t) > 0.6;
+    if (e.type === 'pointerup' && (Math.abs(dx) > el.offsetWidth * 0.33 || (fling && Math.abs(dx) > 24)) && el.ddToast) {
+      el.ddToast.dismiss(); // leaves from where it was let go
+    } else {
+      el.style.translate = '';
+      el.style.opacity = '';
+    }
+  };
+  document.addEventListener('pointerup', drop);
+  document.addEventListener('pointercancel', drop);
 
   document.addEventListener('click', (e) => {
     const t = e.target.closest('[data-dd-toast]');

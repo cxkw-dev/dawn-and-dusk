@@ -200,10 +200,10 @@ const toolbar = `
   <ClassTable rows={[
     ['.dd-input.dd-select', 'Select box: native <code>&lt;select class="dd-input__control"&gt;</code> inside, or the custom trigger <code>&lt;button&gt;</code> itself.'],
     ['.dd-select__chevron', 'Trailing chevron (wrap the icon). Flips while the custom menu is open.'],
-    ['.dd-select__placeholder', 'Muted text in the trigger before anything is chosen.'],
+    ['.dd-select__placeholder', 'Quiet text in the trigger before anything is chosen.'],
     ['.dd-select-menu', 'Wrapper for the custom select: anchors the listbox under the trigger.'],
     ['.dd-listbox', 'Floating option list (<code>role="listbox"</code>). <code>--up</code> opens above, <code>--end</code> aligns right, <code>--static</code> renders in flow.'],
-    ['.dd-listbox__option', 'An option (<code>role="option"</code>). <code>aria-selected</code>, <code>aria-disabled</code>, <code>.is-active</code> (keyboard).'],
+    ['.dd-listbox__option', 'An option (<code>role="option"</code>). <code>aria-selected</code> (check), <code>aria-disabled</code> (quiet, never highlights), <code>.is-active</code> (the one highlighted row — keyboard and pointer share it).'],
     ['.dd-listbox__group · __sep', 'Small-caps group label (<code>role="presentation"</code>) and hairline divider.'],
     ['.dd-listbox__icon · __swatch', 'Leading icon, or a colour dot from <code>--dd-chip</code> (e.g. <code>var(--dd-set-3)</code>).'],
     ['.dd-listbox__text · __label · __desc', 'Label stack with an optional muted description.'],

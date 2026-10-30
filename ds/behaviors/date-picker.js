@@ -7,7 +7,7 @@
    Date picker: [data-dd-date-picker] wraps a .dd-input (with a [data-dd-date-toggle] button) and a
    .dd-date-picker__popover holding a calendar. Choosing a day fills the input and closes; a range closes on its
    second click unless the popover has [data-dd-date-apply]. [data-start][data-end] or [data-days="7"] buttons with
-   .dd-date-picker__preset set a range. Esc or a click outside closes. */
+   .dd-date-picker__preset set a range. Esc, a click outside or tabbing out closes. */
 (() => {
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const DOW = ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa'];
@@ -157,6 +157,16 @@
     return true;
   };
 
+  // Keep an open popover inside the viewport: nudge it left when it would run off the right edge.
+  const place = (root) => {
+    const { pop } = pickerParts(root);
+    if (!pop || pop.hidden || pop.classList.contains('dd-date-picker__popover--static')) return;
+    pop.style.translate = '';
+    const r = pop.getBoundingClientRect();
+    const over = r.right - (document.documentElement.clientWidth - 8);
+    if (over > 0) pop.style.translate = `${-Math.min(over, Math.max(0, r.left - 8))}px 0`;
+  };
+
   const openPicker = (root) => {
     const { toggle, pop, cal, input } = pickerParts(root);
     if (!pop || input?.disabled) return;
@@ -171,8 +181,9 @@
       if (sel) cal.dataset.month = sel.slice(0, 7);
       render(cal);
       summarise(root);
-      cal.querySelector('.dd-calendar__day[tabindex="0"]')?.focus();
     }
+    place(root);
+    cal?.querySelector('.dd-calendar__day[tabindex="0"]')?.focus();
   };
 
   const closePicker = (root, refocus = true, revert = false) => {
@@ -263,6 +274,12 @@
     if (moves[e.key]) { e.preventDefault(); focusDate(cal, moves[e.key]()); }
   });
 
+  // Tabbing out of an open picker closes it like a click outside (pending range changes are dropped).
+  document.addEventListener('focusout', (e) => {
+    const root = e.target.closest?.('[data-dd-date-picker].is-open');
+    if (root && e.relatedTarget && !root.contains(e.relatedTarget)) closePicker(root, false, true);
+  });
+
   // Typed dates: anything Date can parse ("2026-10-14", "Oct 14, 2026") moves the calendar.
   document.addEventListener('change', (e) => {
     const root = e.target.closest?.('[data-dd-date-picker]');
@@ -276,6 +293,8 @@
     e.target.value = short(parse(v));
   });
 
-  const init = () => document.querySelectorAll('[data-dd-calendar]').forEach((c) => render(c));
+  const placeOpen = () => document.querySelectorAll('[data-dd-date-picker].is-open').forEach(place);
+  addEventListener('resize', placeOpen);
+  const init = () => { document.querySelectorAll('[data-dd-calendar]').forEach((c) => render(c)); placeOpen(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

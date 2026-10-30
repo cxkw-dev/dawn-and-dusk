@@ -43,7 +43,8 @@
   background: none; color: var(--dd-muted); font-size: 17px; cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-dialog__close:hover { background: var(--dd-surface-2); color: var(--dd-text); }
+.dd-dialog__close:hover { background: var(--dd-wash); color: var(--dd-text); }
+.dd-dialog__close:active { background: var(--dd-wash-strong); }
 .dd-dialog__close:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 
 /* body — scrolls between a fixed head and foot; a hairline appears at an edge only while content is hidden there */

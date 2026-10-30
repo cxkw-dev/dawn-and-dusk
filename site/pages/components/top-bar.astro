@@ -55,16 +55,25 @@ const site = `
   </nav>
   <div class="dd-top-bar__actions">
     <button class="dd-btn dd-btn--ghost dd-btn--icon" type="button" aria-label="Search">${i('search')}</button>
-    <a class="dd-btn dd-btn--ghost dd-btn--icon" href="#" aria-label="GitHub">${i('code')}</a>
-    <button class="dd-btn dd-btn--secondary dd-btn--sm" type="button" data-dd-theme-toggle>${i('moon')}<span>Dusk</span></button>
+    <a class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__wide" href="#" aria-label="GitHub">${i('code')}</a>
+    <button class="dd-btn dd-btn--secondary dd-btn--sm dd-top-bar__wide" type="button" data-dd-theme-toggle>${i('moon')}<span>Dusk</span></button>
+    <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__narrow" type="button" data-dd-theme-toggle aria-label="Toggle dusk">${i('moon')}</button>
   </div>
 </header>`;
 ---
 <Docs title="Top bar" group="Navigation" lead="The app header. Logo and context on the left, then a search trigger, actions and the avatar menu. It sits on the page tone with a hairline underneath, and stays put while the page scrolls.">
   <style is:global>
+    /* Docs only: an open dropdown spills out of its example frame instead of being clipped by it. */
+    .ex-frame:has(details[data-dd-autoclose][open]) { overflow: visible; }
+    .ex-frame:has(details[data-dd-autoclose][open]) > .ex-stage { overflow: visible; border-radius: var(--dd-r-lg) var(--dd-r-lg) 0 0; }
+    .ex-frame:has(details[data-dd-autoclose][open]) > .ex-stage > .dd-top-bar:first-child { border-radius: var(--dd-r-lg) var(--dd-r-lg) 0 0; }
+    .ex-frame:has(details[data-dd-autoclose][open]) > .ex-bar:has(+ .ex-code[hidden]),
+    .ex-frame:has(details[data-dd-autoclose][open]) > .ex-code:not([hidden]) { border-radius: 0 0 var(--dd-r-lg) var(--dd-r-lg); }
     .ex-stage > .dd-top-bar, .ex-stage > div > .dd-top-bar { position: relative; } /* docs only: don't stick inside examples */
-    .tb-phone { max-width: 380px; margin: 24px auto; border-radius: var(--dd-r-lg); overflow: hidden; contain: layout;
+    /* A phone-sized frame with room under the bar, so the avatar menu opens inside it instead of being clipped. */
+    .tb-phone { max-width: 380px; height: 340px; margin: 24px auto; border-radius: var(--dd-r-lg); contain: layout;
       box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 10%, transparent); }
+    .tb-phone > .dd-top-bar { border-radius: var(--dd-r-lg) var(--dd-r-lg) 0 0; }
   </style>
 
   <Example title="App header" description="Logo, workspace / project switcher, search, Docs, notifications, the primary action and the avatar menu. Click the avatar." code={app} stage="flush" />
@@ -93,7 +102,7 @@ const site = `
     ['__icon-btn / __dot', 'An icon button with an unread dot.'],
     ['__user / __avatar / __menu', 'Avatar menu: <code>&lt;details&gt;</code>, the initials disc, the floating menu.'],
     ['__menu-head / __menu-item / __menu-sep', 'Menu parts: who you are, items (links or buttons), hairline separators.'],
-    ['__wide', 'Hide this element when the bar is narrow.'],
+    ['__wide / __narrow', '<code>__wide</code> hides an element when the bar is narrow; <code>__narrow</code> shows one only then (a compact stand-in, such as an icon-only theme button).'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>

@@ -17,16 +17,23 @@
   content: ''; position: absolute; top: calc((var(--_h) - var(--_k)) / 2); left: calc((var(--_h) - var(--_k)) / 2);
   width: var(--_k); height: var(--_k); border-radius: 50%;
   background: light-dark(var(--dd-bg), var(--dd-text)); box-shadow: 0 1px 3px var(--dd-overlay);
-  transition: transform var(--dd-dur) var(--dd-ease), background-color var(--dd-dur) var(--dd-ease);
+  transition: transform var(--dd-dur) var(--dd-ease), background-color var(--dd-dur) var(--dd-ease), width var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-switch__input:hover { background: color-mix(in oklab, var(--dd-border-strong), var(--dd-text) 12%); }
+/* Hover (on the track or anywhere on its label) steps the track toward the text when off. When on, it steps
+   toward the text too (dawn: --dd-accent-hover, darker; dusk: lighter, since its hover token is a hair off the accent). */
+.dd-switch__input:hover, .dd-switch:hover > .dd-switch__input { background: color-mix(in oklab, var(--dd-border-strong), var(--dd-text) 16%); }
 .dd-switch__input:checked { background: var(--dd-accent); }
-.dd-switch__input:checked:hover { background: var(--dd-accent-hover); }
+.dd-switch__input:checked:hover, .dd-switch:hover > .dd-switch__input:checked {
+  background: light-dark(var(--dd-accent-hover), color-mix(in oklab, var(--dd-accent) 40%, var(--dd-text)));
+}
 .dd-switch__input:checked::before { transform: translateX(calc(var(--_w) - var(--_h))); background: var(--dd-on-accent); }
-.dd-switch__input:active::before { width: calc(var(--_k) + 3px); }
-.dd-switch__input:checked:active::before { transform: translateX(calc(var(--_w) - var(--_h) - 3px)); }
+/* Pressed (on the track or its label): the knob stretches toward where it is going. */
+.dd-switch__input:not(:disabled):active::before, .dd-switch:active > .dd-switch__input:not(:disabled)::before { width: calc(var(--_k) + 3px); }
+.dd-switch__input:checked:not(:disabled):active::before, .dd-switch:active > .dd-switch__input:checked:not(:disabled)::before { transform: translateX(calc(var(--_w) - var(--_h) - 3px)); }
 .dd-switch__input:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 .dd-switch__input:disabled { opacity: .4; cursor: not-allowed; }
+.dd-switch:hover > .dd-switch__input:disabled { background: var(--dd-border-strong); }
+.dd-switch:hover > .dd-switch__input:disabled:checked { background: var(--dd-accent); }
 .dd-switch:has(.dd-switch__input:disabled) { cursor: not-allowed; color: var(--dd-muted); }
 
 .dd-switch__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-top: max(0px, calc((var(--_h) - 1.45em) / 2)); }

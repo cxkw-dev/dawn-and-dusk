@@ -40,6 +40,7 @@
   transition: text-decoration-color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-banner__action:hover { text-decoration-style: solid; text-decoration-color: currentColor; }
+.dd-banner__action:active { opacity: .7; }
 .dd-banner__action:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 3px; border-radius: 2px; }
 
 .dd-banner__dismiss {
@@ -50,6 +51,7 @@
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-banner__dismiss:hover { color: var(--dd-text); background: color-mix(in oklab, var(--_c) 20%, transparent); }
+.dd-banner__dismiss:active { background: color-mix(in oklab, var(--_c) 34%, transparent); }
 .dd-banner__dismiss:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-banner__dismiss > .dd-icon { width: 1.05em; height: 1.05em; }
 

@@ -33,6 +33,11 @@
 .dd-badge--solid { background: var(--_solid); color: var(--_on); }
 .dd-badge--outline { background: transparent; color: var(--_c); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--_k, var(--dd-muted)) 50%, transparent); }
 .dd-badge--ghost { background: transparent; color: var(--_c); }
+/* Interactive badges (a filter link or button): hover steps the fill toward the text colour; a solid one steps toward
+   the page instead (a wash would vanish on an ink fill). Pressed dims it a touch. */
+:is(a, button).dd-badge:hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
+:is(a, button).dd-badge--solid:hover { background-image: none; background-color: color-mix(in oklab, var(--_solid) 84%, var(--dd-bg)); }
+:is(a, button).dd-badge:active { opacity: .8; }
 :is(a, button).dd-badge--ghost:hover { background: var(--_soft); }
 .dd-badge--dot { background: color-mix(in oklab, var(--dd-text) 9%, transparent); color: var(--dd-text); }
 .dd-badge--dot::before {

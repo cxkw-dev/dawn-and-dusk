@@ -28,7 +28,10 @@
 .dd-table .is-mono { font-family: var(--dd-font-mono); font-size: .92em; }
 .dd-table .is-shrink { width: 1%; }
 .dd-table td a:not([class]) { color: inherit; text-decoration: none; font-weight: 600; }
-.dd-table td a:not([class]):hover { text-decoration: underline; text-decoration-color: var(--dd-faint); text-underline-offset: 3px; }
+.dd-table td a:not([class]):hover {
+  text-decoration: underline; text-decoration-color: color-mix(in oklab, currentColor 55%, transparent);
+  text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+}
 .dd-table td .dd-btn { margin-block: calc(var(--dd-u) * -1.25); }
 
 /* Status: a dot + label. data-status = ok | warn | bad | info | muted */
@@ -41,9 +44,11 @@
 .dd-table__status[data-status="muted"] { color: var(--dd-muted); }
 .dd-table__status[data-status="muted"]::before { background: var(--dd-faint); }
 
-/* Interactive rows: the whole row reads as one target. */
+/* Interactive rows: the whole row reads as one target. Washes (not --dd-surface-2) so the step reads in dusk too;
+   a focused link inside the row lights the row like hover. */
 .dd-table--interactive tbody tr { cursor: pointer; transition: background-color var(--dd-dur-fast) var(--dd-ease); }
-.dd-table--interactive tbody tr:hover { background: var(--dd-surface-2); }
+.dd-table--interactive tbody tr:is(:hover, :focus-within) { background-color: var(--dd-wash); }
+.dd-table--interactive tbody tr:active { background-color: var(--dd-wash-strong); }
 
 /* Variants */
 .dd-table--compact { --_py: calc(var(--dd-u) * 1.5); --_px: calc(var(--dd-u) * 3); }
@@ -66,7 +71,10 @@
   font-size: var(--dd-fs-sm); font-weight: 600; color: var(--dd-accent); text-decoration: none;
   border-radius: var(--dd-r-ctl); transition: color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-table-header__action:hover { color: var(--dd-accent-hover); }
+.dd-table-header__action:hover {
+  color: var(--dd-accent-hover); text-decoration: underline; text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+  text-underline-offset: 4px;
+}
 .dd-table-header__action .dd-icon { transition: transform var(--dd-dur-fast) var(--dd-ease); }
 .dd-table-header__action:hover .dd-icon:last-child { transform: translateX(2px); }
 .dd-table-header > .dd-btn { margin-left: auto; align-self: center; }
@@ -80,7 +88,7 @@
 .dd-table > table + .dd-table__empty { border-top: 1px solid var(--_line); }
 .dd-table__empty-icon {
   display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: calc(var(--dd-u) * 1);
-  border-radius: 50%; background: var(--dd-surface-2); color: var(--dd-muted); font-size: 18px;
+  border-radius: 50%; background: var(--dd-wash); color: var(--dd-muted); font-size: 18px;
 }
 .dd-table__empty-title { margin: 0; color: var(--dd-text); font-size: var(--dd-fs-base); font-weight: 650; }
 .dd-table__empty p { margin: 0; max-width: 40ch; text-wrap: pretty; }

@@ -75,7 +75,7 @@ ${glue}
     <a class="dd-top-bar__brand" href="#"><span class="dd-logo">cxkw</span></a>
     <nav aria-label="Sections">
       <ul class="dd-top-bar__links">
-        <li><a class="dd-top-bar__link" href="#landing-work" aria-current="page">Work</a></li>
+        <li><a class="dd-top-bar__link" href="#landing-work">Work</a></li>
         <li><a class="dd-top-bar__link" href="#landing-notes">Notes</a></li>
         <li><a class="dd-top-bar__link" href="#landing-contact">Contact</a></li>
       </ul>
@@ -134,7 +134,7 @@ ${glue}
             </dl>
           </div>
           <form class="dd-form" onsubmit="return false">
-            <div class="dd-form__grid">${field('landing-name', 'Name', '<div class="dd-input"><input class="dd-input__control" id="landing-name" autocomplete="name" placeholder="Mira Kh."></div>')}${field('landing-email', 'Email', '<div class="dd-input"><input class="dd-input__control" id="landing-email" type="email" autocomplete="email" placeholder="mira@studio.dev"></div>')}${field('landing-kind', 'What are you building?', `<div class="dd-input dd-select"><select class="dd-input__control" id="landing-kind"><option>A new product</option><option>A design system</option><option>A small tool</option><option>Something else</option></select>${chev}</div>`)}${field('landing-when', 'Ship by', `<div class="dd-input dd-select"><select class="dd-input__control" id="landing-when"><option>This quarter</option><option selected>Q1 2027</option><option>No date yet</option></select>${chev}</div>`)}${field('landing-msg', 'Message', '<div class="dd-input dd-textarea"><textarea class="dd-input__control" id="landing-msg" rows="4" placeholder="A few lines about the project, the team and the timeline."></textarea></div>', 'dd-form__span')}
+            <div class="dd-form__grid">${field('landing-name', 'Name', '<div class="dd-input"><input class="dd-input__control" id="landing-name" autocomplete="name" required placeholder="Mira Kh."></div>')}${field('landing-email', 'Email', '<div class="dd-input"><input class="dd-input__control" id="landing-email" type="email" autocomplete="email" required placeholder="mira@studio.dev"></div>')}${field('landing-kind', 'What are you building?', `<div class="dd-input dd-select"><select class="dd-input__control" id="landing-kind"><option>A new product</option><option>A design system</option><option>A small tool</option><option>Something else</option></select>${chev}</div>`)}${field('landing-when', 'Ship by', `<div class="dd-input dd-select"><select class="dd-input__control" id="landing-when"><option>This quarter</option><option selected>Q1 2027</option><option>No date yet</option></select>${chev}</div>`)}${field('landing-msg', 'Message', '<div class="dd-input dd-textarea"><textarea class="dd-input__control" id="landing-msg" rows="4" required placeholder="A few lines about the project, the team and the timeline."></textarea></div>', 'dd-form__span')}
             </div>
             <div class="dd-form__footer">
               <span class="dd-form__meta">${i('lock')}Only used to reply to you.</span>

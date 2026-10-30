@@ -202,11 +202,11 @@ const standalone = `
   <Example title="Tucked label" description="The default. Wrap the box in a .dd-field and give it a label; the box grows a top pad for it. Focus clears the fill and lifts the box." code={basic} />
 
   <h2 id="states">States</h2>
-  <p>Error, disabled and read-only come from the control itself: set <code>aria-invalid="true"</code>, <code>disabled</code> or <code>readonly</code> and the box and label follow. <code>.is-focus</code> forces the focused look for documentation.</p>
+  <p>Error, disabled and read-only come from the control itself: set <code>aria-invalid="true"</code>, <code>disabled</code> or <code>readonly</code> and the box and label follow. <code>.is-focus</code> forces the focused look for documentation. Hover deepens the fill; disabled keeps a fainter box with dimmed text; read-only drops the fill for a hairline frame that tints when focused. Browser autofill keeps the box and adds a faint accent tint instead of the browser’s colour.</p>
   <Example code={states} />
 
   <h2 id="affixes">Prefix, suffix and units</h2>
-  <p>Fixed text that is not part of the value sits in <code>.dd-input__unit</code> (mono, muted). Add <code>.dd-input__prefix</code> to fade a leading scheme like <code>https://</code>.</p>
+  <p>Fixed text that is not part of the value sits in <code>.dd-input__unit</code> (mono, muted). Add <code>.dd-input__prefix</code> to quiet a leading scheme like <code>https://</code>.</p>
   <Example code={affixes} />
 
   <h2 id="icons">Leading icon</h2>
@@ -238,7 +238,7 @@ const standalone = `
     ['.dd-input__control', 'The <code>&lt;input&gt;</code> itself: transparent, fills the box, carries the block padding.'],
     ['.dd-input__affix', 'Icon or short text before/after the value. Not clickable unless it holds a button.'],
     ['.dd-input__unit', 'Mono, muted unit or suffix: <code>MiB</code>, <code>USD / mo</code>, <code>.cxkw.dev</code>.'],
-    ['.dd-input__prefix', 'Fades a leading unit, like a URL scheme.'],
+    ['.dd-input__prefix', 'Quiets a leading unit, like a URL scheme.'],
     ['.dd-input__status', 'Trailing check (ok). Turns red when the control is invalid.'],
     ['.dd-input__btn', 'Small inline icon button inside an affix: reveal, clear, steppers.'],
     ['.dd-input__steppers', 'Affix holding the minus / plus pair.'],

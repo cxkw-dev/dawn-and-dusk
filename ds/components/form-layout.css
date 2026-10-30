@@ -56,7 +56,9 @@
 }
 .dd-form__footer--sticky {
   position: sticky; bottom: 0; z-index: var(--dd-z-sticky); padding-bottom: calc(var(--dd-u) * 4);
-  background: color-mix(in oklab, var(--dd-bg) 88%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  /* the page's own tone and grain, so the pinned bar reads as page (a flat --dd-bg band looks darker in dusk) */
+  background-color: color-mix(in oklab, var(--dd-bg) 88%, transparent); background-image: var(--dd-grain); background-size: var(--dd-grain-size);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
 .dd-form__footer--plain { padding-top: 0; border-top: 0; }
 @container dd-form (max-width: 420px) {

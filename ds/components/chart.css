@@ -219,7 +219,7 @@
   transition: opacity var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-chart__seg.is-quiet { color: transparent; } /* too narrow for its label: the legend and table carry it */
-.dd-chart__stack:hover .dd-chart__seg:not(:hover) { opacity: .5; }
+.dd-chart__stack:has(.dd-chart__seg:hover) .dd-chart__seg:not(:hover) { opacity: .5; } /* :has, so the 2px gaps don't dim everything */
 .dd-chart__stack--thin { height: 8px; border-radius: var(--dd-r-pill); overflow: hidden; }
 .dd-chart__stack--thin > .dd-chart__seg { padding: 0; border-radius: 0; color: transparent; }
 
@@ -233,7 +233,7 @@
   transition: opacity var(--dd-dur-fast) var(--dd-ease), stroke-width var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-chart__arc-track { fill: none; stroke: var(--_grid); stroke-width: 5.5; }
-.dd-chart__donut svg:hover .dd-chart__arc:not(:hover) { opacity: .45; }
+.dd-chart__donut svg:has(.dd-chart__arc:hover) .dd-chart__arc:not(:hover) { opacity: .45; } /* not on the hole or the centre total */
 .dd-chart__arc:hover { stroke-width: 6.5; }
 .dd-chart__donut-center {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
@@ -260,7 +260,7 @@
 .dd-chart__data > summary::-webkit-details-marker { display: none; }
 .dd-chart__data > summary::before { content: "▸"; font-size: 0.85em; transition: transform var(--dd-dur-fast) var(--dd-ease); }
 .dd-chart__data[open] > summary::before { transform: rotate(90deg); }
-.dd-chart__data > summary:hover { color: var(--dd-text); }
+.dd-chart__data > summary:hover { color: var(--dd-text); text-decoration: underline; text-decoration-color: color-mix(in oklab, currentColor 40%, transparent); text-underline-offset: 3px; }
 .dd-chart__data-scroll { margin-top: calc(var(--dd-u) * 2); overflow-x: auto; }
 .dd-chart__data table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .dd-chart__data :is(th, td) { padding: 6px 12px 6px 0; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--_grid); }

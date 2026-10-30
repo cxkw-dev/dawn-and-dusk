@@ -1,6 +1,16 @@
 /* Card — "Lifted": borderless, lifted off the page by tone alone (--dd-surface on --dd-bg), no shadow.
    Interactive cards step one tone deeper on hover — tone only, no edge. Variants: media · stat · row · compact.
    Lay several out with .dd-card-grid. */
+
+/* Hover tone: one step further from the page, never toward it. In dawn the card sits darker than the page, so the step
+   leans toward ink. In dusk the page's grain reads lighter than --dd-surface, so a lighter hover would land on the page
+   tone and the card would vanish (or flash through it mid-transition) — there the step goes darker instead. */
+:root, [data-theme="dawn"] { --dd-card-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 6%); }
+[data-theme="dusk"] { --dd-card-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --dd-card-hover: color-mix(in oklab, var(--dd-surface), black 24%); }
+}
+
 .dd-card {
   --_pad: calc(var(--dd-u) * 5);
   position: relative; display: flex; flex-direction: column; min-width: 0;
@@ -29,7 +39,12 @@
   text-decoration: none; cursor: pointer;
 }
 .dd-card__link .dd-icon { transition: transform var(--dd-dur-fast) var(--dd-ease); }
-.dd-card:hover .dd-card__link .dd-icon, .dd-card__link:focus-visible .dd-icon { transform: translateX(3px); }
+/* The arrow nudges when its target is hovered: the whole card for link cards, only the link itself on static cards. */
+:is(.dd-card--link:hover, .dd-card--link.is-hover, .dd-card--link:focus-within) .dd-card__link .dd-icon,
+a.dd-card__link:is(:hover, :focus-visible) .dd-icon { transform: translateX(3px); }
+a.dd-card__link { text-decoration: underline solid transparent; text-decoration-thickness: 1.5px; text-underline-offset: .25em;
+  transition: color var(--dd-dur-fast) var(--dd-ease), text-decoration-color var(--dd-dur-fast) var(--dd-ease); }
+a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: currentColor; }
 .dd-card__link:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; border-radius: 2px; }
 
 /* Media: a tonal panel (or an <img>) above the body. */
@@ -46,11 +61,7 @@
 /* Interactive: the whole card is the target. Use an <a class="dd-card dd-card--link">, or put a
    .dd-card__stretch link inside so the card stays one tab stop with real inner text. */
 .dd-card--link { cursor: pointer; }
-/* The step is mixed toward ink rather than taken from --dd-surface-2, so it reads as clearly in dusk as in dawn. */
-.dd-card--link:hover, .dd-card--link.is-hover, .dd-card--link:focus-within {
-  background: color-mix(in oklab, var(--dd-surface), var(--dd-text) 6%);
-}
-.dd-card--link.is-hover .dd-card__link .dd-icon { transform: translateX(3px); }
+.dd-card--link:hover, .dd-card--link.is-hover, .dd-card--link:focus-within { background: var(--dd-card-hover); }
 .dd-card--link:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 .dd-card__stretch { color: inherit; text-decoration: none; }
 .dd-card__stretch::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }

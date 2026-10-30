@@ -46,4 +46,5 @@
 .dd-link--inverse:hover, .dd-link--inverse:hover > span { color: var(--dd-bg); text-decoration-color: var(--dd-bg); }
 .dd-link--inverse > span { text-decoration-color: color-mix(in oklab, var(--dd-bg) 50%, transparent); }
 
-.dd-link[aria-disabled='true'] { color: var(--dd-faint); text-decoration-color: var(--dd-faint); pointer-events: none; cursor: not-allowed; }
+.dd-link[aria-disabled='true'] { color: var(--dd-quiet); text-decoration-color: var(--dd-faint); pointer-events: none; cursor: not-allowed; }
+.dd-link[aria-disabled='true'] > span { text-decoration-color: var(--dd-faint); }

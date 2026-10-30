@@ -14,8 +14,19 @@
   appearance: none; border: 0; font: inherit; font-size: var(--dd-fs-sm); text-align: left; cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease);
 }
-:is(a, button).dd-stat:hover { --_bg: var(--dd-surface-2); }
+/* Linked tiles step one tone further from the page on hover, never toward it (same rule as the card). In dawn the tile
+   sits darker than the page, so the step leans toward ink; in dusk the grained page reads lighter than --dd-surface, so a
+   lighter step (the old --dd-surface-2) landed on the page tone and the tile vanished — there it goes darker.
+   --_bg also feeds the sparkline dot's ring, so the ring moves with the tile. */
+:root, [data-theme="dawn"] { --dd-stat-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 6%); --dd-stat-press: color-mix(in oklab, var(--dd-surface), var(--dd-text) 10%); }
+[data-theme="dusk"] { --dd-stat-hover: color-mix(in oklab, var(--dd-surface), black 24%); --dd-stat-press: color-mix(in oklab, var(--dd-surface), black 36%); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --dd-stat-hover: color-mix(in oklab, var(--dd-surface), black 24%); --dd-stat-press: color-mix(in oklab, var(--dd-surface), black 36%); }
+}
+:is(a, button).dd-stat:hover { --_bg: var(--dd-stat-hover); }
+:is(a, button).dd-stat:active { --_bg: var(--dd-stat-press); }
 .dd-stat:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-stat-grid--joined > .dd-stat:focus-visible { outline-offset: -2px; } /* the joined grid clips overflow */
 
 .dd-stat__label {
   display: flex; align-items: center; gap: calc(var(--dd-u) * 1.5); margin: 0;

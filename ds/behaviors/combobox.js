@@ -160,6 +160,14 @@
     if (e.target.closest('.dd-input') && !input.disabled) { input.focus(); if (list.hidden) open(root); }
   });
 
+  // The pointer and the keyboard share one highlight: hovering an option makes it the active one.
+  document.addEventListener('mousemove', (e) => {
+    const opt = e.target.closest?.('[data-dd-combobox] [role="option"]');
+    if (!opt || opt.classList.contains('is-active') || opt.getAttribute('aria-disabled') === 'true') return;
+    const root = opt.closest('[data-dd-combobox]');
+    if (parts(root).list.contains(opt)) { const y = opt.parentElement.scrollTop; setActive(root, opt); opt.parentElement.scrollTop = y; }
+  });
+
   document.addEventListener('input', (e) => {
     const root = e.target.closest?.('[data-dd-combobox]');
     if (!root || e.target !== parts(root).input) return;

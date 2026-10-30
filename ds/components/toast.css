@@ -1,19 +1,21 @@
 /* Toast — a short, temporary confirmation in a stack at the bottom-right (.dd-toaster). From the Soft fill alert family:
    in dawn the toast is an ink slab (text colour fill, page colour type); in dusk it is a raised dark surface
-   (--dd-float-bg + --dd-shadow-float, like menus and popovers), never a light slab. Intents tint only the icon and
-   the progress line.
+   (--dd-surface-3 + --dd-shadow-float, like the tooltip and guide cue: one step above the grain-lit page, so it never
+   melts into it), never a light slab. Intents tint only the icon and the progress line.
+   Motion: toasts in the stack slide in, the others glide to make room, and a toast swiped sideways (touch, pen or a
+   mouse drag) follows the pointer and leaves; reduced motion drops all of it.
    Create them with dd.toast({ title, description, intent, action }) or a [data-dd-toast] trigger (behaviors/toast.js). */
 :root, [data-theme="dawn"] {
   --dd-toast-bg: var(--dd-text); --dd-toast-fg: var(--dd-bg);
   --dd-toast-muted: color-mix(in oklab, var(--dd-bg) 68%, var(--dd-text)); --dd-toast-tint: 62%;
 }
 [data-theme="dusk"] {
-  --dd-toast-bg: var(--dd-float-bg); --dd-toast-fg: var(--dd-text);
+  --dd-toast-bg: var(--dd-surface-3); --dd-toast-fg: var(--dd-text);
   --dd-toast-muted: var(--dd-muted); --dd-toast-tint: 100%;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --dd-toast-bg: var(--dd-float-bg); --dd-toast-fg: var(--dd-text);
+    --dd-toast-bg: var(--dd-surface-3); --dd-toast-fg: var(--dd-text);
     --dd-toast-muted: var(--dd-muted); --dd-toast-tint: 100%;
   }
 }
@@ -39,8 +41,14 @@
   border: 0; border-radius: var(--dd-r-box);
   background: var(--dd-toast-bg); color: var(--dd-toast-fg); box-shadow: var(--dd-shadow-float);
   font-size: var(--dd-fs-sm); line-height: 1.45; pointer-events: auto;
-  animation: dd-toast-in var(--dd-dur) var(--dd-ease) both;
 }
+/* Live toasts (in the stack) slide in, can be swiped away and spring back if the swipe is short. */
+.dd-toaster > .dd-toast {
+  touch-action: pan-y;
+  animation: dd-toast-in var(--dd-dur) var(--dd-ease) both;
+  transition: translate var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-toaster > .dd-toast.is-swiping { transition: none; cursor: grabbing; user-select: none; }
 .dd-toast--info { --_c: var(--dd-info); }
 .dd-toast--ok { --_c: var(--dd-ok); }
 .dd-toast--warn { --_c: var(--dd-warn); }
@@ -61,6 +69,7 @@
   text-decoration-color: color-mix(in oklab, currentColor 50%, transparent);
 }
 .dd-toast__action:hover { text-decoration-style: solid; text-decoration-color: currentColor; }
+.dd-toast__action:active { opacity: .7; }
 .dd-toast__action:focus-visible { outline: 2px solid color-mix(in oklab, var(--dd-toast-fg) 55%, transparent); outline-offset: 3px; border-radius: 2px; }
 
 .dd-toast__dismiss {
@@ -70,6 +79,7 @@
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-toast__dismiss:hover { color: var(--dd-toast-fg); background: color-mix(in oklab, var(--dd-toast-fg) 12%, transparent); }
+.dd-toast__dismiss:active { background: color-mix(in oklab, var(--dd-toast-fg) 20%, transparent); }
 .dd-toast__dismiss:focus-visible { outline: 2px solid color-mix(in oklab, var(--dd-toast-fg) 55%, transparent); outline-offset: 1px; }
 .dd-toast__dismiss > .dd-icon { width: 1.05em; height: 1.05em; }
 .dd-toast__actions + .dd-toast__dismiss { margin-left: calc(var(--dd-u) * -1); }
@@ -82,6 +92,6 @@
 
 @keyframes dd-toast-in { from { opacity: 0; transform: translateY(10px) scale(.98); } }
 @media (prefers-reduced-motion: reduce) {
-  .dd-toast { animation: none; }
+  .dd-toaster > .dd-toast { animation: none; transition: none; }
   .dd-toast__progress { display: none; }
 }

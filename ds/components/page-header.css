@@ -11,7 +11,9 @@
 }
 .dd-page-header__back { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); align-self: flex-start; color: var(--dd-muted);
   font-size: var(--dd-fs-sm); text-decoration: none; border-radius: var(--dd-r-ctl); transition: color var(--dd-dur-fast) var(--dd-ease); }
+.dd-page-header__back > .dd-icon { transition: transform var(--dd-dur-fast) var(--dd-ease); }
 .dd-page-header__back:hover { color: var(--dd-text); }
+.dd-page-header__back:is(:hover, :focus-visible) > .dd-icon:first-child { transform: translateX(-3px); }
 .dd-page-header__back:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 .dd-page-header__title {
   display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 2) calc(var(--dd-u) * 3); margin: 0;

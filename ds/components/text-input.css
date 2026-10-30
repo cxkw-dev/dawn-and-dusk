@@ -1,12 +1,15 @@
 /* Text input — the tonal, borderless box every form control shares (textarea, select, combobox and date picker
    build on it). The box (.dd-input) holds the control (.dd-input__control) plus optional affixes, units and inline
    buttons. Inside a .dd-field the box grows a top pad so the tucked label fits; on its own it is button height.
-   Sizes: sm · md (default) · lg. Focus clears the fill toward the page and lifts the box. */
+   Sizes: sm · md (default) · lg. Focus clears the fill toward the page and lifts the box.
+   Dusk fills are a translucent wash of the text colour, so the box reads on the grain page, on cards and on
+   floating panels alike (an opaque --dd-surface-2 fill vanishes into the dusk page). */
 .dd-input {
   /* metrics in --dd-u: block pad (alone), inline pad, tucked top/bottom pad */
   --_py: 2.1; --_px: 3; --_tpt: 6.5; --_tpb: 2;
-  --_fill: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 4%);
-  --_fill-hover: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 8%);
+  --_rest: light-dark(color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 4%), var(--dd-wash));
+  --_rest-hover: light-dark(color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 8%), var(--dd-wash-strong));
+  --_fill: var(--_rest); --_fill-hover: var(--_rest-hover);
   position: relative; display: flex; align-items: stretch; gap: calc(var(--dd-u) * 2); width: 100%; min-width: 0;
   margin: 0; padding: 0 calc(var(--dd-u) * var(--_px)); border: 0; border-radius: var(--dd-r-ctl);
   background: var(--_fill); color: var(--dd-text);
@@ -31,14 +34,20 @@
   color: inherit; font: inherit; line-height: inherit; letter-spacing: inherit; text-align: inherit; text-overflow: ellipsis;
   caret-color: var(--dd-accent);
 }
-.dd-input__control::placeholder { color: var(--dd-faint); opacity: 1; }
+.dd-input__control::placeholder { color: var(--dd-quiet); opacity: 1; } /* readable hint, still clearly not a value */
 .dd-input__control.dd-mono { font-family: var(--dd-font-mono); font-size: .94em; }
 .dd-input__control.dd-num { font-variant-numeric: tabular-nums; }
 .dd-input__control:focus-visible { outline: 0; }
 .dd-input__control[type='number'] { -moz-appearance: textfield; font-variant-numeric: tabular-nums; }
 .dd-input__control::-webkit-inner-spin-button, .dd-input__control::-webkit-outer-spin-button { appearance: none; margin: 0; }
 .dd-input__control::-webkit-search-decoration, .dd-input__control::-webkit-search-cancel-button { appearance: none; }
-.dd-input__control:-webkit-autofill { -webkit-text-fill-color: var(--dd-text); transition: background-color 9999s; }
+/* Autofill: keep the browser's yellow/blue off the transparent control; the box takes a soft accent tint instead. */
+.dd-input__control:is(:-webkit-autofill, :autofill) {
+  -webkit-text-fill-color: var(--dd-text); caret-color: var(--dd-accent); transition: background-color 99999s 0s, color 99999s 0s;
+}
+.dd-input:has(.dd-input__control:is(:-webkit-autofill, :autofill)) {
+  --_fill: color-mix(in oklab, var(--dd-accent) 12%, var(--_rest)); --_fill-hover: color-mix(in oklab, var(--dd-accent) 16%, var(--_rest-hover));
+}
 
 /* Affixes: icons, prefixes ("https://") and units ("USD / mo") on the value line. */
 .dd-input__affix, .dd-input__unit {
@@ -49,7 +58,7 @@
 .dd-input__affix > .dd-icon { width: 1.2em; height: 1.2em; vertical-align: 0; }
 .dd-input__affix + .dd-input__control { margin-left: calc(var(--dd-u) * -.5); }
 .dd-input__unit { font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); }
-.dd-input__prefix { color: var(--dd-faint); }
+.dd-input__prefix { color: var(--dd-quiet); }
 .dd-input__status { color: var(--dd-ok); }
 
 /* Inline buttons (reveal, clear, steppers) live inside an affix so they share the value line. */
@@ -59,7 +68,9 @@
   background: transparent; color: var(--dd-muted); cursor: pointer; pointer-events: auto;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-input__btn:hover { background: color-mix(in oklab, var(--dd-text) 8%, transparent); color: var(--dd-text); }
+.dd-input__btn:hover { background: light-dark(color-mix(in oklab, var(--dd-text) 8%, transparent), var(--dd-wash-strong)); color: var(--dd-text); }
+.dd-input__btn:active { background: light-dark(color-mix(in oklab, var(--dd-text) 13%, transparent), color-mix(in oklab, var(--dd-text) 18%, transparent)); }
+.dd-input__btn:disabled { opacity: .45; cursor: not-allowed; background: none; }
 .dd-input__btn:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
 .dd-input__btn > .dd-icon, .dd-input__btn > span > .dd-icon { width: 16px; height: 16px; vertical-align: 0; }
 .dd-input__btn:last-child { margin-right: calc(var(--dd-u) * -1.25); }
@@ -83,15 +94,20 @@
 }
 .dd-input.is-invalid .dd-input__status, .dd-input:has(.dd-input__control[aria-invalid='true']) .dd-input__status { color: var(--dd-bad); }
 
+/* Read-only: no fill, a hairline frame. Hover and focus tint it (it can still be focused and copied), but it never
+   lifts like an editable box. */
 .dd-input:has(.dd-input__control[readonly]) {
-  --_fill: transparent; --_fill-hover: transparent;
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 12%, transparent);
+  --_fill: transparent; --_fill-hover: color-mix(in oklab, var(--dd-text) 4%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 14%, transparent);
 }
-.dd-input:has(.dd-input__control[readonly]):focus-within { background: transparent; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-accent) 45%, transparent); }
+.dd-input:has(.dd-input__control[readonly]):is(:focus-within, .is-focus) {
+  background: color-mix(in oklab, var(--dd-accent) 7%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-accent) 60%, transparent);
+}
 
-/* Disabled: a lighter box (still a visible step at dusk) and dimmed but legible text. */
+/* Disabled: half the rest wash (a fainter box on any background) and dimmed but legible text; no hover. */
 .dd-input:has(.dd-input__control:disabled), .dd-input:disabled, .dd-input.is-disabled {
-  --_fill: light-dark(color-mix(in oklab, var(--dd-surface-2) 55%, transparent), var(--dd-surface-2));
+  --_fill: light-dark(color-mix(in oklab, var(--dd-text) 5%, transparent), color-mix(in oklab, var(--dd-text) 3.5%, transparent));
   --_fill-hover: var(--_fill);
   color: color-mix(in oklab, var(--dd-muted) 55%, var(--dd-faint)); cursor: not-allowed;
 }

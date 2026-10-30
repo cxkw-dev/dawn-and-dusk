@@ -10,25 +10,35 @@
   background: var(--dd-surface); color: var(--dd-text); font-size: var(--dd-fs-sm); line-height: 1.45; cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), border-color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-dropzone:hover { background: var(--dd-surface-2); border-color: color-mix(in oklab, var(--dd-text) 28%, transparent); }
+/* Hover steps the tone (dawn: one surface deeper; dusk: a lift toward the text, since --dd-surface-2 is the page's
+   own tone there) and firms up the dashes. */
+.dd-dropzone:hover {
+  background: light-dark(var(--dd-surface-2), color-mix(in oklab, var(--dd-surface), var(--dd-text) 9%));
+  border-color: color-mix(in oklab, var(--dd-text) 32%, transparent);
+}
 .dd-dropzone:has(input:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 .dd-dropzone > input[type='file'] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .dd-dropzone__icon {
   display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: calc(var(--dd-u) * 1.5); border-radius: 50%;
-  background: var(--dd-surface-3); color: var(--dd-muted);
+  background: light-dark(var(--dd-surface-3), var(--dd-wash-strong)); color: var(--dd-muted);
   transition: background-color var(--dd-dur) var(--dd-ease), color var(--dd-dur) var(--dd-ease), transform var(--dd-dur) var(--dd-ease);
 }
+.dd-dropzone:hover .dd-dropzone__icon { color: var(--dd-text); }
 .dd-dropzone__icon > .dd-icon { width: 20px; height: 20px; vertical-align: 0; }
 .dd-dropzone__title { margin: 0; font-weight: 600; }
 .dd-dropzone__browse { color: var(--dd-text); text-decoration: underline dotted; text-decoration-color: var(--dd-faint); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
 .dd-dropzone:hover .dd-dropzone__browse { text-decoration-color: currentColor; }
 .dd-dropzone__meta { margin: 0; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); }
-.dd-dropzone.is-dragover {
+.dd-dropzone:has(input:disabled) { opacity: .5; cursor: not-allowed; }
+.dd-dropzone:has(input:disabled):hover { background: var(--dd-surface); border-color: light-dark(color-mix(in oklab, var(--dd-text) 17%, transparent), color-mix(in oklab, var(--dd-text) 22%, transparent)); }
+.dd-dropzone.is-invalid { border-color: color-mix(in oklab, var(--dd-bad) 60%, transparent); background: color-mix(in oklab, var(--dd-bad) 8%, var(--dd-surface)); }
+.dd-dropzone.is-invalid:hover { border-color: color-mix(in oklab, var(--dd-bad) 85%, transparent); background: color-mix(in oklab, var(--dd-bad) 15%, var(--dd-surface)); }
+.dd-dropzone.is-invalid .dd-dropzone__icon { background: color-mix(in oklab, var(--dd-bad) 18%, transparent); color: var(--dd-bad); }
+/* Drag-over wins over every other state: the zone is about to take the files. */
+.dd-dropzone.is-dragover, .dd-dropzone.is-dragover:hover {
   background: color-mix(in oklab, var(--dd-accent) 12%, var(--dd-surface)); border-color: color-mix(in oklab, var(--dd-accent) 60%, transparent);
 }
 .dd-dropzone.is-dragover .dd-dropzone__icon { background: var(--dd-accent); color: var(--dd-on-accent); transform: translateY(-3px); }
-.dd-dropzone:has(input:disabled) { opacity: .5; cursor: not-allowed; }
-.dd-dropzone.is-invalid { border-color: color-mix(in oklab, var(--dd-bad) 60%, transparent); background: color-mix(in oklab, var(--dd-bad) 8%, var(--dd-surface)); }
 /* Compact: one row — icon, text, and room for a button. */
 .dd-dropzone--compact { flex-direction: row; justify-content: flex-start; gap: calc(var(--dd-u) * 3); padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 4); text-align: left; }
 .dd-dropzone--compact .dd-dropzone__icon { width: 36px; height: 36px; margin: 0; flex: none; }
@@ -41,8 +51,9 @@
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 3);
   min-width: 0; padding: calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 3);
   border-radius: var(--dd-r-box); background: var(--dd-surface); font-size: var(--dd-fs-sm);
-  animation: dd-file-in var(--dd-dur) var(--dd-ease);
 }
+/* Rows the script adds slide in (.is-new); rows in the markup are simply there, so nothing flashes on load. */
+.dd-file.is-new { animation: dd-file-in var(--dd-dur) var(--dd-ease); }
 .dd-file.is-removing { animation: dd-file-out var(--dd-dur-fast) var(--dd-ease) forwards; }
 @keyframes dd-file-in { from { opacity: 0; transform: translateY(-4px); } }
 @keyframes dd-file-out { to { opacity: 0; transform: translateX(8px); } }

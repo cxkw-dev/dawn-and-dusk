@@ -12,6 +12,8 @@
   --_hover: color-mix(in oklab, var(--dd-text) 4.5%, var(--_bg));
   --_sel: color-mix(in oklab, var(--dd-accent) 11%, var(--_bg));
   --_sel-hover: color-mix(in oklab, var(--dd-accent) 15%, var(--_bg));
+  --_detail: color-mix(in oklab, var(--dd-text) 2.5%, var(--_bg));
+  --_on: var(--dd-accent-soft); /* pressed chip, bulk bar */
   --_shade: color-mix(in oklab, var(--dd-text) 14%, transparent);
   --_py: calc(var(--dd-u) * 1.7);
   --_px: calc(var(--dd-u) * 2.5);
@@ -22,6 +24,25 @@
 }
 .dd-data-table:has(.dd-data-table__rownum) { --_rn-w: 44px; }
 .dd-data-table:has(.dd-data-table__select) { --_sel-w: 36px; }
+/* Dusk: the film grain on the page compresses small tone steps, so hover / selected / expanded take bigger steps
+   (hover stays clearly quieter than selected), and the accent tones are mixed from the page rather than
+   --dd-accent-soft, which sits barely a step off the grained page. */
+[data-theme="dusk"] .dd-data-table {
+  --_hover: color-mix(in oklab, var(--dd-text) 7%, var(--_bg));
+  --_sel: color-mix(in oklab, var(--dd-accent) 15%, var(--_bg));
+  --_sel-hover: color-mix(in oklab, var(--dd-accent) 20%, var(--_bg));
+  --_detail: color-mix(in oklab, var(--dd-text) 4%, var(--_bg));
+  --_on: color-mix(in oklab, var(--dd-accent) 16%, var(--dd-bg));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .dd-data-table {
+    --_hover: color-mix(in oklab, var(--dd-text) 7%, var(--_bg));
+    --_sel: color-mix(in oklab, var(--dd-accent) 15%, var(--_bg));
+    --_sel-hover: color-mix(in oklab, var(--dd-accent) 20%, var(--_bg));
+    --_detail: color-mix(in oklab, var(--dd-text) 4%, var(--_bg));
+    --_on: color-mix(in oklab, var(--dd-accent) 16%, var(--dd-bg));
+  }
+}
 
 /* ---------- toolbar ---------- */
 .dd-data-table__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5); }
@@ -54,9 +75,11 @@
 .dd-data-table__chip:hover { color: var(--dd-text); box-shadow: inset 0 0 0 1px var(--dd-border-strong); }
 .dd-data-table__chip:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-data-table__chip .dd-icon { width: 1em; height: 1em; opacity: .7; }
+.dd-data-table__chip:active { background: var(--dd-wash); }
 .dd-data-table__chip[aria-pressed="true"], .dd-data-table__chip.is-active {
-  background: var(--dd-accent-soft); color: var(--dd-accent); box-shadow: none; font-weight: 500;
+  background: var(--_on); color: var(--dd-accent); box-shadow: none;
 }
+.dd-data-table__chip:is([aria-pressed="true"], .is-active):hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
 .dd-data-table__chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint)); }
 
 .dd-data-table__tools { display: flex; align-items: center; gap: calc(var(--dd-u) * 1); margin-left: auto; }
@@ -70,24 +93,23 @@
 .dd-data-table__menu-panel {
   position: absolute; right: 0; top: calc(100% + 6px); z-index: var(--dd-z-overlay); min-width: 200px;
   display: flex; flex-direction: column; padding: calc(var(--dd-u) * 1.25);
-  border-radius: var(--dd-r-box); background: var(--dd-bg); box-shadow: var(--dd-shadow-float);
+  border-radius: var(--dd-r-box); background: var(--dd-float-bg); box-shadow: var(--dd-shadow-float);
   animation: dd-data-table-pop var(--dd-dur-fast) var(--dd-ease);
 }
-[data-theme="dusk"] .dd-data-table__menu-panel { background: var(--dd-surface); }
 .dd-data-table__menu-title { margin: 0; padding: calc(var(--dd-u) * 1) calc(var(--dd-u) * 2) calc(var(--dd-u) * 1.5); font-family: var(--dd-font-mono);
   font-size: var(--dd-fs-xs); letter-spacing: .06em; text-transform: uppercase; color: var(--dd-muted); }
 .dd-data-table__menu-panel label {
   display: flex; align-items: center; gap: calc(var(--dd-u) * 2); padding: calc(var(--dd-u) * 1.25) calc(var(--dd-u) * 2);
   border-radius: var(--dd-r-ctl); font-size: var(--dd-fs-sm); cursor: pointer; white-space: nowrap;
 }
-.dd-data-table__menu-panel label:hover { background: var(--dd-surface-2); }
+.dd-data-table__menu-panel label:hover { background: var(--dd-float-hover); }
 @keyframes dd-data-table-pop { from { opacity: 0; transform: translateY(-4px); } }
 
 /* ---------- bulk-action bar ---------- */
 .dd-data-table__bulk {
   display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1) calc(var(--dd-u) * 1.5);
   padding: calc(var(--dd-u) * 1) calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 1) calc(var(--dd-u) * 3);
-  border-radius: var(--dd-r-ctl); background: var(--dd-accent-soft); color: var(--dd-accent);
+  border-radius: var(--dd-r-ctl); background: var(--_on); color: var(--dd-accent);
   animation: dd-data-table-in var(--dd-dur) var(--dd-ease);
 }
 .dd-data-table__bulk[hidden] { display: none; }
@@ -95,6 +117,7 @@
 .dd-data-table__bulk-count span { font-family: var(--dd-font-mono); }
 .dd-data-table__bulk .dd-btn { color: var(--dd-accent); background: transparent; }
 .dd-data-table__bulk .dd-btn:hover { background: color-mix(in oklab, var(--dd-accent) 12%, transparent); }
+.dd-data-table__bulk .dd-btn:active { background: color-mix(in oklab, var(--dd-accent) 20%, transparent); }
 .dd-data-table__bulk .dd-btn--danger { color: var(--dd-bad); }
 .dd-data-table__bulk-end { margin-left: auto; }
 @keyframes dd-data-table-in { from { opacity: 0; transform: translateY(-3px); } }
@@ -138,7 +161,10 @@
 .dd-data-table .is-actions .dd-btn { color: var(--dd-muted); }
 .dd-data-table .is-actions .dd-btn:hover { color: var(--dd-text); }
 .dd-data-table td a:not([class]) { color: inherit; text-decoration: none; font-weight: 600; }
-.dd-data-table td a:not([class]):hover { text-decoration: underline; text-decoration-color: var(--dd-faint); text-underline-offset: 3px; }
+.dd-data-table td a:not([class]):hover {
+  text-decoration: underline; text-decoration-color: color-mix(in oklab, currentColor 55%, transparent);
+  text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+}
 .dd-data-table__unit { margin-left: .25em; color: var(--dd-muted); }
 
 /* status cell: data-status = ok | warn | bad | info | muted */
@@ -160,7 +186,8 @@
   border: 0; border-radius: 4px; background: none; color: inherit; font: inherit; letter-spacing: inherit; cursor: pointer;
   transition: color var(--dd-dur-fast) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-data-table__sort:hover { color: var(--dd-text); }
+.dd-data-table__sort:hover { color: var(--dd-text); background: var(--dd-wash); }
+.dd-data-table__sort:active { background: var(--dd-wash-strong); }
 .dd-data-table__sort:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
 .dd-data-table__sort .dd-icon { width: 1.05em; height: 1.05em; opacity: 0; transition: opacity var(--dd-dur-fast) var(--dd-ease), transform var(--dd-dur) var(--dd-ease); }
 .dd-data-table__sort:is(:hover, :focus-visible) .dd-icon { opacity: .45; }
@@ -174,7 +201,7 @@
 .dd-data-table thead :is(.dd-data-table__rownum, .dd-data-table__select, .is-frozen) { z-index: 3; }
 .dd-data-table__rownum {
   left: 0; width: var(--_rn-w); min-width: var(--_rn-w); max-width: var(--_rn-w); text-align: right;
-  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-faint);
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-quiet);
 }
 .dd-data-table__table .dd-data-table__select {
   left: var(--_rn-w); width: var(--_sel-w); min-width: var(--_sel-w); max-width: var(--_sel-w);
@@ -206,6 +233,8 @@
 .dd-data-table__check:checked::before { transform: scale(1); }
 .dd-data-table__check:indeterminate::before { transform: scale(1); height: 2px; clip-path: none; border-radius: 1px; }
 .dd-data-table__check:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-data-table__check:disabled { opacity: .45; cursor: not-allowed; }
+.dd-data-table__check:disabled:hover { box-shadow: inset 0 0 0 1.5px var(--dd-border-strong); }
 
 /* ---------- expandable rows ---------- */
 .dd-data-table__expand {
@@ -214,13 +243,14 @@
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-data-table__expand:hover { background: color-mix(in oklab, var(--dd-text) 8%, transparent); color: var(--dd-text); }
+.dd-data-table__expand:active { background: var(--dd-wash-strong); }
 .dd-data-table__expand:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
 .dd-data-table__expand .dd-icon { width: 14px; height: 14px; transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-data-table__expand[aria-expanded="true"] .dd-icon { transform: rotate(90deg); }
 .dd-data-table__expand-spacer { display: inline-block; width: 20px; margin: 0 calc(var(--dd-u) * 1) 0 -4px; }
 .dd-data-table tr:has(> td > .dd-data-table__expand[aria-expanded="true"]) > :is(td, th) { border-bottom-color: transparent; }
 
-.dd-data-table__detail > td { padding: 0; --_cell: color-mix(in oklab, var(--dd-text) 2.5%, var(--_bg)); }
+.dd-data-table__detail > td { padding: 0; --_cell: var(--_detail); }
 .dd-data-table__detail-body {
   position: sticky; left: 0; box-sizing: border-box; width: 100cqi; max-width: 100%;
   padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 4) calc(var(--dd-u) * 4) calc(var(--_rn-w) + var(--_sel-w) + var(--_px) + 24px);

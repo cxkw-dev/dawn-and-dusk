@@ -5,6 +5,10 @@
 .dd-slider {
   --_thumb: 18px; --_track: 4px; --_p: .5; --_lo: 0; --_hi: 1;
   --_rest: color-mix(in oklab, var(--dd-text) 15%, transparent); /* the unfilled track: reads on the page in both themes */
+  /* Thumb edge: a faint ink hairline in dawn; in dusk the light thumb sits on an almost-as-light fill, so its edge is
+     a dark hairline instead, which cuts it out of the fill. */
+  --_edge: 0 0 0 1px light-dark(color-mix(in oklab, var(--dd-text) 14%, transparent), color-mix(in oklab, var(--dd-bg) 75%, transparent));
+  --_lift: 0 1px 3px var(--dd-overlay);
   display: flex; flex-direction: column; gap: calc(var(--dd-u) * 2); min-width: 0; font-size: var(--dd-fs-sm);
 }
 .dd-slider__head { display: flex; align-items: baseline; justify-content: space-between; gap: calc(var(--dd-u) * 3); min-width: 0; }
@@ -30,17 +34,22 @@
 .dd-slider__input::-webkit-slider-thumb {
   appearance: none; width: var(--_thumb); height: var(--_thumb); margin-top: calc((var(--_track) - var(--_thumb)) / 2);
   border: 0; border-radius: 50%; background: light-dark(var(--dd-bg), var(--dd-text));
-  box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-text) 14%, transparent), 0 1px 3px var(--dd-overlay);
+  box-shadow: var(--_edge), var(--_lift);
   transition: transform var(--dd-dur-fast) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-slider__input::-moz-range-thumb {
   width: var(--_thumb); height: var(--_thumb); border: 0; border-radius: 50%; background: light-dark(var(--dd-bg), var(--dd-text));
-  box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-text) 14%, transparent), 0 1px 3px var(--dd-overlay);
+  box-shadow: var(--_edge), var(--_lift);
+  transition: transform var(--dd-dur-fast) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-slider__input:hover::-webkit-slider-thumb { transform: scale(1.08); }
-.dd-slider__input:active::-webkit-slider-thumb { transform: scale(1.14); }
-.dd-slider__input:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px var(--dd-ring), 0 1px 3px var(--dd-overlay); }
-.dd-slider__input:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px var(--dd-ring), 0 1px 3px var(--dd-overlay); }
+/* Hover: the thumb grows a little and gains a soft wash halo; dragging grows it more with a stronger halo; keyboard
+   focus swaps the halo for the focus ring. */
+.dd-slider__input:not(:disabled):hover::-webkit-slider-thumb { transform: scale(1.08); box-shadow: var(--_edge), var(--_lift), 0 0 0 6px var(--dd-wash); }
+.dd-slider__input:not(:disabled):hover::-moz-range-thumb { transform: scale(1.08); box-shadow: var(--_edge), var(--_lift), 0 0 0 6px var(--dd-wash); }
+.dd-slider__input:not(:disabled):active::-webkit-slider-thumb { transform: scale(1.14); box-shadow: var(--_edge), var(--_lift), 0 0 0 6px var(--dd-wash-strong); }
+.dd-slider__input:not(:disabled):active::-moz-range-thumb { transform: scale(1.14); box-shadow: var(--_edge), var(--_lift), 0 0 0 6px var(--dd-wash-strong); }
+.dd-slider__input:focus-visible::-webkit-slider-thumb { box-shadow: var(--_edge), var(--_lift), 0 0 0 4px var(--dd-ring); }
+.dd-slider__input:focus-visible::-moz-range-thumb { box-shadow: var(--_edge), var(--_lift), 0 0 0 4px var(--dd-ring); }
 .dd-slider__input:disabled { cursor: not-allowed; opacity: .45; }
 
 /* Range: two inputs stacked on one rail; only the thumbs take pointer events. The fill sits between them. */

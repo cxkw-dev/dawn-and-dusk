@@ -39,7 +39,7 @@ const panel = `
   <Code code={install} lang="html" theme="css-variables" wrap />
 
   <h2 id="contents">What’s here</h2>
-  <div class="doc-cards">
+  <div class="doc-cards" style="grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr))">
     <a class="doc-card" href={`${base}/foundations/colors`}><b>Foundations</b><span>Colours, typography, spacing, depth, motion, icons and brand.</span></a>
     <a class="doc-card" href={`${base}/components/button`}><b>{components} components</b><span>Actions, forms, data display, feedback, navigation, overlays and layout.</span></a>
     <a class="doc-card" href={`${base}/patterns/dashboard`}><b>Patterns</b><span>Whole pages: dashboard, data explorer, settings, landing.</span></a>

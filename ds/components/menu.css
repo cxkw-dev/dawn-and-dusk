@@ -67,17 +67,24 @@
 
 .dd-menu__item--danger { color: var(--dd-bad); }
 .dd-menu__item--danger > .dd-menu__icon { color: var(--dd-bad); }
-.dd-menu__item--danger:hover, .dd-menu__item--danger:focus-visible, .dd-menu__item--danger.is-active { background: var(--dd-bad-soft); }
+/* Danger highlight: --dd-bad-soft in dawn; in dusk that soft fill is a hair off the float surface, so it mixes the red
+   into the menu's own tone instead. */
+.dd-menu__item--danger:hover, .dd-menu__item--danger:focus-visible, .dd-menu__item--danger.is-active {
+  background: light-dark(var(--dd-bad-soft), color-mix(in oklab, var(--dd-bad) 16%, var(--dd-menu-bg)));
+}
 
-.dd-menu__item:disabled, .dd-menu__item[aria-disabled='true'] { color: var(--dd-faint); cursor: not-allowed; background: none; }
+/* Disabled: every part in --dd-quiet — clearly dimmer than live items, still readable (faint is ~2.3:1). */
+.dd-menu__item:disabled, .dd-menu__item[aria-disabled='true'] { color: var(--dd-quiet); cursor: not-allowed; background: none; }
 .dd-menu__item:disabled > :not(.dd-menu__body), .dd-menu__item[aria-disabled='true'] > :not(.dd-menu__body),
-.dd-menu__item:disabled .dd-menu__desc, .dd-menu__item[aria-disabled='true'] .dd-menu__desc { color: var(--dd-faint); }
+.dd-menu__item:disabled .dd-menu__desc, .dd-menu__item[aria-disabled='true'] .dd-menu__desc { color: var(--dd-quiet); }
 
 /* A trigger that has its menu open keeps its variant's hover tone (visible in dusk too, where the tonal fill is
    already --dd-surface-3). */
 .dd-btn[data-dd-menu][aria-expanded='true'] { background: var(--dd-btn-secondary-hover); }
-.dd-btn--ghost[data-dd-menu][aria-expanded='true'] { background: var(--dd-btn-secondary); }
-.dd-btn--primary[data-dd-menu][aria-expanded='true'] { background: var(--dd-primary-hover); }
+.dd-btn--ghost[data-dd-menu][aria-expanded='true'] { background: var(--dd-wash-strong); }
+.dd-btn--primary[data-dd-menu][aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
 .dd-btn--ink[data-dd-menu][aria-expanded='true'] { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }
-.dd-btn--danger[data-dd-menu][aria-expanded='true'] { background: color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)); }
+.dd-btn--danger[data-dd-menu][aria-expanded='true'] { background: light-dark(color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)), color-mix(in oklab, var(--dd-bad) 76%, var(--dd-text))); }
 .dd-btn--link[data-dd-menu][aria-expanded='true'] { background: none; color: var(--dd-accent); }
+/* Hovering an open trigger still answers, with a wash over its open tone. */
+.dd-btn[data-dd-menu][aria-expanded='true']:not(.dd-btn--link):hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }

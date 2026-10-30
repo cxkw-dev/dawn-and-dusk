@@ -8,10 +8,11 @@
   --_rail-bg: color-mix(in oklab, var(--dd-text) 6%, var(--dd-bg));
   --_panel-bg: color-mix(in oklab, var(--dd-text) 3%, var(--dd-bg));
   --_line: color-mix(in oklab, var(--dd-text) 8%, transparent);
-  --_hover: color-mix(in oklab, var(--dd-text) 6%, transparent);
+  --_hover: color-mix(in oklab, var(--dd-text) 4%, transparent);   /* quieter than --_on, so hover never reads as current */
   --_on: color-mix(in oklab, var(--dd-text) 10%, transparent);
+  --_on-hover: color-mix(in oklab, var(--dd-text) 13%, transparent);
   position: sticky; top: 0; z-index: var(--dd-z-sticky);
-  display: flex; flex: none; align-items: stretch; height: 100dvh;
+  display: flex; flex: none; align-items: stretch; height: 100dvh; max-width: 100%;
   color: var(--dd-text); font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: 1.3;
 }
 .dd-side-nav--fill { position: relative; top: auto; height: 100%; }
@@ -34,8 +35,10 @@
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-side-nav__item > .dd-icon { width: 20px; height: 20px; }
-.dd-side-nav__item:hover { background: color-mix(in oklab, var(--dd-text) 7%, transparent); color: var(--dd-text); }
+.dd-side-nav__item:hover { background: var(--_hover); color: var(--dd-text); }
 .dd-side-nav__item:is(.is-active, [aria-current='page'], [aria-current='true']) { background: var(--_on); color: var(--dd-text); }
+.dd-side-nav__item:is(.is-active, [aria-current='page'], [aria-current='true']):hover { background: var(--_on-hover); }
+.dd-side-nav__item:active { background: var(--_on-hover); }
 .dd-side-nav__item:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 
 /* Rail labels: a small ink tooltip from [data-label], on hover and keyboard focus. */
@@ -53,7 +56,7 @@
 
 /* ---------- level 2: the page panel ---------- */
 .dd-side-nav__panel {
-  position: relative; flex: none; width: var(--dd-side-nav-panel); overflow: hidden;
+  position: relative; flex: 0 1 auto; min-width: 0; width: var(--dd-side-nav-panel); overflow: hidden;
   background: var(--_panel-bg); box-shadow: inset -1px 0 0 var(--_line);
   transition: width var(--dd-dur) var(--dd-ease), visibility 0s linear 0s;
 }
@@ -88,6 +91,7 @@
 .dd-side-nav__link > .dd-icon { opacity: .8; }
 .dd-side-nav__link:hover { background: var(--_hover); color: var(--dd-text); }
 .dd-side-nav__link:is(.is-active, [aria-current='page']) { background: var(--_on); color: var(--dd-text); font-weight: 600; }
+.dd-side-nav__link:is(.is-active, [aria-current='page']):hover, .dd-side-nav__link:active { background: var(--_on-hover); }
 .dd-side-nav__link:is(.is-active, [aria-current='page']) > .dd-icon { opacity: 1; }
 .dd-side-nav__link:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: -2px; }
 .dd-side-nav__label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -126,7 +130,7 @@
 .dd-side-nav__foot { margin-top: auto; padding-top: calc(var(--dd-u) * 3); display: flex; flex-direction: column; gap: 1px; }
 .dd-side-nav__note {
   display: flex; flex-direction: column; gap: 6px; margin-top: calc(var(--dd-u) * 2); padding: calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 2.5);
-  border-radius: var(--dd-r-box); background: var(--_hover); font-size: var(--dd-fs-xs); color: var(--dd-muted); white-space: normal;
+  border-radius: var(--dd-r-box); background: color-mix(in oklab, var(--dd-text) 6%, transparent); font-size: var(--dd-fs-xs); color: var(--dd-muted); white-space: normal;
 }
 .dd-side-nav__note b { color: var(--dd-text); font-weight: 600; }
 .dd-side-nav__meter { height: 4px; border-radius: var(--dd-r-pill); background: var(--_on); overflow: hidden; }

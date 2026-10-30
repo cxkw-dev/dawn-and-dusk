@@ -27,8 +27,10 @@ Theme: `<html data-theme="dawn">` or `"dusk"`; omit it to follow the OS. Any `[d
 ## 2. Rules that make it look right
 
 1. **Tokens only.** Never hard-code a colour, radius, font or duration. Use `var(--dd-…)` — see `references/tokens.md`.
-2. **Tone, not lines.** Group with surface steps: page `--dd-bg` → container `--dd-surface` → hover/inset `--dd-surface-2`
-   → pressed `--dd-surface-3`. No borders on cards, alerts or panels. Hairlines only in dense tables and dividers.
+2. **Tone, not lines.** Group with surface steps: page `--dd-bg` → container `--dd-surface` → inset `--dd-surface-2`
+   → pressed `--dd-surface-3`. For hover / pressed fills use `--dd-wash` / `--dd-wash-strong` (translucent, visible on
+   any background — in dusk the grain lifts the page to about `--dd-surface-2`, so a surface-2 hover on the page vanishes).
+   No borders on cards, alerts or panels. Hairlines only in dense tables and dividers.
 3. **Shadows only for floating layers** (menus, popovers, toasts, dialogs, drawers): `--dd-shadow-float`.
 4. **One primary action per view** — `.dd-btn--primary` (Golden hour apricot, `--dd-primary`). Everything else is
    secondary, ghost, ink or link. `--dd-accent` (taupe/ink) is for selection, focus and links — not for buttons.

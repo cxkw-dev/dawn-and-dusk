@@ -10,6 +10,10 @@
   display: inline-flex; align-items: stretch; gap: 2px; box-sizing: border-box; max-width: 100%; min-inline-size: 0;
   margin: 0; padding: var(--_pad); border: 0; border-radius: calc(var(--dd-r-ctl) + var(--_pad));
   background: var(--dd-surface); vertical-align: middle;
+  /* Hover and chosen are translucent steps toward the text, so they read on any track tone. Dawn keeps its old
+     half-step / --dd-surface-3 look; dusk, where the track sits darker than the grained page, takes fuller steps. */
+  --_hover: light-dark(color-mix(in oklab, var(--dd-text) 4%, transparent), var(--dd-wash));
+  --_on: light-dark(var(--dd-wash-strong), color-mix(in oklab, var(--dd-text) 17%, transparent));
   overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
   font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: 1.1;
 }
@@ -37,12 +41,12 @@
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-segmented__item > .dd-icon { opacity: .9; }
-.dd-segmented__item:hover { color: var(--dd-text); background: color-mix(in oklab, var(--dd-surface-3) 45%, transparent); }
+.dd-segmented__item:hover { color: var(--dd-text); background: var(--_hover); }
 .dd-segmented__item:focus-visible, .dd-segmented__item:has(> input:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 0; }
 
 /* Chosen. */
 .dd-segmented__item[aria-checked='true'], .dd-segmented__item.is-selected, .dd-segmented__item:has(> input:checked) {
-  background: var(--dd-surface-3); color: var(--dd-text);
+  background: var(--_on); color: var(--dd-text);
 }
 
 /* Radio flavour: the native input covers the segment, invisible, so clicks, arrows and forms all just work. */
