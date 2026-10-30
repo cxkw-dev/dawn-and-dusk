@@ -93,7 +93,7 @@
 .dd-code-inline {
   font-family: var(--dd-font-mono); font-size: 0.86em; padding: 0.12em 0.4em; border-radius: 4px;
   /* mixed from the text colour so the chip reads on the page, on a surface and in dusk */
-  background: color-mix(in oklab, var(--dd-text) 9%, transparent); color: var(--dd-text);
+  background: color-mix(in oklab, var(--dd-text) 11%, transparent); color: var(--dd-text);
   overflow-wrap: anywhere; -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
 

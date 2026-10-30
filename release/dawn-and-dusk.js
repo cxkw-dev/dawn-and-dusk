@@ -15,10 +15,20 @@
   const current = () => root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dusk' : 'dawn');
   const sync = () => document.querySelectorAll('[data-dd-theme-toggle]').forEach((b) => b.setAttribute('aria-pressed', String(current() === 'dusk')));
 
+  // Swap in one frame: with every colour transition running at once the page repaints for --dd-dur and lags.
+  const swap = (next) => {
+    const off = document.createElement('style');
+    off.textContent = '*,*::before,*::after{transition:none!important}';
+    document.head.append(off);
+    root.dataset.theme = next;
+    void document.body.offsetHeight; // apply the new colours while transitions are off
+    requestAnimationFrame(() => off.remove());
+  };
+
   document.addEventListener('click', (e) => {
     if (!e.target.closest('[data-dd-theme-toggle]')) return;
     const next = current() === 'dusk' ? 'dawn' : 'dusk';
-    root.dataset.theme = next;
+    swap(next);
     try { localStorage.setItem(KEY, next); } catch { /* storage unavailable */ }
     sync();
   });

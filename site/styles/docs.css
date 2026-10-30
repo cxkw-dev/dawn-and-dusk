@@ -54,7 +54,7 @@
 .doc-main > h2, .doc-main > section > h2 { margin: var(--dd-space-12) 0 var(--dd-space-3); font-family: var(--dd-font-display); font-weight: 800;
   font-size: var(--dd-fs-2xl); letter-spacing: -0.045em; line-height: 1; text-transform: lowercase; scroll-margin-top: 80px; }
 .doc-main > h3, .doc-main > section > h3 { margin: var(--dd-space-8) 0 var(--dd-space-2); font-size: var(--dd-fs-lg); font-weight: 650; letter-spacing: -0.01em; }
-.doc-main > p, .doc-main > section > p, .doc-main li { text-wrap: pretty; }
+.doc-main > p, .doc-main > section > p, .doc-main > :is(ul, ol) > li, .doc-main > section > :is(ul, ol) > li { text-wrap: pretty; }
 .doc-main > p, .doc-main > section > p { margin: 0 0 var(--dd-space-4); max-width: 68ch; }
 .doc-main > ul, .doc-main > section > ul { padding-left: 1.2em; margin: 0 0 var(--dd-space-4); }
 .doc-main :not(pre) > code:not(.ex-stage *) {
@@ -107,7 +107,7 @@
   border-bottom: 1px solid var(--dd-border-strong); }
 .doc-table td { padding: 10px 12px 10px 0; border-bottom: 1px solid color-mix(in oklab, var(--dd-text) 8%, transparent); vertical-align: top; }
 .doc-table td:first-child { white-space: nowrap; }
-.doc-table code { font-family: var(--dd-font-mono); font-size: 12.5px; padding: 0.1em 0.38em; border-radius: 4px; background: var(--dd-surface-2); }
+.doc-table code { font-family: var(--dd-font-mono); font-size: 12.5px; padding: 0.1em 0.38em; border-radius: 4px; background: color-mix(in oklab, var(--dd-text) 8%, transparent); }
 .doc-guides { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--dd-space-4); margin: var(--dd-space-4) 0 var(--dd-space-8); }
 .doc-guide { padding: var(--dd-space-4) var(--dd-space-5); border-radius: var(--dd-r-box); background: var(--dd-surface); }
 .doc-guide { --_c: var(--dd-ok); }

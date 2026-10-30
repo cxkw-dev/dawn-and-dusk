@@ -1576,7 +1576,7 @@ a.dd-breadcrumbs__link:hover { color: var(--dd-text); background: var(--dd-surfa
 .dd-code-inline {
   font-family: var(--dd-font-mono); font-size: 0.86em; padding: 0.12em 0.4em; border-radius: 4px;
   /* mixed from the text colour so the chip reads on the page, on a surface and in dusk */
-  background: color-mix(in oklab, var(--dd-text) 9%, transparent); color: var(--dd-text);
+  background: color-mix(in oklab, var(--dd-text) 11%, transparent); color: var(--dd-text);
   overflow-wrap: anywhere; -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
 
@@ -4975,7 +4975,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-timeline {
   --_m: 28px;
   --_line: color-mix(in oklab, var(--dd-text) 10%, transparent);
-  --_well: color-mix(in oklab, var(--dd-text) 9%, transparent); /* neutral marker + inline code: reads on bg and on detail */
+  --_well: color-mix(in oklab, var(--dd-text) 11%, transparent); /* neutral marker + inline code: reads on bg and on detail */
   container: dd-timeline / inline-size;
   display: flex; flex-direction: column; gap: var(--dd-space-6); min-width: 0;
   font-size: var(--dd-fs-sm); color: var(--dd-text);

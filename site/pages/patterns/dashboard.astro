@@ -65,7 +65,7 @@ const chart = `
                 <div class="dd-chart__hits" style="--dd-chart-points:${hours.length}">${hits}
                 </div>
               </div>
-              <div class="dd-chart__x dd-chart__x--points" aria-hidden="true">${hours.map((h, k) => `<span${k % 2 ? ' class="is-minor"' : ''}>${h}</span>`).join('')}</div>
+              <div class="dd-chart__x dd-chart__x--points" aria-hidden="true">${hours.map((h, k) => `<span${k % 3 ? ' class="is-minor"' : ''}>${h}</span>`).join('')}</div>
             </div>
           </figure>`;
 

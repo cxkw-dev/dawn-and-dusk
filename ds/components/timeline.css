@@ -5,7 +5,7 @@
 .dd-timeline {
   --_m: 28px;
   --_line: color-mix(in oklab, var(--dd-text) 10%, transparent);
-  --_well: color-mix(in oklab, var(--dd-text) 9%, transparent); /* neutral marker + inline code: reads on bg and on detail */
+  --_well: color-mix(in oklab, var(--dd-text) 11%, transparent); /* neutral marker + inline code: reads on bg and on detail */
   container: dd-timeline / inline-size;
   display: flex; flex-direction: column; gap: var(--dd-space-6); min-width: 0;
   font-size: var(--dd-fs-sm); color: var(--dd-text);
