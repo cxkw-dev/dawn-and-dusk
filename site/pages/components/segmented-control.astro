@@ -1,0 +1,125 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const seg = (label: string, items: string[], on = 0, cls = '') => `<div class="dd-segmented${cls ? ' ' + cls : ''}" data-dd-segmented role="radiogroup" aria-label="${label}">
+${items.map((t, n) => `  <button class="dd-segmented__item" role="radio" aria-checked="${n === on}">${t}</button>`).join('\n')}
+</div>`;
+
+const basic = `
+<div class="dd-stack" style="--dd-gap: 15px; align-items: flex-start">
+  ${seg('Time range', ['1h', '24h', '7d', '30d'], 1)}
+  ${seg('Signal', ['Logs', 'Metrics', 'Traces'], 0)}
+</div>`;
+
+const sizes = `
+<div class="dd-stack" style="--dd-gap: 15px; align-items: flex-start">
+  ${seg('Editor mode, small', ['Write', 'Preview'], 0, 'dd-segmented--sm')}
+  ${seg('Editor mode, medium', ['Write', 'Preview'], 0)}
+  ${seg('Editor mode, large', ['Write', 'Preview'], 0, 'dd-segmented--lg')}
+</div>`;
+
+const icons = `
+<div class="dd-row" style="--dd-gap: 15px">
+  <div class="dd-segmented" data-dd-segmented role="radiogroup" aria-label="Layout">
+    <button class="dd-segmented__item dd-segmented__item--icon" role="radio" aria-checked="true" aria-label="List">${i('list')}</button>
+    <button class="dd-segmented__item dd-segmented__item--icon" role="radio" aria-checked="false" aria-label="Grid">${i('grid')}</button>
+    <button class="dd-segmented__item dd-segmented__item--icon" role="radio" aria-checked="false" aria-label="Chart">${i('chart')}</button>
+  </div>
+  <div class="dd-segmented dd-segmented--sm" data-dd-segmented role="radiogroup" aria-label="Theme">
+    <button class="dd-segmented__item dd-segmented__item--icon" role="radio" aria-checked="false" aria-label="Dawn">${i('sun')}</button>
+    <button class="dd-segmented__item dd-segmented__item--icon" role="radio" aria-checked="true" aria-label="Dusk">${i('moon')}</button>
+    <button class="dd-segmented__item dd-segmented__item--icon" role="radio" aria-checked="false" aria-label="System">${i('settings')}</button>
+  </div>
+  <div class="dd-segmented" data-dd-segmented role="radiogroup" aria-label="View">
+    <button class="dd-segmented__item" role="radio" aria-checked="true">${i('list')}<span>Table</span></button>
+    <button class="dd-segmented__item" role="radio" aria-checked="false">${i('code')}<span>JSON</span></button>
+  </div>
+</div>`;
+
+const counts = `
+<div class="dd-segmented" data-dd-segmented role="radiogroup" aria-label="Log level">
+  <button class="dd-segmented__item" role="radio" aria-checked="true" value="all">All <span class="dd-segmented__count">1,219</span></button>
+  <button class="dd-segmented__item" role="radio" aria-checked="false" value="error">Errors <span class="dd-segmented__count">3</span></button>
+  <button class="dd-segmented__item" role="radio" aria-checked="false" value="warn">Warnings <span class="dd-segmented__count">12</span></button>
+  <button class="dd-segmented__item" role="radio" aria-checked="false" value="debug" disabled>Debug <span class="dd-segmented__count">off</span></button>
+</div>
+<p class="dd-small dd-muted" style="margin: 10px 0 0">Showing <b class="dd-mono" data-seg-out>all</b> · listens for <code>dd:change</code></p>
+<script>
+  document.addEventListener('dd:change', (e) => {
+    const out = e.target.parentElement?.querySelector('[data-seg-out]');
+    if (out) out.textContent = e.detail.value;
+  });
+</script>`;
+
+const radios = `
+<form class="dd-stack" style="--dd-gap: 15px; align-items: flex-start" onsubmit="return false">
+  <fieldset class="dd-segmented">
+    <legend class="dd-visually-hidden">Billing period</legend>
+    <label class="dd-segmented__item"><input type="radio" name="period" value="monthly"><span>Monthly</span></label>
+    <label class="dd-segmented__item"><input type="radio" name="period" value="yearly" checked><span>Yearly</span> <span class="dd-segmented__count">−17%</span></label>
+  </fieldset>
+  <fieldset class="dd-segmented dd-segmented--sm">
+    <legend class="dd-visually-hidden">Region</legend>
+    <label class="dd-segmented__item"><input type="radio" name="region" value="iad1" checked><span class="dd-mono">iad1</span></label>
+    <label class="dd-segmented__item"><input type="radio" name="region" value="sfo1"><span class="dd-mono">sfo1</span></label>
+    <label class="dd-segmented__item"><input type="radio" name="region" value="fra1"><span class="dd-mono">fra1</span></label>
+    <label class="dd-segmented__item"><input type="radio" name="region" value="hnd1" disabled><span class="dd-mono">hnd1</span></label>
+  </fieldset>
+</form>`;
+
+const block = `
+<div class="dd-surface" style="max-width: 380px; padding: 20px">
+  <p class="dd-eyebrow" style="margin-bottom: 10px">Deploy edge-cache to</p>
+  <div class="dd-segmented dd-segmented--block dd-segmented--inset" data-dd-segmented role="radiogroup" aria-label="Deploy target">
+    <button class="dd-segmented__item" role="radio" aria-checked="true">Preview</button>
+    <button class="dd-segmented__item" role="radio" aria-checked="false">Production</button>
+  </div>
+</div>`;
+---
+<Docs title="Segmented control" group="Actions" lead="One choice from a small set, all visible at once. A tonal track; the chosen segment takes the deeper selected tone.">
+  <Example title="Default" description="Two to five short options that switch a view or a filter. Click a segment, or tab in and use the arrow keys." code={basic} />
+  <h2 id="sizes">Sizes</h2>
+  <p>Small for toolbars and dense headers, medium by default, large for settings and onboarding.</p>
+  <Example code={sizes} />
+  <h2 id="icons">Icons</h2>
+  <p>Icon-only segments (<code>__item--icon</code>) are square; give each an <code>aria-label</code>. Icons can also lead a label.</p>
+  <Example code={icons} />
+  <h2 id="counts">Counts and disabled</h2>
+  <p>A <code>.dd-segmented__count</code> sits beside the label in mono. Disabled segments fade and are skipped by the arrow keys. The control fires <code>dd:change</code> when the choice changes.</p>
+  <Example code={counts} />
+  <h2 id="radios">Without JavaScript</h2>
+  <p>The same look from a <code>&lt;fieldset&gt;</code> of native radios: each <code>&lt;label class="dd-segmented__item"&gt;</code> wraps an <code>&lt;input type="radio"&gt;</code>. Arrow keys, form submission and focus come from the browser.</p>
+  <Example code={radios} />
+  <h2 id="block">Full width, on a surface</h2>
+  <p><code>--block</code> shares the width equally. On a <code>--dd-surface</code> container add <code>--inset</code> so the track steps one tone deeper.</p>
+  <Example code={block} />
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-segmented', 'The track. A <code>div[role="radiogroup"][data-dd-segmented]</code>, or a <code>&lt;fieldset&gt;</code> for the radio version. Scrolls sideways if it runs out of room.'],
+    ['.dd-segmented__item', 'A segment: <code>&lt;button role="radio" aria-checked&gt;</code>, or <code>&lt;label&gt;</code> wrapping an <code>&lt;input type="radio"&gt;</code>.'],
+    ['[aria-checked="true"] / :checked', 'The chosen segment: deeper tone, full-strength text. <code>.is-selected</code> also works for static markup.'],
+    ['.dd-segmented__item--icon', 'Square, icon-only segment. Needs <code>aria-label</code>.'],
+    ['.dd-segmented__count', 'A mono count or note beside the label.'],
+    ['.dd-segmented--sm / --lg', 'Sizes. Medium has no modifier.'],
+    ['.dd-segmented--block', 'Fills its container; segments share the width.'],
+    ['.dd-segmented--inset', 'Track one tone deeper, for use on <code>--dd-surface</code>.'],
+    ['disabled / aria-disabled', 'Faded and skipped by the keyboard.'],
+  ]} />
+  <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/segmented-control.js</code> handles the button version. The radio version needs nothing.</p>
+  <ClassTable head={['Attribute / key', 'What it does']} rows={[
+    ['data-dd-segmented', 'On the track: clicks choose a segment; only the chosen segment is in the tab order (roving tabindex).'],
+    ['← → ↑ ↓', 'Move to and choose the previous / next segment, wrapping at the ends.'],
+    ['Home / End', 'Choose the first / last segment.'],
+    ['dd:change', 'Bubbling event on the track; <code>detail.value</code> is the item’s <code>value</code> or <code>data-value</code> (else its label), <code>detail.item</code> the button.'],
+  ]} />
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use it for two to five options with short labels.', 'Apply the choice straight away; there is no “Save” for a segmented control.', 'Keep segment labels the same kind of thing: all ranges, all views.']}
+    dont={['Don’t use it for actions; that is a button group.', 'Don’t use it to switch whole page sections with their own content; use tabs.', 'Don’t mix icon-only and labelled segments in one control.']}
+  />
+</Docs>

@@ -1,0 +1,209 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const railItem = (icon: string, label: string, o: { section?: string; on?: boolean; extra?: string } = {}) =>
+  o.section
+    ? `<button class="dd-side-nav__item${o.on ? ' is-active' : ''}" type="button"${o.on ? ' aria-current="true"' : ''} data-dd-nav-section="${o.section}" data-label="${label}" aria-label="${label}">${i(icon)}${o.extra ?? ''}</button>`
+    : `<a class="dd-side-nav__item" href="#" data-label="${label}" aria-label="${label}">${i(icon)}${o.extra ?? ''}</a>`;
+
+const rail = (id: string, collapsed = false, sections = true) => `
+  <div class="dd-side-nav__rail">
+    <a class="dd-side-nav__logo dd-logo-tile" href="#" aria-label="dawn &amp; dusk — home">d&amp;</a>
+    ${railItem('folder', 'Projects', sections ? { section: 'projects', on: true } : {})}
+    ${railItem('cloud', 'Deploys', sections ? { section: 'deploys' } : {})}
+    ${railItem('terminal', 'Logs', sections ? { section: 'logs' } : {})}
+    ${railItem('chart', 'Analytics')}
+    <span class="dd-side-nav__spacer"></span>
+    ${railItem('bell', 'Inbox · 3 new', { extra: '<span class="dd-side-nav__dot"></span>' })}
+    ${railItem('settings', 'Settings')}
+    <span class="dd-side-nav__sep"></span>
+    <button class="dd-side-nav__item dd-side-nav__collapse" type="button" data-dd-nav-toggle aria-controls="${id}-panel" aria-expanded="${!collapsed}" aria-label="${collapsed ? 'Expand' : 'Collapse'} navigation" data-label="${collapsed ? 'Expand' : 'Collapse'}">${i('chevron-left')}</button>
+  </div>`;
+
+const projects = `
+    <div class="dd-side-nav__pane" data-dd-nav-pane="projects">
+      <div class="dd-side-nav__head"><span class="dd-side-nav__title">projects</span><span class="dd-side-nav__count">14</span></div>
+      <p class="dd-side-nav__section">Pinned</p>
+      <a class="dd-side-nav__link" href="#" aria-current="page"><span class="dd-side-nav__label">dawn-and-dusk</span><span class="dd-side-nav__count">24</span></a>
+      <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__label">dockey-ui</span><span class="dd-side-nav__count">9</span></a>
+      <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__label">insomnia</span><span class="dd-side-nav__badge dd-side-nav__badge--new">NEW</span></a>
+      <p class="dd-side-nav__section">All projects</p>
+      <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__label">ai-focus</span><span class="dd-side-nav__badge dd-side-nav__badge--solid">3</span></a>
+      <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__label">leetnode</span><span class="dd-side-nav__count">41</span></a>
+      <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__label">cxkw.dev</span><span class="dd-side-nav__count">118</span></a>
+      <a class="dd-side-nav__link" href="#">${i('archive')}<span class="dd-side-nav__label">Archive</span></a>
+      <div class="dd-side-nav__foot">
+        <div class="dd-side-nav__note"><span><b>Hobby plan</b> · 7 of 10 projects</span><span class="dd-side-nav__meter"><i style="width:70%"></i></span></div>
+      </div>
+    </div>`;
+
+const deploys = `
+    <div class="dd-side-nav__pane" data-dd-nav-pane="deploys" hidden>
+      <div class="dd-side-nav__head"><span class="dd-side-nav__title">deploys</span><span class="dd-side-nav__count">312</span></div>
+      <p class="dd-side-nav__section">Environments</p>
+      <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__dot dd-side-nav__dot--ok"></span><span class="dd-side-nav__label">Production</span><span class="dd-side-nav__count">fra1</span></a>
+      <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__dot dd-side-nav__dot--warn"></span><span class="dd-side-nav__label">Staging</span><span class="dd-side-nav__count">iad1</span></a>
+      <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__dot dd-side-nav__dot--idle"></span><span class="dd-side-nav__label">Previews</span><span class="dd-side-nav__count">12</span></a>
+      <p class="dd-side-nav__section">Recent</p>
+      <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__label dd-mono">dpl_8f3a2c</span><span class="dd-side-nav__count">4m</span></a>
+      <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__label dd-mono">dpl_71be09</span><span class="dd-side-nav__badge">failed</span></a>
+      <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__label dd-mono">dpl_5c40d1</span><span class="dd-side-nav__count">2h</span></a>
+    </div>`;
+
+const logs = `
+    <div class="dd-side-nav__pane" data-dd-nav-pane="logs" hidden>
+      <div class="dd-side-nav__head"><span class="dd-side-nav__title">logs</span></div>
+      <p class="dd-side-nav__section">Streams</p>
+      <a class="dd-side-nav__link" href="#">${i('server')}<span class="dd-side-nav__label">auth-gateway</span></a>
+      <a class="dd-side-nav__link" href="#">${i('server')}<span class="dd-side-nav__label">billing-worker</span><span class="dd-side-nav__badge dd-side-nav__badge--solid">12</span></a>
+      <a class="dd-side-nav__link" href="#">${i('globe')}<span class="dd-side-nav__label">edge-cache</span></a>
+      <p class="dd-side-nav__section">Saved queries</p>
+      <a class="dd-side-nav__link" href="#">${i('bookmark')}<span class="dd-side-nav__label">5xx in the last hour</span></a>
+      <a class="dd-side-nav__link" href="#">${i('bookmark')}<span class="dd-side-nav__label">Slow checkouts</span></a>
+    </div>`;
+
+const page = `
+  <div class="sn-page">
+    <p class="dd-eyebrow">projects</p>
+    <h3 class="dd-h2">dawn-and-dusk</h3>
+    <p class="dd-small dd-muted">Try the chevron at the foot of the rail, or press the folder icon again. Other rail icons switch the panel.</p>
+    <div class="sn-ph"><i></i><i></i><i></i></div>
+  </div>`;
+
+const main = `
+<div class="sn-frame">
+  <nav class="dd-side-nav dd-side-nav--fill" id="nav-demo" aria-label="Main">${rail('nav-demo')}
+    <div class="dd-side-nav__panel" id="nav-demo-panel">${projects}${deploys}${logs}
+    </div>
+  </nav>${page}
+</div>`;
+
+const collapsed = `
+<div class="sn-frame">
+  <nav class="dd-side-nav dd-side-nav--fill is-collapsed" id="nav-demo-collapsed" aria-label="Main">${rail('nav-demo-collapsed', true)}
+    <div class="dd-side-nav__panel" id="nav-demo-collapsed-panel">${projects}${deploys}${logs}
+    </div>
+  </nav>${page}
+</div>`;
+
+const groups = `
+<div class="sn-frame">
+  <nav class="dd-side-nav dd-side-nav--fill" id="nav-demo-groups" aria-label="Services">${rail('nav-demo-groups', false, false)}
+    <div class="dd-side-nav__panel" id="nav-demo-groups-panel">
+      <div class="dd-side-nav__pane">
+        <div class="dd-side-nav__head"><span class="dd-side-nav__title">services</span><span class="dd-side-nav__count">6</span></div>
+        <p class="dd-side-nav__section">Production</p>
+        <details class="dd-side-nav__group" open>
+          <summary class="dd-side-nav__link"><span class="dd-side-nav__dot dd-side-nav__dot--ok"></span><span class="dd-side-nav__label">auth-gateway</span><span class="dd-side-nav__chev">${i('chevron-down')}</span></summary>
+          <div class="dd-side-nav__sub">
+            <a class="dd-side-nav__link" href="#">Overview</a>
+            <a class="dd-side-nav__link" href="#" aria-current="page"><span class="dd-side-nav__label">Deploys</span><span class="dd-side-nav__count">32</span></a>
+            <a class="dd-side-nav__link" href="#">Logs</a>
+            <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__label">Env vars</span><span class="dd-side-nav__count">18</span></a>
+          </div>
+        </details>
+        <details class="dd-side-nav__group">
+          <summary class="dd-side-nav__link"><span class="dd-side-nav__dot dd-side-nav__dot--bad"></span><span class="dd-side-nav__label">billing-worker</span><span class="dd-side-nav__chev">${i('chevron-down')}</span></summary>
+          <div class="dd-side-nav__sub">
+            <a class="dd-side-nav__link" href="#">Overview</a>
+            <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__label">Jobs</span><span class="dd-side-nav__badge dd-side-nav__badge--solid">12</span></a>
+            <a class="dd-side-nav__link" href="#">Logs</a>
+          </div>
+        </details>
+        <details class="dd-side-nav__group">
+          <summary class="dd-side-nav__link"><span class="dd-side-nav__dot dd-side-nav__dot--ok"></span><span class="dd-side-nav__label">edge-cache</span><span class="dd-side-nav__chev">${i('chevron-down')}</span></summary>
+          <div class="dd-side-nav__sub">
+            <a class="dd-side-nav__link" href="#">Overview</a>
+            <a class="dd-side-nav__link" href="#">Purge rules</a>
+          </div>
+        </details>
+        <p class="dd-side-nav__section">Staging</p>
+        <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__dot dd-side-nav__dot--warn"></span><span class="dd-side-nav__label">auth-gateway</span><span class="dd-side-nav__count">iad1</span></a>
+        <a class="dd-side-nav__link" href="#"><span class="dd-side-nav__dot dd-side-nav__dot--idle"></span><span class="dd-side-nav__label">search-indexer</span><span class="dd-side-nav__badge dd-side-nav__badge--new">NEW</span></a>
+      </div>
+    </div>
+  </nav>
+  <div class="sn-page"><p class="dd-eyebrow">auth-gateway</p><h3 class="dd-h2">deploys</h3><div class="sn-ph"><i></i><i></i><i></i></div></div>
+</div>`;
+
+const mobile = `
+<div class="sn-frame sn-frame--phone">
+  <header class="dd-top-bar">
+    <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-nav-open="#nav-demo-mobile" aria-controls="nav-demo-mobile" aria-expanded="true" aria-label="Open navigation">${i('menu')}</button>
+    <a class="dd-top-bar__brand" href="#"><span class="dd-logo dd-logo--sm">dawn &amp; dusk</span></a>
+  </header>
+  <nav class="dd-side-nav dd-side-nav--offcanvas is-mobile-open" id="nav-demo-mobile" aria-label="Main">${rail('nav-demo-mobile')}
+    <div class="dd-side-nav__panel" id="nav-demo-mobile-panel">${projects}${deploys}${logs}
+    </div>
+  </nav>
+  <div class="sn-page"><h3 class="dd-h3">dawn-and-dusk</h3><div class="sn-ph"><i></i><i></i></div></div>
+</div>`;
+---
+<Docs title="Side nav" group="Navigation" lead="The app’s main navigation: an icon rail for sections and a panel with that section’s pages. It runs the full height of the viewport and folds down to the rail with the chevron at its foot.">
+  <style is:global>
+    .sn-frame { position: relative; display: flex; flex-wrap: wrap; height: 560px; contain: layout paint; background: var(--dd-bg); }
+    .sn-frame > .dd-side-nav { height: 100%; }
+    .sn-frame--phone { flex-direction: column; flex-wrap: nowrap; max-width: 380px; height: 600px; margin: 24px auto; border-radius: var(--dd-r-lg);
+      box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 10%, transparent); }
+    .sn-page { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding: 32px; }
+    .sn-ph { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 12px; }
+    .sn-ph i { display: block; height: 110px; border-radius: var(--dd-r-box); background: var(--dd-surface); }
+    @media (max-width: 560px) { .sn-frame:not(.sn-frame--phone):has(.dd-side-nav:not(.is-collapsed)) .sn-page { display: none; } .sn-page { padding: 20px; } }
+  </style>
+
+  <Example
+    title="Two-level"
+    description="Sections in the rail, pages in the panel. Press another rail icon to switch the panel; press the active one, or the chevron, to fold it. Hover the rail for labels. Shown in a 560px frame — in an app it is 100dvh."
+    code={main}
+    stage="flush"
+  />
+
+  <h2 id="collapsed">Collapsed</h2>
+  <p>Folded, only the rail remains: 60px of icons with ink tooltips. The choice is remembered per nav <code>id</code> in <code>localStorage</code>, so it survives reloads and page changes. Add <code>is-collapsed</code> in the markup to start folded.</p>
+  <Example code={collapsed} stage="flush" />
+
+  <h2 id="groups">Groups, counts and status</h2>
+  <p>Inside the panel, section headings in mono caps divide the list, native <code>&lt;details&gt;</code> make collapsible groups, and the right edge carries a count, a badge or a status dot. The active page is in ink on a deeper tone.</p>
+  <Example code={groups} stage="flush" />
+
+  <h2 id="mobile">Mobile · off-canvas</h2>
+  <p>On small screens the whole nav slides in from the left over a scrim, opened by the top bar’s menu button (<code>data-dd-nav-open</code>). Esc, the scrim, the chevron or following a link close it. Inside an <a href="../app-shell">app shell</a> this happens automatically below 768px; on its own, add <code>dd-side-nav--offcanvas</code>.</p>
+  <Example code={mobile} stage="flush" />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-side-nav', 'The nav. Sticky and <code>100dvh</code> tall on its own. Give it an <code>id</code> to persist the collapsed state.'],
+    ['.dd-side-nav--fill', 'Fill the parent’s height instead of the viewport (automatic inside <code>.dd-app-shell</code>).'],
+    ['.dd-side-nav--offcanvas', 'Always off-canvas; opens with <code>.is-mobile-open</code>.'],
+    ['.is-collapsed', 'Panel folded away; only the rail shows.'],
+    ['__rail', 'Level one: <code>__logo</code> (a <code>.dd-logo-tile</code>), <code>__item</code> icon buttons or links, <code>__spacer</code>, <code>__sep</code>, <code>__collapse</code>.'],
+    ['__item[data-label]', 'Tooltip text for a rail icon. Also set <code>aria-label</code>.'],
+    ['__panel / __pane', 'Level two. One <code>__pane</code> per section, marked <code>data-dd-nav-pane</code>; inactive panes are <code>hidden</code>.'],
+    ['__head / __title', 'Pane heading in the lockup, with an optional <code>__count</code>.'],
+    ['__section', 'Mono caps heading inside a pane.'],
+    ['__link', 'A page link. Active with <code>aria-current="page"</code> or <code>.is-active</code>. Wrap text in <code>__label</code> so it truncates.'],
+    ['__count / __badge / __dot', 'Right-edge meta: mono count; pill badge (<code>--new</code>, <code>--solid</code>); dot (<code>--ok / --warn / --bad / --idle</code>). A dot inside a rail <code>__item</code> pins to its corner.'],
+    ['__group / __sub / __chev', 'A <code>&lt;details&gt;</code> group: the <code>&lt;summary&gt;</code> is a <code>__link</code>, the children sit in <code>__sub</code>.'],
+    ['__foot / __note / __meter', 'Bottom of a pane: a tonal note with a usage meter.'],
+    ['--dd-side-nav-rail / -panel', 'Column widths: 60px and 224px.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute', 'What it does']} rows={[
+    ['data-dd-nav-toggle', 'Folds / unfolds the panel of its nav (or of the nav in its value, e.g. <code>"#app-nav"</code>). Keeps <code>aria-expanded</code> and the tooltip in sync; persists to <code>localStorage</code> under <code>dd-side-nav:&lt;id&gt;</code>.'],
+    ['data-dd-nav-section="name"', 'On a rail item: shows <code>[data-dd-nav-pane="name"]</code> and unfolds the panel. Pressing the active item again folds it.'],
+    ['data-dd-nav-open="#id"', 'Opens an off-canvas nav (the top bar’s menu button). Focus moves to the current page link.'],
+    ['data-dd-nav-close', 'Closes the off-canvas nav it sits in.'],
+    ['Esc · scrim · link', 'Close the off-canvas nav; focus returns to the menu button.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Keep the rail to five or six sections; settings and inbox go to the foot.', 'Give every rail icon a <code>data-label</code> and an <code>aria-label</code>.', 'Use counts for quantities, a solid badge only when something needs attention.']}
+    dont={['Don’t nest more than one level of groups inside the panel.', 'Don’t put primary actions in the nav — they belong in the page header.', 'Don’t colour active items with primary; active is ink on a deeper tone.']}
+  />
+</Docs>

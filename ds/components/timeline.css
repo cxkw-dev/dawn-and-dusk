@@ -1,0 +1,107 @@
+/* Timeline — an activity feed or audit log, grouped by day. Each item has a marker (an avatar with initials, or an
+   icon in a tonal circle), a sentence, a timestamp and optional detail. A faint connector runs between markers.
+   --audit turns it into compact single-line rows with a mono time column. */
+
+.dd-timeline {
+  --_m: 28px;
+  --_line: color-mix(in oklab, var(--dd-text) 10%, transparent);
+  --_well: color-mix(in oklab, var(--dd-text) 9%, transparent); /* neutral marker + inline code: reads on bg and on detail */
+  container: dd-timeline / inline-size;
+  display: flex; flex-direction: column; gap: var(--dd-space-6); min-width: 0;
+  font-size: var(--dd-fs-sm); color: var(--dd-text);
+}
+.dd-timeline__group { display: flex; flex-direction: column; gap: var(--dd-space-3); min-width: 0; }
+.dd-timeline .dd-timeline__day { /* doubled so page heading styles don't leak in */
+  display: flex; align-items: baseline; gap: calc(var(--dd-u) * 2); margin: 0;
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); font-weight: 650; letter-spacing: 0; line-height: var(--dd-lh-tight);
+}
+.dd-timeline__date { font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 400; color: var(--dd-muted); font-variant-numeric: tabular-nums; }
+
+.dd-timeline__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.dd-timeline__item {
+  position: relative; display: grid; grid-template-columns: var(--_m) minmax(0, 1fr); column-gap: var(--dd-space-3);
+  padding-bottom: var(--dd-space-5);
+}
+.dd-timeline__item:last-child { padding-bottom: 0; }
+/* Connector: a neutral hairline from under this marker to the next one (never a coloured bar). */
+.dd-timeline__item:not(:last-child)::before {
+  content: ''; position: absolute; left: calc(var(--_m) / 2 - 0.5px); top: calc(var(--_m) + 5px); bottom: 5px;
+  width: 1px; background: var(--_line);
+}
+
+/* Markers */
+.dd-timeline__marker {
+  --_tone: var(--dd-muted);
+  position: relative; display: grid; place-items: center; width: var(--_m); height: var(--_m); border-radius: 50%;
+  background: var(--_well); color: var(--_tone);
+  font-family: var(--dd-font-body); font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em; line-height: 1; text-transform: uppercase;
+}
+.dd-timeline__marker > .dd-icon { width: 16px; height: 16px; }
+.dd-timeline__marker > img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+.dd-timeline__marker--avatar { background: var(--dd-color, var(--dd-set-3)); color: var(--dd-on-primary); }
+.dd-timeline__marker:is(.dd-timeline__marker--ok, .dd-timeline__marker--warn, .dd-timeline__marker--bad, .dd-timeline__marker--info, .dd-timeline__marker--accent) {
+  background: color-mix(in oklab, var(--_tone) 20%, var(--dd-bg));
+}
+.dd-timeline__marker--ok { --_tone: var(--dd-ok); }
+.dd-timeline__marker--warn { --_tone: var(--dd-warn); }
+.dd-timeline__marker--bad { --_tone: var(--dd-bad); }
+.dd-timeline__marker--info { --_tone: var(--dd-info); }
+.dd-timeline__marker--accent { --_tone: var(--dd-accent); }
+
+/* Body: sentence + time on one line, detail underneath. */
+.dd-timeline__body {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px var(--dd-space-3); min-width: 0;
+  padding-top: calc((var(--_m) - 1.45em) / 2);
+}
+.dd-timeline__text { flex: 1 1 18em; min-width: 0; margin: 0; line-height: 1.45; color: var(--dd-muted); overflow-wrap: anywhere; }
+.dd-timeline__text :where(b, strong) { font-weight: 600; color: var(--dd-text); }
+.dd-timeline__text :where(a) {
+  color: var(--dd-text); font-weight: 500; text-decoration: underline dotted; text-decoration-color: var(--dd-faint);
+  text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+}
+.dd-timeline__text :where(a:hover) { text-decoration-color: currentColor; }
+.dd-timeline__text :where(code), .dd-timeline__detail :where(code) {
+  padding: 0.08em 0.38em; border-radius: 4px; background: var(--_well); color: var(--dd-text);
+  font-family: var(--dd-font-mono); font-size: 0.88em;
+}
+.dd-timeline__time {
+  flex: none; margin-left: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.dd-timeline__meta { font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dd-timeline__detail {
+  flex-basis: 100%; min-width: 0; margin-top: calc(var(--dd-u) * 1.5); padding: calc(var(--dd-u) * 2) calc(var(--dd-u) * 3);
+  border-radius: var(--dd-r-ctl); background: var(--dd-surface); color: var(--dd-text); line-height: 1.5; overflow-wrap: anywhere;
+}
+.dd-timeline__detail > :where(p) { margin: 0; }
+.dd-timeline__detail > :where(* + *) { margin-top: calc(var(--dd-u) * 1); }
+.dd-timeline__diff { font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-variant-numeric: tabular-nums; color: var(--dd-muted); }
+.dd-timeline__add { color: var(--dd-ok); }
+.dd-timeline__del { color: var(--dd-bad); }
+
+/* ---------- audit log ---------- */
+.dd-timeline--audit { --_m: 20px; gap: var(--dd-space-5); }
+.dd-timeline--audit .dd-timeline__group { gap: calc(var(--dd-u) * 1); }
+.dd-timeline--audit .dd-timeline__item {
+  grid-template-columns: 8.5ch var(--_m) minmax(0, 1fr); grid-template-areas: 'time m body';
+  align-items: center; column-gap: var(--dd-space-3); padding: calc(var(--dd-u) * 2) 0; border-top: 1px solid var(--_line);
+}
+.dd-timeline--audit .dd-timeline__item::before { display: none; }
+.dd-timeline--audit .dd-timeline__item > .dd-timeline__time { grid-area: time; margin: 0; color: var(--dd-muted); }
+.dd-timeline--audit .dd-timeline__marker { grid-area: m; font-size: 8.5px; }
+.dd-timeline--audit .dd-timeline__marker > .dd-icon { width: 13px; height: 13px; }
+.dd-timeline--audit .dd-timeline__body { grid-area: body; padding-top: 0; flex-wrap: nowrap; }
+.dd-timeline--audit .dd-timeline__text { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dd-text); }
+.dd-timeline--audit .dd-timeline__text :where(b, strong) { font-weight: 600; }
+.dd-timeline.dd-timeline--audit .dd-timeline__day { font-size: var(--dd-fs-xs); }
+
+/* Narrow: time drops under the sentence; audit rows wrap instead of truncating. */
+@container dd-timeline (max-width: 440px) {
+  .dd-timeline__time { flex-basis: 100%; margin-left: 0; }
+  .dd-timeline--audit .dd-timeline__item {
+    grid-template-columns: var(--_m) minmax(0, 1fr); grid-template-areas: 'm body' '. time'; align-items: start; row-gap: 2px;
+  }
+  .dd-timeline--audit .dd-timeline__marker { margin-top: 1px; }
+  .dd-timeline--audit .dd-timeline__body { flex-wrap: wrap; }
+  .dd-timeline--audit .dd-timeline__text { white-space: normal; flex-basis: 100%; }
+}

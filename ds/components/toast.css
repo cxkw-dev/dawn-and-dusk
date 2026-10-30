@@ -1,0 +1,87 @@
+/* Toast — a short, temporary confirmation in a stack at the bottom-right (.dd-toaster). From the Soft fill alert family:
+   in dawn the toast is an ink slab (text colour fill, page colour type); in dusk it is a raised dark surface
+   (--dd-float-bg + --dd-shadow-float, like menus and popovers), never a light slab. Intents tint only the icon and
+   the progress line.
+   Create them with dd.toast({ title, description, intent, action }) or a [data-dd-toast] trigger (behaviors/toast.js). */
+:root, [data-theme="dawn"] {
+  --dd-toast-bg: var(--dd-text); --dd-toast-fg: var(--dd-bg);
+  --dd-toast-muted: color-mix(in oklab, var(--dd-bg) 68%, var(--dd-text)); --dd-toast-tint: 62%;
+}
+[data-theme="dusk"] {
+  --dd-toast-bg: var(--dd-float-bg); --dd-toast-fg: var(--dd-text);
+  --dd-toast-muted: var(--dd-muted); --dd-toast-tint: 100%;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --dd-toast-bg: var(--dd-float-bg); --dd-toast-fg: var(--dd-text);
+    --dd-toast-muted: var(--dd-muted); --dd-toast-tint: 100%;
+  }
+}
+
+/* The stack. Newest at the bottom, nearest the corner; full width on small screens. */
+.dd-toaster {
+  position: fixed; z-index: var(--dd-z-toast); right: calc(var(--dd-u) * 5); bottom: calc(var(--dd-u) * 5);
+  display: flex; flex-direction: column; align-items: flex-end; gap: calc(var(--dd-u) * 2);
+  width: min(400px, calc(100vw - var(--dd-u) * 6)); margin: 0; padding: 0;
+  pointer-events: none;
+}
+.dd-toaster:empty { display: none; }
+@media (max-width: 520px) {
+  .dd-toaster { right: calc(var(--dd-u) * 3); left: calc(var(--dd-u) * 3); bottom: calc(var(--dd-u) * 3); width: auto; }
+}
+
+.dd-toast {
+  --_c: var(--dd-info);
+  --_tint: color-mix(in oklab, var(--_c) var(--dd-toast-tint), var(--dd-toast-fg));
+  position: relative; display: flex; align-items: flex-start; gap: calc(var(--dd-u) * 3);
+  width: 100%; max-width: 400px; box-sizing: border-box; overflow: hidden;
+  padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 3) calc(var(--dd-u) * 3) calc(var(--dd-u) * 4);
+  border: 0; border-radius: var(--dd-r-box);
+  background: var(--dd-toast-bg); color: var(--dd-toast-fg); box-shadow: var(--dd-shadow-float);
+  font-size: var(--dd-fs-sm); line-height: 1.45; pointer-events: auto;
+  animation: dd-toast-in var(--dd-dur) var(--dd-ease) both;
+}
+.dd-toast--info { --_c: var(--dd-info); }
+.dd-toast--ok { --_c: var(--dd-ok); }
+.dd-toast--warn { --_c: var(--dd-warn); }
+.dd-toast--bad { --_c: var(--dd-bad); }
+.dd-toast--neutral { --_c: var(--dd-toast-muted); --_tint: var(--dd-toast-muted); }
+
+.dd-toast > .dd-icon { flex: none; width: 1.15em; height: 1.15em; margin-block: calc((1lh - 1.15em) / 2); color: var(--_tint); }
+.dd-toast__body { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 1px; overflow-wrap: anywhere; }
+.dd-toast__title { margin: 0; font-weight: 600; }
+.dd-toast__text { margin: 0; color: var(--dd-toast-muted); text-wrap: pretty; }
+.dd-toast__text :where(code, .dd-mono) { font-family: var(--dd-font-mono); font-size: .92em; }
+
+.dd-toast__actions { flex: none; align-self: center; display: flex; align-items: center; gap: calc(var(--dd-u) * 3); }
+.dd-toast__action {
+  appearance: none; padding: 0; border: 0; background: none; font: inherit; font-weight: 600; line-height: 1.3;
+  color: var(--dd-toast-fg); white-space: nowrap; cursor: pointer;
+  text-decoration: underline dotted; text-decoration-thickness: 2px; text-underline-offset: .28em;
+  text-decoration-color: color-mix(in oklab, currentColor 50%, transparent);
+}
+.dd-toast__action:hover { text-decoration-style: solid; text-decoration-color: currentColor; }
+.dd-toast__action:focus-visible { outline: 2px solid color-mix(in oklab, var(--dd-toast-fg) 55%, transparent); outline-offset: 3px; border-radius: 2px; }
+
+.dd-toast__dismiss {
+  appearance: none; flex: none; display: inline-grid; place-items: center;
+  width: calc(var(--dd-u) * 5); height: calc(var(--dd-u) * 5); margin-block: calc((1lh - var(--dd-u) * 5) / 2);
+  padding: 0; border: 0; border-radius: var(--dd-r-ctl); background: none; color: var(--dd-toast-muted); cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-toast__dismiss:hover { color: var(--dd-toast-fg); background: color-mix(in oklab, var(--dd-toast-fg) 12%, transparent); }
+.dd-toast__dismiss:focus-visible { outline: 2px solid color-mix(in oklab, var(--dd-toast-fg) 55%, transparent); outline-offset: 1px; }
+.dd-toast__dismiss > .dd-icon { width: 1.05em; height: 1.05em; }
+.dd-toast__actions + .dd-toast__dismiss { margin-left: calc(var(--dd-u) * -1); }
+
+/* Time left before auto-dismiss: a hairline along the bottom edge (driven by toast.js; pauses on hover/focus). */
+.dd-toast__progress {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: var(--_tint); opacity: .75; transform-origin: left center; pointer-events: none;
+}
+
+@keyframes dd-toast-in { from { opacity: 0; transform: translateY(10px) scale(.98); } }
+@media (prefers-reduced-motion: reduce) {
+  .dd-toast { animation: none; }
+  .dd-toast__progress { display: none; }
+}

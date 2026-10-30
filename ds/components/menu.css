@@ -1,0 +1,83 @@
+/* Menu — “Grouped · text only”. A floating tonal panel (--dd-shadow-float, no border) with full-bleed rows,
+   small-caps group labels and hairline dividers. Type and shortcut hints carry it; icons are optional.
+   Items: descriptions, checked (menuitemcheckbox / menuitemradio), disabled, danger, kbd hints, submenu chevron.
+   Static by default (render it inline in docs); ds/behaviors/menu.js floats it next to its trigger.
+   Floating layer: --dd-float-bg (lighter than the page in dawn, a step up in dusk); rows highlight one tone deeper. */
+:root, [data-theme] { --dd-menu-bg: var(--dd-float-bg); --dd-menu-hover: var(--dd-float-hover); }
+/* Group labels, shortcut hints and the submenu chevron sit between muted and faint: quiet, but still readable
+   (faint alone is ~2.3:1 on the float surface in both themes). */
+.dd-menu {
+  --_px: calc(var(--dd-u) * 3.5);
+  --_quiet: color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint));
+  display: flex; flex-direction: column; box-sizing: border-box;
+  min-width: calc(var(--dd-u) * 44); max-width: min(calc(var(--dd-u) * 64), calc(100vw - var(--dd-u) * 4));
+  margin: 0; padding: calc(var(--dd-u) * 1.5) 0;
+  border: 0; border-radius: var(--dd-r-box); background: var(--dd-menu-bg); color: var(--dd-text);
+  box-shadow: var(--dd-shadow-float);
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: var(--dd-lh-tight); text-align: left;
+}
+.dd-menu[hidden] { display: none; }
+.dd-menu:focus { outline: none; }
+/* Opened by the behaviour: fixed, above sticky chrome and dialogs, scrolls if taller than the viewport. */
+.dd-menu.is-floating {
+  position: fixed; z-index: calc(var(--dd-z-overlay) + 2); max-height: calc(100vh - var(--dd-u) * 4); overflow-y: auto;
+  overscroll-behavior: contain; animation: dd-menu-in var(--dd-dur) var(--dd-ease);
+}
+.dd-menu.is-floating[data-side='top'] { --_from: 4px; }
+.dd-menu.is-floating[data-side='right'], .dd-menu.is-floating[data-side='left'] { --_from: 0; }
+@keyframes dd-menu-in { from { opacity: 0; transform: translateY(var(--_from, -4px)); } }
+
+/* Header: who is signed in, which project — plain text above the first group. */
+.dd-menu__header { display: flex; flex-direction: column; gap: 2px; padding: calc(var(--dd-u) * 1.5) var(--_px) calc(var(--dd-u) * 2); min-width: 0; }
+.dd-menu__header > :first-child { font-weight: 600; }
+.dd-menu__header > :not(:first-child) { font-size: var(--dd-fs-xs); color: var(--dd-muted); overflow-wrap: anywhere; }
+
+.dd-menu__group { display: flex; flex-direction: column; }
+.dd-menu__label {
+  margin: 0; padding: calc(var(--dd-u) * 2) var(--_px) calc(var(--dd-u) * 1);
+  font-size: 10.5px; font-weight: 600; letter-spacing: .1em; line-height: 1.3; text-transform: uppercase; color: var(--_quiet);
+}
+.dd-menu__sep { flex: none; height: 1px; margin: calc(var(--dd-u) * 1.5) 0; border: 0; background: color-mix(in oklab, var(--dd-text) 9%, transparent); }
+
+.dd-menu__item {
+  appearance: none; position: relative; display: flex; align-items: center; gap: calc(var(--dd-u) * 2.5); box-sizing: border-box;
+  width: 100%; min-width: 0; margin: 0; padding: calc(var(--dd-u) * 2) var(--_px);
+  border: 0; border-radius: 0; background: none; color: var(--dd-text);
+  font: inherit; font-weight: 500; text-align: left; text-decoration: none; cursor: pointer; outline: none; user-select: none;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-menu__item:hover, .dd-menu__item:focus-visible, .dd-menu__item.is-active, .dd-menu__item[aria-expanded='true'] { background: var(--dd-menu-hover); }
+
+.dd-menu__body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; overflow-wrap: anywhere; }
+.dd-menu__desc { font-size: var(--dd-fs-xs); font-weight: 400; line-height: 1.35; color: var(--dd-muted); }
+.dd-menu__icon { flex: none; color: var(--dd-muted); }
+.dd-menu__item:has(.dd-menu__desc) > .dd-menu__icon { align-self: flex-start; margin-top: 1px; }
+
+/* Trailing parts: shortcut hint, check, submenu chevron. The first one is pushed to the end. */
+.dd-menu__kbd, .dd-menu__check, .dd-menu__sub { flex: none; margin-left: auto; }
+:is(.dd-menu__kbd, .dd-menu__check, .dd-menu__sub) ~ :is(.dd-menu__kbd, .dd-menu__check, .dd-menu__sub) { margin-left: 0; }
+.dd-menu__kbd {
+  font-family: var(--dd-font-kbd, var(--dd-font-mono)); font-size: var(--dd-fs-xs); font-style: normal; font-weight: 400;
+  letter-spacing: .02em; white-space: nowrap; color: var(--_quiet);
+}
+.dd-menu__sub { color: var(--_quiet); }
+.dd-menu__check { color: var(--dd-accent); visibility: hidden; }
+.dd-menu__item[aria-checked='true'] { font-weight: 600; }
+.dd-menu__item[aria-checked='true'] > .dd-menu__check { visibility: visible; }
+
+.dd-menu__item--danger { color: var(--dd-bad); }
+.dd-menu__item--danger > .dd-menu__icon { color: var(--dd-bad); }
+.dd-menu__item--danger:hover, .dd-menu__item--danger:focus-visible, .dd-menu__item--danger.is-active { background: var(--dd-bad-soft); }
+
+.dd-menu__item:disabled, .dd-menu__item[aria-disabled='true'] { color: var(--dd-faint); cursor: not-allowed; background: none; }
+.dd-menu__item:disabled > :not(.dd-menu__body), .dd-menu__item[aria-disabled='true'] > :not(.dd-menu__body),
+.dd-menu__item:disabled .dd-menu__desc, .dd-menu__item[aria-disabled='true'] .dd-menu__desc { color: var(--dd-faint); }
+
+/* A trigger that has its menu open keeps its variant's hover tone (visible in dusk too, where the tonal fill is
+   already --dd-surface-3). */
+.dd-btn[data-dd-menu][aria-expanded='true'] { background: var(--dd-btn-secondary-hover); }
+.dd-btn--ghost[data-dd-menu][aria-expanded='true'] { background: var(--dd-btn-secondary); }
+.dd-btn--primary[data-dd-menu][aria-expanded='true'] { background: var(--dd-primary-hover); }
+.dd-btn--ink[data-dd-menu][aria-expanded='true'] { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }
+.dd-btn--danger[data-dd-menu][aria-expanded='true'] { background: color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)); }
+.dd-btn--link[data-dd-menu][aria-expanded='true'] { background: none; color: var(--dd-accent); }

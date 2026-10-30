@@ -1,0 +1,89 @@
+/* Accordion — native <details>/<summary>, no JS. Sections stack with hairlines between them; the chevron turns
+   on open, and the body eases open where the browser supports animating to auto. Group items with the native
+   name="…" attribute so only one stays open. Variants: --boxed (tonal fill) and .dd-expand (an expandable card). */
+.dd-accordion { display: flex; flex-direction: column; min-width: 0; interpolate-size: allow-keywords; }
+.dd-accordion__item { border-bottom: 1px solid color-mix(in oklab, var(--dd-text) 8%, transparent); }
+.dd-accordion__item:first-child { border-top: 1px solid color-mix(in oklab, var(--dd-text) 8%, transparent); }
+
+.dd-accordion__summary,
+.dd-expand__summary {
+  display: flex; align-items: center; gap: calc(var(--dd-u) * 2.5); list-style: none; cursor: pointer; user-select: none;
+  border-radius: var(--dd-r-ctl);
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-accordion__summary::-webkit-details-marker,
+.dd-expand__summary::-webkit-details-marker { display: none; }
+.dd-accordion__summary:focus-visible,
+.dd-expand__summary:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+.dd-accordion__summary {
+  padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 1); font-size: var(--dd-fs-sm); font-weight: 600; color: var(--dd-text);
+}
+.dd-accordion__summary:hover { color: var(--dd-text); background: color-mix(in oklab, var(--dd-text) 4%, transparent); }
+.dd-accordion__summary > .dd-icon:first-child { color: var(--dd-muted); }
+.dd-accordion__title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.dd-accordion__meta { flex: none; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 400; color: var(--dd-muted); }
+.dd-accordion__chevron, .dd-expand__chevron { flex: none; color: var(--dd-muted); transition: transform var(--dd-dur) var(--dd-ease); }
+details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { transform: rotate(180deg); }
+
+.dd-accordion__body {
+  padding: 0 calc(var(--dd-u) * 1) calc(var(--dd-u) * 4); font-size: var(--dd-fs-sm); line-height: var(--dd-lh); color: var(--dd-muted);
+}
+.dd-accordion--icons .dd-accordion__body { padding-left: calc(var(--dd-u) * 1 + 1.15em + var(--dd-u) * 2.5); }
+.dd-accordion__body > :first-child { margin-top: 0; }
+.dd-accordion__body > :last-child { margin-bottom: 0; }
+.dd-accordion__body p { margin: 0 0 0.75em; text-wrap: pretty; }
+
+/* Smooth open where ::details-content is supported (progressive; others snap). */
+.dd-accordion__item::details-content,
+.dd-expand::details-content {
+  block-size: 0; overflow: clip;
+  transition: block-size var(--dd-dur) var(--dd-ease), content-visibility var(--dd-dur) var(--dd-ease) allow-discrete;
+}
+.dd-accordion__item[open]::details-content,
+.dd-expand[open]::details-content { block-size: auto; }
+
+/* Boxed: each item on its own tonal fill instead of hairlines. */
+.dd-accordion--boxed { gap: calc(var(--dd-u) * 1); }
+.dd-accordion--boxed .dd-accordion__item { border: 0; border-radius: var(--dd-r-box); background: var(--dd-surface);
+  transition: background-color var(--dd-dur-fast) var(--dd-ease); }
+.dd-accordion--boxed .dd-accordion__item:hover:not([open]) { background: var(--dd-surface-2); }
+.dd-accordion--boxed .dd-accordion__summary { padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 4); }
+.dd-accordion--boxed .dd-accordion__summary:hover { background: none; }
+.dd-accordion--boxed .dd-accordion__body { padding: 0 calc(var(--dd-u) * 4) calc(var(--dd-u) * 4); }
+.dd-accordion--boxed.dd-accordion--icons .dd-accordion__body { padding-left: calc(var(--dd-u) * 4 + 1.15em + var(--dd-u) * 2.5); }
+
+/* Expandable card: a card whose summary is a full row (title, meta, status) and whose body holds the detail. */
+.dd-expand { min-width: 0; border-radius: var(--dd-r-box); background: var(--dd-surface); color: var(--dd-text); interpolate-size: allow-keywords;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease); }
+.dd-expand:not([open]):hover { background: var(--dd-surface-2); }
+.dd-expand__summary { flex-wrap: wrap; row-gap: calc(var(--dd-u) * 1); padding: calc(var(--dd-u) * 3.5) calc(var(--dd-u) * 4); border-radius: var(--dd-r-box); }
+.dd-expand__lead { display: inline-grid; place-items: center; flex: none; width: 2.2em; height: 2.2em; border-radius: var(--dd-r-ctl);
+  background: var(--dd-surface-2); color: var(--dd-muted); font-size: var(--dd-fs-sm); }
+.dd-expand__titles { display: flex; flex-direction: column; gap: 2px; flex: 1 1 200px; min-width: 0; }
+.dd-expand__title { font-size: var(--dd-fs-sm); font-weight: 600; overflow-wrap: anywhere; }
+.dd-expand__meta { font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); overflow-wrap: anywhere; }
+.dd-expand__side { display: flex; align-items: center; gap: calc(var(--dd-u) * 2.5); margin-left: auto; }
+/* The dot carries the full status colour; the label leans toward ink so it stays readable (warn on dawn especially). */
+.dd-expand__status {
+  --_c: var(--dd-muted);
+  display: inline-flex; align-items: center; gap: 0.45em; font-size: var(--dd-fs-xs); font-weight: 600; white-space: nowrap;
+  color: color-mix(in oklab, var(--_c) 72%, var(--dd-text));
+}
+.dd-expand__status::before { content: ""; width: 0.55em; height: 0.55em; border-radius: 50%; background: var(--_c); }
+.dd-expand__status.is-ok { --_c: var(--dd-ok); }
+.dd-expand__status.is-warn { --_c: var(--dd-warn); }
+.dd-expand__status.is-bad { --_c: var(--dd-bad); }
+.dd-expand__status.is-info { --_c: var(--dd-info); }
+.dd-expand__body {
+  margin: 0 calc(var(--dd-u) * 4); padding: calc(var(--dd-u) * 3.5) 0 calc(var(--dd-u) * 4);
+  border-top: 1px solid color-mix(in oklab, var(--dd-text) 8%, transparent);
+  font-size: var(--dd-fs-sm); color: var(--dd-muted);
+}
+.dd-expand__body > :first-child { margin-top: 0; }
+.dd-expand__body > :last-child { margin-bottom: 0; }
+.dd-expand__body p { margin: 0 0 0.75em; }
+.dd-expand__dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 5); margin: 0; }
+.dd-expand__dl dt { color: var(--dd-muted); }
+.dd-expand__dl dd { margin: 0; color: var(--dd-text); font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); line-height: 1.9; overflow-wrap: anywhere; }
+.dd-expand + .dd-expand { margin-top: calc(var(--dd-u) * 1.5); }

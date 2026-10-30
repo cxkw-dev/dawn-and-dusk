@@ -1,0 +1,119 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const pages = (current, list, total) => list.map((p) => p === '…'
+  ? `\n    <li class="dd-pagination__gap" aria-hidden="true">…</li>`
+  : `\n    <li><a class="dd-pagination__page" href="#"${p === current ? ' aria-current="page"' : ''} aria-label="Page ${p}">${p}</a></li>`).join('')
+  + `\n    <li class="dd-pagination__status">Page ${current} of ${total}</li>`;
+
+const numbered = `
+<nav class="dd-pagination" aria-label="Pagination">
+  <ul class="dd-pagination__pages">
+    <li><a class="dd-pagination__step" href="#" aria-label="Previous page">${i('chevron-left')}</a></li>${pages(4, [1, '…', 3, 4, 5, '…', 50], 50)}
+    <li><a class="dd-pagination__step" href="#" aria-label="Next page">${i('chevron-right')}</a></li>
+  </ul>
+</nav>`;
+
+const first = `
+<nav class="dd-pagination" aria-label="Pagination">
+  <ul class="dd-pagination__pages">
+    <li><a class="dd-pagination__step" aria-disabled="true" aria-label="Previous page">${i('chevron-left')}</a></li>${pages(1, [1, 2, 3, 4, 5, '…', 50], 50)}
+    <li><a class="dd-pagination__step" href="#" aria-label="Next page">${i('chevron-right')}</a></li>
+  </ul>
+</nav>`;
+
+const labelled = `
+<nav class="dd-pagination" aria-label="Pagination">
+  <ul class="dd-pagination__pages">
+    <li><a class="dd-pagination__step dd-pagination__step--label" href="#">${i('arrow-left')}<span>Previous</span></a></li>${pages(2, [1, 2, 3, 4, 5, 6], 6)}
+    <li><a class="dd-pagination__step dd-pagination__step--label" href="#"><span>Next</span>${i('arrow-right')}</a></li>
+  </ul>
+</nav>`;
+
+const compact = `
+<nav class="dd-pagination dd-pagination--compact" aria-label="Pagination">
+  <span class="dd-pagination__range"><b>1–50</b> of 2,481</span>
+  <button class="dd-pagination__step" type="button" aria-label="Previous page" disabled>${i('chevron-left')}</button>
+  <button class="dd-pagination__step" type="button" aria-label="Next page">${i('chevron-right')}</button>
+</nav>`;
+
+const size = `
+<div class="dd-pagination dd-pagination--spread">
+  <label class="dd-pagination__size">Rows per page
+    <span class="dd-pagination__select">
+      <select aria-label="Rows per page">
+        <option>25</option>
+        <option selected>50</option>
+        <option>100</option>
+        <option>250</option>
+      </select>${i('chevron-down')}
+    </span>
+  </label>
+  <nav class="dd-pagination dd-pagination--compact" aria-label="Pagination">
+    <span class="dd-pagination__range"><b>51–100</b> of 2,481</span>
+    <a class="dd-pagination__step" href="#" aria-label="Previous page">${i('chevron-left')}</a>
+    <a class="dd-pagination__step" href="#" aria-label="Next page">${i('chevron-right')}</a>
+  </nav>
+</div>`;
+
+const full = `
+<div class="dd-pagination dd-pagination--spread">
+  <div class="dd-pagination">
+    <label class="dd-pagination__size">Rows
+      <span class="dd-pagination__select">
+        <select aria-label="Rows per page"><option>25</option><option selected>50</option><option>100</option></select>${i('chevron-down')}
+      </span>
+    </label>
+    <span class="dd-pagination__range"><b>151–200</b> of 2,481</span>
+  </div>
+  <nav class="dd-pagination" aria-label="Pagination">
+    <ul class="dd-pagination__pages">
+      <li><a class="dd-pagination__step" href="#" aria-label="Previous page">${i('chevron-left')}</a></li>${pages(4, [1, '…', 3, 4, 5, '…', 50], 50)}
+      <li><a class="dd-pagination__step" href="#" aria-label="Next page">${i('chevron-right')}</a></li>
+    </ul>
+  </nav>
+</div>`;
+---
+<Docs title="Pagination" group="Data display" lead="Moves through pages of results. Numbered for browsing, compact when the range matters more than the page number, with a page-size select for data tables.">
+  <Example title="Numbered" description="Show the first and last page, the current page and its neighbours; collapse the rest into a gap. The current page sits on a tone." code={numbered} />
+
+  <h2 id="edges">At the edges</h2>
+  <p>On the first or last page, keep the arrow in place and disable it so the control does not shift.</p>
+  <Example code={first} />
+  <p>For short sets, label the arrows and show every page.</p>
+  <Example code={labelled} />
+
+  <h2 id="compact">Compact</h2>
+  <p>The range and two arrows. Use it in table footers, side panels and anywhere the total matters more than the page number.</p>
+  <Example code={compact} />
+
+  <h2 id="page-size">With page size</h2>
+  <p>A native <code>&lt;select&gt;</code> for rows per page, the range, then the arrows. <code>--spread</code> pushes the groups to opposite edges; they stack when space runs out.</p>
+  <Example code={size} />
+  <Example title="Table footer" description="Page size and range on the left, numbered pages on the right. Under 560px the numbers collapse to “Page 4 of 50” between the arrows." code={full} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-pagination', 'Flex row that wraps. Use on <code>&lt;nav aria-label="Pagination"&gt;</code>.'],
+    ['.dd-pagination__pages', 'The <code>&lt;ul&gt;</code> of pages and arrows.'],
+    ['.dd-pagination__page', 'A page link or button. Mark the current one <code>aria-current="page"</code>.'],
+    ['.dd-pagination__step', 'Previous / next arrow. Disable with <code>disabled</code> or <code>aria-disabled="true"</code>; always give it an <code>aria-label</code>.'],
+    ['.dd-pagination__step--label', 'Arrow with a text label (“Previous”, “Next”).'],
+    ['.dd-pagination__gap', 'The “…” between page ranges (<code>aria-hidden</code>).'],
+    ['.dd-pagination__status', '“Page 4 of 50”. Hidden on wide screens, replaces the numbers under 560px.'],
+    ['.dd-pagination__range', '“1–50 of 2,481”. Wrap the visible range in <code>&lt;b&gt;</code>.'],
+    ['.dd-pagination__size + __select', 'Label and native select for rows per page; the wrapper adds the chevron.'],
+    ['.dd-pagination--compact', 'Range and arrows only.'],
+    ['.dd-pagination--spread', 'Space-between, for a footer with two groups.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use links (<code>&lt;a href&gt;</code>) when pages have URLs so they can be shared and opened in new tabs.', 'Keep the control in the same place on every page, usually the table footer.', 'Show the total when you know it: “1–50 of 2,481”.']}
+    dont={['Don’t show more than seven page slots; collapse with gaps.', 'Don’t hide the arrows on the first or last page; disable them.', 'Don’t paginate under ~50 rows; let the list scroll.']}
+  />
+</Docs>

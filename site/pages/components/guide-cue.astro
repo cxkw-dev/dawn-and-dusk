@@ -1,0 +1,112 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const anatomy = `
+<div style="display: flex; flex-direction: column; align-items: center; gap: 18px">
+  <span style="position: relative; display: inline-flex">
+    <button class="dd-btn dd-btn--primary" type="button">${i('plus')}<span>New deploy</span></button>
+    <span class="dd-guide-beacon dd-guide-beacon--static" style="left: calc(100% - 2px); top: 2px" aria-hidden="true"></span>
+  </span>
+  <div class="dd-guide-cue dd-guide-cue--static" data-placement="bottom" role="dialog" aria-labelledby="cue-static-title" style="--dd-arrow-x: 50%">
+    <span class="dd-guide-cue__arrow"></span>
+    <p class="dd-guide-cue__step"><span class="dd-guide-cue__count">1 of 3</span><span class="dd-guide-cue__pips"><i class="is-current"></i><i></i><i></i></span></p>
+    <h3 class="dd-guide-cue__title" id="cue-static-title">Ship from here</h3>
+    <p class="dd-guide-cue__text">Every deploy builds once and goes out to fra1, sfo3 and sgp1. Press <kbd>N</kbd> from anywhere.</p>
+    <div class="dd-guide-cue__actions">
+      <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button">Skip tour</button>
+      <button class="dd-btn dd-btn--primary dd-btn--sm" type="button"><span>Next</span>${i('arrow-right')}</button>
+    </div>
+  </div>
+</div>`;
+
+const deploy = (name: string, meta: string, state: string, label: string, last = false) => `
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--dd-space-1) var(--dd-space-4); padding: var(--dd-space-3) 0;${last ? '' : ' box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--dd-text) 8%, transparent)'}">
+      <span class="dd-small"><b>${name}</b> <span class="dd-mono dd-muted">${meta}</span></span>
+      <span class="dd-status-dot dd-status-dot--${state}">${label}</span>
+    </div>`;
+const tour = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-4)">
+  <div class="dd-row" style="justify-content: space-between">
+    <div class="dd-row">
+      <button class="dd-btn dd-btn--primary" type="button" id="tour-new">${i('plus')}<span>New deploy</span></button>
+      <button class="dd-btn" type="button" id="tour-filter">${i('filter')}<span>Filter</span></button>
+    </div>
+    <button class="dd-btn dd-btn--icon" type="button" id="tour-logs" aria-label="Logs">${i('terminal')}</button>
+  </div>
+  <div>${deploy('dockey-ui', 'c41d9e0 · fra1', 'online', 'Ready')}${deploy('billing-worker', '8be20f1 · sfo3', 'idle', 'Building')}${deploy('leetnode', 'a91f3c2 · sgp1', 'error', 'Failed', true)}
+  </div>
+  <button class="dd-btn dd-btn--ink" type="button" data-dd-guide-start="deploys" style="align-self: flex-start">${i('sparkle')}<span>Take the tour</span></button>
+</div>
+
+<div class="dd-guide-cue" popover="manual" role="dialog" aria-labelledby="cue-1-title" data-dd-guide="deploys" data-dd-guide-target="#tour-new" data-dd-placement="bottom-start">
+  <span class="dd-guide-cue__arrow"></span>
+  <p class="dd-guide-cue__step"><span class="dd-guide-cue__count"></span><span class="dd-guide-cue__pips"></span></p>
+  <h3 class="dd-guide-cue__title" id="cue-1-title">Ship from here</h3>
+  <p class="dd-guide-cue__text">Every deploy builds once and goes out to fra1, sfo3 and sgp1. Press <kbd>N</kbd> from anywhere.</p>
+  <div class="dd-guide-cue__actions">
+    <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" data-dd-guide-dismiss>Skip tour</button>
+    <button class="dd-btn dd-btn--primary dd-btn--sm" type="button" data-dd-guide-next><span>Next</span>${i('arrow-right')}</button>
+  </div>
+</div>
+<div class="dd-guide-cue" popover="manual" role="dialog" aria-labelledby="cue-2-title" data-dd-guide="deploys" data-dd-guide-target="#tour-filter" data-dd-placement="bottom">
+  <span class="dd-guide-cue__arrow"></span>
+  <p class="dd-guide-cue__step"><span class="dd-guide-cue__count"></span><span class="dd-guide-cue__pips"></span></p>
+  <h3 class="dd-guide-cue__title" id="cue-2-title">Narrow it down</h3>
+  <p class="dd-guide-cue__text">Filter by region, status or who pushed. Filters stay in the URL, so you can share a view.</p>
+  <div class="dd-guide-cue__actions">
+    <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" data-dd-guide-back>Back</button>
+    <button class="dd-btn dd-btn--primary dd-btn--sm" type="button" data-dd-guide-next><span>Next</span>${i('arrow-right')}</button>
+  </div>
+</div>
+<div class="dd-guide-cue" popover="manual" role="dialog" aria-labelledby="cue-3-title" data-dd-guide="deploys" data-dd-guide-target="#tour-logs" data-dd-placement="bottom-end">
+  <span class="dd-guide-cue__arrow"></span>
+  <p class="dd-guide-cue__step"><span class="dd-guide-cue__count"></span><span class="dd-guide-cue__pips"></span></p>
+  <h3 class="dd-guide-cue__title" id="cue-3-title">Logs, live</h3>
+  <p class="dd-guide-cue__text">Tail every region at once while a deploy rolls out.</p>
+  <div class="dd-guide-cue__actions">
+    <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" data-dd-guide-back>Back</button>
+    <button class="dd-btn dd-btn--primary dd-btn--sm" type="button" data-dd-guide-next>${i('check')}<span>Done</span></button>
+  </div>
+</div>`;
+---
+<Docs title="Guide cue" group="Feedback & status" lead="An onboarding tip that points at one thing: what it is and why it matters, in a sentence. Steps link into a short tour with a count, Next and a way out.">
+  <Example title="Anatomy" description="Step count with pips, a title, one or two sentences and two actions — a quiet way out and Next. The arrow points at the target and an apricot beacon pulses on it. Ink in dawn, like a toast; a raised surface in dusk." code={anatomy} stage="center" />
+
+  <h2 id="tour">A tour</h2>
+  <p>Each step is a <code>.dd-guide-cue</code> with <code>popover="manual"</code>, the tour name in <code>data-dd-guide</code> and its target in <code>data-dd-guide-target</code>. Steps run in document order; the script fills the count and pips, scrolls the target into view, rings it, drops the beacon and moves focus into the cue.</p>
+  <Example code={tour} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-guide-cue[popover="manual"]', 'One step. 300px wide; <code>role="dialog"</code> labelled by its title.'],
+    ['.dd-guide-cue__arrow', 'Arrow toward the target (placed by the JS).'],
+    ['.dd-guide-cue__step', 'Mono step line. An empty <code>__count</code> inside gets “2 of 3”; empty <code>__pips</code> get one pip per step.'],
+    ['.dd-guide-cue__title / __text', 'Title and one or two sentences. <code>&lt;kbd&gt;</code> works inside.'],
+    ['.dd-guide-cue__actions', 'Quiet action on the left, Next on the right.'],
+    ['.dd-guide-beacon', 'Pulsing apricot dot on the target. <code>--static</code> for mockups.'],
+    ['[data-dd-guide-active]', 'Set on the current target: a soft apricot ring.'],
+    ['.dd-guide-cue--static', 'In-flow cue for docs and mockups (set <code>data-placement</code>).'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute / API', 'What it does']} rows={[
+    ['data-dd-guide-start="name"', 'Starts the tour with that name.'],
+    ['data-dd-guide="name"', 'On each cue: which tour it belongs to.'],
+    ['data-dd-guide-target="#selector"', 'On each cue: what it points at. Steps whose target is missing are skipped.'],
+    ['data-dd-placement', 'On each cue: <code>bottom</code> (default), <code>top</code>, <code>left</code>, <code>right</code>, with <code>-start</code> / <code>-end</code>. Flips when it doesn’t fit.'],
+    ['data-dd-guide-next / -back / -dismiss', 'Buttons inside a cue. Next on the last step finishes the tour.'],
+    ['Esc', 'Ends the tour. Focus returns to the button that started it.'],
+    ['dd:guide-step / dd:guide-end', 'Events on <code>document</code>: <code>detail.index</code>; <code>detail.completed</code> — store it so the tour doesn’t come back.'],
+    ['dd.guide.start(name)', 'Start a tour from code, e.g. on first sign-in. Also <code>next()</code>, <code>back()</code> and <code>end()</code>.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Keep tours to three steps, five at most.', 'Point at the thing, then say why it helps — not what it is called.', 'Always offer a way out on the first step.']}
+    dont={['Don’t start a tour on every visit; remember <code>dd:guide-end</code>.', 'Don’t use a guide cue for errors or warnings.', 'Don’t point at something off-screen or hidden in a menu.']}
+  />
+</Docs>

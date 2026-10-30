@@ -1,0 +1,196 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const bar = (id: string, label: string, value: number, valueText: string, hint = '', mod = '') => `
+  <div class="dd-progress${mod ? ' ' + mod : ''}">
+    <div class="dd-progress__head"><span class="dd-progress__label" id="${id}">${label}</span><span class="dd-progress__value">${valueText}</span></div>
+    <div class="dd-progress__track" role="progressbar" aria-labelledby="${id}" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="100" style="--dd-value:${value}"><div class="dd-progress__fill"></div></div>${hint ? `
+    <p class="dd-progress__hint">${hint}</p>` : ''}
+  </div>`;
+
+const linear = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-6); max-width: 520px">${bar('up-1', 'Uploading build artefacts', 62, '<b>62%</b>', '38 MB of 61 MB · about 12 s left')}${bar('mig-1', 'Migrating <span class="dd-mono">ledger-sync</span> to eu-west-2', 18, '<b>1,840</b> / 10,212 rows')}
+</div>`;
+
+const sizes = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-5); max-width: 520px">
+  <div class="dd-progress dd-progress--sm">
+    <div class="dd-progress__track" role="progressbar" aria-label="Small" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="--dd-value:40"><div class="dd-progress__fill"></div></div>
+  </div>
+  <div class="dd-progress">
+    <div class="dd-progress__track" role="progressbar" aria-label="Medium" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100" style="--dd-value:58"><div class="dd-progress__fill"></div></div>
+  </div>
+  <div class="dd-progress dd-progress--lg">
+    <div class="dd-progress__track" role="progressbar" aria-label="Large" aria-valuenow="76" aria-valuemin="0" aria-valuemax="100" style="--dd-value:76"><div class="dd-progress__fill"></div></div>
+  </div>
+</div>`;
+
+const tones = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-5); max-width: 520px">${bar('t-1', 'Health checks passing', 100, '<b>24</b> / 24', '', 'dd-progress--ok')}${bar('t-2', 'Replicas ready', 67, '<b>4</b> / 6', '', 'dd-progress--warn')}${bar('t-3', 'Canary · billing-worker', 35, '<b>35%</b> traffic', '', 'dd-progress--primary')}${bar('t-4', 'Rollback', 80, '<b>80%</b>', 'Restoring previous image after 3 failed health checks.', 'dd-progress--bad')}
+</div>`;
+
+const indeterminate = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-6); max-width: 520px">
+  <div class="dd-progress">
+    <div class="dd-progress__head"><span class="dd-progress__label" id="ind-1">Provisioning edge-cache in ap-south-1</span><span class="dd-progress__value">waiting</span></div>
+    <div class="dd-progress__track is-indeterminate" role="progressbar" aria-labelledby="ind-1"><div class="dd-progress__fill"></div></div>
+    <p class="dd-progress__hint">Usually takes under a minute.</p>
+  </div>
+  <div class="dd-progress dd-progress--sm">
+    <div class="dd-progress__track is-indeterminate" role="progressbar" aria-label="Loading"><div class="dd-progress__fill"></div></div>
+  </div>
+</div>`;
+
+const meter = (id: string, label: string, value: number, valueText: string, tone: string, hint: string) => `
+  <div class="dd-progress dd-progress--lg dd-progress--${tone}">
+    <div class="dd-progress__head"><span class="dd-progress__label" id="${id}">${label}</span><span class="dd-progress__value">${valueText}</span></div>
+    <div class="dd-progress__track" role="meter" aria-labelledby="${id}" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="100" aria-valuetext="${value}%, ${tone === 'ok' ? 'healthy' : tone === 'warn' ? 'above the warning threshold' : 'above the critical threshold'}" style="--dd-value:${value}">
+      <div class="dd-progress__fill"></div>
+      <span class="dd-progress__mark" style="--at:70"></span>
+      <span class="dd-progress__mark" style="--at:90"></span>
+    </div>
+    <div class="dd-progress__scale" aria-hidden="true"><span class="is-start">0</span><span style="--at:70">70</span><span style="--at:90">90</span><span class="is-end">100</span></div>
+    <p class="dd-progress__hint">${hint}</p>
+  </div>`;
+
+const meters = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-6); max-width: 520px">${meter('m-1', 'CPU · auth-gateway', 42, '<b>42%</b>', 'ok', 'Healthy. Warns at 70%, pages on-call at 90%.')}${meter('m-2', 'Memory · search-indexer', 78, '<b>78%</b> · 6.2 / 8 GB', 'warn', `${i('alert')} Above 70% for 12 minutes.`)}${meter('m-3', 'Error budget burned · notify-fanout', 94, '<b>94%</b> of 30 days', 'bad', `${i('danger')} Freeze deploys until the budget recovers.`)}
+</div>`;
+
+const ring = (value: number, label: string, mod = '', sub = '') => `
+  <div class="dd-progress-ring${mod ? ' ' + mod : ''}" role="progressbar" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="100" aria-label="${label}" style="--dd-value:${value}">
+    <svg viewBox="0 0 36 36" aria-hidden="true"><circle class="dd-progress-ring__track" cx="18" cy="18" r="15.5" pathLength="100"/><circle class="dd-progress-ring__fill" cx="18" cy="18" r="15.5" pathLength="100"/></svg>
+    <span class="dd-progress-ring__label">${value}%${sub ? `<span class="dd-progress-ring__sub">${sub}</span>` : ''}</span>
+  </div>`;
+
+const rings = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-8); align-items: center">${ring(64, 'Upload', 'dd-progress-ring--sm')}${ring(72, 'Build cache hit rate')}${ring(88, 'Cache hit rate', 'dd-progress-ring--lg', 'cache hits')}
+  <div class="dd-progress-ring dd-progress-ring--sm is-indeterminate" role="progressbar" aria-label="Loading">
+    <svg viewBox="0 0 36 36" aria-hidden="true"><circle class="dd-progress-ring__track" cx="18" cy="18" r="15.5" pathLength="100"/><circle class="dd-progress-ring__fill" cx="18" cy="18" r="15.5" pathLength="100"/></svg>
+  </div>
+</div>`;
+
+const ringTones = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-6)">
+  <div class="dd-row" style="--dd-gap: var(--dd-space-3)">${ring(99, 'Uptime · us-east-1', 'dd-progress-ring--ok')}<div><div class="dd-small">us-east-1</div><div class="dd-caption">uptime, 30 d</div></div></div>
+  <div class="dd-row" style="--dd-gap: var(--dd-space-3)">${ring(81, 'Disk · eu-west-2', 'dd-progress-ring--warn')}<div><div class="dd-small">eu-west-2</div><div class="dd-caption">disk used</div></div></div>
+  <div class="dd-row" style="--dd-gap: var(--dd-space-3)">${ring(96, 'Error budget · ap-south-1', 'dd-progress-ring--bad')}<div><div class="dd-small">ap-south-1</div><div class="dd-caption">budget burned</div></div></div>
+</div>`;
+
+const step = (label: string, meta: string, state = '') => `
+      <li class="dd-progress-steps__step${state ? ' ' + state : ''}"${state === 'is-current' ? ' aria-current="step"' : ''}><span class="dd-progress-steps__label">${label}</span><span class="dd-progress-steps__meta">${meta}</span></li>`;
+
+const steps = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-8); max-width: 560px">
+  <div class="dd-progress-steps" role="group" aria-label="Deploy dawn-and-dusk · step 3 of 4">
+    <div class="dd-progress-steps__summary"><span>Deploying <b>dawn-and-dusk</b> to production</span><span>step 3 of 4</span></div>
+    <ol class="dd-progress-steps__list">${step('Build', '1m 12s', 'is-done')}${step('Test', '48s', 'is-done')}${step('Deploy', 'running…', 'is-current')}${step('Verify', 'queued')}
+    </ol>
+  </div>
+  <div class="dd-progress-steps" role="group" aria-label="Deploy dockey-ui · failed at step 2 of 4">
+    <div class="dd-progress-steps__summary"><span>Deploying <b>dockey-ui</b> to staging</span><span>failed</span></div>
+    <ol class="dd-progress-steps__list">${step('Build', '58s', 'is-done')}${step('Test', '3 failed', 'is-failed')}${step('Deploy', 'skipped')}${step('Verify', 'skipped')}
+    </ol>
+  </div>
+</div>`;
+
+const stepsCompact = `
+<div class="dd-progress-steps dd-progress-steps--compact" role="group" aria-label="Onboarding · 2 of 5 done" style="max-width: 280px">
+  <div class="dd-progress-steps__summary"><span>Set up your workspace</span><span>2 / 5</span></div>
+  <ol class="dd-progress-steps__list">${step('Create a project', '', 'is-done')}${step('Connect a repo', '', 'is-done')}${step('Add a domain', '', 'is-current')}${step('Invite your team', '')}${step('First deploy', '')}
+  </ol>
+</div>`;
+
+const quota = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-8); max-width: 560px">
+  <div class="dd-progress-quota">
+    <div class="dd-progress-quota__head"><span class="dd-progress-quota__title" id="q-1">Storage</span><span class="dd-progress-quota__amount"><b>7.4 GB</b> of 10 GB</span></div>
+    <div class="dd-progress-quota__track" role="meter" aria-labelledby="q-1" aria-valuenow="74" aria-valuemin="0" aria-valuemax="100" aria-valuetext="7.4 GB of 10 GB used">
+      <span class="dd-progress-quota__seg" style="--dd-value:31; --dd-color: var(--dd-set-4)"></span>
+      <span class="dd-progress-quota__seg" style="--dd-value:22; --dd-color: var(--dd-set-1)"></span>
+      <span class="dd-progress-quota__seg" style="--dd-value:13; --dd-color: var(--dd-set-6)"></span>
+      <span class="dd-progress-quota__seg" style="--dd-value:8; --dd-color: var(--dd-set-5)"></span>
+    </div>
+    <ul class="dd-progress-quota__legend">
+      <li style="--dd-color: var(--dd-set-4)">dawn-and-dusk <b>3.1 GB</b></li>
+      <li style="--dd-color: var(--dd-set-1)">dockey-ui <b>2.2 GB</b></li>
+      <li style="--dd-color: var(--dd-set-6)">insomnia <b>1.3 GB</b></li>
+      <li style="--dd-color: var(--dd-set-5)">ai-focus <b>0.8 GB</b></li>
+      <li class="is-free">Free <b>2.6 GB</b></li>
+    </ul>
+  </div>
+  <div class="dd-progress-quota is-warn">
+    <div class="dd-progress-quota__head"><span class="dd-progress-quota__title" id="q-2">Build minutes · October</span><span class="dd-progress-quota__amount"><b>2,580</b> of 3,000 min</span></div>
+    <div class="dd-progress-quota__track" role="meter" aria-labelledby="q-2" aria-valuenow="86" aria-valuemin="0" aria-valuemax="100" aria-valuetext="2,580 of 3,000 minutes used, 86%">
+      <span class="dd-progress-quota__seg" style="--dd-value:86; --dd-color: var(--dd-warn)"></span>
+    </div>
+    <p class="dd-progress-quota__hint">${i('alert')}<span>86% used with 2 days left. Builds queue once you hit 3,000 minutes — <a href="#">raise the limit</a>.</span></p>
+  </div>
+</div>`;
+---
+<Docs title="Progress" group="Data display" lead="How far along something is, or how full. Bars for work in flight, meters for levels against a threshold, rings where space is square, steps for pipelines and quotas for usage.">
+  <Example title="Linear" description="Label and value above, optional hint below. The value is mono; the fill reads --dd-value (0–100)." code={linear} />
+
+  <h2 id="sizes">Sizes</h2>
+  <p>Small (4px) for inline and dense rows, medium (6px) by default, large (10px) for meters and hero progress.</p>
+  <Example code={sizes} />
+
+  <h2 id="tones">Tones</h2>
+  <p>The accent is the default. Use status tones only when the bar <em>means</em> a state; the track is always a lighter step of the same colour.</p>
+  <Example code={tones} />
+
+  <h2 id="indeterminate">Indeterminate</h2>
+  <p>When the length of the work is unknown, add <code>is-indeterminate</code> to the track and leave out <code>aria-valuenow</code>. With reduced motion it holds still at half strength.</p>
+  <Example code={indeterminate} />
+
+  <h2 id="meter">Meter with thresholds</h2>
+  <p>A level, not a task: use <code>role="meter"</code>. Ticks mark the thresholds; the fill takes the tone of the band the value is in, and the hint says what happens next.</p>
+  <Example code={meters} />
+
+  <h2 id="ring">Ring</h2>
+  <p>For square spots — table cells, tiles, avatars. Small hides the label; large adds a caption inside.</p>
+  <Example code={rings} stage="center" />
+  <Example title="Ring tones" description="Pair a ring with a short label; the number never leans on colour alone." code={ringTones} />
+
+  <h2 id="steps">Segmented steps</h2>
+  <p>Discrete stages of a pipeline. Done steps fill, the current one breathes, a failed step turns <code>--dd-bad</code> and the rest stay as track.</p>
+  <Example code={steps} />
+  <Example title="Compact" description="Segments only; labels stay available to assistive tech." code={stepsCompact} />
+
+  <h2 id="quota">Usage quota</h2>
+  <p>A whole split into parts. Segments use the colour set in chart order with 2px gaps; the legend names every part and its amount. Past 80%, switch to <code>is-warn</code> and say what happens at the limit.</p>
+  <Example code={quota} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-progress', 'Wrapper: head, track, hint. Sets the tone and height for its track.'],
+    ['.dd-progress__head / __label / __value', 'Label left, mono value right. Wrap emphasised numbers in <code>&lt;b&gt;</code>.'],
+    ['.dd-progress__track', 'The bar. <code>role="progressbar"</code> (or <code>meter</code>), <code>aria-value*</code> and <code>style="--dd-value:62"</code>.'],
+    ['.dd-progress__fill', 'The filled part; width comes from <code>--dd-value</code>.'],
+    ['.dd-progress__hint', 'Small muted line under the bar. An icon inside takes the tone.'],
+    ['.is-indeterminate', 'On the track (or ring): unknown length, sliding fill.'],
+    ['.dd-progress--sm / --lg', 'Heights 4px / 10px (default 6px).'],
+    ['.dd-progress--ok / --warn / --bad / --info / --primary', 'Tones. Default is <code>--dd-accent</code>.'],
+    ['.dd-progress__mark', 'Threshold tick at <code>style="--at:70"</code>.'],
+    ['.dd-progress__scale', 'Labels under the ticks, each a <code>&lt;span style="--at:70"&gt;</code>; <code>.is-start</code> / <code>.is-end</code> pin the ends.'],
+    ['.dd-progress-ring', 'Circular progress. Two circles with <code>pathLength="100"</code>; <code>__track</code>, <code>__fill</code>, <code>__label</code>, <code>__sub</code>.'],
+    ['.dd-progress-ring--sm / --lg', '24px (no label) / 104px with a caption. Default 56px.'],
+    ['.dd-progress-ring--ok / --warn / --bad / --info / --primary', 'Ring tones.'],
+    ['.dd-progress-steps', 'Segmented steps: <code>__summary</code>, <code>__list</code>, <code>__step</code> with <code>__label</code> and <code>__meta</code>.'],
+    ['.is-done / .is-current / .is-failed', 'Step states. Put <code>aria-current="step"</code> on the current one.'],
+    ['.dd-progress-steps--compact', 'Thin segments, labels visually hidden.'],
+    ['.dd-progress-quota', 'Usage against a limit: <code>__head</code>, <code>__title</code>, <code>__amount</code>, <code>__track</code>, <code>__seg</code>, <code>__legend</code>, <code>__hint</code>.'],
+    ['.dd-progress-quota__seg', 'One part: <code>style="--dd-value:31; --dd-color: var(--dd-set-4)"</code>.'],
+    ['.dd-progress-quota.is-warn / .is-bad', 'Near or over the limit: the hint icon takes the status colour.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Show the number next to the bar — a bar alone is a guess.', 'Use <code>role="meter"</code> for levels (CPU, disk) and <code>progressbar</code> for work that finishes.', 'Say what crossing a threshold means in the hint.', 'Prefer indeterminate over a fake percentage.']}
+    dont={['Don’t colour progress by status unless it is a status.', 'Don’t animate determinate bars backwards; start a new bar instead.', 'Don’t use more than four or five quota segments — fold the rest into “Other”.']}
+  />
+</Docs>

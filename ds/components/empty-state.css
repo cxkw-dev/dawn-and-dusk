@@ -1,0 +1,45 @@
+/* Empty state — what to show when there is nothing yet: no illustration, just an icon in a soft tonal tile, a title,
+   one or two sentences and the action that fills the space. Default size for panels and cards; --compact for table
+   bodies, lists and side panels; --page for a whole empty screen (the title takes the heading lockup). */
+.dd-empty-state {
+  display: flex; flex-direction: column; align-items: center; gap: calc(var(--dd-u) * 1.5);
+  max-width: 52ch; margin-inline: auto; padding: calc(var(--dd-u) * 10) calc(var(--dd-u) * 5);
+  text-align: center; color: var(--dd-text);
+}
+.dd-empty-state__icon {
+  display: grid; place-items: center; flex: none; width: calc(var(--dd-u) * 9.6); height: calc(var(--dd-u) * 9.6);
+  margin-bottom: calc(var(--dd-u) * 2); border-radius: var(--dd-r-box);
+  background: color-mix(in oklab, var(--dd-text) 7%, transparent); color: var(--dd-muted);
+}
+.dd-empty-state__icon > .dd-icon { width: 46%; height: 46%; }
+.dd-empty-state__title { margin: 0; font-size: var(--dd-fs-base); font-weight: 650; line-height: var(--dd-lh-tight); letter-spacing: -.005em; text-wrap: balance; }
+.dd-empty-state__text { margin: 0; color: var(--dd-muted); font-size: var(--dd-fs-sm); line-height: 1.55; text-wrap: pretty; }
+.dd-empty-state__text :where(code, .dd-mono) { font-family: var(--dd-font-mono); font-size: .92em; color: var(--dd-text); }
+.dd-empty-state__actions {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: calc(var(--dd-u) * 2);
+  margin-top: calc(var(--dd-u) * 3);
+}
+.dd-empty-state__meta { margin: calc(var(--dd-u) * 2) 0 0; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+.dd-empty-state__meta :where(code, .dd-mono) { font-family: var(--dd-font-mono); color: var(--dd-text); }
+
+/* Compact: inside a table body, list or narrow panel. */
+.dd-empty-state--compact { gap: calc(var(--dd-u) * 1); padding: calc(var(--dd-u) * 6) calc(var(--dd-u) * 4); }
+.dd-empty-state--compact .dd-empty-state__icon { width: calc(var(--dd-u) * 7.2); height: calc(var(--dd-u) * 7.2); margin-bottom: calc(var(--dd-u) * 1.5); border-radius: var(--dd-r-ctl); }
+.dd-empty-state--compact .dd-empty-state__title { font-size: var(--dd-fs-sm); }
+.dd-empty-state--compact .dd-empty-state__text { font-size: var(--dd-fs-xs); }
+.dd-empty-state--compact .dd-empty-state__actions { margin-top: calc(var(--dd-u) * 2); }
+
+/* Page: a whole empty screen. The title takes the heavy lowercase lockup. */
+.dd-empty-state--page { gap: calc(var(--dd-u) * 3); max-width: 60ch; padding: calc(var(--dd-u) * 20) calc(var(--dd-u) * 5); }
+.dd-empty-state--page .dd-empty-state__icon { width: calc(var(--dd-u) * 14); height: calc(var(--dd-u) * 14); margin-bottom: calc(var(--dd-u) * 2); border-radius: var(--dd-r-lg); }
+.dd-empty-state--page .dd-empty-state__title {
+  font-family: var(--dd-font-display); font-size: var(--dd-fs-2xl); font-weight: var(--dd-h-weight);
+  letter-spacing: var(--dd-h-tracking); line-height: var(--dd-h-leading); text-transform: var(--dd-h-case);
+}
+.dd-empty-state--page .dd-empty-state__text { font-size: var(--dd-fs-base); }
+.dd-empty-state--page .dd-empty-state__actions { margin-top: calc(var(--dd-u) * 3); }
+
+@media (max-width: 480px) {
+  .dd-empty-state--page { padding-block: calc(var(--dd-u) * 12); }
+  .dd-empty-state--page .dd-empty-state__title { font-size: var(--dd-fs-xl); }
+}

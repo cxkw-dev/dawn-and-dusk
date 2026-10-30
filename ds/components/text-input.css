@@ -1,0 +1,108 @@
+/* Text input — the tonal, borderless box every form control shares (textarea, select, combobox and date picker
+   build on it). The box (.dd-input) holds the control (.dd-input__control) plus optional affixes, units and inline
+   buttons. Inside a .dd-field the box grows a top pad so the tucked label fits; on its own it is button height.
+   Sizes: sm · md (default) · lg. Focus clears the fill toward the page and lifts the box. */
+.dd-input {
+  /* metrics in --dd-u: block pad (alone), inline pad, tucked top/bottom pad */
+  --_py: 2.1; --_px: 3; --_tpt: 6.5; --_tpb: 2;
+  --_fill: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 4%);
+  --_fill-hover: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 8%);
+  position: relative; display: flex; align-items: stretch; gap: calc(var(--dd-u) * 2); width: 100%; min-width: 0;
+  margin: 0; padding: 0 calc(var(--dd-u) * var(--_px)); border: 0; border-radius: var(--dd-r-ctl);
+  background: var(--_fill); color: var(--dd-text);
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); font-weight: 400; line-height: 1.4; text-align: left;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), box-shadow var(--dd-dur) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-input:hover { background: var(--_fill-hover); }
+.dd-input:focus-within, .dd-input.is-focus {
+  background: var(--dd-surface);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-accent) 26%, transparent), var(--dd-shadow-float);
+}
+
+/* Tucked: the box sits in a .dd-field (directly or one wrapper deep) and makes room for the label. */
+:is(.dd-field:not(.dd-field--above) > .dd-input, .dd-field:not(.dd-field--above) > * > .dd-input) {
+  --_pt: var(--_tpt); --_pb: var(--_tpb); border-radius: var(--dd-r-box);
+}
+
+.dd-input__control {
+  flex: 1; display: block; width: 100%; min-width: 0; margin: 0;
+  padding: calc(var(--dd-u) * var(--_pt, var(--_py))) 0 calc(var(--dd-u) * var(--_pb, var(--_py)));
+  border: 0; border-radius: 0; outline: 0; background: transparent; box-shadow: none; appearance: none;
+  color: inherit; font: inherit; line-height: inherit; letter-spacing: inherit; text-align: inherit; text-overflow: ellipsis;
+  caret-color: var(--dd-accent);
+}
+.dd-input__control::placeholder { color: var(--dd-faint); opacity: 1; }
+.dd-input__control.dd-mono { font-family: var(--dd-font-mono); font-size: .94em; }
+.dd-input__control.dd-num { font-variant-numeric: tabular-nums; }
+.dd-input__control:focus-visible { outline: 0; }
+.dd-input__control[type='number'] { -moz-appearance: textfield; font-variant-numeric: tabular-nums; }
+.dd-input__control::-webkit-inner-spin-button, .dd-input__control::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.dd-input__control::-webkit-search-decoration, .dd-input__control::-webkit-search-cancel-button { appearance: none; }
+.dd-input__control:-webkit-autofill { -webkit-text-fill-color: var(--dd-text); transition: background-color 9999s; }
+
+/* Affixes: icons, prefixes ("https://") and units ("USD / mo") on the value line. */
+.dd-input__affix, .dd-input__unit {
+  display: flex; flex: none; align-items: center; gap: var(--dd-u);
+  padding: calc(var(--dd-u) * var(--_pt, var(--_py))) 0 calc(var(--dd-u) * var(--_pb, var(--_py)));
+  color: var(--dd-muted); white-space: nowrap; pointer-events: none; user-select: none;
+}
+.dd-input__affix > .dd-icon { width: 1.2em; height: 1.2em; vertical-align: 0; }
+.dd-input__affix + .dd-input__control { margin-left: calc(var(--dd-u) * -.5); }
+.dd-input__unit { font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+.dd-input__prefix { color: var(--dd-faint); }
+.dd-input__status { color: var(--dd-ok); }
+
+/* Inline buttons (reveal, clear, steppers) live inside an affix so they share the value line. */
+.dd-input__btn {
+  display: inline-grid; place-items: center; flex: none; width: calc(var(--dd-u) * 5.5); height: calc(var(--dd-u) * 5.5);
+  margin-block: calc(var(--dd-u) * -1.5); padding: 0; border: 0; border-radius: var(--dd-r-ctl);
+  background: transparent; color: var(--dd-muted); cursor: pointer; pointer-events: auto;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-input__btn:hover { background: color-mix(in oklab, var(--dd-text) 8%, transparent); color: var(--dd-text); }
+.dd-input__btn:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
+.dd-input__btn > .dd-icon, .dd-input__btn > span > .dd-icon { width: 16px; height: 16px; vertical-align: 0; }
+.dd-input__btn:last-child { margin-right: calc(var(--dd-u) * -1.25); }
+.dd-input__steppers { gap: 2px; pointer-events: auto; }
+
+/* Password reveal: two icons, one shown per state. */
+.dd-input__btn > .dd-input__hide, .dd-input__btn[aria-pressed='true'] > .dd-input__show { display: none; }
+.dd-input__btn[aria-pressed='true'] > .dd-input__hide { display: inline-flex; }
+.dd-input__show, .dd-input__hide { display: inline-flex; }
+
+/* Search clear: only while there is something to clear (needs a placeholder on the input). */
+.dd-input:has(.dd-input__control:placeholder-shown) [data-dd-clear] { visibility: hidden; opacity: 0; }
+
+/* States */
+.dd-input.is-invalid, .dd-input:has(.dd-input__control[aria-invalid='true']) {
+  --_fill: color-mix(in oklab, var(--dd-bad) 14%, var(--dd-surface-2));
+  --_fill-hover: color-mix(in oklab, var(--dd-bad) 19%, var(--dd-surface-2));
+}
+.dd-input.is-invalid:focus-within, .dd-input:has(.dd-input__control[aria-invalid='true']):focus-within {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-bad) 55%, transparent), var(--dd-shadow-float);
+}
+.dd-input.is-invalid .dd-input__status, .dd-input:has(.dd-input__control[aria-invalid='true']) .dd-input__status { color: var(--dd-bad); }
+
+.dd-input:has(.dd-input__control[readonly]) {
+  --_fill: transparent; --_fill-hover: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 12%, transparent);
+}
+.dd-input:has(.dd-input__control[readonly]):focus-within { background: transparent; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-accent) 45%, transparent); }
+
+/* Disabled: a lighter box (still a visible step at dusk) and dimmed but legible text. */
+.dd-input:has(.dd-input__control:disabled), .dd-input:disabled, .dd-input.is-disabled {
+  --_fill: light-dark(color-mix(in oklab, var(--dd-surface-2) 55%, transparent), color-mix(in oklab, var(--dd-surface-2) 80%, transparent));
+  --_fill-hover: var(--_fill);
+  color: color-mix(in oklab, var(--dd-muted) 55%, var(--dd-faint)); cursor: not-allowed;
+}
+.dd-input:has(.dd-input__control:disabled) :is(.dd-input__control, .dd-input__affix, .dd-input__unit, .dd-input__btn) { color: color-mix(in oklab, var(--dd-muted) 55%, var(--dd-faint)); cursor: not-allowed; }
+.dd-input__control:disabled::placeholder { color: var(--dd-faint); }
+
+/* Sizes */
+.dd-input--sm { --_py: 1.45; --_px: 2.5; --_tpt: 5; --_tpb: 1.5; font-size: var(--dd-fs-xs); gap: calc(var(--dd-u) * 1.5); }
+.dd-input--sm .dd-input__btn { width: calc(var(--dd-u) * 4.5); height: calc(var(--dd-u) * 4.5); margin-block: calc(var(--dd-u) * -1.25); }
+.dd-input--sm .dd-input__btn > .dd-icon { width: 14px; height: 14px; }
+.dd-input--lg { --_py: 2.75; --_px: 4; --_tpt: 7.6; --_tpb: 2.75; font-size: var(--dd-fs-base); gap: calc(var(--dd-u) * 2.5); }
+.dd-input--lg .dd-input__unit { font-size: var(--dd-fs-sm); }
+.dd-input--lg .dd-input__btn { width: calc(var(--dd-u) * 6.5); height: calc(var(--dd-u) * 6.5); }
+.dd-input--lg .dd-input__btn > .dd-icon { width: 18px; height: 18px; }

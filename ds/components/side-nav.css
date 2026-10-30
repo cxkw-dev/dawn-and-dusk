@@ -1,0 +1,152 @@
+/* Side nav — "Icon rail · two-level" (blended). An icon column for sections, toned a step from the page, plus a column
+   with that section's pages. Hairlines divide the columns; the chevron at the foot of the rail folds the page column away.
+   Spans the full viewport height (sticky) on its own, or fills its parent with --fill / inside .dd-app-shell.
+   Below the app-shell breakpoint (or with --offcanvas) it slides in from the left over a scrim. */
+.dd-side-nav {
+  --dd-side-nav-rail: 60px;
+  --dd-side-nav-panel: 224px;
+  --_rail-bg: color-mix(in oklab, var(--dd-text) 6%, var(--dd-bg));
+  --_panel-bg: color-mix(in oklab, var(--dd-text) 3%, var(--dd-bg));
+  --_line: color-mix(in oklab, var(--dd-text) 8%, transparent);
+  --_hover: color-mix(in oklab, var(--dd-text) 6%, transparent);
+  --_on: color-mix(in oklab, var(--dd-text) 10%, transparent);
+  position: sticky; top: 0; z-index: var(--dd-z-sticky);
+  display: flex; flex: none; align-items: stretch; height: 100dvh;
+  color: var(--dd-text); font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: 1.3;
+}
+.dd-side-nav--fill { position: relative; top: auto; height: 100%; }
+.dd-side-nav :where(button) { font: inherit; color: inherit; }
+
+/* ---------- level 1: the icon rail ---------- */
+.dd-side-nav__rail {
+  display: flex; flex: none; flex-direction: column; align-items: center; gap: 2px;
+  width: var(--dd-side-nav-rail); padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 2);
+  background: var(--_rail-bg); box-shadow: inset -1px 0 0 var(--_line);
+}
+.dd-side-nav__logo { margin-bottom: calc(var(--dd-u) * 3); }
+.dd-side-nav__spacer { flex: 1; }
+.dd-side-nav__sep { flex: none; width: 24px; height: 1px; margin: calc(var(--dd-u) * 1.5) 0; background: var(--_line); }
+
+.dd-side-nav__item {
+  appearance: none; position: relative; display: inline-grid; place-items: center; flex: none; width: 40px; height: 40px;
+  margin: 0; padding: 0; border: 0; border-radius: var(--dd-r-ctl); background: none; color: var(--dd-muted);
+  text-decoration: none; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-side-nav__item > .dd-icon { width: 20px; height: 20px; }
+.dd-side-nav__item:hover { background: color-mix(in oklab, var(--dd-text) 7%, transparent); color: var(--dd-text); }
+.dd-side-nav__item:is(.is-active, [aria-current='page'], [aria-current='true']) { background: var(--_on); color: var(--dd-text); }
+.dd-side-nav__item:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
+
+/* Rail labels: a small ink tooltip from [data-label], on hover and keyboard focus. */
+.dd-side-nav__item[data-label]::after {
+  content: attr(data-label); position: absolute; left: calc(100% + 10px); top: 50%; z-index: 5; translate: -4px -50%;
+  padding: 5px 8px; border-radius: var(--dd-r-ctl); background: var(--dd-text); color: var(--dd-bg);
+  font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1.2; white-space: nowrap; pointer-events: none; opacity: 0;
+  transition: opacity var(--dd-dur-fast) var(--dd-ease), translate var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-side-nav__item[data-label]:is(:hover, :focus-visible)::after { opacity: 1; translate: 0 -50%; transition-delay: 120ms; }
+
+/* The collapse chevron sits at the foot of the rail; it points the way the panel will move. */
+.dd-side-nav__collapse > .dd-icon { transition: rotate var(--dd-dur) var(--dd-ease); }
+.dd-side-nav:where(.is-collapsed) .dd-side-nav__collapse > .dd-icon { rotate: 180deg; }
+
+/* ---------- level 2: the page panel ---------- */
+.dd-side-nav__panel {
+  position: relative; flex: none; width: var(--dd-side-nav-panel); overflow: hidden;
+  background: var(--_panel-bg); box-shadow: inset -1px 0 0 var(--_line);
+  transition: width var(--dd-dur) var(--dd-ease), visibility 0s linear 0s;
+}
+.dd-side-nav:where(.is-collapsed) .dd-side-nav__panel {
+  width: 0; visibility: hidden; transition: width var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
+}
+.dd-side-nav__pane {
+  display: flex; flex-direction: column; gap: 1px; width: var(--dd-side-nav-panel); height: 100%; overflow-y: auto;
+  padding: calc(var(--dd-u) * 4) calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 3); scrollbar-width: thin;
+}
+.dd-side-nav__pane[hidden] { display: none; }
+.dd-side-nav__head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: calc(var(--dd-u) * 2);
+  padding: 4px 10px calc(var(--dd-u) * 2);
+}
+.dd-side-nav__title {
+  margin: 0; font-family: var(--dd-font-display); font-size: var(--dd-fs-lg); font-weight: 800; letter-spacing: -0.045em;
+  line-height: 1.1; text-transform: lowercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dd-side-nav__section {
+  margin: 0; padding: calc(var(--dd-u) * 3.5) 10px calc(var(--dd-u) * 1.5);
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 500; letter-spacing: 0.08em; line-height: 1;
+  text-transform: uppercase; color: var(--dd-muted); white-space: nowrap;
+}
+
+.dd-side-nav__link {
+  appearance: none; position: relative; display: flex; align-items: center; gap: calc(var(--dd-u) * 2); width: 100%; min-height: 32px;
+  margin: 0; padding: 6px 10px; border: 0; border-radius: var(--dd-r-ctl); background: none; color: var(--dd-muted);
+  font-size: var(--dd-fs-sm); font-weight: 450; text-align: left; text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-side-nav__link > .dd-icon { opacity: .8; }
+.dd-side-nav__link:hover { background: var(--_hover); color: var(--dd-text); }
+.dd-side-nav__link:is(.is-active, [aria-current='page']) { background: var(--_on); color: var(--dd-text); font-weight: 600; }
+.dd-side-nav__link:is(.is-active, [aria-current='page']) > .dd-icon { opacity: 1; }
+.dd-side-nav__link:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: -2px; }
+.dd-side-nav__label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* Counts, badges and dots */
+.dd-side-nav__count { flex: none; margin-left: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 400; color: var(--dd-muted); font-variant-numeric: tabular-nums; }
+.dd-side-nav__link:is(.is-active, [aria-current='page']) .dd-side-nav__count { color: var(--dd-text); }
+.dd-side-nav__badge {
+  flex: none; margin-left: auto; padding: 3px 6px; border-radius: var(--dd-r-pill);
+  background: var(--_on); color: var(--dd-text); font-family: var(--dd-font-mono); font-size: 10px; font-weight: 500; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.dd-side-nav__badge--new { background: var(--dd-primary-soft); color: color-mix(in oklab, var(--dd-primary) 55%, var(--dd-text)); letter-spacing: .04em; }
+.dd-side-nav__badge--solid { background: var(--dd-accent); color: var(--dd-on-accent); }
+.dd-side-nav__item > .dd-side-nav__badge { position: absolute; top: 2px; right: 0; margin: 0; padding: 2px 4px; min-width: 16px; text-align: center; box-shadow: 0 0 0 2px var(--_rail-bg); }
+.dd-side-nav__dot { flex: none; width: 7px; height: 7px; margin-left: auto; border-radius: 50%; background: var(--dd-primary); }
+.dd-side-nav__item > .dd-side-nav__dot { position: absolute; top: 9px; right: 9px; margin: 0; box-shadow: 0 0 0 2px var(--_rail-bg); }
+.dd-side-nav__dot--ok { background: var(--dd-ok); }
+.dd-side-nav__dot--warn { background: var(--dd-warn); }
+.dd-side-nav__dot--bad { background: var(--dd-bad); }
+.dd-side-nav__dot--idle { background: var(--dd-faint); }
+.dd-side-nav__link > .dd-side-nav__dot:first-child { margin: 0 2px; }
+
+/* Nested groups inside the panel: native <details>. */
+.dd-side-nav__group > summary { list-style: none; }
+.dd-side-nav__group > summary::-webkit-details-marker { display: none; }
+.dd-side-nav__chev { display: inline-grid; flex: none; margin-left: auto; color: var(--dd-faint); transition: rotate var(--dd-dur) var(--dd-ease); }
+.dd-side-nav__chev > .dd-icon { width: 15px; height: 15px; }
+.dd-side-nav__group[open] > summary .dd-side-nav__chev { rotate: 180deg; }
+.dd-side-nav__sub {
+  display: flex; flex-direction: column; gap: 1px; margin: 1px 0 calc(var(--dd-u) * 1.5) 18px; padding-left: 8px;
+  box-shadow: inset 1px 0 0 var(--_line);
+}
+.dd-side-nav__sub .dd-side-nav__link { min-height: 28px; padding-block: 4px; }
+
+.dd-side-nav__foot { margin-top: auto; padding-top: calc(var(--dd-u) * 3); display: flex; flex-direction: column; gap: 1px; }
+.dd-side-nav__note {
+  display: flex; flex-direction: column; gap: 6px; margin-top: calc(var(--dd-u) * 2); padding: calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 2.5);
+  border-radius: var(--dd-r-box); background: var(--_hover); font-size: var(--dd-fs-xs); color: var(--dd-muted); white-space: normal;
+}
+.dd-side-nav__note b { color: var(--dd-text); font-weight: 600; }
+.dd-side-nav__meter { height: 4px; border-radius: var(--dd-r-pill); background: var(--_on); overflow: hidden; }
+.dd-side-nav__meter > i { display: block; height: 100%; border-radius: inherit; background: var(--dd-accent); }
+
+/* ---------- mobile: off-canvas over a scrim ----------
+   Forced with --offcanvas; automatic inside a narrow .dd-app-shell (see app-shell.css). The scrim is the nav's own ::before. */
+.dd-side-nav--offcanvas {
+  position: fixed; inset-block: 0; top: 0; left: calc(-1 * (var(--dd-side-nav-rail) + var(--dd-side-nav-panel)) - 48px);
+  z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden;
+  transition: left var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
+}
+.dd-side-nav--offcanvas::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; background: var(--dd-overlay); opacity: 0; pointer-events: none;
+  transition: opacity var(--dd-dur) var(--dd-ease);
+}
+.dd-side-nav--offcanvas .dd-side-nav__panel { width: var(--dd-side-nav-panel); min-width: 0; flex-shrink: 1; visibility: inherit; }
+.dd-side-nav--offcanvas .dd-side-nav__collapse > .dd-icon { rotate: 0deg; }
+.dd-side-nav--offcanvas.is-mobile-open { left: 0; visibility: visible; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
+.dd-side-nav--offcanvas.is-mobile-open::before { opacity: 1; pointer-events: auto; }
+
+/* Restoring a persisted state on load: no animation. */
+.dd-side-nav.is-restoring, .dd-side-nav.is-restoring * { transition: none !important; }

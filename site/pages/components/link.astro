@@ -1,0 +1,91 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const inline = `
+<p class="dd-text" style="max-width: 60ch">I build calm software at cxkw.dev, write about <a class="dd-link" href="#">design systems</a>, and keep a <a class="dd-link" href="#">small lab</a> of experiments. The latest is <a class="dd-link" href="#">dockey-ui</a>, a keyboard-first dock for macOS.</p>`;
+
+const standalone = `
+<div class="dd-row" style="--dd-gap: 10px 30px">
+  <a class="dd-link dd-link--standalone" href="#"><span>Read the case study</span>${i('arrow-right')}</a>
+  <a class="dd-link dd-link--standalone" href="#"><span>All deployments</span>${i('arrow-right')}</a>
+  <a class="dd-link dd-link--standalone dd-small" href="#"><span>View logs for edge-cache</span>${i('arrow-right')}</a>
+</div>`;
+
+const external = `
+<div class="dd-stack" style="--dd-gap: 15px">
+  <div class="dd-row" style="--dd-gap: 10px 30px">
+    <a class="dd-link dd-link--external" href="https://github.com" target="_blank" rel="noopener"><span>GitHub</span>${i('arrow-right')}</a>
+    <a class="dd-link dd-link--external" href="https://fonts.google.com/specimen/Figtree" target="_blank" rel="noopener"><span>Figtree on Google Fonts</span>${i('arrow-right')}</a>
+    <a class="dd-link dd-link--external" href="#" target="_blank" rel="noopener"><span>Status page</span>${i('external')}</a>
+  </div>
+  <p class="dd-text dd-small">The icons are <a class="dd-link dd-link--external" href="https://icon-sets.iconify.design/solar/" target="_blank" rel="noopener"><span>Solar by 480 Design</span>${i('arrow-right')}</a>, used under CC BY 4.0.</p>
+</div>`;
+
+const muted = `
+<div class="dd-stack" style="--dd-gap: 10px">
+  <p class="dd-text dd-small dd-muted">Last deployed 4 minutes ago by <a class="dd-link dd-link--muted" href="#">atn</a> · <a class="dd-link dd-link--muted" href="#">a3f9c21</a> · <a class="dd-link dd-link--muted" href="#">iad1</a></p>
+  <p class="dd-text dd-small dd-muted">© 2026 cxkw.dev · <a class="dd-link dd-link--muted" href="#">Privacy</a> · <a class="dd-link dd-link--muted" href="#">Colophon</a> · <a class="dd-link dd-link--muted" href="#">RSS</a></p>
+</div>`;
+
+const nav = `
+<nav class="dd-link-nav" aria-label="Site">
+  <a class="dd-link dd-link--nav" href="#" aria-current="page">Work</a>
+  <a class="dd-link dd-link--nav" href="#">Writing</a>
+  <a class="dd-link dd-link--nav" href="#">Lab</a>
+  <a class="dd-link dd-link--nav" href="#">About</a>
+</nav>`;
+
+const inverse = `
+<div style="background: var(--dd-text); color: var(--dd-bg); padding: 20px 25px; border-radius: var(--dd-r-box)">
+  <p class="dd-text">Say hi by <a class="dd-link dd-link--inverse" href="#">email</a> or find me on <a class="dd-link dd-link--external dd-link--inverse" href="#"><span>GitHub</span>${i('arrow-right')}</a>.</p>
+</div>`;
+
+const states = `
+<div class="dd-row" style="--dd-gap: 10px 30px">
+  <a class="dd-link" href="#">Rest</a>
+  <a class="dd-link" href="#" style="color: var(--dd-accent); text-decoration-style: solid; text-decoration-color: var(--dd-accent)">Hover</a>
+  <a class="dd-link" href="#" style="outline: 2px solid var(--dd-ring); outline-offset: 2px">Focus</a>
+  <a class="dd-link" aria-disabled="true">Disabled</a>
+</div>`;
+---
+<Docs title="Link" group="Actions" lead="Moves you somewhere. Fine dotted underlines in a soft grey sit close under the text; on hover the link takes the accent and the dots join into a line.">
+  <Example title="Inline" description="Links inside running text inherit the text colour; the dots alone say “this goes somewhere”." code={inline} />
+  <h2 id="standalone">Standalone</h2>
+  <p>A link on its own line, at the end of a card or section. A little heavier, with a trailing arrow that nudges forward on hover. Wrap the label in a <code>&lt;span&gt;</code> so only the words are underlined.</p>
+  <Example code={standalone} />
+  <h2 id="external">External</h2>
+  <p>Leaves cxkw.dev. Use the <code>arrow-right</code> icon: <code>--external</code> tilts it to ↗ and lifts it on hover. Any other icon (such as <code>external</code>) is shown as is. Open in a new tab only when leaving would lose work.</p>
+  <Example code={external} />
+  <h2 id="muted">Muted</h2>
+  <p>Meta lines, footers and secondary references: muted text with faint dots.</p>
+  <Example code={muted} />
+  <h2 id="nav">Nav</h2>
+  <p>Top-level navigation. Muted with no underline at rest, dotted on hover, solid when it is the current page (<code>aria-current="page"</code>). Lay a row out with <code>.dd-link-nav</code>.</p>
+  <Example code={nav} />
+  <h2 id="inverse">On ink</h2>
+  <p>On a panel filled with <code>--dd-text</code>, <code>--inverse</code> switches the dots to the background colour.</p>
+  <Example code={inverse} />
+  <h2 id="states">States</h2>
+  <p>Hover and focus forced on for reference. A link that can’t go anywhere yet gets <code>aria-disabled="true"</code> and no <code>href</code>.</p>
+  <Example code={states} />
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-link', 'Inline link: inherits colour, fine dotted underline in <code>--dd-border-strong</code>; accent and solid on hover.'],
+    ['.dd-link--standalone', 'Label + trailing arrow; the arrow nudges right on hover. Label goes in a <code>&lt;span&gt;</code>.'],
+    ['.dd-link--external', 'Label + ↗. Tilts an <code>arrow-right</code> icon by −45° and lifts it on hover.'],
+    ['.dd-link--muted', 'Muted text and faint dots, for meta lines and footers.'],
+    ['.dd-link--nav', 'Navigation: no underline at rest, solid underline when <code>aria-current</code> or <code>.is-active</code>.'],
+    ['.dd-link-nav', 'A wrapping row for nav links.'],
+    ['.dd-link--inverse', 'For links on ink (<code>--dd-text</code>) surfaces.'],
+    ['[aria-disabled="true"]', 'Faint and inert.'],
+  ]} />
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use a link to go somewhere and a button to do something.', 'Write the destination as the label: “All deployments”, not “click here”.', 'Mark links that leave the site with ↗.']}
+    dont={['Don’t colour inline links; the dots are enough and keep paragraphs calm.', 'Don’t use <code>--nav</code> inside running text.', 'Don’t underline non-links with dots; that pattern now means “link”.']}
+  />
+</Docs>

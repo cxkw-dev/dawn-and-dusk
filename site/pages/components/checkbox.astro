@@ -1,0 +1,113 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+
+const states = `
+<div class="dd-row" style="--dd-gap: 20px 30px">
+  <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" checked> On</label>
+  <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox"> Off</label>
+  <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" data-dd-indeterminate> Mixed</label>
+  <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" checked disabled> Disabled on</label>
+  <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" disabled> Disabled off</label>
+</div>`;
+
+const described = `
+<fieldset class="dd-checkbox-group">
+  <legend class="dd-checkbox-group__legend">Email me about</legend>
+  <label class="dd-checkbox">
+    <input class="dd-checkbox__input" type="checkbox" checked>
+    <span class="dd-checkbox__text"><span class="dd-checkbox__label">Failed deploys</span><span class="dd-checkbox__desc">Right away, with the first 40 lines of the build log.</span></span>
+  </label>
+  <label class="dd-checkbox">
+    <input class="dd-checkbox__input" type="checkbox" checked>
+    <span class="dd-checkbox__text"><span class="dd-checkbox__label">Weekly digest</span><span class="dd-checkbox__desc">One email on Sundays: deploys, uptime and spend.</span></span>
+  </label>
+  <label class="dd-checkbox">
+    <input class="dd-checkbox__input" type="checkbox">
+    <span class="dd-checkbox__text"><span class="dd-checkbox__label">Product news</span><span class="dd-checkbox__desc">A few times a year. Leave any time.</span></span>
+  </label>
+  <label class="dd-checkbox">
+    <input class="dd-checkbox__input" type="checkbox" checked disabled>
+    <span class="dd-checkbox__text"><span class="dd-checkbox__label">Security alerts</span><span class="dd-checkbox__desc">Always on for workspace owners.</span></span>
+  </label>
+</fieldset>`;
+
+const nested = `
+<fieldset class="dd-checkbox-group">
+  <legend class="dd-checkbox-group__legend">Purge cache for</legend>
+  <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" data-dd-check-all="purge"> <span class="dd-checkbox__label">All regions</span></label>
+  <div class="dd-checkbox-group__nested">
+    <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" data-dd-check-in="purge" checked> <span class="dd-mono">eu-west-1</span></label>
+    <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" data-dd-check-in="purge" checked> <span class="dd-mono">eu-central-1</span></label>
+    <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" data-dd-check-in="purge"> <span class="dd-mono">us-east-1</span></label>
+    <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" data-dd-check-in="purge"> <span class="dd-mono">ap-southeast-1</span></label>
+  </div>
+</fieldset>`;
+
+const inline = `
+<fieldset class="dd-checkbox-group dd-checkbox-group--inline">
+  <legend class="dd-checkbox-group__legend">Log levels</legend>
+  <label class="dd-checkbox dd-checkbox--sm"><input class="dd-checkbox__input" type="checkbox"> trace</label>
+  <label class="dd-checkbox dd-checkbox--sm"><input class="dd-checkbox__input" type="checkbox"> debug</label>
+  <label class="dd-checkbox dd-checkbox--sm"><input class="dd-checkbox__input" type="checkbox" checked> info</label>
+  <label class="dd-checkbox dd-checkbox--sm"><input class="dd-checkbox__input" type="checkbox" checked> warn</label>
+  <label class="dd-checkbox dd-checkbox--sm"><input class="dd-checkbox__input" type="checkbox" checked> error</label>
+</fieldset>`;
+
+const card = (label: string, desc: string, aside: string, checked = false, disabled = false) => `
+  <label class="dd-checkbox-card">
+    <input class="dd-checkbox__input" type="checkbox"${checked ? ' checked' : ''}${disabled ? ' disabled' : ''}>
+    <span class="dd-checkbox__text"><span class="dd-checkbox__label">${label}</span><span class="dd-checkbox__desc">${desc}</span></span>
+    <span class="dd-checkbox-card__aside">${aside}</span>
+  </label>`;
+const cards = `
+<fieldset class="dd-checkbox-cards">
+  <legend class="dd-checkbox-group__legend">Add-ons for auth-gateway</legend>${card('Edge cache', 'Serve sessions from 30 regions.', '+$12/mo', true)}${card('Bot shield', 'Challenge suspicious sign-ins.', '+$8/mo')}${card('Point-in-time restore', 'Seven days of recovery for the session store.', '+$20/mo', true)}${card('Audit export', 'Requires the Team plan.', '+$5/mo', false, true)}
+</fieldset>`;
+---
+<Docs title="Checkbox" group="Forms" lead="Turns an option on or off, alone or as one of many. Crisp checks: a hairline box with tight corners that fills with the accent when checked.">
+  <Example title="States" description="On, off, mixed (indeterminate) and disabled. The native input is styled directly, so forms, keyboard and screen readers work as usual." code={states} />
+
+  <h2 id="description">With a description</h2>
+  <p>Wrap the label and description in <code>.dd-checkbox__text</code>; the box aligns to the first line.</p>
+  <Example code={described} />
+
+  <h2 id="select-all">Select all</h2>
+  <p>A parent with <code>data-dd-check-all="key"</code> checks every child with <code>data-dd-check-in="key"</code> and shows the mixed state when only some are on.</p>
+  <Example code={nested} />
+
+  <h2 id="inline">Inline and small</h2>
+  <Example code={inline} />
+
+  <h2 id="card">Checkbox card</h2>
+  <p>For choices that need a sentence or a price. The whole card is the target; checked cards take a soft accent tint.</p>
+  <Example code={cards} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-checkbox', 'The <code>&lt;label&gt;</code> wrapper: control + text, aligned to the first line.'],
+    ['.dd-checkbox__input', 'The native <code>&lt;input type="checkbox"&gt;</code>. Uses <code>:checked</code>, <code>:indeterminate</code>, <code>:disabled</code>, <code>[aria-invalid]</code>.'],
+    ['.dd-checkbox__text · __label · __desc', 'Label stack with a muted description.'],
+    ['.dd-checkbox--sm', '16px box and xs text, for filters and dense lists.'],
+    ['.dd-checkbox-group', 'A <code>&lt;fieldset&gt;</code> of checkboxes; <code>--inline</code> lays them in a row.'],
+    ['.dd-checkbox-group__legend · __nested', 'Group legend; indented children under a select-all parent.'],
+    ['.dd-checkbox-card', 'Selectable card: a tonal row that takes an accent tint when checked.'],
+    ['.dd-checkbox-card__aside', 'Trailing mono detail (price, size, count).'],
+    ['.dd-checkbox-cards', 'Responsive grid of cards (fieldset).'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute', 'What it does']} rows={[
+    ['data-dd-indeterminate', 'Sets <code>indeterminate = true</code> on load (HTML has no attribute for it).'],
+    ['data-dd-check-all="key"', 'Parent checkbox: checks or clears every <code>data-dd-check-in="key"</code>, and shows mixed when some are on.'],
+    ['data-dd-check-in="key"', 'Child checkbox of that parent.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use a checkbox when the choice takes effect on submit; use a switch for instant settings.', 'Write labels as positive statements: “Email me about failed deploys”.', 'Stack options vertically; go inline only for short, scannable sets.']}
+    dont={['Don’t use a single checkbox for mutually exclusive choices — use radios.', 'Don’t make the label a question.', 'Don’t rely on the mixed state as a value; it only summarises children.']}
+  />
+</Docs>

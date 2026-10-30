@@ -1,0 +1,26 @@
+/* Divider — a hairline that separates without decorating. Horizontal (<hr>), vertical (between toolbar items)
+   and labelled (centered or start-aligned, mono eyebrow). Spacing: --tight · default · --loose. */
+.dd-divider {
+  --_line: color-mix(in oklab, var(--dd-text) 10%, transparent);
+  --_space: calc(var(--dd-u) * 4);
+  flex: none; height: 0; margin: var(--_space) 0; border: 0; border-top: 1px solid var(--_line); color: var(--dd-muted);
+}
+.dd-divider--tight { --_space: calc(var(--dd-u) * 2); }
+.dd-divider--loose { --_space: calc(var(--dd-u) * 8); }
+.dd-divider--strong { --_line: var(--dd-border-strong); }
+
+/* Vertical: stretches to the row it sits in. */
+.dd-divider--vertical {
+  align-self: stretch; width: 0; height: auto; min-height: 1em; margin: 0 calc(var(--_space) / 2);
+  border-top: 0; border-left: 1px solid var(--_line);
+}
+.dd-divider--vertical.dd-divider--tight { margin-inline: calc(var(--dd-u) * 0.5); }
+
+/* Labelled: a <div role="separator"> with text; lines on both sides (or only after with --start). */
+.dd-divider--label {
+  display: flex; align-items: center; gap: calc(var(--dd-u) * 3); height: auto; border-top: 0;
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1;
+  letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;
+}
+.dd-divider--label::before, .dd-divider--label::after { content: ""; flex: 1; min-width: calc(var(--dd-u) * 2); border-top: 1px solid var(--_line); }
+.dd-divider--start::before { flex: 0 0 0; min-width: 0; border: 0; margin-right: calc(var(--dd-u) * -3); }

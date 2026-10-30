@@ -1,0 +1,130 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const projects = [
+  ['dawn-and-dusk', 'ok', 'Live', '1,284', '2h ago'],
+  ['dockey-ui', 'ok', 'Live', '642', '1d ago'],
+  ['insomnia', 'warn', 'Beta', '318', '3d ago'],
+  ['ai-focus', 'info', 'Draft', '96', '2w ago'],
+  ['leetnode', 'muted', 'Archived', '41', '4mo ago'],
+];
+const head = `<thead><tr><th>Project</th><th>Status</th><th class="is-num">Stars</th><th class="is-num">Updated</th></tr></thead>`;
+const rows = (list) => list.map(([name, s, label, stars, when]) => `
+      <tr><td><a href="#">${name}</a></td><td><span class="dd-table__status" data-status="${s}">${label}</span></td><td class="is-num">${stars}</td><td class="is-num is-muted">${when}</td></tr>`).join('');
+
+const basic = `
+<div class="dd-table">
+  <table>
+    ${head}
+    <tbody>${rows(projects)}
+    </tbody>
+  </table>
+</div>`;
+
+const titled = `
+<header class="dd-table-header">
+  <h3 class="dd-table-header__title">Open source</h3>
+  <span class="dd-table-header__meta">3 of 12</span>
+  <a class="dd-table-header__action" href="#">View all ${i('arrow-right')}</a>
+</header>
+<div class="dd-table">
+  <table>
+    ${head}
+    <tbody>${rows(projects.slice(0, 3))}
+    </tbody>
+  </table>
+</div>`;
+
+const empty = `
+<header class="dd-table-header">
+  <h3 class="dd-table-header__title">Projects</h3>
+  <button class="dd-btn dd-btn--secondary dd-btn--sm">${i('plus')}<span>New project</span></button>
+</header>
+<div class="dd-table">
+  <table>
+    ${head}
+  </table>
+  <div class="dd-table__empty">
+    <span class="dd-table__empty-icon">${i('folder')}</span>
+    <p class="dd-table__empty-title">No projects yet</p>
+    <p>Anything you publish shows up here, with its status and stars.</p>
+    <button class="dd-btn dd-btn--primary dd-btn--sm">${i('plus')}<span>New project</span></button>
+  </div>
+</div>`;
+
+const deploys = [
+  ['a41f9c2', 'auth-gateway', 'production', '2m 14s', '09:41'],
+  ['7be03d1', 'billing-worker', 'production', '3m 02s', '09:12'],
+  ['c90e5aa', 'edge-cache', 'staging', '58s', '08:47'],
+  ['1d2b7f0', 'dockey-ui', 'preview', '1m 31s', '08:03'],
+  ['e66a4b9', 'ai-focus', 'preview', '1m 07s', '07:55'],
+];
+const compact = `
+<div class="dd-table dd-table--compact dd-table--mono">
+  <table>
+    <thead><tr><th>Commit</th><th>Service</th><th>Environment</th><th class="is-num">Duration</th><th class="is-num">Started</th></tr></thead>
+    <tbody>${deploys.map(([sha, svc, env, dur, at]) => `
+      <tr><td class="is-mono is-muted">${sha}</td><td>${svc}</td><td>${env}</td><td class="is-num">${dur}</td><td class="is-num">${at}</td></tr>`).join('')}
+    </tbody>
+  </table>
+</div>`;
+
+const invoices = [
+  ['INV-2026-0142', 'Oct 1', '$1,240.00', 'ok', 'Paid'],
+  ['INV-2026-0131', 'Sep 1', '$1,180.50', 'ok', 'Paid'],
+  ['INV-2026-0119', 'Aug 1', '$968.25', 'warn', 'Overdue'],
+];
+const mono = `
+<div class="dd-table dd-table--mono dd-table--interactive">
+  <table>
+    <thead><tr><th>Invoice</th><th>Issued</th><th>Status</th><th class="is-num">Amount</th></tr></thead>
+    <tbody>${invoices.map(([id, at, amt, s, label]) => `
+      <tr><td class="is-mono">${id}</td><td class="is-muted">${at}</td><td><span class="dd-table__status" data-status="${s}">${label}</span></td><td class="is-num">${amt}</td></tr>`).join('')}
+    </tbody>
+    <tfoot><tr><td colspan="3">Total, last 3 months</td><td class="is-num">$3,388.75</td></tr></tfoot>
+  </table>
+</div>`;
+---
+<Docs title="Table" group="Data display" lead="A quiet card for a handful of rows: single-line cells, hairlines between rows, a header that stays out of the way. For large or interactive data sets, use the data table.">
+  <Example title="Quiet card" description="The default. Numbers right-align with tabular figures; status is a dot plus a word, never colour alone." code={basic} />
+
+  <h2 id="title">With title and action</h2>
+  <p>A lockup title sits above the card with an optional count and one action at the far edge, usually a link to the full list.</p>
+  <Example code={titled} />
+
+  <h2 id="empty">Empty state</h2>
+  <p>Keep the header so people can see what will be here. Say what is missing, why it matters and the one action that fills it.</p>
+  <Example code={empty} />
+
+  <h2 id="compact">Compact</h2>
+  <p>Tighter rows for side panels and dashboards. Combine with <code>--mono</code> when the table is mostly figures, hashes and times.</p>
+  <Example code={compact} />
+
+  <h2 id="mono">Mono figures and interactive rows</h2>
+  <p><code>--mono</code> sets numeric cells in DM Mono. <code>--interactive</code> adds a hover tone when the whole row opens something. A <code>&lt;tfoot&gt;</code> carries totals.</p>
+  <Example code={mono} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-table', 'The card: <code>--dd-surface</code>, rounded, and the horizontal scroll container. Put a plain <code>&lt;table&gt;</code> inside.'],
+    ['th.is-num / td.is-num', 'Right-aligned figure column (tabular numbers).'],
+    ['.is-muted · .is-strong · .is-mono · .is-shrink', 'Cell helpers: secondary text, emphasis, mono IDs/hashes, shrink-to-fit column.'],
+    ['.dd-table__status[data-status]', 'Dot + label. <code>ok · warn · bad · info · muted</code>.'],
+    ['.dd-table--compact', 'Tighter rows and padding.'],
+    ['.dd-table--mono', 'Numeric cells in DM Mono.'],
+    ['.dd-table--interactive', 'Rows get a hover tone and a pointer.'],
+    ['.dd-table--plain', 'No card: hairlines on the page, flush to the text edge.'],
+    ['.dd-table-header (+ __title, __meta, __action)', 'Title row above the card. A <code>.dd-btn</code> placed in it is pushed to the far edge.'],
+    ['.dd-table__empty (+ __empty-icon, __empty-title)', 'Empty state inside the card, after a header-only table.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use it for up to ~10 rows that need no sorting or selection.', 'Right-align numbers and keep their units consistent within a column.', 'Keep cells to one line; truncate long text in the cell, not the column.']}
+    dont={['Don’t add vertical rules or zebra stripes; the hairline is enough.', 'Don’t use it for hundreds of rows. Reach for the <a href="data-table">data table</a> instead.', 'Don’t put more than one action in the header.']}
+  />
+</Docs>

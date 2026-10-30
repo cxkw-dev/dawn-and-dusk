@@ -1,0 +1,79 @@
+/* Chip — "Soft wash". Categorical chips in the Color set (--dd-set-1…8): a tinted fill with deep text in the same hue.
+   Topics, tags and people; removable (×), filter chips that toggle (aria-pressed) and an input that turns typing
+   into chips. Behaviour lives in behaviors/chip.js. Colour: .dd-chip--set-1…8, or style="--dd-chip: <colour>". */
+.dd-chip {
+  --_c: var(--dd-chip, var(--dd-tone-2));
+  display: inline-flex; align-items: center; gap: .45em; flex: none; max-width: 100%;
+  padding: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 2.5);
+  border: 0; border-radius: var(--dd-r-ctl);
+  background: color-mix(in oklab, var(--_c) 22%, transparent);
+  color: color-mix(in oklab, var(--_c) 62%, var(--dd-text));
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1;
+  white-space: nowrap; vertical-align: middle; text-decoration: none;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease), scale var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-chip > span:not([class]) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+:is(a, button).dd-chip { appearance: none; cursor: pointer; }
+:is(a, button).dd-chip:hover, .dd-chip.is-selected { background: color-mix(in oklab, var(--_c) 34%, transparent); }
+:is(a, button).dd-chip:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+.dd-chip--set-1 { --_c: var(--dd-set-1); }
+.dd-chip--set-2 { --_c: var(--dd-set-2); }
+.dd-chip--set-3 { --_c: var(--dd-set-3); }
+.dd-chip--set-4 { --_c: var(--dd-set-4); }
+.dd-chip--set-5 { --_c: var(--dd-set-5); }
+.dd-chip--set-6 { --_c: var(--dd-set-6); }
+.dd-chip--set-7 { --_c: var(--dd-set-7); }
+.dd-chip--set-8 { --_c: var(--dd-set-8); }
+
+/* Leading colour dot (for neutral chips that still name a category). */
+.dd-chip__dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--dd-chip-dot, var(--_c)); }
+.dd-chip > .dd-icon { width: 1.15em; height: 1.15em; margin-block: -.2em; }
+
+/* Remove (×) — a small hit area that hugs the end of the chip. */
+.dd-chip__remove {
+  appearance: none; flex: none; display: inline-grid; place-items: center;
+  width: 1.45em; height: 1.45em; margin: -.3em calc(var(--dd-u) * -1.25) -.3em -.1em;
+  padding: 0; border: 0; border-radius: calc(var(--dd-r-ctl) - 1px); background: none; color: inherit; opacity: .7; cursor: pointer;
+  transition: opacity var(--dd-dur-fast) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-chip__remove:hover { opacity: 1; background: color-mix(in oklab, var(--_c) 30%, transparent); }
+.dd-chip__remove:focus-visible { opacity: 1; outline: 2px solid var(--dd-ring); outline-offset: 0; }
+.dd-chip__remove > .dd-icon { width: 1em; height: 1em; }
+.dd-chip.is-leaving { opacity: 0; scale: .9; pointer-events: none; }
+
+/* Filter chips: <button class="dd-chip dd-chip--filter" aria-pressed="false">. A lighter wash until pressed;
+   pressed deepens the wash and slides in a check. */
+.dd-chip--filter { background: color-mix(in oklab, var(--_c) 12%, transparent); color: color-mix(in oklab, var(--_c) 45%, var(--dd-text)); }
+.dd-chip--filter:hover { background: color-mix(in oklab, var(--_c) 22%, transparent); }
+.dd-chip--filter[aria-pressed="true"] { background: color-mix(in oklab, var(--_c) 34%, transparent); color: color-mix(in oklab, var(--_c) 55%, var(--dd-text)); }
+.dd-chip__check {
+  display: inline-grid; place-items: center; width: 0; margin-right: -.45em; overflow: hidden; opacity: 0;
+  transition: width var(--dd-dur-fast) var(--dd-ease), margin var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-chip__check > .dd-icon { flex: none; width: 1.1em; height: 1.1em; }
+[aria-pressed="true"] > .dd-chip__check { width: 1.1em; margin-right: 0; opacity: 1; }
+
+/* Avatar chip: a person. Pill-shaped around a tiny avatar; neutral wash so the avatar colour leads. */
+.dd-chip--avatar { --_c: var(--dd-chip, var(--dd-tone-2)); padding-left: 3px; border-radius: var(--dd-r-pill); }
+.dd-chip--avatar > .dd-avatar { --dd-avatar-size: 20px; margin-block: -3px; }
+.dd-chip--avatar:has(> .dd-chip__remove) { padding-right: calc(var(--dd-u) * 2); }
+.dd-chip--avatar > .dd-chip__remove { border-radius: 50%; }
+
+/* Chip input: chips + a text field in one control. Type, then Enter or comma to add; Backspace on empty removes. */
+.dd-chip-input {
+  display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.25);
+  min-height: calc(var(--dd-u) * 8); padding: calc(var(--dd-u) * 1.25) calc(var(--dd-u) * 1.5);
+  border-radius: var(--dd-r-ctl); background: var(--dd-surface-2); cursor: text;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-chip-input:hover { background: var(--dd-surface-3); }
+.dd-chip-input:focus-within { background: var(--dd-surface-2); box-shadow: 0 0 0 2px var(--dd-ring); }
+.dd-chip-input__field {
+  flex: 1 0 8ch; min-width: 8ch; padding: calc(var(--dd-u) * .75) calc(var(--dd-u) * 1); border: 0; outline: 0; background: none;
+  color: var(--dd-text); font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: 1.3;
+}
+.dd-chip-input__field::placeholder { color: var(--dd-faint); }
+
+/* A row of chips. */
+.dd-chip-group { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5); }

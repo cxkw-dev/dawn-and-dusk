@@ -1,0 +1,156 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+// Sparkline: a fixed 100×32 viewBox, 4px of headroom so the end dot and its ring never clip.
+const spark = (pts: number[], cls = 'dd-stat__spark') => {
+  const min = Math.min(...pts), max = Math.max(...pts);
+  const xy = pts.map((v, k) => [+((k / (pts.length - 1)) * 100).toFixed(1), +(28 - ((v - min) / (max - min || 1)) * 23).toFixed(1)]);
+  const line = xy.map(([x, y], k) => `${k ? 'L' : 'M'}${x} ${y}`).join(' ');
+  const [ex, ey] = xy[xy.length - 1];
+  return `<svg class="${cls}" viewBox="0 0 100 32" aria-hidden="true"><path class="dd-stat__spark-area" d="${line} L100 32 L0 32 Z"/><path class="dd-stat__spark-line" d="${line}"/><circle class="dd-stat__spark-dot" cx="${ex}" cy="${ey}" r="3"/></svg>`;
+};
+
+const DIR: Record<string, [string, string]> = { up: ['arrow-up', 'Up'], down: ['arrow-down', 'Down'], flat: ['minus', 'No change'] };
+const delta = (dir: string, tone: string, text: string) =>
+  `<span class="dd-stat__delta dd-stat__delta--${tone}">${i(DIR[dir][0])}<span class="dd-visually-hidden">${DIR[dir][1]}</span>${text}</span>`;
+
+type Tile = { label: string; icon?: string; value: string; unit?: string; d?: [string, string, string]; compare?: string; pts?: number[]; tag?: string; href?: string };
+const tile = ({ label, icon, value, unit, d, compare, pts, href }: Tile, extra = '') => {
+  const tag = href ? 'a' : 'div';
+  return `<${tag} class="dd-stat${extra}"${href ? ` href="${href}"` : ''}>
+    <p class="dd-stat__label">${icon ? i(icon) : ''}${label}</p>
+    <div class="dd-stat__main">
+      <p class="dd-stat__value">${value}${unit ? `<span class="dd-stat__unit">${unit}</span>` : ''}</p>${pts ? `\n      ${spark(pts)}` : ''}
+    </div>${d || compare ? `
+    <div class="dd-stat__foot">${d ? delta(...d) : ''}${compare ? `<span class="dd-stat__compare">${compare}</span>` : ''}</div>` : ''}
+  </${tag}>`;
+};
+
+const req = [28.1, 29.4, 27.9, 31.2, 30.6, 33.8, 32.9, 35.1, 36.7, 35.9, 39.2, 41.3];
+const p95 = [118, 121, 119, 126, 124, 131, 128, 136, 133, 139, 137, 142];
+const err = [0.61, 0.58, 0.6, 0.55, 0.52, 0.54, 0.5, 0.49, 0.47, 0.46, 0.44, 0.42];
+const dep = [9, 11, 8, 12, 10, 14, 12, 9, 13, 11, 12, 12];
+
+const single = `
+<div style="max-width: 320px">
+  ${tile({ label: 'Requests / min', icon: 'bolt', value: '41.3K', pts: req, d: ['up', 'ok', '12.4%'], compare: 'vs <b>36.7K</b> last week' })}
+</div>`;
+
+const grid = `
+<div class="dd-stat-grid" style="--dd-stat-min: 260px">
+  ${tile({ label: 'Requests / min', value: '41.3K', pts: req, d: ['up', 'ok', '12.4%'], compare: 'vs <b>36.7K</b> last week' })}
+  ${tile({ label: 'p95 latency', value: '142', unit: 'ms', pts: p95, d: ['up', 'bad', '18 ms'], compare: 'vs <b>124 ms</b> yesterday' })}
+  ${tile({ label: 'Error rate', value: '0.42', unit: '%', pts: err, d: ['down', 'ok', '0.08 pts'], compare: 'vs <b>0.50%</b> last week' })}
+  ${tile({ label: 'Deploys today', value: '12', pts: dep, d: ['flat', 'flat', '0'], compare: 'same as Tuesday' })}
+</div>`;
+
+const joined = `
+<div class="dd-stat-grid dd-stat-grid--joined" style="--dd-stat-min: 150px">
+  ${tile({ label: 'Spend this month', value: '$1,284', d: ['down', 'ok', '6.1%'], compare: 'vs September', href: '#billing' })}
+  ${tile({ label: 'Forecast', value: '$1,910', d: ['up', 'warn', '4.0%'], compare: 'budget <b>$2,000</b>', href: '#forecast' })}
+  ${tile({ label: 'Budget left', value: '36', unit: '%', compare: '<b>11</b> days to reset', href: '#budget' })}
+  ${tile({ label: 'Open invoices', value: '3', compare: '<b>$412</b> due Nov 4', href: '#invoices' })}
+</div>`;
+
+const deltas = `
+<div class="dd-row">
+  ${delta('up', 'ok', '12.4%')}
+  ${delta('down', 'ok', '0.08 pts')}
+  ${delta('up', 'bad', '18 ms')}
+  ${delta('down', 'bad', '3.2%')}
+  ${delta('up', 'warn', '4.0%')}
+  ${delta('flat', 'flat', '0')}
+</div>`;
+
+const inline = `
+<div class="dd-stat-inline-group">
+  <p class="dd-stat dd-stat--inline"><span class="dd-stat__label">Uptime</span><span class="dd-stat__value">99.98<span class="dd-stat__unit">%</span></span></p>
+  <p class="dd-stat dd-stat--inline"><span class="dd-stat__label">p95</span><span class="dd-stat__value">142<span class="dd-stat__unit">ms</span></span>${delta('up', 'bad', '18')}</p>
+  <p class="dd-stat dd-stat--inline"><span class="dd-stat__label">Deploys today</span><span class="dd-stat__value">12</span></p>
+  <p class="dd-stat dd-stat--inline"><span class="dd-stat__label">Spend</span><span class="dd-stat__value">$1,284</span>${delta('down', 'ok', '6.1%')}</p>
+</div>`;
+
+const reqMonth = [31, 33, 32, 35, 34, 36, 38, 37, 39, 41, 40, 42, 41, 43, 45, 44, 46, 45, 47, 49, 48, 50, 52, 51, 53, 52, 55, 54, 56, 58];
+const hero = `
+<div class="dd-stat dd-stat--hero" style="max-width: 560px">
+  <p class="dd-stat__label">${i('globe')}Requests served · October</p>
+  <div class="dd-stat__main">
+    <p class="dd-stat__value">1.28<span class="dd-stat__unit">B</span></p>
+    ${spark(reqMonth)}
+  </div>
+  <div class="dd-stat__foot">${delta('up', 'ok', '18.2%')}<span class="dd-stat__compare">vs <b>1.08B</b> in September · all regions</span></div>
+</div>`;
+
+const bare = `
+<div class="dd-surface" style="padding: 25px; max-width: 460px">
+  <div class="dd-row" style="--dd-gap: 40px; align-items: flex-start">
+    ${tile({ label: 'Builds', value: '284', d: ['up', 'ok', '9%'] }, ' dd-stat--bare')}
+    ${tile({ label: 'Avg. build', value: '1:42', unit: 'min', d: ['down', 'ok', '11 s'] }, ' dd-stat--bare')}
+    ${tile({ label: 'Cache hits', value: '87', unit: '%', d: ['down', 'bad', '2 pts'] }, ' dd-stat--bare')}
+  </div>
+</div>`;
+---
+<Docs title="Stat" group="Data display" lead="One number, said clearly. Stat tiles lead a dashboard with a figure, its change and a quiet trend; the inline stat tucks the same facts into a header.">
+  <Example title="Tile" description="Label, value, delta and comparison. The sparkline is a de-emphasis tone so the figure stays the loudest thing on the tile; the end dot marks now." code={single} />
+
+  <h2 id="grid">Stat grid</h2>
+  <p>Tiles flow into as many columns as fit — 210px minimum by default; set <code>--dd-stat-min</code> to change it (260px here) and stack on narrow screens. Tone, not lines, separates them.</p>
+  <Example code={grid} />
+
+  <h2 id="joined">Joined grid</h2>
+  <p>One surface split by 2px gaps of the page colour — a single object for a related set. Tiles can be links; they lift to <code>--dd-surface-2</code> on hover.</p>
+  <Example code={joined} />
+
+  <h2 id="delta">Delta</h2>
+  <p>The arrow says the <em>direction</em>; the colour says whether that direction is <em>good</em>. Latency going up is bad, errors going down is good — pick the tone from what the metric means, never from the sign. Each delta carries hidden text (“Up”, “Down”) so colour is never the only signal.</p>
+  <Example code={deltas} />
+
+  <h2 id="inline">Inline stat</h2>
+  <p>The compact form for page headers, table toolbars and cards: label, mono value and optional delta on one baseline. Group several with <code>.dd-stat-inline-group</code>; they wrap on small screens.</p>
+  <Example code={inline} />
+
+  <h2 id="hero">Hero figure</h2>
+  <p>The single number a view leads with — one per page, at least 48px, with a wider sparkline.</p>
+  <Example code={hero} />
+
+  <h2 id="bare">Bare</h2>
+  <p>Drop the surface when the stats already sit inside a card or panel.</p>
+  <Example code={bare} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-stat', 'A tile on <code>--dd-surface</code>. Works on <code>&lt;div&gt;</code>, <code>&lt;a&gt;</code> and <code>&lt;button&gt;</code> (links and buttons get a hover tone).'],
+    ['.dd-stat__label', 'Sentence-case label, no trailing colon. An icon may lead.'],
+    ['.dd-stat__main', 'Row holding the value and the sparkline; the spark shrinks (to 48px) before anything wraps.'],
+    ['.dd-stat__value / __unit', 'The figure in the display face (700, proportional figures). The unit is half size and muted.'],
+    ['.dd-stat__foot', 'Row for delta and comparison text.'],
+    ['.dd-stat__delta', 'Signed change in mono with an arrow icon. Tone: <code>--ok</code>, <code>--bad</code>, <code>--warn</code>, <code>--flat</code>.'],
+    ['.dd-stat__compare', 'Comparison text — always name the period (“vs last week”). Wrap figures in <code>&lt;b&gt;</code> for mono.'],
+    ['.dd-stat__spark', 'A 100×32 SVG (<code>viewBox="0 0 100 32"</code>) with <code>__spark-area</code>, <code>__spark-line</code> and <code>__spark-dot</code>.'],
+    ['.dd-stat--hero', 'The one lead figure of a view: 4xl value, wider spark.'],
+    ['.dd-stat--bare', 'No surface or padding, for use inside another container.'],
+    ['.dd-stat--inline', 'Label · value · delta on one baseline. Group with <code>.dd-stat-inline-group</code>.'],
+    ['.dd-stat-grid', 'Auto-fit grid of tiles. <code>--dd-stat-min</code> sets the minimum tile width.'],
+    ['.dd-stat-grid--joined', 'One surface split by 2px page-coloured gaps; outer corners only.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={[
+      'Compact large values: 1,284 · 41.3K · $4.2M · 1.28B. Keep the full figure in a tooltip or table.',
+      'Name the comparison period in the compare text: “vs 36.7K last week”.',
+      'Colour a delta by whether the change is good for that metric, not by its sign.',
+      'Keep sparklines to ~12 points in the muted tone; they show shape, not values.',
+    ]}
+    dont={[
+      'Don’t put more than one hero figure on a view.',
+      'Don’t colour the value itself red or green — the delta carries the tone.',
+      'Don’t add axes or labels to a sparkline; if the values matter, use a chart.',
+      'Don’t show a delta without saying what it is compared against.',
+    ]}
+  />
+</Docs>

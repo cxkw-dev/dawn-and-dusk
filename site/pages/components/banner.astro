@@ -1,0 +1,129 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const page = `<div style="padding: var(--dd-space-6) var(--dd-space-6) var(--dd-space-8)">
+    <p class="dd-eyebrow">cxkw.dev · deploys</p>
+    <p class="dd-h3" style="margin-top: var(--dd-space-2)">ship at dusk</p>
+  </div>`;
+
+const announce = `
+<div class="dd-banner dd-banner--info">
+  <div class="dd-banner__inner">
+    ${i('sparkle')}
+    <p class="dd-banner__text"><strong>Dusk mode is here.</strong>Flip it from the top bar, or let your system decide.</p>
+    <div class="dd-banner__actions"><a class="dd-banner__action" href="#themes">Try it</a></div>
+  </div>
+  <button class="dd-banner__dismiss" type="button" data-dd-dismiss aria-label="Dismiss announcement">${i('x')}</button>
+</div>
+${page}`;
+
+const intents = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-2)">
+  <div class="dd-banner dd-banner--ok">
+    <div class="dd-banner__inner">
+      ${i('success')}
+      <p class="dd-banner__text"><strong>All systems normal.</strong>auth-gateway recovered at 09:58 UTC.</p>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#status">Status page</a></div>
+    </div>
+  </div>
+  <div class="dd-banner dd-banner--warn">
+    <div class="dd-banner__inner">
+      ${i('alert')}
+      <p class="dd-banner__text"><strong>Scheduled maintenance.</strong>billing-worker is read-only Sat 02:00–02:30 UTC.</p>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#details">Details</a></div>
+    </div>
+    <button class="dd-banner__dismiss" type="button" data-dd-dismiss aria-label="Dismiss">${i('x')}</button>
+  </div>
+  <div class="dd-banner dd-banner--bad" role="alert">
+    <div class="dd-banner__inner">
+      ${i('danger')}
+      <p class="dd-banner__text"><strong>Incident.</strong>Sign-ins are failing in sfo3. We’re on it.</p>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#incident">Follow updates</a></div>
+    </div>
+  </div>
+  <div class="dd-banner dd-banner--neutral">
+    <div class="dd-banner__inner">
+      ${i('eye')}
+      <p class="dd-banner__text">You’re viewing a read-only snapshot of <span class="dd-mono">ai-focus</span> from 12 Oct.</p>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#latest">Back to live</a></div>
+    </div>
+  </div>
+</div>`;
+
+const narrow = `
+<div style="max-width: 360px">
+  <div class="dd-banner dd-banner--warn">
+    <div class="dd-banner__inner">
+      ${i('alert')}
+      <p class="dd-banner__text"><strong>Scheduled maintenance.</strong>billing-worker is read-only Sat 02:00–02:30 UTC.</p>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#details">Details</a><a class="dd-banner__action" href="#calendar">Add to calendar</a></div>
+    </div>
+    <button class="dd-banner__dismiss" type="button" data-dd-dismiss aria-label="Dismiss">${i('x')}</button>
+  </div>
+</div>`;
+
+const sticky = `
+<div style="height: 220px; overflow: auto; isolation: isolate">
+  <div class="dd-banner dd-banner--info dd-banner--sticky">
+    <div class="dd-banner__inner">
+      ${i('refresh')}
+      <p class="dd-banner__text"><strong>A new version is ready.</strong>Reload to get dawn-and-dusk v0.4.</p>
+      <div class="dd-banner__actions"><button class="dd-banner__action" type="button">Reload</button></div>
+    </div>
+  </div>
+  <div class="dd-stack" style="padding: var(--dd-space-5) var(--dd-space-6)">
+    <p class="dd-text">Scroll this panel — the banner stays pinned to the top.</p>
+    <p class="dd-text dd-muted">fra1 · 14 deploys today · p95 84 ms</p>
+    <p class="dd-text dd-muted">sfo3 · 9 deploys today · p95 112 ms</p>
+    <p class="dd-text dd-muted">sgp1 · 6 deploys today · p95 141 ms</p>
+    <p class="dd-text dd-muted">edge-cache · hit ratio 97.2%</p>
+    <p class="dd-text dd-muted">billing-worker · queue depth 0</p>
+  </div>
+</div>`;
+---
+<Docs title="Banner" group="Feedback & status" lead="A message for the whole page — announcements, maintenance, incidents. Full width above the app, the same soft fill as the alert, and gone with one click.">
+  <Example title="Announcement" description="Centred icon, a bold lead-in and one action. Dismiss sits at the far right so it never crowds the message." code={announce} stage="flush" />
+
+  <h2 id="intents">Intents</h2>
+  <p>Info for news, ok for a recovery, warn for something planned, bad for an incident, neutral for a mode the page is in (a snapshot, an impersonation, a preview). Leave dismiss off while the condition is still true.</p>
+  <Example code={intents} stage="flush" />
+
+  <h2 id="responsive">Narrow</h2>
+  <p>Banners are size containers too. Under about 560px the content left-aligns, the icon sits on the first line, actions wrap underneath and dismiss moves to the top-right corner.</p>
+  <Example code={narrow} />
+
+  <h2 id="sticky">Sticky</h2>
+  <p><code>--sticky</code> pins the banner to the top of its scrolling container — for things the reader must not lose, like a pending reload.</p>
+  <Example code={sticky} stage="flush" />
+
+  <h2 id="themes">Dawn and dusk</h2>
+  <p>Dawn washes 14% of the status colour over the page. Dusk uses a solid 30% fill over <code>--dd-surface</code> with no border — try “View in dusk” on any example above.</p>
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-banner', 'Full-width block; a size container named <code>dd-banner</code>.'],
+    ['.dd-banner--{intent}', 'Intent: <code>info</code> (default) · <code>ok</code> · <code>warn</code> · <code>bad</code> · <code>neutral</code>.'],
+    ['.dd-banner--sticky', 'Sticks to the top of the scroll container (<code>--dd-z-sticky</code>).'],
+    ['.dd-banner__inner', 'The content row: icon, text, actions. Centred when wide, left-aligned when narrow.'],
+    ['.dd-banner__text', 'The message. Put a short lead-in in <code>&lt;strong&gt;</code>.'],
+    ['.dd-banner__actions / __action', 'Dotted text actions, <code>&lt;a&gt;</code> or <code>&lt;button&gt;</code>.'],
+    ['.dd-banner__dismiss', 'Icon button at the right edge. Add <code>data-dd-dismiss</code> and an <code>aria-label</code>.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute / API', 'What it does']} rows={[
+    ['data-dd-dismiss', 'Fades and collapses the banner, then removes it. Fires a cancelable <code>dd:dismiss</code> event first — listen for it to remember the choice.'],
+    ['dd.dismiss(el)', 'Dismiss from code, e.g. when the incident is resolved.'],
+  ]} />
+  <p>Use <code>role="alert"</code> only for an incident banner inserted while the page is open; a banner present at load needs no role, or <code>role="region"</code> with an <code>aria-label</code> if it should be a landmark.</p>
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Show one banner at a time; queue the rest.', 'Start with a two- or three-word lead-in in bold.', 'Remember a dismissal so the same banner doesn’t come back on every page.']}
+    dont={['Don’t use a banner for something about one form or panel — that’s an alert.', 'Don’t make an incident banner dismissible while the incident is open.', 'Don’t stack a banner on top of a sticky toolbar without testing the scroll.']}
+  />
+</Docs>

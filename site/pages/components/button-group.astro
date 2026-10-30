@@ -1,0 +1,143 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const attached = `
+<div class="dd-stack" style="--dd-gap: 15px">
+  <div class="dd-btn-group" role="group" aria-label="Deployment actions">
+    <button class="dd-btn dd-btn--secondary">${i('arrow-up')}<span>Promote</span></button>
+    <button class="dd-btn dd-btn--secondary">${i('arrow-left')}<span>Roll back</span></button>
+  </div>
+  <div class="dd-row" style="--dd-gap: 15px">
+    <div class="dd-btn-group" role="group" aria-label="Log pages">
+      <button class="dd-btn dd-btn--secondary">${i('chevron-left')}<span>Newer</span></button>
+      <button class="dd-btn dd-btn--secondary"><span>Older</span>${i('chevron-right')}</button>
+    </div>
+    <div class="dd-btn-group" role="group" aria-label="Log file">
+      <button class="dd-btn dd-btn--secondary dd-btn--icon" aria-label="Copy">${i('copy')}</button>
+      <button class="dd-btn dd-btn--secondary dd-btn--icon" aria-label="Download">${i('download')}</button>
+      <button class="dd-btn dd-btn--secondary dd-btn--icon" aria-label="Refresh">${i('refresh')}</button>
+    </div>
+  </div>
+</div>`;
+
+const toggles = `
+<div class="dd-stack" style="--dd-gap: 15px">
+  <div class="dd-btn-group" role="group" aria-label="Log levels" data-dd-btn-toggle>
+    <button class="dd-btn dd-btn--secondary dd-btn--sm" aria-pressed="true"><span>Error</span><span class="dd-mono dd-num">3</span></button>
+    <button class="dd-btn dd-btn--secondary dd-btn--sm" aria-pressed="true"><span>Warn</span><span class="dd-mono dd-num">12</span></button>
+    <button class="dd-btn dd-btn--secondary dd-btn--sm" aria-pressed="false"><span>Info</span><span class="dd-mono dd-num">1.2k</span></button>
+  </div>
+  <div class="dd-btn-group" role="group" aria-label="Columns" data-dd-btn-toggle>
+    <button class="dd-btn dd-btn--ghost dd-btn--icon" aria-pressed="true" aria-label="Timestamps">${i('clock')}</button>
+    <button class="dd-btn dd-btn--ghost dd-btn--icon" aria-pressed="false" aria-label="Region">${i('globe')}</button>
+    <button class="dd-btn dd-btn--ghost dd-btn--icon" aria-pressed="true" aria-label="Request ID">${i('tag')}</button>
+  </div>
+</div>`;
+
+const sizes = `
+<div class="dd-stack" style="--dd-gap: 15px; align-items: flex-start">
+  <div class="dd-btn-group" role="group" aria-label="Day, small"><button class="dd-btn dd-btn--sm dd-btn--icon" aria-label="Previous day">${i('chevron-left')}</button><button class="dd-btn dd-btn--sm">Today</button><button class="dd-btn dd-btn--sm dd-btn--icon" aria-label="Next day">${i('chevron-right')}</button></div>
+  <div class="dd-btn-group" role="group" aria-label="Day, medium"><button class="dd-btn dd-btn--icon" aria-label="Previous day">${i('chevron-left')}</button><button class="dd-btn">Today</button><button class="dd-btn dd-btn--icon" aria-label="Next day">${i('chevron-right')}</button></div>
+  <div class="dd-btn-group" role="group" aria-label="Day, large"><button class="dd-btn dd-btn--lg dd-btn--icon" aria-label="Previous day">${i('chevron-left')}</button><button class="dd-btn dd-btn--lg">Today</button><button class="dd-btn dd-btn--lg dd-btn--icon" aria-label="Next day">${i('chevron-right')}</button></div>
+</div>`;
+
+const split = `
+<div class="dd-row" style="--dd-gap: 15px">
+  <div class="dd-btn-group dd-btn-group--split">
+    <button class="dd-btn dd-btn--primary">${i('play')}<span>Deploy to production</span></button>
+    <button class="dd-btn dd-btn--primary dd-btn--icon dd-btn-group__caret" data-dd-menu="bg-deploy-menu" data-dd-placement="bottom-end" aria-label="More deploy options">${i('chevron-down')}</button>
+  </div>
+  <div class="dd-btn-group dd-btn-group--split">
+    <button class="dd-btn dd-btn--secondary">${i('download')}<span>Export CSV</span></button>
+    <button class="dd-btn dd-btn--secondary dd-btn--icon dd-btn-group__caret" data-dd-menu="bg-export-menu" data-dd-placement="bottom-end" aria-label="Other formats">${i('chevron-down')}</button>
+  </div>
+  <div class="dd-btn-group dd-btn-group--split">
+    <button class="dd-btn dd-btn--ink dd-btn--sm">${i('refresh')}<span>Redeploy</span></button>
+    <button class="dd-btn dd-btn--ink dd-btn--sm dd-btn--icon dd-btn-group__caret" data-dd-menu="bg-redeploy-menu" data-dd-placement="bottom-end" aria-label="Redeploy options">${i('chevron-down')}</button>
+  </div>
+</div>
+<div class="dd-menu" id="bg-deploy-menu" role="menu" hidden>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Deploy to preview<span class="dd-menu__desc">preview-a3f9c21.cxkw.dev</span></span><kbd class="dd-menu__kbd">⌘⇧↵</kbd></button>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Deploy without cache<span class="dd-menu__desc">Rebuilds every dependency</span></span></button>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Schedule…<span class="dd-menu__desc">Pick a quiet hour</span></span></button>
+</div>
+<div class="dd-menu" id="bg-export-menu" role="menu" hidden>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Export JSON</span></button>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Export Parquet</span></button>
+  <hr class="dd-menu__sep">
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Copy as Markdown table</span><kbd class="dd-menu__kbd">⌘⇧C</kbd></button>
+</div>
+<div class="dd-menu" id="bg-redeploy-menu" role="menu" hidden>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Redeploy iad1 only</span></button>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Redeploy all regions</span></button>
+</div>`;
+
+const splitOpen = `
+<div class="dd-stack" style="--dd-gap: 5px; display: inline-flex; align-items: flex-end">
+  <div class="dd-btn-group dd-btn-group--split">
+    <button class="dd-btn dd-btn--primary">${i('play')}<span>Deploy to production</span></button>
+    <button class="dd-btn dd-btn--primary dd-btn--icon dd-btn-group__caret" aria-expanded="true" aria-label="More deploy options">${i('chevron-down')}</button>
+  </div>
+  <div class="dd-menu" role="menu" aria-label="Deploy options">
+    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Deploy to preview<span class="dd-menu__desc">preview-a3f9c21.cxkw.dev</span></span><kbd class="dd-menu__kbd">⌘⇧↵</kbd></button>
+    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Deploy without cache<span class="dd-menu__desc">Rebuilds every dependency</span></span></button>
+    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Schedule…<span class="dd-menu__desc">Pick a quiet hour</span></span></button>
+  </div>
+</div>`;
+
+const vertical = `
+<div class="dd-btn-group dd-btn-group--vertical" role="group" aria-label="Zoom" style="width: 180px">
+  <button class="dd-btn dd-btn--secondary">${i('plus')}<span>Zoom in</span></button>
+  <button class="dd-btn dd-btn--secondary">${i('minus')}<span>Zoom out</span></button>
+  <button class="dd-btn dd-btn--secondary">${i('grid')}<span>Fit to screen</span></button>
+</div>`;
+
+const block = `
+<div style="max-width: 360px">
+  <div class="dd-btn-group dd-btn-group--block" role="group" aria-label="Dialog actions">
+    <button class="dd-btn dd-btn--secondary">Cancel</button>
+    <button class="dd-btn dd-btn--secondary">Save draft</button>
+    <button class="dd-btn dd-btn--primary">Publish</button>
+  </div>
+</div>`;
+---
+<Docs title="Button group" group="Actions" lead="Attached buttons that act as one control, and the split button: a main action with a chevron that opens the alternatives. Built from the same .dd-btn styles.">
+  <Example title="Attached" description="Related actions that share a seam. The 1px gap lets the surface behind draw the line, so there are no borders." code={attached} />
+  <h2 id="toggles">Toggle buttons</h2>
+  <p>For independent on/off options, such as which log levels to show, give each button <code>aria-pressed</code>. Pressed buttons take the deeper tone and full-strength text. For a single choice, use a <a href="segmented-control">segmented control</a> instead.</p>
+  <Example code={toggles} />
+  <h2 id="split">Split button</h2>
+  <p>A main action plus a narrow chevron (<code>.dd-btn-group__caret</code>) that opens a <a href="menu">menu</a> of variations. The seam is a soft line in the button’s own ink. Click a chevron to try it.</p>
+  <Example code={split} />
+  <p>Open, the chevron flips and keeps its pressed tone while the menu floats below, aligned to the end.</p>
+  <Example code={splitOpen} />
+  <h2 id="sizes">Sizes</h2>
+  <p>Size the buttons, not the group: <code>.dd-btn--sm</code> and <code>.dd-btn--lg</code> work as usual.</p>
+  <Example code={sizes} />
+  <h2 id="vertical">Vertical</h2>
+  <Example code={vertical} />
+  <h2 id="block">Full width</h2>
+  <p>On narrow screens, <code>--block</code> shares the row equally.</p>
+  <Example code={block} />
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-btn-group', 'Attaches its <code>.dd-btn</code> children: inner corners square off, 1px seams. Add <code>role="group"</code> and an <code>aria-label</code>.'],
+    ['[aria-pressed]', 'Toggle buttons. <code>true</code> takes the pressed tone; <code>false</code> mutes the label.'],
+    ['[data-dd-btn-toggle]', 'On the group: clicking an <code>aria-pressed</code> button flips it (<code>ds/behaviors/button-group.js</code>).'],
+    ['.dd-btn-group--split', 'Main action + chevron. The seam is drawn in the button’s own ink.'],
+    ['.dd-btn-group__caret', 'The chevron half. Use with <code>.dd-btn--icon</code> and <code>data-dd-menu</code>; it flips when <code>aria-expanded="true"</code>.'],
+    ['.dd-btn-group--vertical', 'Stacks the buttons; labels align left.'],
+    ['.dd-btn-group--block', 'Fills its container; buttons share the width.'],
+  ]} />
+  <h2 id="behaviour">Behaviour</h2>
+  <p>Groups are plain CSS. The split button’s chevron uses the <a href="menu">menu</a> behaviour: <code>data-dd-menu="menu-id"</code> opens the menu, <code>data-dd-placement="bottom-end"</code> aligns it to the chevron, and Esc returns focus to the chevron. Add <code>data-dd-btn-toggle</code> to a group and each <code>aria-pressed</code> button in it flips on click (Enter and Space work too, as they are buttons).</p>
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Group two to four closely related actions.', 'Make the split button’s main half the action people want most of the time.', 'Label icon-only buttons with <code>aria-label</code>.']}
+    dont={['Don’t mix variants inside an attached group (except a primary at the end of a block group).', 'Don’t use toggle buttons for a single choice; that is a segmented control.', 'Don’t hide destructive actions behind a split chevron.']}
+  />
+</Docs>

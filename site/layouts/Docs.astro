@@ -1,0 +1,81 @@
+---
+// Docs page shell: top bar, auto-built sidebar, page header. Every page uses the design system itself.
+import '../../ds/dawn-and-dusk.css';
+import '../styles/docs.css';
+import Sidebar from '../components/Sidebar.astro';
+import sprite from '../../ds/icons/icons.svg?raw';
+
+interface Props {
+  title: string;
+  group?: string;
+  lead?: string;
+  wide?: boolean;
+}
+const { title, group, lead, wide = false } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title === 'dawn & dusk' ? title : `${title} · dawn & dusk`}</title>
+    <meta name="description" content={lead ?? 'dawn & dusk — the cxkw.dev design system.'} />
+    <link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml" />
+    <script is:inline>
+      // Apply the stored (or ?theme=) choice before paint to avoid a flash.
+      (() => {
+        const q = new URLSearchParams(location.search).get('theme');
+        let t = q;
+        if (!t) { try { t = localStorage.getItem('dd-theme'); } catch { t = null; } }
+        if (t === 'dawn' || t === 'dusk') document.documentElement.dataset.theme = t;
+      })();
+    </script>
+  </head>
+  <body>
+    <Fragment set:html={sprite} />
+    <a class="doc-skip" href="#content">Skip to content</a>
+    <header class="doc-top">
+      <a class="doc-brand" href={`${base}/`}><span class="doc-wordmark">dawn &amp; dusk</span><span class="doc-ver dd-mono">v0.1</span></a>
+      <nav class="doc-toplinks" aria-label="Sections">
+        <a href={`${base}/foundations/colors`}>Foundations</a>
+        <a href={`${base}/components/button`}>Components</a>
+        <a href={`${base}/patterns/dashboard`}>Patterns</a>
+        <a href={`${base}/skill`}>Agent skill</a>
+      </nav>
+      <button class="doc-theme" type="button" data-dd-theme-toggle aria-label="Toggle dawn / dusk">
+        <span class="doc-theme-dawn">☀ dawn</span><span class="doc-theme-dusk">☾ dusk</span>
+      </button>
+    </header>
+    <div class="doc-shell">
+      <aside class="doc-side dd-scroll" id="doc-side" aria-label="Documentation"><Sidebar /></aside>
+      <script is:inline>
+        // Keep the sidebar where you left it between pages; make sure the current page is visible.
+        (() => {
+          const side = document.getElementById('doc-side');
+          const saved = Number(sessionStorage.getItem('dd-docs-side') || 'NaN');
+          if (!Number.isNaN(saved)) side.scrollTop = saved;
+          const cur = side.querySelector('[aria-current="page"]');
+          if (cur) {
+            const s = side.getBoundingClientRect(), c = cur.getBoundingClientRect();
+            if (c.top < s.top + 40 || c.bottom > s.bottom - 60) side.scrollTop += c.top - s.top - s.height / 3;
+          }
+          addEventListener('pagehide', () => sessionStorage.setItem('dd-docs-side', String(side.scrollTop)));
+        })();
+      </script>
+      <main id="content" class:list={['doc-main', { 'is-wide': wide }]}>
+        <header class="doc-head">
+          {group && <p class="dd-eyebrow">{group}</p>}
+          <h1 class="dd-h1">{title}</h1>
+          {lead && <p class="dd-lead">{lead}</p>}
+        </header>
+        <slot />
+      </main>
+      {group !== 'Patterns' && <nav class="doc-toc dd-scroll" aria-label="On this page" hidden><p class="doc-toc-h">On this page</p><ul></ul></nav>}
+    </div>
+    <script>
+      import '../../ds/dawn-and-dusk.js';
+      import '../scripts/docs.js';
+    </script>
+  </body>
+</html>

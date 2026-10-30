@@ -1,0 +1,117 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const copy = (text: string, what: string) =>
+  `<button class="dd-description-list__copy" type="button" data-dd-copy="${text}" aria-label="Copy ${what}">${i('copy')}${i('check')}</button>`;
+
+const item = (term: string, details: string) => `
+  <div class="dd-description-list__item">
+    <dt class="dd-description-list__term">${term}</dt>
+    <dd class="dd-description-list__details">${details}</dd>
+  </div>`;
+
+const deploy = [
+  item('Deployment', `<span class="dd-description-list__mono">dpl_7Hq2xK9mW4</span>${copy('dpl_7Hq2xK9mW4', 'deployment ID')}`),
+  item('Status', `<span class="dd-description-list__status" data-status="ok">Ready</span>`),
+  item('Commit', `<span class="dd-description-list__mono">a41f9c2</span><span class="dd-description-list__muted">fix(table): sticky header in dusk</span>${copy('a41f9c2', 'commit SHA')}`),
+  item('Branch', `<span class="dd-description-list__mono">main</span>`),
+  item('Region', `us-east-1 · eu-west-2`),
+  item('Created', `<span class="dd-description-list__mono">2026-10-30 09:41 UTC</span><span class="dd-description-list__muted">by Andy</span>`),
+  item('Duration', `<span class="dd-description-list__mono">2m 04s</span>`),
+  item('Domain', `<a href="#">dawn-and-dusk.cxkw.dev</a>${copy('https://dawn-and-dusk.cxkw.dev', 'URL')}`),
+].join('');
+
+const inline = `
+<dl class="dd-description-list" style="max-width: 620px">${deploy}
+</dl>`;
+
+const card = `
+<dl class="dd-description-list dd-description-list--card" style="max-width: 620px">${[
+  item('Service', `<b>auth-gateway</b>`),
+  item('Health', `<span class="dd-description-list__status" data-status="warn">Degraded · p95 611 ms</span>`),
+  item('Instances', `<span class="dd-description-list__mono">6</span><span class="dd-description-list__muted">min 2 · max 12</span>`),
+  item('Runtime', `Node 22 · 512 MB`),
+  item('Health check', `<span class="dd-description-list__mono">GET /healthz</span><span class="dd-description-list__muted">every 10 s</span>`),
+  item('Internal URL', `<span class="dd-description-list__mono">auth-gateway.internal:8443</span>${copy('auth-gateway.internal:8443', 'internal URL')}`),
+].join('')}
+</dl>`;
+
+const stacked = `
+<dl class="dd-description-list dd-description-list--stacked" style="max-width: 360px">${[
+  item('Key ID', `<span class="dd-description-list__mono">key_live_8f2c41</span>${copy('key_live_8f2c41', 'key ID')}`),
+  item('Name', `billing-worker · production`),
+  item('Scopes', `<span class="dd-description-list__mono">invoices:write, customers:read</span>`),
+  item('Last used', `<span class="dd-description-list__mono">2 min ago</span><span class="dd-description-list__muted">from 203.0.113.24</span>`),
+  item('Expires', `<span class="dd-description-list__status" data-status="warn">in 6 days</span>`),
+].join('')}
+</dl>`;
+
+const columns = `
+<dl class="dd-description-list dd-description-list--columns dd-description-list--card">${[
+  item('Project', `<b>leetnode</b>`),
+  item('Owner', `Andy · cxkw.dev`),
+  item('Framework', `Astro 6`),
+  item('Node version', `<span class="dd-description-list__mono">22.12.0</span>`),
+  item('Build command', `<span class="dd-description-list__mono">npm run build</span>${copy('npm run build', 'build command')}`),
+  item('Output', `<span class="dd-description-list__mono">dist/</span>`),
+  item('Created', `<span class="dd-description-list__mono">2025-03-14</span>`),
+  item('Deploys', `<span class="dd-description-list__mono">1,284</span><span class="dd-description-list__muted">last 2h ago</span>`),
+].join('')}
+</dl>`;
+
+const compact = `
+<dl class="dd-description-list dd-description-list--compact" style="max-width: 340px">${[
+  item('Region', `ap-south-1`),
+  item('Requests', `<span class="dd-description-list__mono">6,502 / min</span>`),
+  item('p95', `<span class="dd-description-list__mono">188 ms</span>`),
+  item('Errors', `<span class="dd-description-list__mono">0.02%</span>`),
+].join('')}
+</dl>`;
+---
+<Docs title="Description list" group="Data display" lead="Key-value pairs: the facts about a deploy, a service’s settings, the metadata of a key. Inline when there is room, stacked when there isn’t, two columns for long sets.">
+  <Example title="Inline" description="The default: a term column and a value, hairlines between rows. IDs and times are mono; hover a row to copy its value." code={inline} />
+
+  <h2 id="card">On a card</h2>
+  <p>Add <code>--card</code> to sit the list on a tonal surface — the usual home for a details panel.</p>
+  <Example code={card} />
+
+  <h2 id="stacked">Stacked</h2>
+  <p>Term above value, for sidebars, drawers and anywhere narrow. Inline lists switch to this on their own below 420px.</p>
+  <Example code={stacked} />
+
+  <h2 id="columns">Two columns</h2>
+  <p>Long sets of short facts. Falls back to one column when the container gets narrow.</p>
+  <Example code={columns} />
+
+  <h2 id="compact">Compact</h2>
+  <Example code={compact} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-description-list', 'On the <code>&lt;dl&gt;</code>. Inline rows by default; a size container, so it adapts to its own width.'],
+    ['.dd-description-list__item', 'A <code>&lt;div&gt;</code> wrapping one <code>&lt;dt&gt;</code> + <code>&lt;dd&gt;</code>.'],
+    ['.dd-description-list__term', 'The key (<code>&lt;dt&gt;</code>), muted.'],
+    ['.dd-description-list__details', 'The value (<code>&lt;dd&gt;</code>). Lays out inline pieces with a small gap.'],
+    ['.dd-description-list__mono', 'Mono, tabular figures — IDs, SHAs, times, amounts.'],
+    ['.dd-description-list__muted', 'Secondary text next to a value.'],
+    ['.dd-description-list__status', 'Value with a status dot: <code>data-status="ok | warn | bad | info"</code>.'],
+    ['.dd-description-list__copy', 'Icon button with <code>data-dd-copy</code>; holds the <code>copy</code> and <code>check</code> icons and swaps on <code>[data-copied]</code>.'],
+    ['.dd-description-list--stacked', 'Term above value.'],
+    ['.dd-description-list--columns', 'Two columns of stacked items; one column when narrow.'],
+    ['.dd-description-list--card', 'On <code>--dd-surface</code> with padding.'],
+    ['.dd-description-list--compact', 'Tighter rows.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <p>Copy buttons use the shared <code>data-dd-copy</code> behaviour. They appear on row hover or keyboard focus, and are always visible on touch screens. Give each one an <code>aria-label</code> that names what it copies.</p>
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Keep terms short nouns: “Region”, “Created”, “Commit”.', 'Put the most identifying facts first — ID, status, owner.', 'Offer copy for values people paste elsewhere: IDs, URLs, commands.']}
+    dont={['Don’t end terms with a colon.', 'Don’t use a description list for tabular data with repeated keys — use a table.', 'Don’t make every value copyable; it turns the list into a row of buttons.']}
+  />
+</Docs>

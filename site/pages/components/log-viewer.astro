@@ -1,0 +1,119 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+type Line = [string, 'debug' | 'info' | 'warn' | 'error', string, string];
+const dim = (t: string) => `<span class="dd-log-viewer__dim">${t}</span>`;
+const LOGS: Line[] = [
+  ['09:40:51.008', 'info', 'deployer', `deploy dpl_7Hq2xK9m started ${dim('service=auth-gateway region=us-east-1 sha=9f2c41e')}`],
+  ['09:40:51.214', 'debug', 'deployer', `pulled image ghcr.io/cxkw/auth-gateway:3.14.0 ${dim('(212 MB, cache hit)')}`],
+  ['09:40:52.930', 'info', 'auth-gateway', `listening on :8080 ${dim('pid=41 node=v22.12.0')}`],
+  ['09:40:53.101', 'debug', 'auth-gateway', `jwks cache warm ${dim('keys=3 ttl=600s')}`],
+  ['09:40:53.477', 'info', 'edge-cache', `purge requested ${dim('paths=/auth/* reason=deploy')}`],
+  ['09:40:54.012', 'info', 'edge-cache', `purge complete ${dim('objects=1,284 took=531ms')}`],
+  ['09:40:55.640', 'warn', 'auth-gateway', `upstream idp slow ${dim('p95=611ms threshold=500ms')}`],
+  ['09:40:56.205', 'info', 'billing-worker', `consumer joined group invoices ${dim('partition=3')}`],
+  ['09:40:57.889', 'debug', 'billing-worker', `fetched batch ${dim('size=50 lag=12')}`],
+  ['09:40:58.302', 'error', 'billing-worker', `charge failed: card_declined ${dim('invoice=in_2481 customer=cus_9Ab3 attempt=1/3')}`],
+  ['09:40:58.304', 'info', 'billing-worker', `retry scheduled ${dim('invoice=in_2481 in=30s')}`],
+  ['09:40:59.110', 'info', 'auth-gateway', `GET /v1/session 200 ${dim('84ms ip=203.0.113.24')}`],
+  ['09:41:00.447', 'warn', 'edge-cache', `hit ratio below target ${dim('ratio=0.71 target=0.85 region=eu-west-2')}`],
+  ['09:41:01.020', 'info', 'auth-gateway', `POST /v1/token 201 ${dim('112ms client=dockey-ui')}`],
+  ['09:41:02.733', 'error', 'auth-gateway', `request timeout after 5000ms calling https://idp.cxkw.dev/oauth/token ${dim('trace=7f3a9c21 attempt=2/4 upstream=idp')}`],
+  ['09:41:02.736', 'warn', 'auth-gateway', `circuit half-open for upstream idp ${dim('failures=5 window=30s')}`],
+  ['09:41:03.918', 'debug', 'deployer', `health probe ok ${dim('replica=auth-gw-2 latency=9ms')}`],
+  ['09:41:04.250', 'info', 'deployer', `traffic shifted ${dim('canary=25% → 100%')}`],
+  ['09:41:05.512', 'info', 'billing-worker', `invoice paid ${dim('invoice=in_2477 amount=€49.00')}`],
+  ['09:41:06.001', 'debug', 'edge-cache', `revalidated /assets/app.9f2c.js ${dim('etag match')}`],
+  ['09:41:06.740', 'warn', 'deployer', `replica auth-gw-3 not ready ${dim('restarts=4 reason=CrashLoopBackOff')}`],
+  ['09:41:07.002', 'info', 'auth-gateway', `GET /v1/me 200 ${dim('41ms')}`],
+  ['09:41:07.214', 'info', 'deployer', `deploy dpl_7Hq2xK9m healthy ${dim('took=16.2s replicas=2/3')}`],
+  ['09:41:07.390', 'error', 'notify-fanout', `smtp-relay ECONNRESET ${dim('queue=deploys depth=18')}`],
+];
+const count = (lvl: string) => LOGS.filter((l) => l[1] === lvl).length;
+
+const linesHTML = (rows: Line[]) => rows.map(([t, lvl, src, msg]) =>
+  `    <li class="dd-log-viewer__line" data-level="${lvl}"><time class="dd-log-viewer__time">${t}</time><span class="dd-log-viewer__level">${lvl}</span><span class="dd-log-viewer__src">${src}</span><span class="dd-log-viewer__msg">${msg}</span></li>`).join('\n');
+
+const levelBtn = (lvl: string, on = true) =>
+  `<button class="dd-log-viewer__toggle" type="button" data-dd-log-viewer-level="${lvl}" aria-pressed="${on}">${lvl[0].toUpperCase() + lvl.slice(1)} <span class="dd-log-viewer__n">${count(lvl)}</span></button>`;
+
+const viewer = ({ value = '', on = ['debug', 'info', 'warn', 'error'], wrap = false, live = true, label = 'auth-gateway deploy logs', height = '' } = {}) => `
+<div class="dd-log-viewer${wrap ? ' is-wrapped' : ''}" data-dd-log-viewer${height ? ` style="--dd-log-viewer-height: ${height}"` : ''}>
+  <div class="dd-log-viewer__bar">
+    ${live ? '<span class="dd-log-viewer__live">Live</span>' : ''}
+    <label class="dd-log-viewer__search">${i('search')}<input type="search" placeholder="Search logs" aria-label="Search logs" value="${value}" data-dd-log-viewer-search></label>
+    <div class="dd-log-viewer__levels" role="group" aria-label="Levels">
+      ${['debug', 'info', 'warn', 'error'].map((l) => levelBtn(l, on.includes(l))).join('\n      ')}
+    </div>
+    <button class="dd-log-viewer__toggle dd-log-viewer__toggle--wrap" type="button" data-dd-log-viewer-wrap aria-pressed="${wrap}">${i('menu')}Wrap</button>
+    <span class="dd-log-viewer__count" data-dd-log-viewer-count aria-live="polite">${LOGS.length} lines</span>
+  </div>
+  <div class="dd-log-viewer__scroll" tabindex="0" role="region" aria-label="${label}">
+    <ol class="dd-log-viewer__lines" role="log">
+${linesHTML(LOGS)}
+    </ol>
+    <p class="dd-log-viewer__empty" data-dd-log-viewer-empty hidden><b>No lines match <span data-dd-log-viewer-query></span></b>Try another search, or <button class="dd-btn dd-btn--link" type="button" data-dd-log-viewer-clear><span>clear filters</span></button></p>
+  </div>
+</div>`;
+
+const main = viewer({ height: '360px' });
+const filtered = viewer({ value: 'idp', on: ['warn', 'error'], wrap: true, live: false });
+const empty = viewer({ value: 'ledger-sync', live: false });
+const bare = `
+<div class="dd-log-viewer">
+  <div class="dd-log-viewer__scroll" tabindex="0" role="region" aria-label="Build output">
+    <ol class="dd-log-viewer__lines" role="log">
+${linesHTML(LOGS.slice(0, 6))}
+    </ol>
+  </div>
+</div>`;
+---
+<Docs title="Log viewer" group="Data display" lead="A monospace stream for deploy and service logs: timestamps, level badges, the service that spoke, and a bar to search, filter by level and wrap long lines.">
+  <Example title="Live stream" description="Search filters and highlights; level toggles hide noise; Wrap breaks long messages instead of scrolling sideways. Errors carry a faint tint so they catch the eye while scrolling." code={main} />
+
+  <h2 id="filtered">Filtered &amp; wrapped</h2>
+  <p>State comes from the markup: a pre-filled search value, toggles with <code>aria-pressed="false"</code> and a pressed Wrap button are applied on load. The count shows what is hidden.</p>
+  <Example code={filtered} />
+
+  <h2 id="empty">Nothing matches</h2>
+  <p>When search and levels leave no lines, the empty message names the query and offers to clear the filters.</p>
+  <Example code={empty} />
+
+  <h2 id="bare">Stream only</h2>
+  <p>Drop the bar for short, fixed output — a build step in a deploy page. No behaviour needed.</p>
+  <Example code={bare} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-log-viewer', 'Container on a tonal surface. <code>.is-wrapped</code> wraps messages.'],
+    ['.dd-log-viewer__bar', 'Toolbar: <code>__live</code>, <code>__search</code>, <code>__levels</code>, <code>__toggle</code>, <code>__count</code>.'],
+    ['.dd-log-viewer__toggle', 'Pressable button (<code>aria-pressed</code>). <code>--wrap</code> for the wrap switch; <code>__n</code> holds a level count.'],
+    ['.dd-log-viewer__scroll', 'Scroll area. Height from <code>--dd-log-viewer-height</code> (default 420px).'],
+    ['.dd-log-viewer__lines', 'The <code>role="log"</code> list; columns line up across lines (subgrid).'],
+    ['.dd-log-viewer__line[data-level]', '<code>debug</code> · <code>info</code> · <code>warn</code> · <code>error</code>. Error lines are tinted.'],
+    ['.dd-log-viewer__time / __level / __src / __msg', 'Timestamp, level badge, service and message. <code>__dim</code> mutes key=value detail.'],
+    ['.dd-log-viewer__mark', 'Search match (added by the behaviour).'],
+    ['.dd-log-viewer__empty', 'Message shown when nothing matches.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute / key', 'What it does']} rows={[
+    ['data-dd-log-viewer', 'On the container: wires up the bar below.'],
+    ['data-dd-log-viewer-search', 'On the search input: filters lines by text and highlights matches. <kbd>Esc</kbd> clears it.'],
+    ['data-dd-log-viewer-level="info"', 'On a toggle: shows or hides that level (<code>aria-pressed</code>).'],
+    ['data-dd-log-viewer-wrap', 'On a toggle: wraps long messages (<code>aria-pressed</code> ↔ <code>.is-wrapped</code>).'],
+    ['data-dd-log-viewer-count', 'Receives “18 of 24 lines”. Give it <code>aria-live="polite"</code>.'],
+    ['data-dd-log-viewer-empty / -query / -clear', 'Empty message, the slot that names the query, and a button that resets search and levels.'],
+  ]} />
+  <p>The scroll area takes <code>tabindex="0"</code> so the stream can be scrolled with the arrow keys; toggles are buttons (Enter or Space).</p>
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use full timestamps with milliseconds and a fixed width — lines must align.', 'Keep key=value detail dimmed so the message reads first.', 'Show how many lines a filter hides.']}
+    dont={['Don’t colour whole lines by level; the badge and the error tint are enough.', 'Don’t let the stream grow the page — cap its height.', 'Don’t auto-scroll to the bottom while someone is reading higher up.']}
+  />
+</Docs>

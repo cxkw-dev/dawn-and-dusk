@@ -1,0 +1,48 @@
+/* Tooltip — a short label on hover or keyboard focus. Add data-dd-tooltip="text" to any element; behaviors/tooltip.js
+   renders one shared .dd-tooltip, places it (top by default, flips when there is no room) and points the arrow at the
+   trigger. Dawn: an ink chip (text colour fill). Dusk: a raised surface-3 chip. data-dd-tooltip-kbd adds a key hint. */
+:root, [data-theme="dawn"] { --dd-tooltip-bg: var(--dd-text); --dd-tooltip-fg: var(--dd-bg); }
+[data-theme="dusk"] { --dd-tooltip-bg: var(--dd-surface-3); --dd-tooltip-fg: var(--dd-text); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --dd-tooltip-bg: var(--dd-surface-3); --dd-tooltip-fg: var(--dd-text); }
+}
+
+.dd-tooltip {
+  --_shift: 3px;
+  position: fixed; top: 0; left: 0; z-index: var(--dd-z-tooltip);
+  display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 2);
+  width: max-content; max-width: min(280px, calc(100vw - 16px)); box-sizing: border-box;
+  padding: calc(var(--dd-u) * 1.25) calc(var(--dd-u) * 2);
+  border-radius: var(--dd-r-ctl); background: var(--dd-tooltip-bg); color: var(--dd-tooltip-fg);
+  box-shadow: var(--dd-shadow-float);
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1.4; letter-spacing: .01em;
+  text-align: left; text-wrap: balance; overflow-wrap: anywhere;
+  opacity: 0; visibility: hidden; translate: 0 var(--_shift); pointer-events: none;
+  transition: opacity var(--dd-dur-fast) var(--dd-ease), translate var(--dd-dur-fast) var(--dd-ease), visibility 0s linear var(--dd-dur-fast);
+}
+.dd-tooltip.is-open { opacity: 1; visibility: visible; translate: 0 0; pointer-events: auto; transition-delay: 0s; }
+.dd-tooltip[data-placement^="bottom"] { --_shift: -3px; }
+.dd-tooltip[data-placement^="left"] { translate: var(--_shift) 0; }
+.dd-tooltip[data-placement^="right"] { translate: calc(var(--_shift) * -1) 0; }
+.dd-tooltip.is-open[data-placement] { translate: 0 0; }
+
+/* Arrow: a small rotated square in the same fill, pointing at the trigger's centre (--dd-arrow-x / -y from the JS). */
+.dd-tooltip::before {
+  content: ""; position: absolute; width: 8px; height: 8px; border-radius: 1.5px; background: inherit; rotate: 45deg;
+  left: var(--dd-arrow-x, 50%); top: 100%; translate: -50% -50%;
+}
+.dd-tooltip[data-placement^="bottom"]::before { top: 0; }
+.dd-tooltip[data-placement^="left"]::before { left: 100%; top: var(--dd-arrow-y, 50%); }
+.dd-tooltip[data-placement^="right"]::before { left: 0; top: var(--dd-arrow-y, 50%); }
+.dd-tooltip > * { position: relative; }
+
+/* Key hint: data-dd-tooltip-kbd="⌘ K" → one <kbd> per key. */
+.dd-tooltip__keys { display: inline-flex; gap: 3px; margin-right: -3px; }
+.dd-tooltip kbd {
+  display: inline-grid; place-items: center; min-width: 1.6em; padding: 3px 4px; border-radius: 3px;
+  background: color-mix(in oklab, var(--dd-tooltip-fg) 15%, transparent); color: inherit;
+  font-family: var(--dd-font-mono); font-size: 10px; font-weight: 500; line-height: 1;
+}
+
+/* Static: render a tooltip in the flow (docs, mockups). Set data-placement for the arrow side. */
+.dd-tooltip--static { position: relative; z-index: auto; opacity: 1; visibility: visible; translate: none; transition: none; }

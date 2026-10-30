@@ -1,0 +1,183 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const close = `<button class="dd-drawer__close" type="button" data-dd-dialog-close aria-label="Close">${i('x')}</button>`;
+
+const details = `
+<button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#deploy-drawer">${i('eye')}<span>View deploy</span></button>
+<dialog class="dd-drawer" id="deploy-drawer" aria-labelledby="deploy-drawer-title">
+  <header class="dd-drawer__head">
+    <div class="dd-drawer__titles">
+      <p class="dd-drawer__eyebrow">Deploy #4821</p>
+      <h2 class="dd-drawer__title" id="deploy-drawer-title">auth-gateway</h2>
+      <p class="dd-drawer__meta"><span class="is-ok">${i('success')} Ready</span><span>${i('globe')} fra1 · iad1</span><span>${i('clock')} 4 min ago</span></p>
+    </div>
+    ${close}
+  </header>
+  <div class="dd-drawer__body">
+    <div class="dd-drawer__section">
+      <h3 class="dd-drawer__section-title">Details</h3>
+      <dl class="dd-drawer__props">
+        <dt>Environment</dt><dd>Production</dd>
+        <dt>Branch</dt><dd class="dd-mono">main</dd>
+        <dt>Commit</dt><dd><span class="dd-mono">9f3c2ab</span> · Rotate session keys on login</dd>
+        <dt>Duration</dt><dd class="dd-mono">1m 42s</dd>
+        <dt>Image</dt><dd class="dd-mono">auth-gateway:2026.10.30-1204</dd>
+        <dt>Triggered by</dt><dd>cxkw · git push</dd>
+      </dl>
+    </div>
+    <div class="dd-drawer__section">
+      <h3 class="dd-drawer__section-title">Build log</h3>
+      <pre class="dd-drawer__log">12:04:11  cloning cxkw-dev/auth-gateway@main
+12:04:13  installing dependencies · pnpm 9.12
+12:04:39  building … done in 41.2s
+12:05:20  uploading image to fra1, iad1
+12:05:47  health check /healthz → 200 (38ms)
+12:05:53  ready · https://auth.cxkw.dev</pre>
+    </div>
+  </div>
+  <footer class="dd-drawer__foot">
+    <span class="dd-drawer__hint">esc to close</span>
+    <button class="dd-btn dd-btn--secondary" type="button">${i('refresh')}<span>Redeploy</span></button>
+    <button class="dd-btn dd-btn--primary" type="button" data-dd-dialog-close="promote">${i('arrow-up')}<span>Promote</span></button>
+  </footer>
+</dialog>`;
+
+const editing = `
+<button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#env-drawer">${i('edit')}<span>Edit variable</span></button>
+<dialog class="dd-drawer" id="env-drawer" aria-labelledby="env-drawer-title" data-dd-dialog-backdrop="static">
+  <form class="dd-drawer__form" method="dialog">
+    <header class="dd-drawer__head">
+      <div class="dd-drawer__titles">
+        <p class="dd-drawer__eyebrow">billing-worker · Environment</p>
+        <h2 class="dd-drawer__title" id="env-drawer-title">Edit variable</h2>
+        <p class="dd-drawer__meta"><span>Last changed 3 days ago by cxkw</span></p>
+      </div>
+      ${close}
+    </header>
+    <div class="dd-drawer__body dd-form__body">
+      <div class="dd-field">
+        <label class="dd-field__label" for="env-key">Key</label>
+        <div class="dd-input"><input class="dd-input__control dd-mono" id="env-key" name="key" value="STRIPE_WEBHOOK_SECRET" required></div>
+      </div>
+      <div class="dd-field">
+        <label class="dd-field__label" for="env-value">Value</label>
+        <div class="dd-input dd-textarea"><textarea class="dd-input__control dd-mono" id="env-value" name="value" rows="4" aria-describedby="env-value-hint" required>whsec_••••••••••••••••3f9a</textarea></div>
+        <p class="dd-field__hint" id="env-value-hint">Encrypted at rest. Redeploy billing-worker to pick up the change.</p>
+      </div>
+      <div class="dd-field">
+        <label class="dd-field__label" for="env-envs">Environments</label>
+        <div class="dd-input"><input class="dd-input__control" id="env-envs" name="envs" value="Production, Preview"></div>
+      </div>
+    </div>
+    <footer class="dd-drawer__foot">
+      <button class="dd-btn dd-btn--ghost dd-drawer__start" type="button" data-dd-dialog-close="delete">${i('trash')}<span>Delete</span></button>
+      <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close>Cancel</button>
+      <button class="dd-btn dd-btn--primary" type="submit" value="save">Save</button>
+    </footer>
+  </form>
+</dialog>`;
+
+const sizes = `
+<div class="dd-row">
+  <button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#drawer-sm">Small · 360</button>
+  <button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#drawer-md">Medium · 480</button>
+  <button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#drawer-lg">Large · 720</button>
+</div>
+<dialog class="dd-drawer dd-drawer--sm" id="drawer-sm" aria-labelledby="drawer-sm-title">
+  <header class="dd-drawer__head"><div class="dd-drawer__titles"><p class="dd-drawer__eyebrow">Region</p><h2 class="dd-drawer__title" id="drawer-sm-title">fra1</h2></div>${close}</header>
+  <div class="dd-drawer__body"><dl class="dd-drawer__props"><dt>Services</dt><dd>6</dd><dt>p95</dt><dd class="dd-mono">84ms</dd><dt>Cache hit</dt><dd class="dd-mono">97.2%</dd></dl></div>
+  <footer class="dd-drawer__foot"><button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-close>Close</button></footer>
+</dialog>
+<dialog class="dd-drawer" id="drawer-md" aria-labelledby="drawer-md-title">
+  <header class="dd-drawer__head"><div class="dd-drawer__titles"><p class="dd-drawer__eyebrow">Service</p><h2 class="dd-drawer__title" id="drawer-md-title">edge-cache</h2></div>${close}</header>
+  <div class="dd-drawer__body"><p>Medium is the default: room for a details list, a short log and a footer with two actions.</p></div>
+  <footer class="dd-drawer__foot"><button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-close>Close</button></footer>
+</dialog>
+<dialog class="dd-drawer dd-drawer--lg" id="drawer-lg" aria-labelledby="drawer-lg-title">
+  <header class="dd-drawer__head"><div class="dd-drawer__titles"><p class="dd-drawer__eyebrow">Compare</p><h2 class="dd-drawer__title" id="drawer-lg-title">Deploy #4821 vs #4817</h2></div>${close}</header>
+  <div class="dd-drawer__body"><p>Large is for side-by-side content: diffs, a wide log, or a form with two columns.</p></div>
+  <footer class="dd-drawer__foot"><button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-close>Close</button></footer>
+</dialog>`;
+---
+<Docs title="Drawer" group="Overlays" lead="A full-height panel from the right for looking closer or editing, while the page stays in view behind the scrim. Built on the native dialog element.">
+  <p>Every example opens the real drawer; under the trigger is a still of it, framed as if it covered a page.</p>
+  <Example title="Details" description="Eyebrow and title name the thing; meta, a key/value list and a log fill the body. The footer never scrolls away." code={details} />
+
+  <h2 id="editing">Editing</h2>
+  <p>Wrap the parts in <code>&lt;form method="dialog" class="dd-drawer__form"&gt;</code>. A destructive action sits apart on the left with <code>dd-drawer__start</code>. With unsaved input, set <code>data-dd-dialog-backdrop="static"</code> so a stray click on the scrim doesn’t discard it.</p>
+  <Example code={editing} />
+
+  <h2 id="sizes">Sizes</h2>
+  <p>Small (360px) for a quick look, medium (480px) by default, large (720px) for wide content. Under 480px every drawer fills the screen.</p>
+  <Example code={sizes} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['dialog.dd-drawer', 'The panel, pinned to the right edge at full height. Open with <code>showModal()</code> or <code>data-dd-dialog-open</code>.'],
+    ['.dd-drawer__head', 'Top: the <code>__titles</code> column and a <code>__close</code> button.'],
+    ['.dd-drawer__eyebrow', 'Mono caps context (deploy number, service, section).'],
+    ['.dd-drawer__title', 'What the drawer is about, in the heading lockup. Point <code>aria-labelledby</code> at it.'],
+    ['.dd-drawer__meta', 'A wrapping row of small facts; each child can lead with an icon. <code>is-ok</code> / <code>is-warn</code> / <code>is-bad</code> on a child tints its icon.'],
+    ['.dd-drawer__close', 'Icon-only close button (<code>aria-label="Close"</code>, <code>data-dd-dialog-close</code>).'],
+    ['.dd-drawer__body', 'Scrolls. A hairline appears at an edge while content is hidden there.'],
+    ['.dd-drawer__section / __section-title', 'Groups inside the body, each with a mono caps title.'],
+    ['.dd-drawer__props', 'A <code>&lt;dl&gt;</code> of key / value rows on hairlines.'],
+    ['.dd-drawer__log', 'A mono excerpt (logs, payloads) that scrolls sideways.'],
+    ['.dd-drawer__form', 'A <code>&lt;form method="dialog"&gt;</code> wrapping head, body and foot; it doesn’t affect layout.'],
+    ['Fields', 'Use the regular <a href="form-field"><code>.dd-field</code></a> and <a href="text-input"><code>.dd-input</code></a> (<code>.dd-textarea</code> for long values); add <code>dd-form__body</code> to the body to space them and <code>dd-mono</code> on the control for keys and secrets.'],
+    ['.dd-drawer__foot', 'Actions, right-aligned. Outside the scroller, so always in view.'],
+    ['.dd-drawer__start / __hint', 'Pushed to the left of the footer: a kept-apart action, or a mono hint.'],
+    ['.dd-drawer--sm / --lg', 'Sizes: 360px and 720px. Medium (480px) has no modifier.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <p>The drawer shares its script with <a href="dialog">Dialog</a>: <code>data-dd-dialog-open="#id"</code> opens it, <code>data-dd-dialog-close</code> (with an optional value) closes it, a click on the scrim or Esc closes it with the slide-out, and focus returns to the opener. <code>dd.dialog.open('#id')</code> does the same from script.</p>
+  <ClassTable head={['Key', 'What it does']} rows={[
+    ['Esc', 'Closes the drawer.'],
+    ['Tab / Shift+Tab', 'Stays inside the drawer; the page behind is inert.'],
+    ['On open / close', 'Focus moves to <code>[autofocus]</code> or the first control; on close it returns to the opener.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use a drawer when people need the page for context: a row’s details, editing one item.', 'Keep the primary action in the footer so it never scrolls away.', 'Make the drawer’s URL-worthy content linkable from a full page as well.']}
+    dont={['Don’t stack drawers on drawers; replace the content instead.', 'Don’t use a drawer for a yes/no question — that’s a dialog.', 'Don’t hide primary navigation in a right-hand drawer.']}
+  />
+
+  <style is:global>
+    .drw-preview {
+      position: relative; isolation: isolate; height: 560px; margin-top: var(--dd-space-6); border-radius: var(--dd-r-box); overflow: hidden;
+      background:
+        linear-gradient(var(--dd-surface) 0 0) 24px 24px / 30% 14px no-repeat,
+        linear-gradient(var(--dd-surface) 0 0) 24px 50px / 62% 9px no-repeat,
+        linear-gradient(var(--dd-surface) 0 0) 24px 68px / 52% 9px no-repeat,
+        repeating-linear-gradient(var(--dd-surface) 0 34px, transparent 34px 44px) 24px 104px / calc(100% - 48px) 390px no-repeat,
+        var(--dd-bg);
+    }
+    .drw-scrim { position: absolute; inset: 0; z-index: 0; background: var(--dd-overlay); }
+    .drw-preview > dialog { position: absolute; z-index: 1; inset: 0 0 0 auto; height: 100%; max-height: 100%; width: min(var(--_w), 90%); animation: none; }
+  </style>
+  <script is:inline>
+    // Docs only: a still of the example's drawer (examples with a single drawer), under its trigger.
+    document.querySelectorAll('.ex-stage').forEach((stage) => {
+      const found = stage.querySelectorAll(':scope > dialog.dd-drawer');
+      if (found.length !== 1) return;
+      const copy = found[0].cloneNode(true);
+      [copy, ...copy.querySelectorAll('[id], [for], [autofocus], [aria-labelledby], [aria-describedby]')].forEach((n) =>
+        ['id', 'for', 'autofocus', 'aria-labelledby', 'aria-describedby'].forEach((a) => n.removeAttribute(a)));
+      copy.setAttribute('open', '');
+      copy.inert = true;
+      const frame = document.createElement('div');
+      frame.className = 'drw-preview';
+      frame.setAttribute('aria-hidden', 'true');
+      frame.innerHTML = '<span class="drw-scrim"></span>';
+      frame.append(copy);
+      stage.append(frame);
+    });
+  </script>
+</Docs>

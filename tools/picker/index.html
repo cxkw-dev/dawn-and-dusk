@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="dawn" class="ui-themed">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dawn &amp; dusk — design picker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Fraunces:ital,wght@0,300;0,600;0,800;1,400&amp;family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;family=DM+Serif+Display:ital@0;1&amp;family=Young+Serif&amp;family=Gloock&amp;family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&amp;family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&amp;family=Newsreader:ital,wght@0,400;0,600;1,400&amp;family=Space+Grotesk:wght@300;400;700&amp;family=Syne:wght@400;700;800&amp;family=Bricolage+Grotesque:wght@300;400;700;800&amp;family=Unbounded:wght@300;400;700&amp;family=Archivo+Black&amp;family=Anton&amp;family=Darker+Grotesque:wght@400;700;900&amp;family=Italiana&amp;family=Major+Mono+Display&amp;family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&amp;family=Outfit:wght@300;400;500;700;800;900&amp;family=Inter:wght@300;400;500;700;800&amp;family=Manrope:wght@300;400;500;700;800&amp;family=Plus+Jakarta+Sans:wght@300;400;500;700;800&amp;family=Figtree:wght@300;400;500;700;800&amp;family=Onest:wght@300;400;500;700;800&amp;family=Instrument+Sans:wght@400;500;700&amp;family=Hanken+Grotesk:wght@300;400;500;700;800&amp;family=Schibsted+Grotesk:wght@400;500;700;800&amp;family=Albert+Sans:wght@300;400;500;700;800&amp;family=IBM+Plex+Sans:wght@300;400;500;700&amp;family=Work+Sans:wght@300;400;500;700;800&amp;family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&amp;family=Literata:ital,wght@0,400;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;700&amp;family=IBM+Plex+Mono:wght@400;600&amp;family=Fira+Code:wght@400;600&amp;family=Space+Mono:wght@400;700&amp;family=DM+Mono:wght@400;500&amp;family=Martian+Mono:wght@400;600&amp;family=Red+Hat+Mono:wght@400;600&amp;family=Source+Code+Pro:wght@400;600&amp;family=Azeret+Mono:wght@400;600&amp;family=Victor+Mono:ital,wght@0,400;1,400&amp;family=Spline+Sans+Mono:wght@400;600&amp;family=Fragment+Mono:ital@0;1&amp;family=Urbanist:wght@400;800;900&amp;family=Sora:wght@400;800&amp;family=Lexend:wght@400;800;900&amp;family=Red+Hat+Display:wght@400;800;900&amp;display=swap">
+<link rel="stylesheet" href="app.css">
+<style id="dd-cats"></style>
+<style id="dd-tokens"></style>
+</head>
+<body>
+<header class="ui-top">
+  <a class="ui-brand" data-go="main">dawn &amp; dusk <small>/ picker</small></a>
+  <div class="ui-seg" role="group" aria-label="Mode">
+    <button type="button" data-mode-btn="dawn">☀ Dawn</button>
+    <button type="button" data-mode-btn="dusk">☾ Dusk</button>
+  </div>
+  <span class="ui-spacer"></span>
+  <span class="ui-sync" id="ui-sync" hidden></span>
+  <button type="button" class="ui-btn" data-onlynew hidden>Round 3 only</button>
+  <button type="button" class="ui-btn" data-dock>Live preview</button>
+  <button type="button" class="ui-btn" data-themeui title="Dress the whole picker in your applied palette, dusk and body font">Page: your theme</button>
+  <button type="button" class="ui-btn" data-shuffle title="Apply a random option in every category">Shuffle</button>
+  <button type="button" class="ui-btn" data-onlyfav>♥ <span id="ui-total">0</span> · shortlist only</button>
+  <button type="button" class="ui-btn ui-btn-primary" data-export>Export picks</button>
+</header>
+<div class="ui-shell">
+  <nav class="ui-side" id="side"></nav>
+  <main class="ui-main" id="main"></main>
+  <aside class="ui-dock" id="dock" aria-label="Live preview">
+    <div class="ui-dock-head"><b>Live preview</b><span class="ui-dock-hint">cxkw.dev · updates as you pick</span>
+      <button type="button" class="ui-x" data-dock aria-label="Hide live preview">×</button></div>
+    <div class="ui-dock-body"><div class="ui-dock-zoom"><div id="dock-wrap" class="cp-wrap"></div></div></div>
+  </aside>
+</div>
+<div class="ui-toast" id="ui-toast" role="status" hidden></div>
+<div class="ui-modal" id="ui-export" hidden>
+  <div class="ui-modal-card" role="dialog" aria-label="Export picks">
+    <header><b>Export picks</b><button type="button" class="ui-x" data-close aria-label="Close">×</button></header>
+    <p>Copy this and paste it back to Claude — applied picks, shortlists and your notes.</p>
+    <textarea id="ui-export-text" readonly spellcheck="false"></textarea>
+    <footer><button type="button" class="ui-btn" data-reset>Reset all…</button><span class="ui-spacer"></span><button type="button" class="ui-btn ui-btn-primary" data-copy>Copy</button></footer>
+  </div>
+</div>
+<script src="app.js"></script>
+<script src="data/foundations.js"></script>
+<script src="data/r3-foundations.js"></script>
+<script src="data/dusk.js"></script>
+<script src="data/button-color.js"></script>
+<script src="data/icons.js"></script>
+<script src="data/components-forms.js"></script>
+<script src="data/components-data.js"></script>
+<script src="data/tables.js"></script>
+<script src="data/colors.js"></script>
+<script src="data/status.js"></script>
+<script src="data/alerts-dusk.js"></script>
+<script src="data/components-chrome.js"></script>
+<script src="data/nav-r4.js"></script>
+<script src="data/chrome-r4.js"></script>
+<script>DD.boot();</script>
+</body>
+</html>

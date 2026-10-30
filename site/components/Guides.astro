@@ -1,0 +1,19 @@
+---
+// Do / don't guidance.
+interface Props { do?: string[]; dont?: string[]; }
+const { do: dos = [], dont = [] } = Astro.props;
+---
+<div class="doc-guides">
+  {dos.length > 0 && (
+    <div class="doc-guide is-do">
+      <p class="doc-guide-h"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-success" /></svg>Do</p>
+      <ul>{dos.map((d) => <li set:html={d} />)}</ul>
+    </div>
+  )}
+  {dont.length > 0 && (
+    <div class="doc-guide is-dont">
+      <p class="doc-guide-h"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-error" /></svg>Don’t</p>
+      <ul>{dont.map((d) => <li set:html={d} />)}</ul>
+    </div>
+  )}
+</div>

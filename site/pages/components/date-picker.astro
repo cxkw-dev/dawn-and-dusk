@@ -1,0 +1,187 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+// Server-side copy of the month renderer in ds/behaviors/date-picker.js, so examples paint before the script runs.
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const DOW = ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa'];
+const DOW_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const pad = (n: number) => String(n).padStart(2, '0');
+const iso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const TODAY = '2026-10-30';
+
+type Cal = { month: string; mode?: 'single' | 'range'; value?: string; start?: string; end?: string; min?: string; max?: string; ws?: number; panel?: boolean };
+const calendar = (c: Cal) => {
+  const ws = c.ws ?? 1;
+  const [y, m] = c.month.split('-').map(Number);
+  const first = new Date(y, m - 1, 1);
+  const start = addDays(first, -((first.getDay() - ws + 7) % 7));
+  const anchors = [c.value, c.start, TODAY].filter((v) => v && v.slice(0, 7) === c.month);
+  const focusDay = anchors[0] || iso(first);
+  const cls = (day: string) => {
+    if (c.mode !== 'range' || !c.start) return '';
+    if (!c.end) return day === c.start ? 'is-range-start is-range-end' : '';
+    if (day === c.start && day === c.end) return 'is-range-start is-range-end';
+    if (day === c.start) return 'is-range-start';
+    if (day === c.end) return 'is-range-end';
+    return day > c.start && day < c.end ? 'is-in-range' : '';
+  };
+  let rows = '';
+  for (let w = 0; w < 6; w++) {
+    rows += '\n      <tr>';
+    for (let k = 0; k < 7; k++) {
+      const d = addDays(start, w * 7 + k);
+      const day = iso(d);
+      const pressed = c.mode === 'range' ? day === c.start || day === c.end : day === c.value;
+      const off = (c.min && day < c.min) || (c.max && day > c.max);
+      const k2 = cls(day);
+      rows += `<td${k2 ? ` class="${k2}"` : ''}><button class="dd-calendar__day${d.getMonth() === first.getMonth() ? '' : ' is-outside'}" type="button" data-date="${day}" tabindex="${day === focusDay ? 0 : -1}" aria-pressed="${pressed}"${day === TODAY ? ' aria-current="date"' : ''}${off ? ' disabled' : ''}>${d.getDate()}</button></td>`;
+    }
+    rows += '</tr>';
+  }
+  const head = Array.from({ length: 7 }, (_, k) => { const n = (ws + k) % 7; return `<th scope="col" abbr="${DOW_LONG[n]}">${DOW[n]}</th>`; }).join('');
+  const data = [
+    `data-month="${c.month}"`, `data-today="${TODAY}"`, ws !== 1 ? `data-week-start="${ws}"` : '', c.mode === 'range' ? 'data-mode="range"' : '',
+    c.value ? `data-value="${c.value}"` : '', c.start ? `data-start="${c.start}"` : '', c.end ? `data-end="${c.end}"` : '',
+    c.min ? `data-min="${c.min}"` : '', c.max ? `data-max="${c.max}"` : '',
+  ].filter(Boolean).join(' ');
+  return `<div class="dd-calendar${c.panel ? ' dd-calendar--panel' : ''}" data-dd-calendar ${data}>
+    <div class="dd-calendar__head">
+      <button class="dd-calendar__nav" type="button" data-dd-cal-nav="-1" aria-label="Previous month">${i('chevron-left')}</button>
+      <p class="dd-calendar__title" aria-live="polite">${MONTHS[m - 1]} <span>${y}</span></p>
+      <button class="dd-calendar__nav" type="button" data-dd-cal-nav="1" aria-label="Next month">${i('chevron-right')}</button>
+    </div>
+    <table class="dd-calendar__grid" aria-label="${MONTHS[m - 1]} ${y}">
+      <thead><tr>${head}</tr></thead>
+      <tbody>${rows}
+      </tbody>
+    </table>
+  </div>`;
+};
+
+const picker = (id: string, label: string, value: string, iso: string, open: boolean, hint = '') => `
+<div class="dd-field" style="max-width: 320px">
+  <label class="dd-field__label" for="${id}">${label}</label>
+  <div class="dd-date-picker${open ? ' is-open' : ''}" data-dd-date-picker>
+    <div class="dd-input">
+      <input class="dd-input__control" id="${id}" value="${value}" placeholder="Pick a date" autocomplete="off">
+      <span class="dd-input__affix"><button class="dd-input__btn" type="button" data-dd-date-toggle aria-label="Choose date" aria-haspopup="dialog" aria-expanded="${open}" aria-controls="${id}-pop">${i('calendar')}</button></span>
+    </div>
+    <div class="dd-date-picker__popover" id="${id}-pop" role="dialog" aria-label="Choose date"${open ? '' : ' hidden'}>
+      ${calendar({ month: (iso || TODAY).slice(0, 7), value: iso || undefined })}
+    </div>
+  </div>${hint ? `
+  <p class="dd-field__hint">${hint}</p>` : ''}
+</div>`;
+
+const staticOpen = picker('dp-1', 'Release date', 'Nov 4, 2026', '2026-11-04', true);
+const closed = `
+<form class="dd-form" onsubmit="return false" style="max-width: 640px">
+  <div class="dd-form__grid">${picker('dp-2', 'Freeze starts', 'Nov 26, 2026', '2026-11-26', false, 'Click the calendar or press ↓.')}${picker('dp-3', 'Freeze ends', '', '', false)}
+    <div class="dd-field dd-form__span">
+      <label class="dd-field__label" for="dp-4">Reason</label>
+      <div class="dd-input dd-textarea"><textarea class="dd-input__control" id="dp-4" rows="3">Holiday traffic. No deploys to billing-worker or edge-cache.</textarea></div>
+    </div>
+    <label class="dd-checkbox dd-form__span"><input class="dd-checkbox__input" type="checkbox" checked><span class="dd-checkbox__text"><span class="dd-checkbox__label">Post to #deploys</span><span class="dd-checkbox__desc">When the freeze starts and when it lifts.</span></span></label>
+  </div>
+  <div class="dd-form__footer">
+    <button class="dd-btn dd-btn--ghost" type="button">Cancel</button>
+    <button class="dd-btn dd-btn--primary" type="submit">${i('lock')}<span>Schedule freeze</span></button>
+  </div>
+</form>`;
+
+const inline = `
+<div class="dd-row" style="align-items: flex-start; --dd-gap: 20px">
+  ${calendar({ month: '2026-10', value: '2026-10-14', panel: true })}
+  ${calendar({ month: '2026-10', value: '2026-10-21', min: '2026-10-19', max: '2026-11-13', ws: 0, panel: true })}
+</div>`;
+
+const rangeCal = `
+${calendar({ month: '2026-10', mode: 'range', start: '2026-10-05', end: '2026-10-18', panel: true })}`;
+
+const presets: [string, string, string][] = [
+  ['Today', '2026-10-30', '2026-10-30'],
+  ['Last 7 days', '2026-10-24', '2026-10-30'],
+  ['Last 14 days', '2026-10-17', '2026-10-30'],
+  ['Last 30 days', '2026-10-01', '2026-10-30'],
+  ['This month', '2026-10-01', '2026-10-31'],
+  ['Last quarter', '2026-07-01', '2026-09-30'],
+];
+const rangePicker = `
+<div class="dd-field" style="max-width: 340px">
+  <label class="dd-field__label" for="dp-r">Deploys between</label>
+  <div class="dd-date-picker is-open" data-dd-date-picker>
+    <div class="dd-input">
+      <span class="dd-input__affix">${i('calendar')}</span>
+      <input class="dd-input__control" id="dp-r" value="Oct 17 – Oct 30, 2026" readonly>
+      <span class="dd-input__affix"><button class="dd-input__btn" type="button" data-dd-date-toggle aria-label="Choose dates" aria-haspopup="dialog" aria-expanded="true" aria-controls="dp-r-pop">${i('chevron-down')}</button></span>
+    </div>
+    <div class="dd-date-picker__popover" id="dp-r-pop" role="dialog" aria-label="Choose dates">
+      <div class="dd-date-picker__presets" role="group" aria-label="Presets">${presets.map(([l, s, e]) => `
+        <button class="dd-date-picker__preset" type="button" data-start="${s}" data-end="${e}" aria-pressed="${l === 'Last 14 days'}">${l}</button>`).join('')}
+      </div>
+      <div class="dd-date-picker__main">
+        ${calendar({ month: '2026-10', mode: 'range', start: '2026-10-17', end: '2026-10-30' })}
+        <div class="dd-date-picker__foot">
+          <span class="dd-date-picker__summary">Oct 17 – Oct 30, 2026 · 14 days</span>
+          <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" data-dd-date-cancel>Cancel</button>
+          <button class="dd-btn dd-btn--primary dd-btn--sm" type="button" data-dd-date-apply>Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+---
+<Docs title="Date picker" group="Forms" lead="Picks a day or a range. A text input with a calendar popover, a calendar on its own, and a range picker with presets for log and deploy filters.">
+  <Example title="Input with calendar" description="Shown open. Today (Oct 30) carries the apricot dot; the chosen day fills with the accent. Click the calendar button to close and reopen it." code={staticOpen} minHeight="475px" />
+
+  <h2 id="interactive">Opening and choosing</h2>
+  <p>The calendar button (or ↓ in the input) opens the popover with focus on the chosen day. Choosing a day fills the input and closes it; Esc or a click outside closes without changes. Typed dates are parsed on change.</p>
+  <Example code={closed} minHeight="560px" />
+
+  <h2 id="inline">Inline calendar</h2>
+  <p>The calendar works on its own; <code>.dd-calendar--panel</code> gives it a tonal panel. The second one starts weeks on Sunday (<code>data-week-start="0"</code>) and limits choices with <code>data-min</code> / <code>data-max</code>.</p>
+  <Example code={inline} />
+
+  <h2 id="range">Range</h2>
+  <p><code>data-mode="range"</code>: the first click sets the start, the second the end (in either order), and a lighter band previews the range while you hover. The ends fill with the accent; the days between sit on a soft accent band.</p>
+  <Example code={rangeCal} />
+
+  <h3 id="presets">Range picker with presets</h3>
+  <p>Presets set common windows in one click — give them <code>data-start</code> / <code>data-end</code>, or <code>data-days="7"</code> to count back from today. With an Apply button the input only changes when you apply.</p>
+  <Example code={rangePicker} minHeight="625px" />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-date-picker', 'Wrapper: a <code>.dd-input</code> and its popover. <code>.is-open</code> while open.'],
+    ['.dd-date-picker__popover', 'Floating panel (<code>role="dialog"</code>). <code>--end</code> aligns right, <code>--static</code> renders in flow.'],
+    ['.dd-date-picker__presets · __preset', 'Preset column (a row on narrow screens); the active preset has <code>aria-pressed="true"</code>.'],
+    ['.dd-date-picker__main · __foot · __summary', 'Calendar column, footer with actions, and a mono summary of the range.'],
+    ['.dd-calendar', 'One month. <code>--panel</code> adds a tonal panel for inline use.'],
+    ['.dd-calendar__head · __title · __nav', 'Month title and previous / next buttons (<code>data-dd-cal-nav="-1|1"</code>).'],
+    ['.dd-calendar__grid', 'The month <code>&lt;table&gt;</code>; weekday headers in mono.'],
+    ['.dd-calendar__day', 'A day button. <code>aria-pressed</code> (chosen), <code>aria-current="date"</code> (today), <code>.is-outside</code>, <code>disabled</code>.'],
+    ['td.is-range-start · is-in-range · is-range-end', 'Range band on the cells; <code>.is-preview</code> while hovering for an end.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute / key', 'What it does']} rows={[
+    ['data-dd-calendar', 'Renders the month from <code>data-month</code>, <code>data-value</code> or <code>data-start</code> / <code>data-end</code>, <code>data-mode</code>, <code>data-today</code>, <code>data-min</code>, <code>data-max</code>, <code>data-week-start</code>. Fires <code>dd-date</code>.'],
+    ['data-dd-date-picker', 'On the wrapper: popover, filling the input, optional hidden input (ISO, ranges as <code>start/end</code>).'],
+    ['data-dd-date-toggle', 'Button that opens / closes the popover.'],
+    ['data-dd-date-apply · data-dd-date-cancel', 'Range footer buttons: commit, or close and restore.'],
+    ['← → ↑ ↓', 'Move a day or a week; crossing a month edge turns the page.'],
+    ['Page Up · Page Down · Home · End', 'Previous / next month; start / end of the week.'],
+    ['Enter · Space', 'Choose the focused day. Esc closes the popover.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Let people type a date as well as pick one.', 'Offer presets for log and metric ranges — most people want “last 7 days”.', 'Show the range length in the summary, so off-by-one mistakes are visible.']}
+    dont={['Don’t use a calendar for birthdays or dates far in the past — three inputs are faster.', 'Don’t hide today; it is the anchor for every relative choice.', 'Don’t apply a range on the first click.']}
+  />
+</Docs>

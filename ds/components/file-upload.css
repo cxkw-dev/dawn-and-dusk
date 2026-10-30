@@ -1,0 +1,84 @@
+/* File upload — a dropzone (a <label> around a hidden file input, so click, keyboard and drop all work) and a
+   file list with progress, done, error and remove. The dropzone is tonal with a faint dashed edge — the one
+   place a dashed line is the affordance; dragging over it tints it and turns the dashes accent.
+   ds/behaviors/file-upload.js adds the drag state and lists chosen files. */
+.dd-dropzone {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(var(--dd-u) * 1.5);
+  min-width: 0; padding: calc(var(--dd-u) * 8) calc(var(--dd-u) * 5); text-align: center;
+  border: 1.5px dashed light-dark(color-mix(in oklab, var(--dd-text) 17%, transparent), color-mix(in oklab, var(--dd-text) 22%, transparent));
+  border-radius: var(--dd-r-box);
+  background: var(--dd-surface); color: var(--dd-text); font-size: var(--dd-fs-sm); line-height: 1.45; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), border-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-dropzone:hover { background: var(--dd-surface-2); border-color: color-mix(in oklab, var(--dd-text) 28%, transparent); }
+.dd-dropzone:has(input:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-dropzone > input[type='file'] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.dd-dropzone__icon {
+  display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: calc(var(--dd-u) * 1.5); border-radius: 50%;
+  background: var(--dd-surface-3); color: var(--dd-muted);
+  transition: background-color var(--dd-dur) var(--dd-ease), color var(--dd-dur) var(--dd-ease), transform var(--dd-dur) var(--dd-ease);
+}
+.dd-dropzone__icon > .dd-icon { width: 20px; height: 20px; vertical-align: 0; }
+.dd-dropzone__title { margin: 0; font-weight: 600; }
+.dd-dropzone__browse { color: var(--dd-text); text-decoration: underline dotted; text-decoration-color: var(--dd-faint); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.dd-dropzone:hover .dd-dropzone__browse { text-decoration-color: currentColor; }
+.dd-dropzone__meta { margin: 0; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+.dd-dropzone.is-dragover {
+  background: color-mix(in oklab, var(--dd-accent) 12%, var(--dd-surface)); border-color: color-mix(in oklab, var(--dd-accent) 60%, transparent);
+}
+.dd-dropzone.is-dragover .dd-dropzone__icon { background: var(--dd-accent); color: var(--dd-on-accent); transform: translateY(-3px); }
+.dd-dropzone:has(input:disabled) { opacity: .5; cursor: not-allowed; }
+.dd-dropzone.is-invalid { border-color: color-mix(in oklab, var(--dd-bad) 60%, transparent); background: color-mix(in oklab, var(--dd-bad) 8%, var(--dd-surface)); }
+/* Compact: one row — icon, text, and room for a button. */
+.dd-dropzone--compact { flex-direction: row; justify-content: flex-start; gap: calc(var(--dd-u) * 3); padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 4); text-align: left; }
+.dd-dropzone--compact .dd-dropzone__icon { width: 36px; height: 36px; margin: 0; flex: none; }
+.dd-dropzone--compact .dd-dropzone__text { flex: 1; min-width: 0; }
+.dd-dropzone__text { display: flex; flex-direction: column; gap: 2px; }
+
+/* ---------- file list ---------- */
+.dd-file-list { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1.5); min-width: 0; margin: 0; padding: 0; list-style: none; }
+.dd-file {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 3);
+  min-width: 0; padding: calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 3);
+  border-radius: var(--dd-r-box); background: var(--dd-surface); font-size: var(--dd-fs-sm);
+  animation: dd-file-in var(--dd-dur) var(--dd-ease);
+}
+.dd-file.is-removing { animation: dd-file-out var(--dd-dur-fast) var(--dd-ease) forwards; }
+@keyframes dd-file-in { from { opacity: 0; transform: translateY(-4px); } }
+@keyframes dd-file-out { to { opacity: 0; transform: translateX(8px); } }
+.dd-file__icon {
+  --_tone: var(--dd-muted);
+  position: relative; display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--dd-r-ctl);
+  background: color-mix(in oklab, var(--_tone) 16%, var(--dd-surface)); color: var(--_tone);
+}
+.dd-file__icon > .dd-icon { width: 18px; height: 18px; vertical-align: 0; }
+.dd-file__icon[data-ext]::after {
+  content: attr(data-ext); position: absolute; bottom: -3px; right: -5px; padding: 1px 3px; border-radius: 3px;
+  background: var(--_tone); color: var(--dd-bg); font-family: var(--dd-font-mono); font-size: 8.5px; font-weight: 500; line-height: 1.2; text-transform: uppercase;
+}
+.dd-file__body { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1); min-width: 0; }
+.dd-file__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.dd-file__meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 calc(var(--dd-u) * 1.5);
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-variant-numeric: tabular-nums; color: var(--dd-muted);
+}
+.dd-file__meta > * + *::before { content: '·'; margin-right: calc(var(--dd-u) * 1.5); color: var(--dd-faint); }
+.dd-file__status { display: inline-flex; align-items: center; gap: 4px; }
+.dd-file__status > .dd-icon { width: 13px; height: 13px; vertical-align: 0; }
+.dd-file__actions { display: flex; align-items: center; gap: 2px; }
+.dd-file__progress {
+  appearance: none; display: block; width: 100%; height: 4px; margin: calc(var(--dd-u) * .5) 0 0; border: 0; border-radius: var(--dd-r-pill);
+  background: color-mix(in oklab, var(--dd-text) 12%, transparent); color: var(--dd-accent); overflow: hidden;
+}
+.dd-file__progress::-webkit-progress-bar { background: color-mix(in oklab, var(--dd-text) 12%, transparent); border-radius: var(--dd-r-pill); }
+.dd-file__progress::-webkit-progress-value { background: currentColor; border-radius: var(--dd-r-pill); transition: width var(--dd-dur) var(--dd-ease); }
+.dd-file__progress::-moz-progress-bar { background: currentColor; border-radius: var(--dd-r-pill); }
+
+.dd-file.is-done .dd-file__status { color: var(--dd-ok); }
+.dd-file.is-error .dd-file__icon { --_tone: var(--dd-bad); }
+.dd-file.is-error .dd-file__meta, .dd-file.is-error .dd-file__status { color: var(--dd-bad); }
+.dd-file.is-error .dd-file__progress { color: var(--dd-bad); }
+.dd-file__icon.is-image { --_tone: var(--dd-set-2); }
+.dd-file__icon.is-doc { --_tone: var(--dd-set-6); }
+.dd-file__icon.is-data { --_tone: var(--dd-set-1); }
+.dd-file__icon.is-code { --_tone: var(--dd-info); }

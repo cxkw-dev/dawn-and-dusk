@@ -1,0 +1,172 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const chev = `<span class="dd-select__chevron">${i('chevron-down')}</span>`;
+const field = (id: string, label: string, control: string, extra = '', cls = '') => `
+    <div class="dd-field${cls ? ` ${cls}` : ''}">
+      <label class="dd-field__label" for="${id}">${label}</label>
+      ${control}${extra}
+    </div>`;
+const input = (id: string, attrs: string, pre = '', post = '') => {
+  const cls = attrs.match(/class="([^"]*)"/)?.[1] ?? 'dd-input__control';
+  return `<div class="dd-input">${pre}<input class="${cls}" id="${id}" ${attrs.replace(/class="[^"]*"\s*/, '')}>${post}</div>`;
+};
+const select = (id: string, opts: string[], sel = 0) => `<div class="dd-input dd-select"><select class="dd-input__control" id="${id}">${opts.map((o, n) => `<option${n === sel ? ' selected' : ''}>${o}</option>`).join('')}</select>${chev}</div>`;
+
+const fieldset = `
+<form class="dd-form" onsubmit="return false">
+  <fieldset class="dd-form__section">
+    <legend class="dd-form__legend">Build</legend>
+    <p class="dd-form__desc">How dockey-ui is built before each deploy.</p>
+    <div class="dd-form__grid">${field('fl-1', 'Install command', input('fl-1', 'class="dd-input__control dd-mono" value="npm ci"'))}${field('fl-2', 'Build command', input('fl-2', 'class="dd-input__control dd-mono" value="npm run build"'))}${field('fl-3', 'Output directory', input('fl-3', 'value="dist"', `<span class="dd-input__affix">${i('folder')}</span>`))}${field('fl-4', 'Node version', select('fl-4', ['22.x', '20.x'], 0))}
+    </div>
+  </fieldset>
+</form>`;
+
+const twoCol = `
+<form class="dd-form" onsubmit="return false">
+  <div class="dd-form__grid">${field('fc-1', 'Service name', input('fc-1', 'value="image-resizer"'), `
+      <p class="dd-field__hint">Lowercase and dashes.</p>`)}${field('fc-2', 'Region', select('fc-2', ['eu-central-1 · Frankfurt', 'eu-west-1 · Dublin', 'us-east-1 · N. Virginia']))}${field('fc-3', 'Instance size', select('fc-3', ['Small · 1 vCPU', 'Medium · 2 vCPU', 'Large · 4 vCPU'], 1))}${field('fc-4', 'Port', input('fc-4', 'type="number" class="dd-input__control dd-num" value="8080"', '', '<span class="dd-input__unit">TCP</span>'))}${field('fc-5', 'Repository', input('fc-5', 'value="github.com/cxkw-dev/image-resizer"', `<span class="dd-input__unit dd-input__prefix">https://</span>`), '', 'dd-form__span')}${field('fc-6', 'Description', '<div class="dd-input dd-textarea"><textarea class="dd-input__control" id="fc-6" rows="2" placeholder="Resizes and caches images for edge-cache."></textarea></div>', '', 'dd-form__span')}
+  </div>
+  <div class="dd-form__footer">
+    <button class="dd-btn dd-btn--ghost" type="button">Cancel</button>
+    <button class="dd-btn dd-btn--primary" type="submit">${i('plus')}<span>Create service</span></button>
+  </div>
+</form>`;
+
+const footers = `
+<div class="dd-stack" style="--dd-gap: 30px">
+  <div class="dd-form__footer">
+    <span class="dd-form__meta">${i('clock')}Last saved 2 minutes ago</span>
+    <button class="dd-btn dd-btn--ghost" type="button">Discard</button>
+    <button class="dd-btn dd-btn--primary" type="submit">Save changes</button>
+  </div>
+  <div class="dd-form__footer dd-form__footer--plain" style="justify-content: space-between">
+    <button class="dd-btn dd-btn--ghost" type="button">${i('arrow-left')}<span>Back</span></button>
+    <button class="dd-btn dd-btn--primary" type="submit"><span>Continue</span>${i('arrow-right')}</button>
+  </div>
+</div>`;
+
+const settings = `
+<form class="dd-form dd-form--divided" onsubmit="return false">
+  <section class="dd-form__section dd-form__section--aside" aria-labelledby="st-general">
+    <div class="dd-form__head">
+      <h3 class="dd-form__title" id="st-general">General</h3>
+      <p class="dd-form__desc">How the workspace appears on invoices, invites and status pages.</p>
+    </div>
+    <div class="dd-form__body">
+      <div class="dd-form__grid">${field('st-1', 'Workspace name', input('st-1', 'value="cxkw.dev"'))}${field('st-2', 'URL', input('st-2', 'value="cxkw"', '<span class="dd-input__unit dd-input__prefix">dash.cxkw.dev/</span>'))}
+      </div>
+      <div class="dd-field">
+        <label class="dd-field__label" for="st-3">About</label>
+        <div class="dd-input dd-textarea"><textarea class="dd-input__control" id="st-3" rows="2" maxlength="160">Small tools for focused work: dockey-ui, insomnia, ai-focus and leetnode.</textarea></div>
+        <div class="dd-field__foot"><p class="dd-field__hint">Shown on the public status page.</p><span class="dd-field__counter">74 / 160</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dd-form__section dd-form__section--aside" aria-labelledby="st-deploys">
+    <div class="dd-form__head">
+      <h3 class="dd-form__title" id="st-deploys">Deploys</h3>
+      <p class="dd-form__desc">Defaults for new services. Each service can override them.</p>
+    </div>
+    <div class="dd-form__body">
+      <div class="dd-form__grid">${field('st-4', 'Default region', select('st-4', ['eu-west-1 · Dublin', 'eu-central-1 · Frankfurt', 'us-east-1 · N. Virginia']))}${field('st-5', 'Production branch', input('st-5', 'value="main"', `<span class="dd-input__affix">${i('code')}</span>`))}
+      </div>
+      <fieldset class="dd-radio-cards" style="--_min: 10rem">
+        <legend class="dd-radio-group__legend">Strategy</legend>
+        <label class="dd-radio-card dd-radio-card--row"><input class="dd-radio__input" type="radio" name="st-strategy" checked><span class="dd-radio__text"><span class="dd-radio-card__title">Rolling</span><span class="dd-radio-card__desc">No extra capacity</span></span><span class="dd-radio-card__mark">${i('check')}</span></label>
+        <label class="dd-radio-card dd-radio-card--row"><input class="dd-radio__input" type="radio" name="st-strategy"><span class="dd-radio__text"><span class="dd-radio-card__title">Blue / green</span><span class="dd-radio-card__desc">Instant switch-over</span></span><span class="dd-radio-card__mark">${i('check')}</span></label>
+      </fieldset>
+      <label class="dd-switch">
+        <input class="dd-switch__input" type="checkbox" role="switch" checked>
+        <span class="dd-switch__text"><span class="dd-switch__label">Preview deploys</span><span class="dd-switch__desc">Build every pull request to its own URL.</span></span>
+      </label>
+    </div>
+  </section>
+
+  <section class="dd-form__section dd-form__section--aside" aria-labelledby="st-notify">
+    <div class="dd-form__head">
+      <h3 class="dd-form__title" id="st-notify">Notifications</h3>
+      <p class="dd-form__desc">Sent to every owner. Members choose their own.</p>
+    </div>
+    <div class="dd-form__body">
+      <div class="dd-form__choices dd-form__choices--rows">
+        <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch" checked><span class="dd-switch__text"><span class="dd-switch__label">Failed deploys</span><span class="dd-switch__desc">Right away, with the build log.</span></span></label>
+        <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch"><span class="dd-switch__text"><span class="dd-switch__label">Spend alerts</span><span class="dd-switch__desc">When billing passes 80% of the budget.</span></span></label>
+        <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch" checked><span class="dd-switch__text"><span class="dd-switch__label">Weekly digest</span><span class="dd-switch__desc">Sundays: deploys, uptime and spend.</span></span></label>
+      </div>
+      <fieldset class="dd-checkbox-group dd-checkbox-group--inline">
+        <legend class="dd-checkbox-group__legend">Channels</legend>
+        <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" checked> Email</label>
+        <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" checked> Slack</label>
+        <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox"> Webhook</label>
+      </fieldset>
+    </div>
+  </section>
+
+  <div class="dd-form__footer">
+    <span class="dd-form__meta">${i('clock')}Last saved Oct 30, 09:41</span>
+    <button class="dd-btn dd-btn--ghost" type="button">Discard</button>
+    <button class="dd-btn dd-btn--primary" type="submit">Save changes</button>
+  </div>
+</form>`;
+
+const panels = `
+<form class="dd-form" onsubmit="return false">
+  <fieldset class="dd-form__section dd-form__section--panel">
+    <legend class="dd-form__legend">API key</legend>
+    <p class="dd-form__desc">For CI and the dd CLI. Shown once — store it somewhere safe.</p>
+    <div class="dd-form__grid">${field('fp-1', 'Name', input('fp-1', 'value="github-actions"'))}${field('fp-2', 'Expires', select('fp-2', ['In 30 days', 'In 90 days', 'Never'], 1))}
+    </div>
+    <div class="dd-form__footer dd-form__footer--plain">
+      <button class="dd-btn dd-btn--primary" type="submit">${i('key')}<span>Create key</span></button>
+    </div>
+  </fieldset>
+</form>`;
+---
+<Docs title="Form layout" group="Forms" lead="How fields come together into a form: sections with a legend, a two-column grid that folds to one, an aside layout for settings pages, and a footer for the actions.">
+  <Example title="Section" description="A <fieldset> with a <legend> and a description. Fields sit in the grid below." code={fieldset} />
+
+  <h2 id="two-column">Two-column form</h2>
+  <p><code>.dd-form__grid</code> gives up to two equal columns and folds to one below about 30rem; <code>.dd-form__span</code> takes the full row. Tucked fields share one height, so rows line up.</p>
+  <Example code={twoCol} />
+
+  <h2 id="footer">Footer</h2>
+  <p>Actions sit at the end of the form, primary last. A <code>.dd-form__meta</code> line on the left carries save state. <code>--sticky</code> pins it to the bottom of a long page; <code>--plain</code> drops the hairline.</p>
+  <Example code={footers} />
+
+  <h2 id="panel">Panel section</h2>
+  <p><code>.dd-form__section--panel</code> sets a section on a tonal panel — for a small form inside a bigger page.</p>
+  <Example code={panels} />
+
+  <h2 id="settings">Settings page</h2>
+  <p>A full example. <code>.dd-form--divided</code> draws a hairline between sections; <code>--aside</code> sections put their title and description on the left once the form is 640px wide (a container query, so it works in any column).</p>
+  <Example code={settings} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-form', 'Vertical stack of sections; also the container for its layout queries.'],
+    ['.dd-form--divided', 'Hairline and extra space between sections.'],
+    ['.dd-form__section', 'A <code>&lt;fieldset&gt;</code> (with <code>__legend</code>) or <code>&lt;section&gt;</code> (with <code>__title</code>).'],
+    ['.dd-form__section--aside', 'Title column beside the fields from 640px of form width.'],
+    ['.dd-form__section--panel', 'Section on a tonal panel.'],
+    ['.dd-form__head · __legend · __title · __desc', 'Section heading and its muted description.'],
+    ['.dd-form__body', 'Field column of an aside section.'],
+    ['.dd-form__grid · --3', 'Responsive grid: up to two (or three) columns, folding to one.'],
+    ['.dd-form__span', 'Grid item that takes the full row.'],
+    ['.dd-form__row', 'Simple wrapping row of fields.'],
+    ['.dd-form__choices · --rows', 'Even stack of checkboxes or switches; <code>--rows</code> adds hairlines.'],
+    ['.dd-form__footer · --sticky · --plain', 'Action row. <code>.dd-form__meta</code> holds status on the left.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Group related fields under a section title; five to seven fields per section is plenty.', 'Put the primary action last in the footer, and only one.', 'Use two columns only for short, related pairs (city / postcode, region / size).']}
+    dont={['Don’t split one question across columns.', 'Don’t mix tucked and label-above fields in a section.', 'Don’t put Save at the top and the bottom of the same form.']}
+  />
+</Docs>

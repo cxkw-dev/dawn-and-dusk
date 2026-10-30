@@ -1,0 +1,45 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import Guides from '../../components/Guides.astro';
+import { base } from '../../lib/tokens';
+
+const steps = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16];
+const stack = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-4); max-width: 420px">
+  <p class="dd-eyebrow">Section</p>
+  <h3 class="dd-h3">the lab</h3>
+  <p class="dd-text dd-muted">Everything I self-host, live.</p>
+  <div class="dd-row"><button class="dd-btn dd-btn--primary">Open status page</button><button class="dd-btn">Docs</button></div>
+</div>`;
+---
+<Docs title="Spacing & layout" group="Foundations" lead="One 5px unit drives every padding and gap — the “Comfortable” density. Multiply it; don’t invent values.">
+  <h2 id="unit">The unit</h2>
+  <p><code>--dd-u: {base.u}</code>. Components use <code>calc(var(--dd-u) * N)</code> with half steps where needed (2.5 → 12.5px). Named steps exist for layout:</p>
+  <div class="doc-scale">
+    {steps.map((n) => (
+      <div class="doc-scale-row"><code class="dd-mono">--dd-space-{n}</code><span class="dd-mono dd-muted">{base[`space-${n}`]}</span><i style={`width: ${base[`space-${n}`]}`} /></div>
+    ))}
+  </div>
+
+  <h2 id="rhythm">Rhythm</h2>
+  <ul>
+    <li><b>Inside controls</b> — 2.5u vertical, 4.5u horizontal (12.5 × 22.5px). Small controls drop to 1.75u.</li>
+    <li><b>Between related items</b> — 2u (10px): buttons in a row, chips, form label to field.</li>
+    <li><b>Inside containers</b> — 4–5u (20–25px) for cards, alerts and table cells at comfortable density.</li>
+    <li><b>Between sections</b> — 12–16u (60–80px). Pages breathe; panels don’t.</li>
+  </ul>
+  <p>Two helpers cover most layouts: <code>.dd-stack</code> (vertical) and <code>.dd-row</code> (wrapping horizontal), both spaced by <code>--dd-gap</code>.</p>
+  <Example code={stack} />
+
+  <h2 id="layout">Layout</h2>
+  <ul>
+    <li><b>Reading width</b>: 68ch for prose; 920px for documentation; 1240px for dashboards.</li>
+    <li><b>App shell</b>: side nav (icon rail 64px + page column 208px, collapsible) plus a fluid content area — see <a href="../components/app-shell">App shell</a>.</li>
+    <li><b>Grids</b>: <code>repeat(auto-fill, minmax(260px, 1fr))</code> for cards; stats and charts use 12-column CSS grid at ≥ 900px.</li>
+    <li><b>Breakpoints</b>: 480 (phone), 900 (tablet / collapse the sidebar), 1240 (desktop). Prefer container queries inside components.</li>
+  </ul>
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides do={['Space by multiples of the unit.', 'Group with proximity first, tone second, lines last.']} dont={['Don’t use one-off pixel values in components.', 'Don’t pack dense data tables tighter than 1.5u row padding — use the dense table instead.']} />
+</Docs>

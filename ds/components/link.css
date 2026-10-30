@@ -1,0 +1,49 @@
+/* Link — “Dotted · fine”. Fine 1.5px dots in --dd-border-strong sit close under the text; on hover the link takes the
+   accent and the dots turn solid. Standalone links nudge their arrow, external links lift their ↗, nav links stay
+   muted until hovered and carry a solid underline when current. */
+.dd-link {
+  color: inherit; cursor: pointer; border-radius: 2px;
+  text-decoration-line: underline; text-decoration-style: dotted; text-decoration-thickness: 1.5px;
+  text-underline-offset: .2em; text-decoration-color: var(--dd-border-strong);
+  transition: color var(--dd-dur-fast) var(--dd-ease), text-decoration-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-link:hover { color: var(--dd-accent); text-decoration-style: solid; text-decoration-color: var(--dd-accent); }
+.dd-link:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+/* Standalone and external: label + icon, a touch heavier. Put the label in a <span> so only it is underlined. */
+.dd-link--standalone, .dd-link--external {
+  display: inline-flex; align-items: center; gap: .35em; font-weight: 500; text-decoration: none;
+}
+.dd-link--standalone > span, .dd-link--external > span {
+  text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: .2em;
+  text-decoration-color: var(--dd-border-strong); transition: text-decoration-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-link--standalone:hover > span, .dd-link--external:hover > span { text-decoration-style: solid; text-decoration-color: currentColor; }
+.dd-link--standalone > .dd-icon, .dd-link--external > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
+.dd-link--standalone:hover > .dd-icon { transform: translateX(3px); }
+/* External: an arrow-right icon tilted to ↗ (any icon works; the tilt applies only to arrow-right). */
+.dd-link--external { gap: .25em; }
+.dd-link--external > .dd-icon { width: .9em; height: .9em; }
+.dd-link--external > .dd-icon:has(use[href$='arrow-right']) { transform: rotate(-45deg); }
+/* Boxed icons (such as external) carry their own frame; give them a touch more size so the glyph inside reads. */
+.dd-link--external > .dd-icon:not(:has(use[href$='arrow-right'])) { width: 1.1em; height: 1.1em; }
+.dd-link--external:hover > .dd-icon { transform: translate(2px, -2px); }
+.dd-link--external:hover > .dd-icon:has(use[href$='arrow-right']) { transform: translate(2px, -2px) rotate(-45deg); }
+
+/* Muted: footers, meta lines, secondary references. */
+.dd-link--muted { color: var(--dd-muted); text-decoration-color: var(--dd-faint); }
+
+/* Nav: muted with no underline; hover brings the dots, the current page gets a solid underline in the text colour. */
+.dd-link--nav { color: var(--dd-muted); text-decoration-color: transparent; font-weight: 500; }
+.dd-link--nav:hover { color: var(--dd-text); text-decoration-style: dotted; text-decoration-color: var(--dd-border-strong); }
+.dd-link--nav.is-active, .dd-link--nav[aria-current]:not([aria-current='false']) {
+  color: var(--dd-text); text-decoration-style: solid; text-decoration-color: currentColor;
+}
+.dd-link-nav { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 4.5); font-size: var(--dd-fs-sm); }
+
+/* Inverse: on ink (--dd-text) panels and footers. */
+.dd-link--inverse { color: inherit; text-decoration-color: color-mix(in oklab, var(--dd-bg) 50%, transparent); }
+.dd-link--inverse:hover, .dd-link--inverse:hover > span { color: var(--dd-bg); text-decoration-color: var(--dd-bg); }
+.dd-link--inverse > span { text-decoration-color: color-mix(in oklab, var(--dd-bg) 50%, transparent); }
+
+.dd-link[aria-disabled='true'] { color: var(--dd-faint); text-decoration-color: var(--dd-faint); pointer-events: none; cursor: not-allowed; }

@@ -1,0 +1,73 @@
+---
+import Docs from '../layouts/Docs.astro';
+import { Code } from 'astro:components';
+import { i } from '../lib/icon';
+
+const components = Object.keys(import.meta.glob('./components/*.astro')).length;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const install = `<link rel="stylesheet" href="dawn-and-dusk.css">
+<script src="dawn-and-dusk.js" defer></script>
+
+<html data-theme="dawn">  <!-- or "dusk", or omit to follow the OS -->`;
+
+const panel = `
+<div class="home-ui">
+  <div class="home-ui-top"><b class="home-ui-logo">dawn &amp; dusk</b><span class="dd-caption">Work · Writing · Lab</span></div>
+  <p class="dd-eyebrow">deploys · today</p>
+  <p class="dd-h3">ship at dusk</p>
+  <div class="dd-row"><button class="dd-btn dd-btn--primary dd-btn--sm">${i('plus')}<span>New deploy</span></button><button class="dd-btn dd-btn--sm">${i('filter')}<span>Filter</span></button></div>
+  <div class="home-ui-rows">
+    <div><span>auth-gateway</span><span class="home-ui-st" style="--s: var(--dd-ok)">healthy</span><span class="dd-mono dd-muted">84 ms</span></div>
+    <div><span>search-indexer</span><span class="home-ui-st" style="--s: var(--dd-warn)">degraded</span><span class="dd-mono dd-muted">611 ms</span></div>
+    <div><span>notify-fanout</span><span class="home-ui-st" style="--s: var(--dd-bad)">down</span><span class="dd-mono dd-muted">—</span></div>
+  </div>
+</div>`;
+---
+<Docs title="dawn & dusk" group="cxkw.dev design system · v0.1" lead="Warm greige neutrals, golden-hour colour and a heavy lowercase voice — in a light dawn and a dark dusk. Plain CSS, a little JavaScript, and an agent skill so AI builds it right.">
+  <div class="dd-row" style="margin-top: calc(var(--dd-space-6) * -1); margin-bottom: var(--dd-space-10)">
+    <a class="dd-btn dd-btn--primary dd-btn--lg" href={`${base}/foundations/colors`}><Fragment set:html={i('arrow-right')} /><span>Explore the system</span></a>
+    <a class="dd-btn dd-btn--lg" href={`${base}/skill`}><Fragment set:html={i('sparkle')} /><span>Agent skill</span></a>
+  </div>
+
+  <div class="home-themes">
+    <figure data-theme="dawn"><figcaption class="dd-eyebrow">☀ dawn</figcaption><Fragment set:html={panel} /></figure>
+    <figure data-theme="dusk"><figcaption class="dd-eyebrow">☾ dusk</figcaption><Fragment set:html={panel} /></figure>
+  </div>
+
+  <h2 id="start">Get started</h2>
+  <p>Add one stylesheet and one script, then write HTML with <code>dd-</code> classes. Every value is a token, so dawn and dusk switch together. Files live in <code>release/</code> in the repo.</p>
+  <Code code={install} lang="html" theme="css-variables" wrap />
+
+  <h2 id="contents">What’s here</h2>
+  <div class="doc-cards">
+    <a class="doc-card" href={`${base}/foundations/colors`}><b>Foundations</b><span>Colours, typography, spacing, depth, motion, icons and brand.</span></a>
+    <a class="doc-card" href={`${base}/components/button`}><b>{components} components</b><span>Actions, forms, data display, feedback, navigation, overlays and layout.</span></a>
+    <a class="doc-card" href={`${base}/patterns/dashboard`}><b>Patterns</b><span>Whole pages: dashboard, data explorer, settings, landing.</span></a>
+    <a class="doc-card" href={`${base}/skill`}><b>Agent skill</b><span>Drop-in skill so Claude (and other agents) build with dawn & dusk.</span></a>
+  </div>
+
+  <h2 id="principles">Principles</h2>
+  <ul>
+    <li><b>Quiet by default</b> — tone instead of borders, one accent at a time.</li>
+    <li><b>Dusk is first-class</b> — every component is designed in both themes.</li>
+    <li><b>Data-ready</b> — dense tables, mono figures, logs, JSON and status are part of the core.</li>
+    <li><b>Framework-free</b> — HTML and CSS any stack (or agent) can use.</li>
+  </ul>
+</Docs>
+
+<style>
+  .home-themes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--dd-space-3); margin-bottom: var(--dd-space-8); }
+  .home-themes figure { margin: 0; padding: var(--dd-space-5); border-radius: var(--dd-r-lg); background-color: var(--dd-bg);
+    background-image: var(--dd-grain); background-size: var(--dd-grain-size); color: var(--dd-text); display: flex; flex-direction: column; gap: var(--dd-space-3);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 9%, transparent); }
+  .home-themes :global(.home-ui) { display: flex; flex-direction: column; gap: var(--dd-space-3); }
+  .home-themes :global(.home-ui-top) { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--dd-space-2); }
+  .home-themes :global(.home-ui-logo) { font-family: var(--dd-font-display); font-weight: 800; letter-spacing: -0.055em; font-size: 18px; }
+  .home-themes :global(.home-ui-rows) { display: flex; flex-direction: column; gap: 2px; border-radius: var(--dd-r-box); overflow: hidden; }
+  .home-themes :global(.home-ui-rows > div) { display: grid; grid-template-columns: 1fr auto 60px; gap: 12px; align-items: center; padding: 9px 12px;
+    background: var(--dd-surface); font-size: var(--dd-fs-sm); }
+  .home-themes :global(.home-ui-rows > div > :last-child) { text-align: right; font-size: var(--dd-fs-xs); }
+  .home-themes :global(.home-ui-st) { display: inline-flex; align-items: center; gap: 6px; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+  .home-themes :global(.home-ui-st::before) { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--s); }
+  @media (max-width: 760px) { .home-themes { grid-template-columns: 1fr; } }
+</style>

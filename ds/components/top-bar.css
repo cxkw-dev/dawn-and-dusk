@@ -1,0 +1,112 @@
+/* Top bar — the app header: logo, context, a search trigger, actions and the avatar menu. It sits on the page tone with a
+   hairline underneath. Under 640px of its own width (or in a narrow .dd-app-shell) the menu button appears, the search
+   collapses to an icon, and the context and anything marked __wide hide. */
+.dd-top-bar {
+  --_line: color-mix(in oklab, var(--dd-text) 8%, transparent);
+  container: dd-top-bar / inline-size;
+  position: sticky; top: 0; z-index: var(--dd-z-sticky);
+  display: flex; align-items: center; gap: calc(var(--dd-u) * 3); min-height: 60px;
+  padding: calc(var(--dd-u) * 2) calc(var(--dd-u) * 4);
+  background: color-mix(in oklab, var(--dd-bg) 88%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: inset 0 -1px 0 var(--_line);
+  color: var(--dd-text); font-size: var(--dd-fs-sm);
+}
+.dd-top-bar__inner { display: flex; align-items: center; gap: inherit; flex: 1; min-width: 0; }
+
+.dd-top-bar__nav-btn { display: none; }
+.dd-top-bar__brand { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 2); flex: none; color: inherit; text-decoration: none; border-radius: var(--dd-r-ctl); }
+.dd-top-bar__brand:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 3px; }
+
+/* Context: "workspace / project" after the logo */
+.dd-top-bar__context { display: flex; flex: 0 1 auto; align-items: center; gap: calc(var(--dd-u) * 1.5); min-width: 0; color: var(--dd-muted); }
+.dd-top-bar__sep { flex: none; width: 1px; height: 20px; margin: 0 calc(var(--dd-u) * 1); background: var(--_line); }
+.dd-top-bar__switch {
+  appearance: none; display: inline-flex; flex: none; align-items: center; gap: calc(var(--dd-u) * 1.5); min-width: 0; margin: 0;
+  padding: 5px 8px; border: 0; border-radius: var(--dd-r-ctl); background: none; color: var(--dd-text);
+  font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; transition: background-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-top-bar__switch:last-child { flex-shrink: 1; }
+.dd-top-bar__switch > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dd-top-bar__switch > .dd-icon:last-child { width: 14px; height: 14px; color: var(--dd-faint); }
+.dd-top-bar__switch:hover { background: var(--dd-surface-2); }
+.dd-top-bar__switch:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
+.dd-top-bar__mark { display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: 5px;
+  background: var(--dd-set-3); color: var(--dd-on-primary); font-family: var(--dd-font-display); font-size: 11px; font-weight: 800; letter-spacing: -0.04em; }
+
+/* Links (marketing-style header) */
+.dd-top-bar__links { display: flex; align-items: center; gap: calc(var(--dd-u) * 1); margin: 0; padding: 0; list-style: none; }
+.dd-top-bar__link { display: inline-flex; padding: 6px 10px; border-radius: var(--dd-r-ctl); color: var(--dd-muted); text-decoration: none;
+  transition: color var(--dd-dur-fast) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease); }
+.dd-top-bar__link:hover { color: var(--dd-text); background: var(--dd-surface-2); }
+.dd-top-bar__link[aria-current='page'] { color: var(--dd-text); font-weight: 600; }
+
+/* Search trigger: looks like a field, opens your command palette or search. It grows from nothing up to 300px, so it takes
+   only the room the context leaves (the context keeps its full names until the search is down to 120px). */
+.dd-top-bar__search {
+  appearance: none; display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 2); flex: 1 1 0; min-width: 120px; max-width: 300px;
+  height: 36px; margin: 0 0 0 auto; padding: 0 6px 0 10px; border: 0; border-radius: var(--dd-r-ctl);
+  background: var(--dd-surface); color: var(--dd-muted); font: inherit; text-align: left; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-top-bar__search > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dd-top-bar__search:hover { background: var(--dd-surface-2); color: var(--dd-text); }
+.dd-top-bar__search:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-top-bar__kbd {
+  flex: none; padding: 3px 6px; border-radius: 4px; background: var(--dd-bg); color: var(--dd-muted);
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); line-height: 1;
+}
+.dd-top-bar__search + .dd-top-bar__actions { margin-left: 0; }
+
+.dd-top-bar__actions { display: flex; align-items: center; gap: calc(var(--dd-u) * 1.5); flex: none; margin-left: auto; }
+.dd-top-bar__icon-btn { position: relative; }
+.dd-top-bar__dot { position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--dd-primary);
+  box-shadow: 0 0 0 2px var(--dd-bg); }
+
+/* Avatar menu: <details class="dd-top-bar__user" data-dd-autoclose> */
+.dd-top-bar__user { position: relative; flex: none; }
+.dd-top-bar__user > summary { list-style: none; border-radius: 50%; cursor: pointer; }
+.dd-top-bar__user > summary::-webkit-details-marker { display: none; }
+.dd-top-bar__user > summary:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-top-bar__avatar {
+  display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--dd-set-1);
+  color: var(--dd-on-primary); font-size: var(--dd-fs-xs); font-weight: 700; letter-spacing: .02em; text-transform: lowercase;
+  transition: box-shadow var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-top-bar__user > summary:hover .dd-top-bar__avatar, .dd-top-bar__user[open] .dd-top-bar__avatar { box-shadow: 0 0 0 3px var(--dd-surface-3); }
+.dd-top-bar__menu {
+  position: absolute; top: calc(100% + 10px); right: 0; z-index: var(--dd-z-overlay); display: flex; flex-direction: column; gap: 1px;
+  width: 240px; max-width: calc(100vw - 24px); padding: calc(var(--dd-u) * 1.25);
+  border-radius: var(--dd-r-box); background: var(--dd-float-bg); box-shadow: var(--dd-shadow-float);
+}
+.dd-top-bar__user[open] > .dd-top-bar__menu { animation: dd-top-bar-in var(--dd-dur-fast) var(--dd-ease); }
+@keyframes dd-top-bar-in { from { opacity: 0; translate: 0 -4px; } }
+.dd-top-bar__menu-head { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 10px; }
+.dd-top-bar__menu-head b { font-weight: 600; }
+.dd-top-bar__menu-head span { color: var(--dd-muted); font-size: var(--dd-fs-xs); font-family: var(--dd-font-mono); }
+.dd-top-bar__menu-sep { height: 1px; margin: 4px 6px; background: var(--_line); }
+.dd-top-bar__menu-item {
+  appearance: none; display: flex; align-items: center; gap: calc(var(--dd-u) * 2); width: 100%; margin: 0; padding: 7px 10px;
+  border: 0; border-radius: var(--dd-r-ctl); background: none; color: var(--dd-text); font: inherit; text-align: left;
+  text-decoration: none; cursor: pointer; transition: background-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-top-bar__menu-item > .dd-icon { color: var(--dd-muted); }
+.dd-top-bar__menu-item:hover, .dd-top-bar__menu-item:focus-visible { background: var(--dd-float-hover); outline: none; }
+.dd-top-bar__menu-item .dd-top-bar__kbd { margin-left: auto; background: transparent; padding: 0; color: var(--dd-faint); }
+
+/* Narrow: menu button in, search to an icon, extras out. __narrow shows only here (e.g. a logo the side nav carries on desktop). */
+.dd-top-bar__narrow { display: none !important; }
+@container dd-top-bar (max-width: 640px) {
+  .dd-top-bar__nav-btn { display: inline-flex; }
+  .dd-top-bar__narrow { display: inline-flex !important; }
+  .dd-top-bar__wide, .dd-top-bar__links, .dd-top-bar__context { display: none; }
+  /* The search folds to an icon button that matches the ghost icon buttons beside it. */
+  .dd-top-bar__search { flex: none; width: auto; min-width: 0; height: auto; margin-right: calc(var(--dd-u) * -2); padding: calc(var(--dd-u) * 2.5);
+    justify-content: center; background: transparent; color: var(--dd-text); }
+  .dd-top-bar__search:hover { background: var(--dd-surface-2); }
+  .dd-top-bar__search > .dd-icon { opacity: .9; }
+  .dd-top-bar__search > :not(.dd-icon) { display: none; }
+  .dd-top-bar__actions { gap: calc(var(--dd-u) * 1); }
+}
+@container dd-top-bar (max-width: 360px) {
+  .dd-top-bar__brand .dd-logo { --dd-logo-size: 18px; }
+}

@@ -1,0 +1,189 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+// Wrap each source line in a .dd-code__line span; extra classes per line index (0-based).
+const lines = (src: string[], cls: Record<number, string> = {}) =>
+  src.map((l, n) => `<span class="dd-code__line${cls[n] ? ' ' + cls[n] : ''}">${l}</span>`).join('\n');
+const copyBtn = (target: string, label = 'Copy code') =>
+  `<button class="dd-code__copy" type="button" data-dd-copy-target="#${target}" aria-label="${label}">${i('copy')}${i('check')}</button>`;
+
+const k = (s: string) => `<span class="dd-code__k">${s}</span>`;
+const s = (t: string) => `<span class="dd-code__s">${t}</span>`;
+const n = (t: string) => `<span class="dd-code__n">${t}</span>`;
+const c = (t: string) => `<span class="dd-code__c">${t}</span>`;
+const f = (t: string) => `<span class="dd-code__f">${t}</span>`;
+const p = (t: string) => `<span class="dd-code__p">${t}</span>`;
+
+const block = `
+<figure class="dd-code">
+  <figcaption class="dd-code__bar">
+    <span class="dd-code__title">${i('file')}astro.config.mjs</span>
+    <span class="dd-code__lang">js</span>
+    ${copyBtn('code-astro')}
+  </figcaption>
+  <pre class="dd-code__pre" tabindex="0"><code id="code-astro">${lines([
+    `${k('import')} { defineConfig } ${k('from')} ${s("'astro/config'")};`,
+    ``,
+    `${c('// Docs for the design system, served from GitHub Pages.')}`,
+    `${k('export default')} ${f('defineConfig')}({`,
+    `  ${p('site')}: ${s("'https://cxkw-dev.github.io'")},`,
+    `  ${p('base')}: ${s("'/dawn-and-dusk'")},`,
+    `  ${p('srcDir')}: ${s("'./site'")},`,
+    `  ${p('trailingSlash')}: ${s("'ignore'")},`,
+    `  ${p('devToolbar')}: { ${p('enabled')}: ${n('false')} },`,
+    `});`,
+  ])}</code></pre>
+</figure>`;
+
+const numbered = `
+<figure class="dd-code dd-code--numbered">
+  <figcaption class="dd-code__bar">
+    <span class="dd-code__title">${i('file')}services/auth-gateway/retry.ts</span>
+    <span class="dd-code__lang">ts</span>
+    ${copyBtn('code-retry')}
+  </figcaption>
+  <pre class="dd-code__pre" tabindex="0"><code id="code-retry">${lines([
+    `${k('export async function')} ${f('withRetry')}&lt;T&gt;(${p('run')}: () =&gt; Promise&lt;T&gt;, ${p('tries')} = ${n('4')}) {`,
+    `  ${k('for')} (${k('let')} attempt = ${n('1')}; ; attempt++) {`,
+    `    ${k('try')} {`,
+    `      ${k('return await')} ${f('run')}();`,
+    `    } ${k('catch')} (err) {`,
+    `      ${k('if')} (attempt &gt;= tries || !${f('isRetryable')}(err)) ${k('throw')} err;`,
+    `      ${k('await')} ${f('sleep')}(${n('2')} ** attempt * ${n('100')}); ${c('// 200, 400, 800 ms')}`,
+    `    }`,
+    `  }`,
+    `}`,
+  ], { 5: 'is-highlight', 6: 'is-highlight' })}</code></pre>
+</figure>`;
+
+const diff = `
+<figure class="dd-code dd-code--diff">
+  <figcaption class="dd-code__bar">
+    <span class="dd-code__title">${i('file')}deploy/edge-cache.yaml</span>
+    <span class="dd-code__lang">yaml</span>
+    ${copyBtn('code-diff', 'Copy diff')}
+  </figcaption>
+  <pre class="dd-code__pre" tabindex="0"><code id="code-diff">${lines([
+    `${p('service')}: edge-cache`,
+    `${p('region')}: us-east-1`,
+    `${p('replicas')}: ${n('3')}`,
+    `${p('replicas')}: ${n('6')}`,
+    `${p('ttl')}: ${s('300s')}`,
+    `${p('ttl')}: ${s('120s')}`,
+    `${p('purge_on_deploy')}: ${n('true')}`,
+  ], { 2: 'is-del', 3: 'is-add', 4: 'is-del', 5: 'is-add' })}</code></pre>
+</figure>`;
+
+const bare = `
+<div class="dd-code">
+  ${copyBtn('code-bare', 'Copy command')}
+  <pre class="dd-code__pre" tabindex="0"><code id="code-bare">npm install @cxkw/dawn-and-dusk</code></pre>
+</div>`;
+
+const inline = `
+<p class="dd-text dd-small" style="max-width: 56ch">
+  Set <code class="dd-code-inline">data-theme="dusk"</code> on <code class="dd-code-inline">&lt;html&gt;</code> to switch the whole page,
+  or on any element to scope it. Tokens live in <code class="dd-code-inline">ds/tokens.css</code>; run
+  <code class="dd-code-inline">node scripts/build-ds.mjs</code> after adding a component.
+</p>`;
+
+const field = `
+<div class="dd-stack" style="max-width: 520px">
+  <div class="dd-code-field">
+    <span class="dd-code-field__label" id="key-label">Secret key</span>
+    <div class="dd-code-field__box" role="group" aria-labelledby="key-label">
+      <code class="dd-code-field__value" data-dd-code-secret="dd_live_51Hc7aQ2xK9mV0dRb4Lp8TzY3f9a">dd_live_••••••••••••••••••••3f9a</code>
+      <button class="dd-code-field__btn" type="button" data-dd-code-reveal data-dd-code-reveal-label="Show key|Hide key" aria-pressed="false" aria-label="Show key">${i('eye')}${i('eye-off')}</button>
+      <button class="dd-code-field__btn" type="button" data-dd-copy="dd_live_51Hc7aQ2xK9mV0dRb4Lp8TzY3f9a" aria-label="Copy key">${i('copy')}${i('check')}</button>
+    </div>
+    <p class="dd-code-field__hint">billing-worker · created Oct 12 · last used 4 min ago from eu-west-2</p>
+  </div>
+  <div class="dd-code-field">
+    <span class="dd-code-field__label" id="hook-label">Webhook URL</span>
+    <div class="dd-code-field__box" role="group" aria-labelledby="hook-label">
+      <span class="dd-code-field__prefix">POST</span>
+      <code class="dd-code-field__value">https://hooks.cxkw.dev/v1/deploys/dockey-ui/9f2c41e7</code>
+      <button class="dd-code-field__btn" type="button" data-dd-copy="https://hooks.cxkw.dev/v1/deploys/dockey-ui/9f2c41e7" aria-label="Copy URL">${i('copy')}${i('check')}</button>
+    </div>
+  </div>
+</div>`;
+
+const terminal = `
+<figure class="dd-code dd-code--terminal" data-theme="dusk">
+  <figcaption class="dd-code__bar">
+    <span class="dd-code__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="dd-code__title">~/cxkw/insomnia — zsh</span>
+    <button class="dd-code__copy" type="button" data-dd-copy="npm run deploy -- --region eu-west-2" aria-label="Copy command">${i('copy')}${i('check')}</button>
+  </figcaption>
+  <pre class="dd-code__pre" tabindex="0"><code><span class="dd-code__prompt">$ </span>npm run deploy -- --region eu-west-2
+<span class="dd-code__out">› building insomnia@2.4.0 (vite)</span>
+<span class="dd-code__out">› 214 modules transformed in 1.82s</span>
+<span class="dd-code__out">› uploading 38 assets to edge-cache</span>
+<span class="dd-code__ok">✓ deployed dpl_7Hq2 to eu-west-2 in 41s</span>
+<span class="dd-code__prompt">$ </span><span class="dd-code__cursor"></span></code></pre>
+</figure>`;
+---
+<Docs title="Code" group="Data display" lead="Code blocks, inline code, copyable fields and a terminal. Mono throughout, tone instead of borders, and a copy button wherever someone will want the text.">
+  <Example title="Code block" description="A title bar names the file and language; the copy button copies the code exactly (line spans are separated by real newlines)." code={block} />
+
+  <h2 id="line-numbers">Line numbers &amp; highlights</h2>
+  <p>Add <code>dd-code--numbered</code> for a counter gutter (never copied). Mark lines with <code>is-highlight</code> to draw the eye to what changed or matters.</p>
+  <Example code={numbered} />
+
+  <h2 id="diff">Diff</h2>
+  <p><code>dd-code--diff</code> adds a +/− gutter; mark lines <code>is-add</code> and <code>is-del</code>.</p>
+  <Example code={diff} />
+
+  <h2 id="bare">Without a bar</h2>
+  <p>For one-line commands, drop the bar; the copy button floats in the corner.</p>
+  <Example code={bare} />
+
+  <h2 id="inline">Inline code</h2>
+  <Example code={inline} />
+
+  <h2 id="field">Copyable field</h2>
+  <p>A single value someone needs to copy: API keys, webhook URLs, IDs. Secrets stay masked until revealed, and copy always copies the real value.</p>
+  <Example code={field} />
+
+  <h2 id="terminal">Terminal</h2>
+  <p>Always dark. Set <code>data-theme="dusk"</code> on the block so it reads dusk tokens in either mode. Prompts are not selectable, and the copy button copies just the command (<code>data-dd-copy</code>), never the output.</p>
+  <Example code={terminal} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-code', 'Code block container (<code>&lt;figure&gt;</code>). Tonal surface, rounded.'],
+    ['.dd-code__bar', 'Title bar (<code>&lt;figcaption&gt;</code>): title, language tag, copy button.'],
+    ['.dd-code__title / __lang', 'File name (mono, with an icon) and a small uppercase language tag.'],
+    ['.dd-code__copy', 'Icon button; pair with <code>data-dd-copy-target="#id"</code>. Holds <code>copy</code> + <code>check</code> icons; swaps on <code>[data-copied]</code>.'],
+    ['.dd-code__pre', 'Scrolling <code>&lt;pre&gt;</code>. Set <code>--dd-code-height</code> to cap its height.'],
+    ['.dd-code__line', 'One line. Separate lines with literal newlines, not block elements.'],
+    ['.is-highlight / .is-add / .is-del', 'Line states: highlighted, added, removed.'],
+    ['.dd-code--numbered', 'Line-number gutter (CSS counter, not copied).'],
+    ['.dd-code--diff', '+/− gutter for diffs.'],
+    ['.dd-code__k / __s / __n / __c / __f / __p', 'Syntax tokens: keyword, string, number, comment, function, property. Prism (<code>.token.*</code>) and highlight.js (<code>.hljs-*</code>) classes map to the same colours.'],
+    ['--dd-code-keyword … --dd-code-punct', 'Override the token colours on <code>.dd-code</code>.'],
+    ['.dd-code-inline', 'Inline code in running text.'],
+    ['.dd-code-field', 'Copyable value: <code>__label</code>, <code>__box</code>, <code>__prefix</code>, <code>__value</code>, <code>__btn</code>, <code>__hint</code>.'],
+    ['.dd-code--terminal', 'Dark terminal; use with <code>data-theme="dusk"</code>. Parts: <code>__dots</code>, <code>__prompt</code>, <code>__out</code>, <code>__ok</code>, <code>__err</code>, <code>__cursor</code>.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute', 'What it does']} rows={[
+    ['data-dd-copy-target="#id"', 'Copies the text of the element with that id (the <code>&lt;code&gt;</code>). From <code>copy.js</code>; the button gets <code>[data-copied]</code> for 1.6s.'],
+    ['data-dd-copy="text"', 'Copies the given text — use it for secrets so the masked value is never copied.'],
+    ['data-dd-code-secret="…"', 'On the field value: the real secret. The visible text is the masked form.'],
+    ['data-dd-code-reveal', 'On a button inside <code>.dd-code-field</code>: toggles masked ↔ secret and <code>aria-pressed</code>. Holds <code>eye</code> + <code>eye-off</code> icons.'],
+    ['data-dd-code-reveal-label="Show|Hide"', 'Optional accessible labels for the two states.'],
+  ]} />
+  <p>Copy and reveal are plain buttons: Tab to focus, Enter or Space to activate. The <code>&lt;pre&gt;</code> takes <code>tabindex="0"</code> so long lines can be scrolled from the keyboard.</p>
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Name the file in the bar when the snippet belongs somewhere.', 'Highlight the one or two lines the reader should look at.', 'Mask secrets by default and copy the real value.', 'Keep prompts (<code>$</code>) out of the copied text.']}
+    dont={['Don’t wrap code lines in block elements inside <code>&lt;pre&gt;</code> — copy gets blank lines.', 'Don’t use a terminal block for source files; it is for commands and output.', 'Don’t colour whole lines to show syntax — tokens only.']}
+  />
+</Docs>

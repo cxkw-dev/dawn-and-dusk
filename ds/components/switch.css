@@ -1,0 +1,40 @@
+/* Switch — "Classic pill": a pill track that fills with the accent when on; the knob slides across and takes
+   --dd-on-accent. Off, the track is --dd-border-strong with a light knob. Style a native checkbox with
+   role="switch" inside <label class="dd-switch">. Sizes sm · md · lg. .dd-switch--end puts the control after the
+   text, for settings rows. */
+.dd-switch {
+  --_w: 40px; --_h: 24px; --_k: 18px;
+  display: inline-flex; align-items: flex-start; gap: calc(var(--dd-u) * 2.5); min-width: 0;
+  font-size: var(--dd-fs-sm); line-height: 1.45; color: var(--dd-text); cursor: pointer;
+}
+.dd-switch__input {
+  appearance: none; position: relative; flex: none; box-sizing: border-box; display: inline-block;
+  width: var(--_w); height: var(--_h); margin: 0; padding: 0; border: 0; border-radius: var(--dd-r-pill);
+  background: var(--dd-border-strong); cursor: pointer; vertical-align: middle;
+  transition: background-color var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-switch__input::before {
+  content: ''; position: absolute; top: calc((var(--_h) - var(--_k)) / 2); left: calc((var(--_h) - var(--_k)) / 2);
+  width: var(--_k); height: var(--_k); border-radius: 50%;
+  background: light-dark(var(--dd-bg), var(--dd-text)); box-shadow: 0 1px 3px var(--dd-overlay);
+  transition: transform var(--dd-dur) var(--dd-ease), background-color var(--dd-dur) var(--dd-ease);
+}
+.dd-switch__input:hover { background: color-mix(in oklab, var(--dd-border-strong), var(--dd-text) 12%); }
+.dd-switch__input:checked { background: var(--dd-accent); }
+.dd-switch__input:checked:hover { background: var(--dd-accent-hover); }
+.dd-switch__input:checked::before { transform: translateX(calc(var(--_w) - var(--_h))); background: var(--dd-on-accent); }
+.dd-switch__input:active::before { width: calc(var(--_k) + 3px); }
+.dd-switch__input:checked:active::before { transform: translateX(calc(var(--_w) - var(--_h) - 3px)); }
+.dd-switch__input:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-switch__input:disabled { opacity: .4; cursor: not-allowed; }
+.dd-switch:has(.dd-switch__input:disabled) { cursor: not-allowed; color: var(--dd-muted); }
+
+.dd-switch__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-top: max(0px, calc((var(--_h) - 1.45em) / 2)); }
+.dd-switch__label { font-weight: 500; }
+.dd-switch__desc { font-size: var(--dd-fs-xs); line-height: 1.4; color: var(--dd-muted); }
+.dd-switch:not(:has(.dd-switch__text)) { align-items: center; }
+
+.dd-switch--sm { --_w: 32px; --_h: 18px; --_k: 14px; gap: calc(var(--dd-u) * 2); font-size: var(--dd-fs-xs); }
+.dd-switch--lg { --_w: 48px; --_h: 28px; --_k: 22px; }
+.dd-switch--sm > .dd-switch__input { margin-top: max(0px, calc((1.45em - var(--_h)) / 2)); }
+.dd-switch--end { display: flex; flex-direction: row-reverse; justify-content: space-between; gap: calc(var(--dd-u) * 4); width: 100%; }

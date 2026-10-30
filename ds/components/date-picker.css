@@ -1,0 +1,103 @@
+/* Date picker — a text input with a calendar popover, plus the calendar on its own (.dd-calendar).
+   The calendar is a month table of day buttons: today carries an apricot dot, the chosen day fills with the
+   accent, a range draws a soft accent band between its filled ends. The range picker adds presets and a footer.
+   ds/behaviors/date-picker.js renders months, handles selection, keyboard and the popover. */
+.dd-date-picker { position: relative; min-width: 0; }
+.dd-date-picker.is-open > .dd-input { background: var(--dd-surface); box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-accent) 26%, transparent); }
+.dd-date-picker__popover {
+  position: absolute; z-index: var(--dd-z-overlay); top: calc(100% + var(--dd-u) * 1.5); left: 0;
+  display: flex; gap: calc(var(--dd-u) * 3); box-sizing: border-box; width: max-content; max-width: calc(100vw - var(--dd-u) * 4);
+  padding: calc(var(--dd-u) * 3); border-radius: var(--dd-r-box); background: var(--dd-float-bg); color: var(--dd-text);
+  box-shadow: var(--dd-shadow-float); animation: dd-date-picker-in var(--dd-dur-fast) var(--dd-ease);
+  --_cal-hover: var(--dd-float-hover); /* day, nav and preset hovers sit one tone deeper than the floating panel */
+}
+.dd-date-picker__popover[hidden] { display: none; }
+.dd-date-picker__popover--end { left: auto; right: 0; }
+.dd-date-picker__popover--static { position: static; animation: none; }
+@keyframes dd-date-picker-in { from { opacity: 0; transform: translateY(-4px); } }
+
+.dd-date-picker__presets {
+  display: flex; flex-direction: column; gap: 1px; min-width: 9.5rem; margin: 0; padding: 0 calc(var(--dd-u) * 3) 0 0; border: 0;
+  box-shadow: inset -1px 0 0 color-mix(in oklab, var(--dd-text) 9%, transparent);
+}
+.dd-date-picker__preset {
+  appearance: none; margin: 0; padding: calc(var(--dd-u) * 1.75) calc(var(--dd-u) * 2.5); border: 0; border-radius: var(--dd-r-ctl);
+  background: transparent; color: var(--dd-muted); font: inherit; font-size: var(--dd-fs-sm); text-align: left; white-space: nowrap; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-date-picker__preset:hover { background: var(--_cal-hover, var(--dd-surface-2)); color: var(--dd-text); }
+.dd-date-picker__preset[aria-pressed='true'] { background: color-mix(in oklab, var(--dd-accent) 14%, transparent); color: var(--dd-text); font-weight: 600; }
+.dd-date-picker__preset:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
+.dd-date-picker__main { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 3); min-width: 0; }
+.dd-date-picker__foot {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: calc(var(--dd-u) * 2);
+  padding-top: calc(var(--dd-u) * 3); border-top: 1px solid color-mix(in oklab, var(--dd-text) 9%, transparent);
+}
+.dd-date-picker__summary { margin-right: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); white-space: nowrap; }
+@media (max-width: 560px) {
+  .dd-date-picker__popover { flex-direction: column; }
+  .dd-date-picker__presets { flex-direction: row; min-width: 0; padding: 0 0 calc(var(--dd-u) * 2); overflow-x: auto; scrollbar-width: none;
+    box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--dd-text) 9%, transparent); }
+}
+
+/* ---------- calendar ---------- */
+.dd-calendar {
+  --_cell: 36px; --_band: color-mix(in oklab, var(--dd-accent) 15%, transparent);
+  display: inline-flex; flex-direction: column; gap: calc(var(--dd-u) * 2); min-width: 0;
+  font-size: var(--dd-fs-sm); line-height: 1; color: var(--dd-text);
+}
+.dd-calendar--panel { --_cal-hover: var(--dd-surface-2); padding: calc(var(--dd-u) * 4); border-radius: var(--dd-r-box); background: var(--dd-surface); }
+.dd-calendar__head { display: flex; align-items: center; justify-content: space-between; gap: calc(var(--dd-u) * 2); }
+.dd-calendar__title { margin: 0; font-weight: 650; white-space: nowrap; }
+.dd-calendar__title > span { font-weight: 400; color: var(--dd-muted); }
+.dd-calendar__nav {
+  display: inline-grid; place-items: center; width: 30px; height: 30px; margin: 0; padding: 0; border: 0; border-radius: var(--dd-r-ctl);
+  background: transparent; color: var(--dd-muted); cursor: pointer; transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-calendar__nav:hover { background: var(--_cal-hover, var(--dd-surface-2)); color: var(--dd-text); }
+.dd-calendar__nav:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
+.dd-calendar__nav > .dd-icon { width: 16px; height: 16px; vertical-align: 0; }
+.dd-calendar__grid { border-collapse: separate; border-spacing: 0 2px; table-layout: fixed; margin: -2px 0; }
+.dd-calendar__grid th {
+  width: var(--_cell); height: 24px; padding: 0; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 400;
+  color: var(--dd-muted); text-align: center; text-transform: lowercase;
+}
+.dd-calendar__grid td { padding: 0; }
+.dd-calendar__day {
+  position: relative; display: grid; place-items: center; width: var(--_cell); height: var(--_cell); margin: 0; padding: 0;
+  border: 0; border-radius: var(--dd-r-ctl); background: transparent; color: inherit;
+  font: inherit; font-variant-numeric: tabular-nums; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-calendar__day:hover { background: var(--_cal-hover, var(--dd-surface-2)); }
+.dd-calendar__day:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; z-index: 1; }
+.dd-calendar__day.is-outside { color: var(--dd-faint); }
+.dd-calendar__day[aria-current='date'] { font-weight: 700; }
+.dd-calendar__day[aria-current='date']::after {
+  content: ''; position: absolute; bottom: 5px; left: calc(50% - 2px); width: 4px; height: 4px; border-radius: 50%; background: var(--dd-primary);
+}
+.dd-calendar__day[aria-pressed='true'] { background: var(--dd-accent); color: var(--dd-on-accent); font-weight: 600; }
+.dd-calendar__day[aria-pressed='true']::after { background: var(--dd-on-accent); }
+.dd-calendar__day:disabled { color: var(--dd-faint); text-decoration: line-through; text-decoration-thickness: 1px; cursor: not-allowed; background: none; }
+
+/* Range band: full cells in between, half cells at the ends; rounded at the week's edges. */
+.dd-calendar__grid td.is-in-range { background: var(--_band); }
+.dd-calendar__grid td.is-range-start { background: linear-gradient(to right, transparent 50%, var(--_band) 50%); }
+.dd-calendar__grid td.is-range-end { background: linear-gradient(to left, transparent 50%, var(--_band) 50%); }
+.dd-calendar__grid td.is-range-start.is-range-end { background: none; }
+.dd-calendar__grid td.is-in-range:first-child { border-radius: var(--dd-r-ctl) 0 0 var(--dd-r-ctl); }
+.dd-calendar__grid td.is-in-range:last-child { border-radius: 0 var(--dd-r-ctl) var(--dd-r-ctl) 0; }
+.dd-calendar__grid td.is-in-range .dd-calendar__day:hover { background: color-mix(in oklab, var(--dd-accent) 16%, transparent); }
+.dd-calendar__grid td.is-preview { --_band: color-mix(in oklab, var(--dd-accent) 8%, transparent); }
+@media (max-width: 400px) { .dd-calendar { --_cell: 34px; } }
+/* A read-only input (ranges) keeps the tonal fill and opens the popover on click. */
+.dd-date-picker > .dd-input:has(.dd-input__control[readonly]) {
+  --_fill: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 4%);
+  --_fill-hover: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 8%);
+  box-shadow: none; cursor: pointer;
+}
+.dd-date-picker > .dd-input:has(.dd-input__control[readonly]) > .dd-input__control { cursor: pointer; }
+.dd-date-picker > .dd-input:has(.dd-input__control[readonly]):focus-within,
+.dd-date-picker.is-open > .dd-input:has(.dd-input__control[readonly]) {
+  background: var(--dd-surface); box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-accent) 26%, transparent);
+}

@@ -1,0 +1,78 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const variants = `
+<div class="dd-row">
+  <button class="dd-btn dd-btn--primary">${i('plus')}<span>New project</span></button>
+  <button class="dd-btn dd-btn--secondary">${i('external')}<span>Open</span></button>
+  <button class="dd-btn dd-btn--ink">${i('download')}<span>Export</span></button>
+  <button class="dd-btn dd-btn--ghost">${i('copy')}<span>Copy</span></button>
+  <button class="dd-btn dd-btn--danger">${i('trash')}<span>Delete</span></button>
+  <a class="dd-btn dd-btn--link"><span>Read the docs</span>${i('arrow-right')}</a>
+</div>`;
+
+const sizes = `
+<div class="dd-row">
+  <button class="dd-btn dd-btn--primary dd-btn--sm">${i('plus')}<span>Small</span></button>
+  <button class="dd-btn dd-btn--primary">${i('plus')}<span>Medium</span></button>
+  <button class="dd-btn dd-btn--primary dd-btn--lg">${i('plus')}<span>Large</span></button>
+</div>`;
+
+const iconOnly = `
+<div class="dd-row">
+  <button class="dd-btn dd-btn--primary dd-btn--icon" aria-label="Add">${i('plus')}</button>
+  <button class="dd-btn dd-btn--secondary dd-btn--icon" aria-label="Save">${i('heart')}</button>
+  <button class="dd-btn dd-btn--ghost dd-btn--icon" aria-label="Settings">${i('settings')}</button>
+  <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" aria-label="More">${i('more')}</button>
+</div>`;
+
+const states = `
+<div class="dd-row">
+  <button class="dd-btn dd-btn--primary" disabled>${i('plus')}<span>Disabled</span></button>
+  <button class="dd-btn dd-btn--primary is-loading" aria-busy="true"><span class="dd-btn__spinner"></span><span>Saving</span></button>
+  <button class="dd-btn dd-btn--secondary is-loading" aria-busy="true"><span class="dd-btn__spinner"></span><span>Syncing</span></button>
+</div>`;
+
+const block = `
+<div class="dd-stack" style="max-width: 320px">
+  <button class="dd-btn dd-btn--primary dd-btn--block dd-btn--lg">Continue</button>
+  <button class="dd-btn dd-btn--ghost dd-btn--block">Back</button>
+</div>`;
+---
+<Docs title="Button" group="Actions" lead="Starts an action. Primary is filled with the Golden hour apricot; everything else steps down in emphasis. Icons lead the label.">
+  <Example title="Variants" description="One primary per view. Secondary for the common alternatives, ghost for tertiary actions in toolbars, ink when the action needs weight but not colour." code={variants} />
+  <h2 id="sizes">Sizes</h2>
+  <p>Medium is the default. Small for dense toolbars and table rows; large for hero calls to action.</p>
+  <Example code={sizes} />
+  <h2 id="icon-only">Icon only</h2>
+  <p>Square, same height as a text button. Always give it an <code>aria-label</code>.</p>
+  <Example code={iconOnly} />
+  <h2 id="states">States</h2>
+  <p>Use the native <code>disabled</code> attribute (or <code>aria-disabled="true"</code> on links). While work is in flight, add <code>is-loading</code> and swap the icon for a spinner.</p>
+  <Example code={states} />
+  <h2 id="block">Full width</h2>
+  <Example code={block} />
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-btn', 'Base button. Works on <code>&lt;button&gt;</code> and <code>&lt;a&gt;</code>.'],
+    ['.dd-btn--primary', 'Filled with <code>--dd-primary</code> (apricot). One per view.'],
+    ['.dd-btn--secondary', 'Tonal fill. The default look if no variant is given.'],
+    ['.dd-btn--ink', 'Filled with the text colour — heavy but colourless.'],
+    ['.dd-btn--ghost', 'No fill until hover. Toolbars, table rows, dismiss actions.'],
+    ['.dd-btn--danger', 'Destructive actions. Pair with a confirmation dialog.'],
+    ['.dd-btn--link', 'Reads as a link; wrap the label in a <code>&lt;span&gt;</code> for the dotted underline.'],
+    ['.dd-btn--sm / --lg', 'Sizes. Medium has no modifier.'],
+    ['.dd-btn--icon', 'Square icon-only button.'],
+    ['.dd-btn--block', 'Fills its container.'],
+    ['.is-loading + .dd-btn__spinner', 'Busy state; also set <code>aria-busy="true"</code>.'],
+  ]} />
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Lead with a verb: “New project”, “Export”, “Delete”.', 'Keep one primary button per view or dialog.', 'Put the icon first; it is part of the label’s rhythm.']}
+    dont={['Don’t use primary for navigation — use a link.', 'Don’t stack two filled buttons side by side; make one secondary.', 'Don’t disable without saying why nearby.']}
+  />
+</Docs>

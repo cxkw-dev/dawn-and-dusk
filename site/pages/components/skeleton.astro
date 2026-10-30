@@ -1,0 +1,103 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+
+const lines = `
+<div class="dd-skeleton-group" aria-busy="true" style="max-width: 560px">
+  <span class="dd-visually-hidden">Loading release notes…</span>
+  <span class="dd-skeleton dd-skeleton--title" aria-hidden="true"></span>
+  <div class="dd-skeleton-lines" aria-hidden="true">
+    <span class="dd-skeleton dd-skeleton--text"></span>
+    <span class="dd-skeleton dd-skeleton--text"></span>
+    <span class="dd-skeleton dd-skeleton--text"></span>
+    <span class="dd-skeleton dd-skeleton--text"></span>
+  </div>
+</div>`;
+
+const item = `<div style="display: flex; align-items: center; gap: var(--dd-space-3)" aria-hidden="true">
+    <span class="dd-skeleton dd-skeleton--circle"></span>
+    <div class="dd-skeleton-lines" style="max-width: 280px">
+      <span class="dd-skeleton dd-skeleton--text" style="width: 55%"></span>
+      <span class="dd-skeleton dd-skeleton--text" style="width: 85%"></span>
+    </div>
+  </div>`;
+const list = `
+<div class="dd-skeleton-group" aria-busy="true">
+  <span class="dd-visually-hidden">Loading members…</span>
+  ${item}
+  ${item}
+  ${item}
+</div>`;
+
+const card = (w: string) => `<div class="dd-surface dd-skeleton-group" style="padding: var(--dd-space-4); --dd-gap: var(--dd-space-3)" aria-hidden="true">
+    <span class="dd-skeleton dd-skeleton--block"></span>
+    <span class="dd-skeleton dd-skeleton--text" style="width: 30%; font-size: var(--dd-fs-xs)"></span>
+    <span class="dd-skeleton dd-skeleton--title" style="width: ${w}; font-size: var(--dd-fs-lg)"></span>
+    <div class="dd-skeleton-lines"><span class="dd-skeleton dd-skeleton--text"></span><span class="dd-skeleton dd-skeleton--text"></span></div>
+    <span class="dd-skeleton dd-skeleton--button"></span>
+  </div>`;
+const cards = `
+<div aria-busy="true" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: var(--dd-space-4)">
+  <span class="dd-visually-hidden">Loading projects…</span>
+  ${card('70%')}
+  ${card('55%')}
+</div>`;
+
+const tr = (a: string, b: string, c: string) => `<div style="display: grid; grid-template-columns: 28px minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: var(--dd-space-4); align-items: center; padding: var(--dd-space-3) var(--dd-space-4); box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--dd-text) 8%, transparent)">
+      <span class="dd-skeleton dd-skeleton--circle" style="--dd-skeleton-size: 20px"></span>
+      <span class="dd-skeleton dd-skeleton--text" style="width: ${a}"></span>
+      <span class="dd-skeleton dd-skeleton--text" style="width: ${b}"></span>
+      <span class="dd-skeleton dd-skeleton--text" style="width: ${c}; justify-self: end"></span>
+    </div>`;
+const table = `
+<div aria-busy="true" style="overflow-x: auto">
+  <span class="dd-visually-hidden">Loading deploys…</span>
+  <div style="min-width: 420px; font-size: var(--dd-fs-sm); line-height: var(--dd-lh)" aria-hidden="true">
+    <div style="display: grid; grid-template-columns: 28px minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: var(--dd-space-4); padding: var(--dd-space-2) var(--dd-space-4); font-size: var(--dd-fs-xs); color: var(--dd-muted); box-shadow: inset 0 -1px 0 var(--dd-border-strong)">
+      <span></span><span>Deploy</span><span>Region</span><span style="text-align: right">Duration</span>
+    </div>
+    ${tr('72%', '40%', '50%')}
+    ${tr('58%', '46%', '38%')}
+    ${tr('80%', '34%', '56%')}
+    ${tr('64%', '42%', '44%')}
+  </div>
+</div>`;
+---
+<Docs title="Skeleton" group="Feedback & status" lead="The outline of what’s about to load — text lines, avatars, cards, table rows — in a flat tone with a slow shimmer. It holds the layout still so nothing jumps when the content lands.">
+  <Example title="Text" description="A title bar and lines as tall as lowercase letters, spaced like real text; the last line stops short." code={lines} />
+
+  <h2 id="avatar">Avatar and list</h2>
+  <Example code={list} />
+
+  <h2 id="card">Card</h2>
+  <p>Match the real card’s parts and sizes — media, eyebrow, title, two lines, a button.</p>
+  <Example code={cards} />
+
+  <h2 id="table">Table rows</h2>
+  <p>Keep the real header so the columns are already in place, and vary the bar widths so it doesn’t read as a pattern.</p>
+  <Example code={table} />
+
+  <h2 id="a11y">Accessibility and motion</h2>
+  <p>Put <code>aria-busy="true"</code> on the region that’s loading with a visually hidden “Loading …” inside, and hide the shapes with <code>aria-hidden</code>; swap the whole region when the data arrives. With reduced motion the shimmer stops and the shapes stay as flat tone.</p>
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-skeleton', 'A shimmering block, full width, 20px tall. Size it with <code>width</code> / <code>height</code>.'],
+    ['.dd-skeleton--text', 'A text line: x-height tall, centred in one line of the surrounding type.'],
+    ['.dd-skeleton--title', 'A heading bar (45% wide).'],
+    ['.dd-skeleton--circle', 'Avatar circle, 36px; set <code>--dd-skeleton-size</code>.'],
+    ['.dd-skeleton--block', '16:9 media block.'],
+    ['.dd-skeleton--button', 'A button-sized bar.'],
+    ['.dd-skeleton-lines', 'A paragraph of lines; the last is 62% wide.'],
+    ['.dd-skeleton-group', 'A loading region (stack). Add <code>aria-busy="true"</code>.'],
+    ['--dd-skeleton / --dd-skeleton-shine', 'Tone (9% of the text colour, so it works on any surface) and the shimmer highlight.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Mirror the real layout closely so the swap is calm.', 'Use skeletons for loads you expect to take over ~300ms.', 'Load the frame (headers, filters) for real and skeleton only the data.']}
+    dont={['Don’t show a skeleton and a spinner for the same thing.', 'Don’t keep skeletons up after an error — show the empty or error state.', 'Don’t skeleton things that load instantly.']}
+  />
+</Docs>

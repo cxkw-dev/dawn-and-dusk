@@ -1,0 +1,47 @@
+/* Button — "Solid · icon first". Primary is filled with --dd-primary (Golden hour apricot); secondary is a tonal
+   fill; ghost, danger and link cover the rest. Icons lead the label. Sizes: sm · md (default) · lg. */
+.dd-btn {
+  --_py: 2.5; --_px: 4.5;
+  appearance: none; position: relative; display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--dd-u) * 1.75);
+  padding: calc(var(--dd-u) * var(--_py)) calc(var(--dd-u) * var(--_px));
+  border: 0; border-radius: var(--dd-r-ctl); background: var(--dd-btn-secondary); color: var(--dd-text);
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); font-weight: 600; line-height: 1.1; letter-spacing: 0;
+  white-space: nowrap; text-decoration: none; cursor: pointer; user-select: none;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease),
+    box-shadow var(--dd-dur-fast) var(--dd-ease), transform var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease);
+}
+/* Icon first: tighten the leading edge so the icon optically aligns. */
+.dd-btn:has(> .dd-icon:first-child):not(.dd-btn--icon) { padding-left: calc(var(--dd-u) * var(--_px) * .78); }
+.dd-btn > .dd-icon { opacity: .9; }
+.dd-btn:hover { background: var(--dd-btn-secondary-hover); }
+.dd-btn:active { transform: translateY(1px); }
+.dd-btn:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+.dd-btn--primary { background: var(--dd-primary); color: var(--dd-on-primary); }
+.dd-btn--primary:hover { background: var(--dd-primary-hover); }
+.dd-btn--secondary { background: var(--dd-btn-secondary); color: var(--dd-text); }
+.dd-btn--secondary:hover { background: var(--dd-btn-secondary-hover); }
+.dd-btn--ink { background: var(--dd-text); color: var(--dd-bg); }
+.dd-btn--ink:hover { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }
+.dd-btn--ghost { background: transparent; }
+.dd-btn--ghost:hover { background: var(--dd-surface-2); }
+.dd-btn--danger { background: var(--dd-bad); color: var(--dd-bg); }
+.dd-btn--danger:hover { background: color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)); }
+.dd-btn--link { padding-inline: 0; background: none; border-radius: 0; }
+.dd-btn--link:hover { background: none; color: var(--dd-accent); }
+.dd-btn--link > span { text-decoration: underline dotted; text-decoration-color: var(--dd-faint); text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+.dd-btn--link:hover > span { text-decoration-color: currentColor; }
+
+.dd-btn--sm { --_py: 1.75; --_px: 3.25; gap: calc(var(--dd-u) * 1.25); font-size: var(--dd-fs-xs); }
+.dd-btn--lg { --_py: 3.25; --_px: 6; font-size: var(--dd-fs-base); }
+.dd-btn--icon { padding: calc(var(--dd-u) * var(--_py)); }
+.dd-btn--block { display: flex; width: 100%; }
+
+.dd-btn:disabled, .dd-btn[aria-disabled='true'] { opacity: .45; cursor: not-allowed; pointer-events: none; }
+.dd-btn.is-loading { cursor: progress; pointer-events: none; }
+.dd-btn__spinner {
+  flex: none; width: 1em; height: 1em; border-radius: 50%;
+  border: 2px solid color-mix(in oklab, currentColor 30%, transparent); border-top-color: currentColor;
+  animation: dd-spin .8s linear infinite;
+}
+@keyframes dd-spin { to { transform: rotate(360deg); } }

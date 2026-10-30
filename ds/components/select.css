@@ -1,0 +1,84 @@
+/* Select — two flavours in the tonal .dd-input box:
+   1. Native: .dd-input.dd-select around a <select class="dd-input__control">, with a chevron. Best on mobile.
+   2. Custom: .dd-select-menu wraps a <button class="dd-input dd-select"> and a .dd-listbox (role=listbox) for
+      options that need icons, descriptions or metadata. ds/behaviors/select.js adds the keyboard model.
+   .dd-listbox is the floating option list ("Grouped" menu language: full-bleed rows, small-caps group labels,
+   a check on the selected row) on --dd-float-bg, like the menu. The combobox reuses it. */
+.dd-select { cursor: pointer; }
+.dd-select > .dd-input__control { padding-right: calc(var(--dd-u) * 6); cursor: pointer; white-space: nowrap; overflow: hidden; }
+.dd-select > select.dd-input__control { /* the native select covers the whole box, padding included */
+  margin-inline: calc(var(--dd-u) * var(--_px) * -1);
+  padding-left: calc(var(--dd-u) * var(--_px)); padding-right: calc(var(--dd-u) * (var(--_px) + 6));
+}
+.dd-select > select.dd-input__control:disabled, .dd-select:disabled { cursor: not-allowed; }
+.dd-select__chevron {
+  position: absolute; top: 0; bottom: 0; right: calc(var(--dd-u) * var(--_px)); display: flex; align-items: center;
+  padding: calc(var(--dd-u) * var(--_pt, var(--_py))) 0 calc(var(--dd-u) * var(--_pb, var(--_py)));
+  color: var(--dd-muted); pointer-events: none;
+  transition: transform var(--dd-dur) var(--dd-ease);
+}
+.dd-select__chevron > .dd-icon { width: 16px; height: 16px; vertical-align: 0; }
+.dd-select[aria-expanded='true'] > .dd-select__chevron > .dd-icon { transform: rotate(180deg); }
+.dd-select__chevron > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
+.dd-select .dd-select__placeholder,
+.dd-select > select.dd-input__control:has(> option:checked:disabled) { color: var(--dd-faint); }
+.dd-select > select.dd-input__control > :is(option, optgroup) { color: var(--dd-text); }
+/* Button trigger: show a leading icon or swatch from the chosen option inline with the value. */
+button.dd-select { appearance: none; font: inherit; font-size: var(--dd-fs-sm); }
+button.dd-select.dd-input--sm { font-size: var(--dd-fs-xs); }
+button.dd-select.dd-input--lg { font-size: var(--dd-fs-base); }
+button.dd-select > .dd-input__control { display: flex; align-items: center; gap: calc(var(--dd-u) * 2); text-overflow: ellipsis; }
+button.dd-select > .dd-input__control > .dd-icon { color: var(--dd-muted); }
+button.dd-select:focus-visible { outline: 0; }
+
+.dd-select-menu { position: relative; min-width: 0; }
+
+/* ---------- listbox ---------- */
+.dd-listbox {
+  --_px: calc(var(--dd-u) * 3.5);
+  position: absolute; z-index: var(--dd-z-overlay); top: calc(100% + var(--dd-u) * 1.5); left: 0;
+  display: flex; flex-direction: column; box-sizing: border-box;
+  min-width: 100%; max-width: min(calc(var(--dd-u) * 84), calc(100vw - var(--dd-u) * 4));
+  max-height: min(calc(var(--dd-u) * 84), 60vh); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+  margin: 0; padding: calc(var(--dd-u) * 1.5) 0; list-style: none;
+  border-radius: var(--dd-r-box); background: var(--dd-float-bg); color: var(--dd-text); box-shadow: var(--dd-shadow-float);
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: var(--dd-lh-tight); text-align: left;
+  animation: dd-listbox-in var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-listbox[hidden] { display: none; }
+.dd-listbox:focus { outline: none; }
+.dd-listbox--up { top: auto; bottom: calc(100% + var(--dd-u) * 1.5); }
+.dd-listbox--end { left: auto; right: 0; }
+.dd-listbox--static { position: static; animation: none; }
+@keyframes dd-listbox-in { from { opacity: 0; transform: translateY(-4px); } }
+
+.dd-listbox__group {
+  margin: 0; padding: calc(var(--dd-u) * 2) var(--_px) calc(var(--dd-u) * 1);
+  font-size: 10.5px; font-weight: 600; letter-spacing: .1em; line-height: 1.3; text-transform: uppercase; color: var(--dd-muted);
+}
+.dd-listbox__sep { flex: none; height: 1px; margin: calc(var(--dd-u) * 1.5) 0; background: color-mix(in oklab, var(--dd-text) 9%, transparent); }
+.dd-listbox__option {
+  display: flex; align-items: center; gap: calc(var(--dd-u) * 2.5); min-width: 0;
+  padding: calc(var(--dd-u) * 2) var(--_px); font-weight: 500; cursor: pointer; user-select: none; scroll-margin-block: calc(var(--dd-u) * 1.5);
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-listbox__option[hidden] { display: none; }
+.dd-listbox__option:hover, .dd-listbox__option.is-active { background: var(--dd-float-hover); }
+.dd-listbox__option[aria-selected='true'] { font-weight: 600; }
+.dd-listbox__option[aria-disabled='true'] { color: var(--dd-faint); cursor: not-allowed; }
+.dd-listbox__option[aria-disabled='true']:hover { background: none; }
+.dd-listbox__icon { flex: none; color: var(--dd-muted); }
+.dd-listbox__swatch { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--dd-chip, var(--dd-muted)); }
+.dd-listbox__text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 1px; min-width: 0; overflow-wrap: anywhere; }
+.dd-listbox__option:has(.dd-listbox__desc) > .dd-listbox__icon { align-self: flex-start; margin-top: 1px; }
+.dd-listbox__desc { font-size: var(--dd-fs-xs); font-weight: 400; line-height: 1.35; color: var(--dd-muted); }
+.dd-listbox__meta { flex: none; margin-left: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 400; color: var(--dd-muted); white-space: nowrap; }
+.dd-listbox__check { flex: none; margin-left: auto; color: var(--dd-accent); visibility: hidden; }
+.dd-listbox__meta + .dd-listbox__check { margin-left: 0; }
+.dd-listbox__option[aria-selected='true'] > .dd-listbox__check { visibility: visible; }
+.dd-listbox__match { background: none; color: inherit; font-weight: 700; text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--dd-accent) 55%, transparent); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.dd-listbox__empty { padding: calc(var(--dd-u) * 3) var(--_px); font-size: var(--dd-fs-sm); color: var(--dd-muted); }
+.dd-listbox__empty[hidden] { display: none; }
+/* While the list is open, focus sits in the list; keep the trigger looking active. */
+button.dd-select[aria-expanded='true'] { background: var(--dd-surface); box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-accent) 26%, transparent); }
+button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-shadow-float); }

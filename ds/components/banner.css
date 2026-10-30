@@ -1,0 +1,70 @@
+/* Banner — a page-level message across the full width, above the app chrome. Same soft fill as the alert:
+   a 14% status wash over the page in dawn, a SOLID 30% status fill over the surface in dusk, never a border.
+   Content is centred on wide screens; the banner is its own size container, so under ~560px it left-aligns and
+   the actions wrap under the text. Intents: info (default) · ok · warn · bad · neutral. Dismiss with [data-dd-dismiss]. */
+:root, [data-theme="dawn"] { --dd-banner-wash: 14%; --dd-banner-base: var(--dd-bg); }
+[data-theme="dusk"] { --dd-banner-wash: 30%; --dd-banner-base: var(--dd-surface); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --dd-banner-wash: 30%; --dd-banner-base: var(--dd-surface); }
+}
+
+.dd-banner {
+  --_c: var(--dd-info); --_ic: var(--_c);
+  container: dd-banner / inline-size;
+  position: relative; display: block; width: 100%;
+  background: color-mix(in oklab, var(--_c) var(--dd-banner-wash), var(--dd-banner-base));
+  color: var(--dd-text); font-size: var(--dd-fs-sm); line-height: 1.45;
+}
+.dd-banner--info { --_c: var(--dd-info); }
+.dd-banner--ok { --_c: var(--dd-ok); }
+.dd-banner--warn { --_c: var(--dd-warn); }
+.dd-banner--bad { --_c: var(--dd-bad); }
+.dd-banner--neutral { --_c: var(--dd-tone-2); --_ic: var(--dd-muted); }
+
+.dd-banner__inner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: calc(var(--dd-u) * 1) calc(var(--dd-u) * 3);
+  padding: calc(var(--dd-u) * 2.25) calc(var(--dd-u) * 12);
+  text-align: center;
+}
+.dd-banner__inner > .dd-icon { flex: none; color: var(--_ic); }
+.dd-banner__text { flex: 0 1 auto; min-width: 0; margin: 0; overflow-wrap: anywhere; text-wrap: pretty; }
+.dd-banner__text > :is(strong, b) { font-weight: 600; margin-right: .35em; }
+.dd-banner__text > .dd-mono { font-size: .92em; }
+.dd-banner__actions { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1) calc(var(--dd-u) * 3); }
+.dd-banner__action {
+  appearance: none; padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--dd-text);
+  white-space: nowrap; cursor: pointer;
+  text-decoration: underline dotted; text-decoration-thickness: 2px; text-underline-offset: .28em;
+  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+  transition: text-decoration-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-banner__action:hover { text-decoration-style: solid; text-decoration-color: currentColor; }
+.dd-banner__action:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 3px; border-radius: 2px; }
+
+.dd-banner__dismiss {
+  appearance: none; position: absolute; top: 50%; right: calc(var(--dd-u) * 2.5); translate: 0 -50%;
+  display: inline-grid; place-items: center; width: calc(var(--dd-u) * 5); height: calc(var(--dd-u) * 5);
+  padding: 0; border: 0; border-radius: var(--dd-r-ctl); background: none; cursor: pointer;
+  color: color-mix(in oklab, var(--dd-text) 55%, var(--_c));
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-banner__dismiss:hover { color: var(--dd-text); background: color-mix(in oklab, var(--_c) 20%, transparent); }
+.dd-banner__dismiss:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
+.dd-banner__dismiss > .dd-icon { width: 1.05em; height: 1.05em; }
+
+/* Sticky: stays pinned to the top of the scrolling page. */
+.dd-banner--sticky { position: sticky; top: 0; z-index: var(--dd-z-sticky); }
+
+@container dd-banner (max-width: 560px) {
+  .dd-banner__inner {
+    flex-wrap: wrap; justify-content: flex-start; align-items: flex-start; text-align: left;
+    padding: calc(var(--dd-u) * 2.75) calc(var(--dd-u) * 4);
+  }
+  .dd-banner:has(> .dd-banner__dismiss) > .dd-banner__inner { padding-right: calc(var(--dd-u) * 10); }
+  .dd-banner__inner > .dd-icon { margin-block: calc((1lh - 1.15em) / 2); }
+  .dd-banner__text { flex: 1 1 0; }
+  .dd-banner__actions { flex-basis: 100%; }
+  .dd-banner__inner:has(> .dd-icon) > .dd-banner__actions { padding-left: calc(1.15em + var(--dd-u) * 3); }
+  .dd-banner__dismiss { top: calc(var(--dd-u) * 2); translate: none; }
+}

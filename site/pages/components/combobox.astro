@@ -1,0 +1,185 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+type Svc = { value: string; desc: string; meta: string };
+const services: [string, Svc[]][] = [
+  ['Edge', [
+    { value: 'auth-gateway', desc: 'Sessions, tokens, SSO', meta: 'eu-west-1' },
+    { value: 'edge-cache', desc: 'CDN and image cache', meta: 'global' },
+  ]],
+  ['Workers', [
+    { value: 'billing-worker', desc: 'Invoices and usage', meta: 'us-east-1' },
+    { value: 'log-shipper', desc: 'Streams logs to storage', meta: 'eu-west-1' },
+    { value: 'image-resizer', desc: 'On-demand thumbnails', meta: 'eu-central-1' },
+  ]],
+  ['Apps', [
+    { value: 'dockey-ui', desc: 'Dashboard front end', meta: 'global' },
+    { value: 'ai-focus', desc: 'Focus timer and notes', meta: 'us-west-2' },
+  ]],
+];
+
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const mark = (text: string, q: string) => {
+  const at = q ? text.toLowerCase().indexOf(q) : -1;
+  return at < 0 ? esc(text) : `${esc(text.slice(0, at))}<mark class="dd-listbox__match">${esc(text.slice(at, at + q.length))}</mark>${esc(text.slice(at + q.length))}`;
+};
+
+const serviceList = (id: string, q = '', selected = '', open = false) => {
+  let n = 0;
+  // Opened on a choice, the chosen row is active; opened by typing, the first match is.
+  const isActive = (s: Svc, hit: boolean) => open && hit && (selected && !q ? s.value === selected : n++ === 0);
+  const groups = services.map(([g, list]) => {
+    const rows = list.map((s) => {
+      const hit = !q || s.value.includes(q);
+      return `
+      <li class="dd-listbox__option${isActive(s, hit) ? ' is-active' : ''}" role="option" data-value="${s.value}" aria-selected="${s.value === selected}"${hit ? '' : ' hidden'}>
+        <span class="dd-listbox__text"><span class="dd-listbox__label">${mark(s.value, q)}</span><span class="dd-listbox__desc">${s.desc}</span></span>
+        <span class="dd-listbox__meta">${s.meta}</span>
+        <span class="dd-listbox__check">${i('check')}</span>
+      </li>`;
+    });
+    const any = list.some((s) => !q || s.value.includes(q));
+    return `
+      <li class="dd-listbox__group" role="presentation"${any ? '' : ' hidden'}>${g}</li>${rows.join('')}`;
+  }).join('');
+  return `
+    <ul class="dd-listbox" role="listbox" id="${id}"${open ? '' : ' hidden'}>${groups}
+      <li class="dd-listbox__empty" role="presentation"${!q || services.some(([, l]) => l.some((s) => s.value.includes(q))) ? ' hidden' : ''}>No services match.</li>
+    </ul>`;
+};
+
+const toggle = `<span class="dd-input__affix"><button class="dd-input__btn dd-combobox__toggle" type="button" tabindex="-1" data-dd-combobox-toggle aria-label="Show services">${i('chevron-down')}</button></span>`;
+
+const single = (id: string, label: string, opts: { value?: string; q?: string; selected?: string; open?: boolean; extra?: string } = {}) => `
+<div class="dd-field" style="max-width: 380px">
+  <label class="dd-field__label" for="${id}">${label}</label>
+  <div class="dd-combobox${opts.open ? ' is-open' : ''}" data-dd-combobox>
+    <div class="dd-input">
+      <span class="dd-input__affix">${i('server')}</span>
+      <input class="dd-input__control" id="${id}" role="combobox" aria-autocomplete="list" aria-expanded="${!!opts.open}" aria-controls="${id}-list" autocomplete="off" placeholder="Search services"${opts.value ? ` value="${opts.value}"` : ''}${opts.extra ?? ''}>
+      ${toggle}
+    </div>${serviceList(`${id}-list`, opts.q, opts.selected, opts.open)}
+  </div>
+</div>`;
+
+const basic = single('cbx-1', 'Service', { value: 'billing-worker', selected: 'billing-worker', open: true });
+const filtering = single('cbx-2', 'Service', { value: 'er', q: 'er', open: true });
+const empty = single('cbx-3', 'Service', { value: 'redis', q: 'redis', open: true });
+
+type Tag = { value: string; set: number };
+const tags: Tag[] = [
+  { value: 'frontend', set: 1 }, { value: 'infra', set: 2 }, { value: 'billing', set: 3 }, { value: 'incident', set: 4 },
+  { value: 'design-system', set: 5 }, { value: 'docs', set: 6 }, { value: 'performance', set: 7 }, { value: 'good first issue', set: 8 },
+];
+const chip = (t: Tag) => `
+      <span class="dd-combobox__chip" style="--dd-chip: var(--dd-set-${t.set})" data-value="${t.value}"><span>${t.value}</span><button class="dd-combobox__remove" type="button" aria-label="Remove ${t.value}">${i('x')}</button></span>`;
+const tagList = (id: string, chosen: string[], open: boolean) => `
+    <ul class="dd-listbox" role="listbox" id="${id}" aria-multiselectable="true"${open ? '' : ' hidden'}>${tags.map((t, n) => `
+      <li class="dd-listbox__option${open && n === 0 ? ' is-active' : ''}" role="option" data-value="${t.value}" data-set="${t.set}" aria-selected="${chosen.includes(t.value)}">
+        <span class="dd-listbox__swatch" style="--dd-chip: var(--dd-set-${t.set})"></span>
+        <span class="dd-listbox__text"><span class="dd-listbox__label">${t.value}</span></span>
+        <span class="dd-listbox__check">${i('check')}</span>
+      </li>`).join('')}
+      <li class="dd-listbox__empty" role="presentation" hidden>No labels match.</li>
+    </ul>`;
+const multiBox = (id: string, chosen: string[], open: boolean) => `
+<div class="dd-field" style="max-width: 420px">
+  <label class="dd-field__label" for="${id}">Labels</label>
+  <div class="dd-combobox dd-combobox--multi${open ? ' is-open' : ''}" data-dd-combobox="multi">
+    <div class="dd-input">${tags.filter((t) => chosen.includes(t.value)).map(chip).join('')}
+      <input class="dd-input__control" id="${id}" role="combobox" aria-autocomplete="list" aria-expanded="${open}" aria-controls="${id}-list" autocomplete="off" placeholder="Add a label">
+      <span class="dd-input__affix"><button class="dd-input__btn dd-combobox__toggle" type="button" tabindex="-1" data-dd-combobox-toggle aria-label="Show labels">${i('chevron-down')}</button></span>
+    </div>${tagList(`${id}-list`, chosen, open)}
+    <input type="hidden" name="labels" value="${chosen.join(',')}">
+  </div>
+</div>`;
+
+const multi = multiBox('cbm-1', ['frontend', 'billing', 'design-system'], true);
+
+const chips = `
+<div class="dd-row">${tags.map((t) => `
+  <span class="dd-combobox__chip" style="--dd-chip: var(--dd-set-${t.set})"><span>${t.value}</span><button class="dd-combobox__remove" type="button" aria-label="Remove ${t.value}">${i('x')}</button></span>`).join('')}
+</div>`;
+
+const states = `
+<div class="dd-form__grid">
+  <div class="dd-field">
+    <label class="dd-field__label" for="cbs-1">Owner team</label>
+    <div class="dd-combobox" data-dd-combobox>
+      <div class="dd-input">
+        <input class="dd-input__control" id="cbs-1" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-invalid="true" aria-describedby="cbs-1-err" autocomplete="off" value="platfrom">
+        ${toggle}
+      </div>
+      <ul class="dd-listbox" role="listbox" hidden>
+        <li class="dd-listbox__option" role="option" aria-selected="false"><span class="dd-listbox__text"><span class="dd-listbox__label">platform</span></span><span class="dd-listbox__check">${i('check')}</span></li>
+        <li class="dd-listbox__option" role="option" aria-selected="false"><span class="dd-listbox__text"><span class="dd-listbox__label">product</span></span><span class="dd-listbox__check">${i('check')}</span></li>
+      </ul>
+    </div>
+    <p class="dd-field__error" id="cbs-1-err">Pick a team from the list.</p>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="cbs-2">Service</label>
+    <div class="dd-combobox" data-dd-combobox>
+      <div class="dd-input">
+        <input class="dd-input__control" id="cbs-2" role="combobox" aria-expanded="false" value="auth-gateway" disabled>
+        <span class="dd-input__affix">${i('lock')}</span>
+      </div>
+    </div>
+    <p class="dd-field__hint">Locked while a deploy is running.</p>
+  </div>
+</div>`;
+---
+<Docs title="Combobox" group="Forms" lead="A text input that filters a list as you type. Single select fills the field with the choice; multi select collects choices as Soft wash chips in the Color set.">
+  <Example title="Searchable select" description="Shown open on the current choice: groups, a description and mono metadata per row, a check on the chosen one. Click outside to close it; click, type or press ↓ to open it again." code={basic} minHeight="570px" />
+
+  <h2 id="filtering">Filtering</h2>
+  <p>The list narrows on every keystroke and the first match is active, so Enter picks it. The same markup, opened with “er” typed:</p>
+  <Example code={filtering} minHeight="370px" />
+
+  <h3 id="empty">No matches</h3>
+  <p>Include a <code>.dd-listbox__empty</code> row; the script shows it when nothing is left.</p>
+  <Example code={empty} minHeight="215px" />
+
+  <h2 id="multi">Multi select with chips</h2>
+  <p>Add <code>data-dd-combobox="multi"</code> and <code>.dd-combobox--multi</code>. Each choice becomes a chip coloured from the option’s <code>data-set</code> (1–8, the Color set). Backspace in the empty input removes the last chip; the list stays open while you pick.</p>
+  <Example code={multi} minHeight="515px" />
+
+  <h2 id="chips">Chips</h2>
+  <p>The Soft wash chip: a 22% wash of a Color set hue with deep text in the same hue (34% on hover). Set <code>--dd-chip</code> to any <code>--dd-set-N</code>.</p>
+  <Example code={chips} />
+
+  <h2 id="states">States</h2>
+  <Example code={states} minHeight="235px" />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-combobox', 'Wrapper: anchors the listbox under the box. Holds a <code>.dd-input</code> and a <code>.dd-listbox</code>.'],
+    ['.dd-combobox--multi', 'Chips and the input wrap together inside the box.'],
+    ['.dd-combobox__toggle', 'Chevron button in an affix (<code>.dd-input__btn</code>); flips while open.'],
+    ['.dd-combobox__chip', 'Soft wash chip. Colour from <code>--dd-chip</code> (default <code>var(--dd-set-1)</code>).'],
+    ['.dd-combobox__remove', 'The chip’s remove button. Give it an <code>aria-label</code>.'],
+    ['.dd-listbox · __option · __group · __empty', 'The option list, shared with the custom select (see Select).'],
+    ['.dd-listbox__match', 'The underlined part of a label that matches the query (added by the script).'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <p>Add <code>data-dd-combobox</code> (or <code>="multi"</code>) to the wrapper and <code>role="combobox"</code> to the input. The script keeps <code>aria-expanded</code> and <code>aria-activedescendant</code> on the input, writes values into an optional hidden input, and fires a bubbling <code>dd-combobox</code> event with <code>{'{ value, values, option }'}</code>. Options may carry <code>data-keywords</code> to match on more than their label.</p>
+  <ClassTable head={['Key', 'What it does']} rows={[
+    ['Typing', 'Filters and opens; the first match becomes active.'],
+    ['↓ · ↑', 'Open, then move through matches.'],
+    ['Enter', 'Choose the active option (multi: toggle it).'],
+    ['Esc', 'Close; pressed again in single mode, clear the field.'],
+    ['Backspace', 'Multi, empty input: remove the last chip.'],
+    ['Tab · blur', 'Close. Single mode restores the chosen label if the text matches nothing.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use a combobox once a list passes ~15 options or people know what they’re looking for.', 'Show a description or metadata when labels alone are ambiguous.', 'Keep chip colours stable per value, so “incident” is always the same hue.']}
+    dont={['Don’t use free-text entry here; if new values are allowed, add an explicit “Create …” option.', 'Don’t colour chips by status — the Color set is categorical.', 'Don’t let a multi select grow past three rows; summarise (“+4 more”) instead.']}
+  />
+</Docs>

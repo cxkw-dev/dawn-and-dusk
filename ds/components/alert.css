@@ -1,0 +1,78 @@
+/* Alert — "Soft fill · with action" (pick #20 and its round-4 family). An inline status message: icon, title,
+   description, text actions on the right and an optional dismiss button ([data-dd-dismiss], see behaviors/dismiss.js).
+   Intents: info (default) · ok · warn · bad.
+   Dawn: a soft 14% wash of the status colour over the page. Dusk: a SOLID fill of 30% status over the surface and no
+   border, so it never goes muddy. The alert is its own size container: under ~460px the actions drop under the text. */
+:root, [data-theme="dawn"] { --dd-alert-wash: 14%; --dd-alert-base: var(--dd-bg); --dd-alert-desc: 72%; }
+[data-theme="dusk"] { --dd-alert-wash: 30%; --dd-alert-base: var(--dd-surface); --dd-alert-desc: 80%; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --dd-alert-wash: 30%; --dd-alert-base: var(--dd-surface); --dd-alert-desc: 80%; }
+}
+
+.dd-alert {
+  --_c: var(--dd-info);
+  container: dd-alert / inline-size;
+  position: relative; display: flex; flex-wrap: wrap; align-items: flex-start;
+  gap: calc(var(--dd-u) * 2) calc(var(--dd-u) * 3);
+  padding: calc(var(--dd-u) * 3.5) calc(var(--dd-u) * 4);
+  border: 0; border-radius: var(--dd-r-box);
+  background: color-mix(in oklab, var(--_c) var(--dd-alert-wash), var(--dd-alert-base));
+  color: var(--dd-text); font-size: var(--dd-fs-sm); line-height: var(--dd-lh);
+}
+.dd-alert--info { --_c: var(--dd-info); }
+.dd-alert--ok { --_c: var(--dd-ok); }
+.dd-alert--warn { --_c: var(--dd-warn); }
+.dd-alert--bad { --_c: var(--dd-bad); }
+
+/* Icon: first child, centred on the first line of the title. */
+.dd-alert > .dd-icon, .dd-alert__icon {
+  flex: none; width: 1.15em; height: 1.15em; margin-block: calc((1lh - 1.15em) / 2); color: var(--_c);
+}
+
+.dd-alert__body { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
+.dd-alert__title { margin: 0; font-weight: 600; color: var(--dd-text); }
+.dd-alert__text { margin: 0; color: color-mix(in oklab, var(--dd-text) var(--dd-alert-desc), var(--_c)); text-wrap: pretty; }
+.dd-alert__body :where(ul, ol) { margin: calc(var(--dd-u) * 1) 0 0; padding-left: 1.15em; color: color-mix(in oklab, var(--dd-text) var(--dd-alert-desc), var(--_c)); }
+.dd-alert__body :where(code) { font-family: var(--dd-font-mono); font-size: .92em; }
+
+/* Actions: dotted text links (or small buttons) on the right, vertically centred. */
+.dd-alert__actions {
+  flex: none; align-self: center; display: flex; flex-wrap: wrap; align-items: center;
+  gap: calc(var(--dd-u) * 1) calc(var(--dd-u) * 3);
+}
+.dd-alert__action {
+  appearance: none; padding: 0; border: 0; background: none; font: inherit; font-weight: 500; line-height: 1.3;
+  color: var(--dd-text); white-space: nowrap; cursor: pointer;
+  text-decoration: underline dotted; text-decoration-thickness: 2px; text-underline-offset: .28em;
+  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+  transition: text-decoration-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-alert__action:hover { text-decoration-style: solid; text-decoration-color: currentColor; }
+.dd-alert__action:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 3px; border-radius: 2px; }
+.dd-alert__action--secondary { color: color-mix(in oklab, var(--dd-text) 68%, var(--_c)); }
+
+/* Dismiss: a quiet square icon button, top-right. */
+.dd-alert__dismiss {
+  appearance: none; flex: none; display: inline-grid; place-items: center;
+  width: calc(var(--dd-u) * 5); height: calc(var(--dd-u) * 5);
+  margin: calc((1lh - var(--dd-u) * 5) / 2) calc(var(--dd-u) * -1.5) calc((1lh - var(--dd-u) * 5) / 2) 0;
+  padding: 0; border: 0; border-radius: var(--dd-r-ctl); background: none;
+  color: color-mix(in oklab, var(--dd-text) 55%, var(--_c)); line-height: var(--dd-lh); cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-alert__dismiss:hover { color: var(--dd-text); background: color-mix(in oklab, var(--_c) 20%, transparent); }
+.dd-alert__dismiss:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
+.dd-alert__dismiss > .dd-icon { width: 1.05em; height: 1.05em; }
+
+/* Compact: one line — title and text run together, tighter padding. Icon and dismiss stay on the first line when the
+   text wraps (they use the same first-line centring as the full alert). */
+.dd-alert--compact { column-gap: calc(var(--dd-u) * 2); padding: calc(var(--dd-u) * 2) calc(var(--dd-u) * 3); }
+.dd-alert--compact > .dd-alert__body { flex-direction: row; flex-wrap: wrap; column-gap: calc(var(--dd-u) * 1.5); }
+
+/* Narrow: the dismiss button stays top-right and the actions wrap under the text. */
+@container dd-alert (max-width: 460px) {
+  .dd-alert__dismiss { order: 2; }
+  .dd-alert__actions { order: 3; flex-basis: 100%; align-self: auto; }
+  .dd-alert:has(> .dd-icon, > .dd-alert__icon) > .dd-alert__actions { padding-left: calc(1.15em + var(--dd-u) * 3); }
+  .dd-alert--compact:has(> .dd-icon, > .dd-alert__icon) > .dd-alert__actions { padding-left: calc(1.15em + var(--dd-u) * 2); }
+}

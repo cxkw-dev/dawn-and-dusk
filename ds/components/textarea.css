@@ -1,0 +1,21 @@
+/* Textarea — multi-line text in the same tonal box as .dd-input (use both classes: .dd-input.dd-textarea).
+   The box carries the padding so scrolled text never slides under the tucked label. Resizes vertically;
+   [data-dd-autogrow] grows with the content instead (up to ~10 lines, then scrolls). */
+.dd-textarea {
+  padding-block: calc(var(--dd-u) * var(--_pt, var(--_py))) calc(var(--dd-u) * var(--_pb, var(--_py)));
+  cursor: text;
+}
+.dd-textarea > .dd-input__control {
+  --_lines: 3;
+  padding: 0; min-height: calc(1.4em * var(--_lines)); max-height: calc(1.4em * 24);
+  resize: vertical; overflow-wrap: anywhere; text-overflow: clip; scrollbar-width: thin;
+}
+.dd-textarea > .dd-input__control[rows='2'] { --_lines: 2; }
+.dd-textarea > .dd-input__control[rows='4'] { --_lines: 4; }
+.dd-textarea > .dd-input__control[rows='6'] { --_lines: 6; }
+.dd-textarea > .dd-input__control[data-dd-autogrow] { --_lines: 2; resize: none; overflow-y: hidden; max-height: calc(1.4em * 10); field-sizing: content; }
+.dd-textarea > .dd-input__control.dd-mono { line-height: 1.5; }
+.dd-textarea > .dd-input__control:disabled { resize: none; }
+/* The label stays clickable over the box's top pad (focuses the textarea natively). */
+.dd-field > .dd-field__label:has(+ .dd-textarea) { pointer-events: auto; cursor: text; }
+.dd-textarea > .dd-input__affix { align-self: flex-start; padding: 0; height: 1.4em; }

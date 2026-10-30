@@ -1,0 +1,100 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+
+const single = `
+<div class="dd-slider" style="--_p: .3333; max-width: 420px">
+  <div class="dd-slider__head">
+    <label class="dd-slider__label" for="sl-1">Replicas</label>
+    <span class="dd-slider__value"><output for="sl-1">4</output> of 10</span>
+  </div>
+  <div class="dd-slider__rail">
+    <input class="dd-slider__input" type="range" id="sl-1" min="1" max="10" value="4">
+  </div>
+  <div class="dd-slider__ticks" aria-hidden="true">${Array.from({ length: 10 }, (_, n) => `<span data-value="${n + 1}"${n + 1 === 4 ? ' class="is-active"' : ''}>${n + 1}</span>`).join('')}</div>
+</div>`;
+
+const range = `
+<div class="dd-slider dd-slider--range" style="--_lo: .16; --_hi: .64; max-width: 420px">
+  <div class="dd-slider__head">
+    <span class="dd-slider__label" id="sl-2-label">Latency window</span>
+    <span class="dd-slider__value"><output for="sl-2a">80</output> – <output for="sl-2b">320</output> ms</span>
+  </div>
+  <div class="dd-slider__rail">
+    <span class="dd-slider__fill"></span>
+    <input class="dd-slider__input" type="range" id="sl-2a" min="0" max="500" step="10" value="80" aria-label="Minimum latency">
+    <input class="dd-slider__input" type="range" id="sl-2b" min="0" max="500" step="10" value="320" aria-label="Maximum latency">
+    <span class="dd-slider__bubble" data-for="sl-2a" data-unit=" ms" style="--_p: .16">80 ms</span>
+    <span class="dd-slider__bubble" data-for="sl-2b" data-unit=" ms" style="--_p: .64">320 ms</span>
+  </div>
+  <div class="dd-slider__ticks" aria-hidden="true">${[0, 100, 200, 300, 400, 500].map((v) => `<span data-value="${v}"${v >= 80 && v <= 320 ? ' class="is-active"' : ''}>${v}</span>`).join('')}</div>
+</div>`;
+
+const bubble = `
+<div class="dd-slider" style="--_p: .25; max-width: 420px">
+  <div class="dd-slider__head"><label class="dd-slider__label" for="sl-3">Trace sample rate</label></div>
+  <div class="dd-slider__rail">
+    <input class="dd-slider__input" type="range" id="sl-3" min="0" max="100" step="5" value="25">
+    <span class="dd-slider__bubble" data-for="sl-3" data-unit="%" style="--_p: .25">25%</span>
+  </div>
+</div>`;
+
+const more = `
+<div class="dd-form__grid">
+  <div class="dd-slider dd-slider--sm" style="--_p: .6">
+    <div class="dd-slider__head">
+      <label class="dd-slider__label" for="sl-4">Volume</label>
+      <span class="dd-slider__value"><output for="sl-4" data-unit="%">60%</output></span>
+    </div>
+    <div class="dd-slider__rail"><input class="dd-slider__input" type="range" id="sl-4" min="0" max="100" value="60"></div>
+  </div>
+  <div class="dd-slider" style="--_p: .5">
+    <div class="dd-slider__head">
+      <label class="dd-slider__label" for="sl-5">Build cache size</label>
+      <span class="dd-slider__value"><output for="sl-5" data-unit=" GB">8 GB</output></span>
+    </div>
+    <div class="dd-slider__rail"><input class="dd-slider__input" type="range" id="sl-5" min="0" max="16" value="8" disabled></div>
+  </div>
+</div>`;
+---
+<Docs title="Slider" group="Forms" lead="Sets a number, or a range, by dragging along a track. Native range inputs on a thin tonal rail that fills with the accent, with ticks and live value labels.">
+  <Example title="Single, with ticks" description="The heading output and the active tick follow the thumb. Arrow keys step, Page Up / Down jump, Home / End go to the ends." code={single} />
+
+  <h2 id="range">Range</h2>
+  <p>Two inputs share one rail; the fill sits between the thumbs and they can’t cross. Bubbles ride above each thumb.</p>
+  <Example code={range} />
+
+  <h2 id="bubble">Value bubble</h2>
+  <p>A <code>.dd-slider__bubble</code> with <code>data-for</code> shows the value above its thumb — useful when there is no room for a heading.</p>
+  <Example code={bubble} />
+
+  <h2 id="sizes">Small and disabled</h2>
+  <Example code={more} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-slider', 'Wrapper. Holds the fill position: <code>--_p</code> (0–1), or <code>--_lo</code> / <code>--_hi</code> for ranges. Set them inline for the first paint.'],
+    ['.dd-slider__head · __label · __value', 'Label on the left, mono value on the right (put <code>&lt;output for&gt;</code> inside).'],
+    ['.dd-slider__rail', 'Positioning box for the inputs, fill and bubbles.'],
+    ['.dd-slider__input', 'The native <code>&lt;input type="range"&gt;</code>.'],
+    ['.dd-slider--range + .dd-slider__fill', 'Two inputs on one rail; the fill spans between them.'],
+    ['.dd-slider__bubble', 'Value label above a thumb (<code>data-for</code>, optional <code>data-unit</code>).'],
+    ['.dd-slider__ticks', 'Evenly spaced tick marks with labels; children with <code>data-value</code> light up when in range.'],
+    ['.dd-slider--sm', 'Smaller thumb and track.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute', 'What it does']} rows={[
+    ['output[for="id"]', 'Shows the input’s value (grouped with commas). <code>data-unit</code> appends a unit.'],
+    ['.dd-slider__bubble[data-for="id"]', 'Moves above that input’s thumb and shows its value.'],
+    ['.dd-slider__ticks > [data-value]', 'Gets <code>.is-active</code> at the value (single) or inside the range.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use a slider when the exact number matters less than the feel — sample rates, ranges, volume.', 'Always show the current value next to the label.', 'Pair it with a number input when people need exact values.']}
+    dont={['Don’t use a slider for more than ~100 meaningful steps.', 'Don’t hide the unit; put it in the value label.', 'Don’t make the range thumbs pass through each other.']}
+  />
+</Docs>

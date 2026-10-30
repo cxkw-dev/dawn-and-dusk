@@ -1,0 +1,28 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import Guides from '../../components/Guides.astro';
+import { base } from '../../lib/tokens';
+
+const demo = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-4)">
+  <button class="dd-btn dd-btn--primary">Hover me</button>
+  <div tabindex="0" style="padding: 18px 22px; background: var(--dd-surface); border-radius: var(--dd-r-box);
+    transition: transform var(--dd-dur) var(--dd-ease), background var(--dd-dur) var(--dd-ease)"
+    onmouseenter="this.style.transform='translateY(-4px)'; this.style.background='var(--dd-surface-2)'"
+    onmouseleave="this.style.transform=''; this.style.background='var(--dd-surface)'">Card lifts with --dd-dur</div>
+</div>`;
+---
+<Docs title="Motion" group="Foundations" lead="“Gentle”: a symmetric, unhurried ease. Motion confirms a change; it never performs.">
+  <h2 id="tokens">Tokens</h2>
+  <ul>
+    <li><code>--dd-dur</code> · {base.dur} — reveals, panels, theme changes, expanding rows.</li>
+    <li><code>--dd-dur-fast</code> · {base['dur-fast']} — hovers, presses, focus.</li>
+    <li><code>--dd-ease</code> · <code>{base.ease}</code> — one curve for everything.</li>
+  </ul>
+  <Example code={demo} />
+  <h2 id="reduced">Reduced motion</h2>
+  <p><code>base.css</code> collapses durations when the visitor prefers reduced motion. Spinners and shimmers keep running at a single iteration — state is still communicated.</p>
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides do={['Animate opacity, transform and colour.', 'Move things a few pixels, not across the screen.']} dont={['Don’t animate layout properties on large areas.', 'Don’t add bounce or overshoot — it fights the calm tone.']} />
+</Docs>

@@ -1,0 +1,81 @@
+/* Slider — native <input type="range"> on a thin tonal track that fills with the accent up to the thumb.
+   The thumb is the switch knob (light, soft shadow). Single or range (two thumbs over one track), with optional
+   tick marks and value labels: a heading output and bubbles that ride above the thumbs.
+   ds/behaviors/slider.js keeps the fill (--_p, or --_lo / --_hi for ranges) and the outputs in sync. */
+.dd-slider {
+  --_thumb: 18px; --_track: 4px; --_p: .5; --_lo: 0; --_hi: 1;
+  --_rest: color-mix(in oklab, var(--dd-text) 15%, transparent); /* the unfilled track: reads on the page in both themes */
+  display: flex; flex-direction: column; gap: calc(var(--dd-u) * 2); min-width: 0; font-size: var(--dd-fs-sm);
+}
+.dd-slider__head { display: flex; align-items: baseline; justify-content: space-between; gap: calc(var(--dd-u) * 3); min-width: 0; }
+.dd-slider__label { font-weight: 500; color: var(--dd-text); }
+.dd-slider__value { font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-variant-numeric: tabular-nums; color: var(--dd-muted); white-space: nowrap; }
+.dd-slider__value output { color: var(--dd-text); }
+
+/* The rail holds the inputs, the range fill and the bubbles. Positions run from thumb centre to thumb centre. */
+.dd-slider__rail { position: relative; height: var(--_thumb); }
+.dd-slider:has(.dd-slider__bubble) .dd-slider__rail { margin-top: calc(var(--dd-u) * 6); }
+
+.dd-slider__input {
+  appearance: none; display: block; width: 100%; height: var(--_thumb); margin: 0; padding: 0;
+  background: transparent; cursor: pointer; font: inherit;
+}
+.dd-slider__input:focus-visible { outline: none; }
+.dd-slider__input::-webkit-slider-runnable-track {
+  height: var(--_track); border-radius: var(--dd-r-pill);
+  background: linear-gradient(to right, var(--dd-accent) calc(var(--_thumb) / 2 + (100% - var(--_thumb)) * var(--_p)), var(--_rest) 0);
+}
+.dd-slider__input::-moz-range-track { height: var(--_track); border-radius: var(--dd-r-pill); background: var(--_rest); }
+.dd-slider__input::-moz-range-progress { height: var(--_track); border-radius: var(--dd-r-pill); background: var(--dd-accent); }
+.dd-slider__input::-webkit-slider-thumb {
+  appearance: none; width: var(--_thumb); height: var(--_thumb); margin-top: calc((var(--_track) - var(--_thumb)) / 2);
+  border: 0; border-radius: 50%; background: light-dark(var(--dd-bg), var(--dd-text));
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-text) 14%, transparent), 0 1px 3px var(--dd-overlay);
+  transition: transform var(--dd-dur-fast) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-slider__input::-moz-range-thumb {
+  width: var(--_thumb); height: var(--_thumb); border: 0; border-radius: 50%; background: light-dark(var(--dd-bg), var(--dd-text));
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-text) 14%, transparent), 0 1px 3px var(--dd-overlay);
+}
+.dd-slider__input:hover::-webkit-slider-thumb { transform: scale(1.08); }
+.dd-slider__input:active::-webkit-slider-thumb { transform: scale(1.14); }
+.dd-slider__input:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px var(--dd-ring), 0 1px 3px var(--dd-overlay); }
+.dd-slider__input:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px var(--dd-ring), 0 1px 3px var(--dd-overlay); }
+.dd-slider__input:disabled { cursor: not-allowed; opacity: .45; }
+
+/* Range: two inputs stacked on one rail; only the thumbs take pointer events. The fill sits between them. */
+.dd-slider--range .dd-slider__rail::before, .dd-slider__fill {
+  content: ''; position: absolute; top: calc(50% - var(--_track) / 2); height: var(--_track); border-radius: var(--dd-r-pill);
+}
+.dd-slider--range .dd-slider__rail::before { left: 0; right: 0; background: var(--_rest); }
+.dd-slider__fill {
+  left: calc(var(--_thumb) / 2 + (100% - var(--_thumb)) * var(--_lo));
+  width: calc((100% - var(--_thumb)) * (var(--_hi) - var(--_lo))); background: var(--dd-accent);
+}
+.dd-slider--range .dd-slider__input { position: absolute; inset: 0; pointer-events: none; }
+.dd-slider--range .dd-slider__input::-webkit-slider-runnable-track { background: none; }
+.dd-slider--range .dd-slider__input::-moz-range-track { background: none; }
+.dd-slider--range .dd-slider__input::-moz-range-progress { background: none; }
+.dd-slider--range .dd-slider__input::-webkit-slider-thumb { pointer-events: auto; position: relative; z-index: 1; }
+.dd-slider--range .dd-slider__input::-moz-range-thumb { pointer-events: auto; }
+
+/* Bubble: a value label riding above a thumb (set --_p on it, or let the script do it). */
+.dd-slider__bubble {
+  position: absolute; bottom: calc(100% + var(--dd-u) * 1.5); left: calc(var(--_thumb) / 2 + (100% - var(--_thumb)) * var(--_p));
+  transform: translateX(-50%); padding: 2px calc(var(--dd-u) * 1.25); border-radius: var(--dd-r-ctl);
+  background: var(--dd-text); color: var(--dd-bg); font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); line-height: 1.4;
+  font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none;
+}
+
+/* Ticks: evenly spaced marks with optional labels, centred under each step. */
+.dd-slider__ticks {
+  display: flex; justify-content: space-between; margin: calc(var(--dd-u) * -.5) 0 0; padding: 0 calc(var(--_thumb) / 2 - .5px);
+  list-style: none; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted);
+}
+.dd-slider__ticks > * {
+  position: relative; display: flex; flex-direction: column; align-items: center; width: 1px; gap: 3px; white-space: nowrap;
+}
+.dd-slider__ticks > *::before { content: ''; width: 1px; height: 5px; background: color-mix(in oklab, var(--dd-text) 22%, transparent); }
+.dd-slider__ticks > .is-active { color: var(--dd-text); }
+
+.dd-slider--sm { --_thumb: 14px; --_track: 3px; }

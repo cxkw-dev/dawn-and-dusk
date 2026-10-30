@@ -1,0 +1,90 @@
+/* Stat — KPI tiles. A tile is a label, one figure, an optional delta (direction = icon, tone = good/bad), comparison text
+   and a sparkline in a de-emphasis tone. Tiles sit on --dd-surface; grids separate them by tone and gap, never by lines.
+   Also: a joined grid (one surface split by 2px gaps), a compact inline stat and a hero figure. */
+.dd-stat {
+  --_bg: var(--dd-surface);
+  --_spark: var(--dd-tone-2);
+  display: flex; flex-direction: column; gap: calc(var(--dd-u) * 2); min-width: 0;
+  margin: 0; padding: calc(var(--dd-u) * 4) calc(var(--dd-u) * 4.5);
+  background: var(--_bg); border-radius: var(--dd-r-box); color: var(--dd-text);
+  font-size: var(--dd-fs-sm); line-height: var(--dd-lh-tight);
+  text-decoration: none;
+}
+:is(a, button).dd-stat {
+  appearance: none; border: 0; font: inherit; font-size: var(--dd-fs-sm); text-align: left; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease);
+}
+:is(a, button).dd-stat:hover { --_bg: var(--dd-surface-2); }
+.dd-stat:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+.dd-stat__label {
+  display: flex; align-items: center; gap: calc(var(--dd-u) * 1.5); margin: 0;
+  font-size: var(--dd-fs-sm); font-weight: 500; color: var(--dd-muted);
+}
+.dd-stat__label > .dd-icon { opacity: .85; }
+
+/* Value + sparkline share a row; the spark shrinks (keeping its aspect) before anything wraps. */
+.dd-stat__main { display: flex; align-items: flex-end; justify-content: space-between; gap: calc(var(--dd-u) * 3); min-width: 0; }
+.dd-stat__value {
+  flex: none; margin: 0; font-family: var(--dd-font-display); font-size: var(--dd-fs-2xl); font-weight: 700; line-height: 1;
+  letter-spacing: -0.035em; font-variant-numeric: proportional-nums; white-space: nowrap; color: var(--dd-text);
+}
+.dd-stat__unit { margin-left: 0.18em; font-size: 0.5em; font-weight: 600; letter-spacing: 0; color: var(--dd-muted); }
+
+.dd-stat__foot { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1) calc(var(--dd-u) * 2); }
+.dd-stat__delta {
+  --_c: var(--dd-muted);
+  display: inline-flex; align-items: center; gap: 0.3em; padding: 0.22em 0.5em 0.22em 0.4em; border-radius: var(--dd-r-ctl);
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums;
+  white-space: nowrap; color: color-mix(in oklab, var(--_c) 82%, var(--dd-text));
+  background: color-mix(in oklab, var(--_c) 16%, transparent);
+}
+.dd-stat__delta > .dd-icon { width: 1em; height: 1em; vertical-align: 0; }
+.dd-stat__delta--ok { --_c: var(--dd-ok); }
+.dd-stat__delta--bad { --_c: var(--dd-bad); }
+.dd-stat__delta--warn { --_c: var(--dd-warn); }
+.dd-stat__delta--flat { --_c: var(--dd-muted); color: var(--dd-muted); background: color-mix(in oklab, var(--dd-text) 7%, transparent); }
+.dd-stat__compare { font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+.dd-stat__compare b { font-family: var(--dd-font-mono); font-weight: 500; color: var(--dd-text); font-variant-numeric: tabular-nums; }
+
+/* Sparkline: a 100×32 viewBox that scales uniformly (never stretches); 100px wide, shrinking to 48px in tight tiles. */
+.dd-stat__spark { flex: 0 1 100px; min-width: 48px; height: auto; aspect-ratio: 100 / 32; overflow: visible; }
+.dd-stat__spark-area { fill: var(--_spark); fill-opacity: .16; stroke: none; }
+.dd-stat__spark-line {
+  fill: none; stroke: var(--_spark); stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke;
+}
+.dd-stat__spark-dot { fill: var(--dd-text); stroke: var(--_bg); stroke-width: 2; vector-effect: non-scaling-stroke; }
+
+/* Hero — the one figure a view leads with. */
+.dd-stat--hero { gap: calc(var(--dd-u) * 3); padding: calc(var(--dd-u) * 6); }
+.dd-stat--hero .dd-stat__value { font-size: var(--dd-fs-4xl); letter-spacing: -0.045em; }
+.dd-stat--hero .dd-stat__label { font-size: var(--dd-fs-base); }
+.dd-stat--hero .dd-stat__spark { flex-basis: 220px; }
+.dd-stat--hero .dd-stat__spark-dot { r: 1.75px; }
+
+/* Bare — no surface, for use inside a card or a page header. */
+.dd-stat--bare { --_bg: var(--dd-bg); padding: 0; background: none; border-radius: 0; }
+
+/* Inline — label · value · delta on one baseline. Separators come from adjacent inline stats. */
+.dd-stat--inline {
+  --_bg: transparent;
+  display: inline-flex; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: calc(var(--dd-u) * 1.5);
+  padding: 0; background: none; border-radius: 0; font-size: var(--dd-fs-sm);
+}
+.dd-stat--inline .dd-stat__label { font-weight: 400; font-size: inherit; }
+.dd-stat--inline .dd-stat__value {
+  font-family: var(--dd-font-mono); font-size: inherit; font-weight: 500; letter-spacing: 0; font-variant-numeric: tabular-nums;
+}
+.dd-stat--inline .dd-stat__unit { font-size: inherit; font-weight: 400; margin-left: 0.25em; }
+.dd-stat--inline .dd-stat__delta { align-self: center; }
+
+.dd-stat-inline-group { display: flex; flex-wrap: wrap; align-items: baseline; gap: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 5); }
+
+/* Grid of tiles */
+.dd-stat-grid {
+  display: grid; gap: calc(var(--dd-u) * 2.5);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--dd-stat-min, 210px)), 1fr));
+}
+/* Joined: flex, not grid, so a short last row stretches to the edge instead of leaving a hole in the surface. */
+.dd-stat-grid--joined { display: flex; flex-wrap: wrap; gap: 2px; border-radius: var(--dd-r-box); overflow: hidden; }
+.dd-stat-grid--joined > .dd-stat { flex: 1 1 var(--dd-stat-min, 210px); border-radius: 0; }

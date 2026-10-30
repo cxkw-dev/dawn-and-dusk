@@ -1,0 +1,16 @@
+export default { group: 'Feedback & status', order: 50, items: [
+  { title: 'Alert', href: 'components/alert' },
+  { title: 'Banner', href: 'components/banner' },
+  { title: 'Callout', href: 'components/callout' },
+  { title: 'Toast', href: 'components/toast' },
+  { title: 'Tooltip', href: 'components/tooltip' },
+  { title: 'Popover', href: 'components/popover' },
+  { title: 'Badge', href: 'components/badge' },
+  { title: 'Chip', href: 'components/chip' },
+  { title: 'Avatar', href: 'components/avatar' },
+  { title: 'Status dot', href: 'components/status-dot' },
+  { title: 'Empty state', href: 'components/empty-state' },
+  { title: 'Skeleton', href: 'components/skeleton' },
+  { title: 'Spinner', href: 'components/spinner' },
+  { title: 'Guide cue', href: 'components/guide-cue' },
+] };

@@ -1,0 +1,279 @@
+/* Chart — conventions for SVG/HTML charts in dawn & dusk. Data is the only loud thing: recessive hairline grid, thin marks,
+   2px surface gaps between touching marks, 2px surface rings on markers, and text that never wears a series colour.
+   Axes, ticks and gridlines are HTML so text stays legible at any width; lines and areas are inline SVG with
+   preserveAspectRatio="none" + non-scaling strokes; bars are HTML so their 4px data-end radius never distorts.
+
+   Series colour order (validated for separation in both modes; Golden hour is warm-only, so ≤3 series is ideal):
+   1 terracotta · 2 honey · 3 wine · 4 rose · 5 sand · 6 ochre · 7 apricot · 8 amber · other = tone-2. */
+
+/* ---------- series ---------- */
+.dd-chart-s1 { --dd-series: var(--dd-set-4); --dd-series-ink: var(--dd-on-primary); }
+.dd-chart-s2 { --dd-series: var(--dd-set-1); --dd-series-ink: var(--dd-on-primary); }
+.dd-chart-s3 { --dd-series: var(--dd-set-6); --dd-series-ink: var(--dd-on-accent); }
+.dd-chart-s4 { --dd-series: var(--dd-set-5); --dd-series-ink: var(--dd-on-primary); }
+.dd-chart-s5 { --dd-series: var(--dd-set-8); --dd-series-ink: var(--dd-on-primary); }
+.dd-chart-s6 { --dd-series: var(--dd-set-7); --dd-series-ink: var(--dd-on-primary); }
+.dd-chart-s7 { --dd-series: var(--dd-set-3); --dd-series-ink: var(--dd-on-primary); }
+.dd-chart-s8 { --dd-series: var(--dd-set-2); --dd-series-ink: var(--dd-on-primary); }
+.dd-chart-other { --dd-series: var(--dd-tone-2); --dd-series-ink: var(--dd-on-primary); }
+
+/* ---------- card ---------- */
+.dd-chart {
+  --_bg: var(--dd-surface);
+  --_grid: color-mix(in oklab, var(--dd-text) 8%, transparent);
+  --_base: color-mix(in oklab, var(--dd-text) 26%, transparent);
+  --_h: var(--dd-chart-height, 200px);
+  container-type: inline-size;
+  display: flex; flex-direction: column; gap: calc(var(--dd-u) * 4); min-width: 0;
+  margin: 0; padding: calc(var(--dd-u) * 5); border-radius: var(--dd-r-box);
+  background: var(--_bg); color: var(--dd-text); font-size: var(--dd-fs-sm); line-height: var(--dd-lh-tight);
+}
+.dd-chart--bare { --_bg: var(--dd-bg); padding: 0; background: none; border-radius: 0; }
+
+.dd-chart__head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: calc(var(--dd-u) * 2) calc(var(--dd-u) * 6); }
+.dd-chart__title { margin: 0; font-size: var(--dd-fs-base); font-weight: 650; line-height: var(--dd-lh-tight); }
+.dd-chart__sub { margin: 3px 0 0; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+.dd-chart__total {
+  margin: calc(var(--dd-u) * 1.5) 0 0; font-family: var(--dd-font-display); font-size: var(--dd-fs-xl); font-weight: 700;
+  letter-spacing: -0.03em; line-height: 1;
+}
+
+/* ---------- legend ---------- */
+.dd-chart__legend {
+  display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1) calc(var(--dd-u) * 4);
+  margin: 0; padding: 0; list-style: none; font-size: var(--dd-fs-xs); color: var(--dd-muted);
+}
+.dd-chart__key { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.5); white-space: nowrap; }
+.dd-chart__key::before {
+  content: ""; flex: none; width: 10px; height: 10px; border-radius: 3px; background: var(--dd-series, var(--dd-muted));
+}
+.dd-chart__key--line::before { width: 14px; height: 2px; border-radius: 1px; }
+.dd-chart__key--dot::before { width: 8px; height: 8px; border-radius: 50%; }
+.dd-chart__key-value { margin-left: auto; padding-left: calc(var(--dd-u) * 3); font-family: var(--dd-font-mono); color: var(--dd-text); font-variant-numeric: tabular-nums; }
+.dd-chart__key-share { min-width: 4ch; text-align: right; font-family: var(--dd-font-mono); color: var(--dd-muted); font-variant-numeric: tabular-nums; }
+/* Stacked legend: one key per row with right-aligned values (donuts, stacked bars). */
+.dd-chart__legend--stack { flex-direction: column; align-items: stretch; gap: calc(var(--dd-u) * 2); font-size: var(--dd-fs-sm); color: var(--dd-text); }
+.dd-chart__legend--stack .dd-chart__key { display: flex; gap: calc(var(--dd-u) * 2); }
+
+/* ---------- frame: y-axis · plot · (end labels) / x-axis ---------- */
+.dd-chart__frame {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: var(--_h) auto;
+  column-gap: calc(var(--dd-u) * 2.5); row-gap: calc(var(--dd-u) * 2); padding-top: 6px;
+}
+.dd-chart__frame:has(> .dd-chart__end) { grid-template-columns: auto minmax(0, 1fr) auto; }
+.dd-chart__y {
+  grid-column: 1; grid-row: 1; display: flex; flex-direction: column; justify-content: space-between;
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); font-variant-numeric: tabular-nums;
+}
+/* Zero-height ticks so each label centres exactly on its gridline. */
+.dd-chart__y > * { display: flex; align-items: center; justify-content: flex-end; height: 0; line-height: 1; white-space: nowrap; }
+.dd-chart__x {
+  grid-column: 2; grid-row: 2; display: flex; min-width: 0;
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); font-variant-numeric: tabular-nums;
+}
+/* Band axis: one label per bar slot. */
+.dd-chart__x > * { flex: 1 1 0; min-width: 0; text-align: center; white-space: nowrap; }
+/* Point axis: labels centre on the points of a line (first at the left edge, last at the right). */
+.dd-chart__x--points { justify-content: space-between; }
+.dd-chart__x--points > * { flex: 0 0 0; display: flex; justify-content: center; }
+
+.dd-chart__plot {
+  --_ticks: var(--dd-chart-ticks, 4);
+  grid-column: 2; grid-row: 1; position: relative; min-width: 0; height: var(--_h);
+  background:
+    linear-gradient(var(--_base), var(--_base)) left bottom / 100% 1px no-repeat,
+    repeating-linear-gradient(to bottom, var(--_grid) 0 1px, transparent 1px calc(100% / var(--_ticks)));
+}
+.dd-chart__frame > .dd-chart__plot { height: auto; }
+.dd-chart__plot--clean { background: linear-gradient(var(--_base), var(--_base)) left bottom / 100% 1px no-repeat; }
+
+/* Direct end labels for lines, positioned by --y (0 = top, 100 = baseline). */
+.dd-chart__end { grid-column: 3; grid-row: 1; position: relative; min-width: var(--dd-chart-end-width, 7.5rem); }
+.dd-chart__end > * {
+  position: absolute; left: 0; top: calc(var(--y, 0) * 1%); transform: translateY(-50%);
+  display: flex; align-items: center; gap: calc(var(--dd-u) * 1.25); white-space: nowrap; font-size: var(--dd-fs-xs); color: var(--dd-muted);
+}
+.dd-chart__end > *::before { content: ""; flex: none; width: 10px; height: 2px; border-radius: 1px; background: var(--dd-series); }
+.dd-chart__end b { font-family: var(--dd-font-mono); font-weight: 500; color: var(--dd-text); font-variant-numeric: tabular-nums; }
+
+/* ---------- SVG marks ---------- */
+.dd-chart__svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.dd-chart__line {
+  fill: none; stroke: var(--dd-series, var(--dd-set-4)); stroke-width: 2px; stroke-linecap: round; stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.dd-chart__area { fill: var(--dd-series, var(--dd-set-4)); fill-opacity: .14; stroke: none; }
+.dd-chart__gridline { stroke: var(--_grid); stroke-width: 1px; vector-effect: non-scaling-stroke; shape-rendering: crispEdges; }
+.dd-chart__baseline { stroke: var(--_base); stroke-width: 1px; vector-effect: non-scaling-stroke; shape-rendering: crispEdges; }
+.dd-chart__tick { fill: var(--dd-muted); font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-variant-numeric: tabular-nums; }
+
+/* Markers are HTML so they stay round on a stretched plot: positioned by --x / --y in percent. */
+.dd-chart__marker {
+  position: absolute; left: calc(var(--x, 100) * 1%); top: calc(var(--y, 0) * 1%); z-index: 1;
+  width: 8px; height: 8px; border-radius: 50%; transform: translate(-50%, -50%);
+  background: var(--dd-series, var(--dd-set-4)); box-shadow: 0 0 0 2px var(--_bg); pointer-events: none;
+}
+
+/* Reference rule (target, SLO, budget) — a labelled horizontal line at --y. */
+.dd-chart__rule {
+  position: absolute; left: 0; right: 0; top: calc(var(--y, 0) * 1%); height: 0; z-index: 1;
+  border-top: 1px solid color-mix(in oklab, var(--dd-text) 42%, transparent); pointer-events: none;
+}
+.dd-chart__rule > span {
+  position: absolute; right: 0; bottom: 3px; padding: 0 4px; border-radius: 3px; background: var(--_bg);
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); white-space: nowrap;
+}
+
+/* ---------- vertical bars (HTML) ---------- */
+.dd-chart__cols { position: absolute; inset: 0; display: flex; }
+.dd-chart__slot {
+  position: relative; flex: 1 1 0; min-width: 0; display: flex; align-items: flex-end; justify-content: center; gap: 2px;
+  padding-inline: 1.5%; border-radius: 4px 4px 0 0; outline-offset: -2px; /* % of the plot width */
+  transition: background-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-chart__col {
+  flex: 0 1 24px; min-width: 3px; height: calc(var(--v, 0) * 1%);
+  background: var(--dd-series, var(--dd-set-4)); border-radius: 4px 4px 0 0;
+  transition: opacity var(--dd-dur-fast) var(--dd-ease);
+}
+/* Stacked column: segments from the baseline up, 2px surface gap, only the top segment rounded. */
+.dd-chart__stackcol {
+  flex: 0 1 24px; min-width: 3px; height: calc(var(--v, 0) * 1%);
+  display: flex; flex-direction: column-reverse; gap: 2px; transition: opacity var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-chart__stackcol > * { flex: var(--v, 1) 1 0; min-height: 1px; background: var(--dd-series); }
+.dd-chart__stackcol > :last-child { border-radius: 4px 4px 0 0; }
+/* Hover: a faint band behind the slot, other slots step back. */
+.dd-chart__slot:is(:hover, :focus-visible) { background: color-mix(in oklab, var(--dd-text) 5%, transparent); }
+.dd-chart__cols:hover .dd-chart__slot:not(:hover) > :is(.dd-chart__col, .dd-chart__stackcol) { opacity: .45; }
+
+/* ---------- line hover: hit columns with crosshair, point dots and tooltip ---------- */
+.dd-chart__hits { position: absolute; inset: 0; z-index: 2; --_step: calc(100% / (var(--dd-chart-points, 12) - 1)); }
+.dd-chart__hit {
+  position: absolute; top: 0; bottom: 0; left: calc(var(--x, 0) * 1%); width: var(--_step); transform: translateX(-50%);
+  outline-offset: -2px;
+}
+.dd-chart__hit::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--_base); opacity: 0;
+  transition: opacity var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-chart__dot {
+  position: absolute; left: 50%; top: calc(var(--y, 0) * 1%); width: 8px; height: 8px; border-radius: 50%; transform: translate(-50%, -50%);
+  background: var(--dd-series, var(--dd-set-4)); box-shadow: 0 0 0 2px var(--_bg); opacity: 0;
+  transition: opacity var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-chart__hit:is(:hover, :focus-visible)::before,
+.dd-chart__hit:is(:hover, :focus-visible) .dd-chart__dot { opacity: 1; }
+
+/* ---------- tooltip ---------- */
+.dd-chart__tip {
+  position: absolute; top: 0; left: calc(50% + 12px); z-index: var(--dd-z-tooltip);
+  display: flex; flex-direction: column; gap: 5px; min-width: 150px; max-width: 240px; margin: 0;
+  padding: calc(var(--dd-u) * 2) calc(var(--dd-u) * 2.5); border-radius: var(--dd-r-box);
+  background: var(--dd-bg); box-shadow: var(--dd-shadow-float); color: var(--dd-text);
+  font-size: var(--dd-fs-xs); line-height: 1.3; text-align: left; white-space: nowrap; pointer-events: none;
+  opacity: 0; visibility: hidden; transform: translateY(3px);
+  transition: opacity var(--dd-dur-fast) var(--dd-ease), transform var(--dd-dur-fast) var(--dd-ease), visibility var(--dd-dur-fast);
+}
+.dd-chart__slot .dd-chart__tip { left: calc(100% + 4px); }
+.is-flip > .dd-chart__tip { left: auto; right: calc(50% + 12px); }
+.dd-chart__slot.is-flip > .dd-chart__tip { right: calc(100% + 4px); }
+:is(.dd-chart__slot, .dd-chart__hit):is(:hover, :focus-visible) > .dd-chart__tip { opacity: 1; visibility: visible; transform: none; }
+.dd-chart__tip.is-static { position: static; opacity: 1; visibility: visible; transform: none; display: inline-flex; }
+.dd-chart__tip-title { margin: 0 0 2px; font-family: var(--dd-font-mono); color: var(--dd-muted); }
+.dd-chart__tip-row { display: flex; align-items: center; gap: calc(var(--dd-u) * 1.5); margin: 0; }
+.dd-chart__tip-row::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--dd-series, var(--dd-muted)); }
+.dd-chart__tip-row > b, .dd-chart__tip-row > data {
+  margin-left: auto; padding-left: calc(var(--dd-u) * 4); font-family: var(--dd-font-mono); font-weight: 500; font-variant-numeric: tabular-nums;
+}
+.dd-chart__tip-row--total { padding-top: 5px; margin-top: 1px; border-top: 1px solid var(--_grid, color-mix(in oklab, var(--dd-text) 8%, transparent)); color: var(--dd-muted); }
+.dd-chart__tip-row--total::before { visibility: hidden; }
+[data-theme="dusk"] .dd-chart__tip { background: var(--dd-surface-3); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme]) .dd-chart__tip { background: var(--dd-surface-3); } }
+
+/* ---------- horizontal bars (HTML) ---------- */
+.dd-chart__hbars { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.dd-chart__hbar {
+  display: grid; grid-template-columns: var(--dd-chart-label-width, 8.5rem) minmax(0, 1fr) 6ch; align-items: center;
+  column-gap: calc(var(--dd-u) * 2.5); padding-block: 3px; border-radius: var(--dd-r-ctl);
+  transition: opacity var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-chart__hbar-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--dd-fs-sm); color: var(--dd-muted); }
+.dd-chart__hbar-track { position: relative; display: flex; align-items: center; height: 16px; }
+.dd-chart__hbar-track::before { content: ""; position: absolute; left: 0; top: -3px; bottom: -3px; width: 1px; background: var(--_base); }
+.dd-chart__hbar-fill {
+  height: 100%; width: calc(var(--v, 0) * 1%); min-width: 2px; border-radius: 0 4px 4px 0;
+  background: var(--dd-series, var(--dd-set-4));
+}
+.dd-chart__hbar-value { text-align: right; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-text); font-variant-numeric: tabular-nums; }
+.dd-chart__hbars:hover .dd-chart__hbar:not(:hover) { opacity: .5; }
+
+/* ---------- 100% stacked bar (HTML) ---------- */
+.dd-chart__stack { display: flex; gap: 2px; height: 28px; min-width: 0; }
+.dd-chart__seg {
+  flex: var(--v, 1) 1 0; min-width: 0; display: flex; align-items: center; padding-inline: 8px; overflow: hidden;
+  border-radius: 4px; background: var(--dd-series, var(--dd-set-4)); color: var(--dd-series-ink, var(--dd-on-primary));
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums;
+  transition: opacity var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-chart__seg.is-quiet { color: transparent; } /* too narrow for its label: the legend and table carry it */
+.dd-chart__stack:hover .dd-chart__seg:not(:hover) { opacity: .5; }
+.dd-chart__stack--thin { height: 8px; border-radius: var(--dd-r-pill); overflow: hidden; }
+.dd-chart__stack--thin > .dd-chart__seg { padding: 0; border-radius: 0; color: transparent; }
+
+/* ---------- donut (SVG) ---------- */
+.dd-chart__pie { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 5) calc(var(--dd-u) * 8); }
+.dd-chart__pie > .dd-chart__legend { flex: 1 1 200px; max-width: 380px; }
+.dd-chart__donut { position: relative; flex: none; width: var(--dd-chart-donut, 168px); aspect-ratio: 1; }
+.dd-chart__donut > svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.dd-chart__arc {
+  fill: none; stroke: var(--dd-series, var(--dd-set-4)); stroke-width: 5.5;
+  transition: opacity var(--dd-dur-fast) var(--dd-ease), stroke-width var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-chart__arc-track { fill: none; stroke: var(--_grid); stroke-width: 5.5; }
+.dd-chart__donut svg:hover .dd-chart__arc:not(:hover) { opacity: .45; }
+.dd-chart__arc:hover { stroke-width: 6.5; }
+.dd-chart__donut-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  text-align: center; pointer-events: none;
+}
+.dd-chart__donut-center b { font-family: var(--dd-font-display); font-size: var(--dd-fs-xl); font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+.dd-chart__donut-center span { font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+
+/* ---------- empty ---------- */
+.dd-chart__empty {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  padding: calc(var(--dd-u) * 4); text-align: center; color: var(--dd-muted); font-size: var(--dd-fs-sm);
+}
+.dd-chart__empty > .dd-icon { width: 22px; height: 22px; margin-bottom: 2px; color: var(--dd-faint); }
+.dd-chart__empty b { color: var(--dd-text); font-weight: 600; }
+.dd-chart__empty .dd-btn { margin-top: 6px; }
+.dd-chart__plot.is-empty { background: linear-gradient(var(--_grid), var(--_grid)) left bottom / 100% 1px no-repeat; }
+
+/* ---------- table view ---------- */
+.dd-chart__data { font-size: var(--dd-fs-xs); }
+.dd-chart__data > summary {
+  display: inline-flex; align-items: center; gap: 4px; cursor: pointer; list-style: none; color: var(--dd-muted); border-radius: var(--dd-r-ctl);
+}
+.dd-chart__data > summary::-webkit-details-marker { display: none; }
+.dd-chart__data > summary::before { content: "▸"; font-size: 0.85em; transition: transform var(--dd-dur-fast) var(--dd-ease); }
+.dd-chart__data[open] > summary::before { transform: rotate(90deg); }
+.dd-chart__data > summary:hover { color: var(--dd-text); }
+.dd-chart__data-scroll { margin-top: calc(var(--dd-u) * 2); overflow-x: auto; }
+.dd-chart__data table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.dd-chart__data :is(th, td) { padding: 6px 12px 6px 0; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--_grid); }
+.dd-chart__data :is(th, td):first-child { text-align: left; }
+.dd-chart__data th { font-weight: 500; color: var(--dd-muted); }
+.dd-chart__data td { font-family: var(--dd-font-mono); }
+.dd-chart__data td:first-child { font-family: inherit; }
+
+/* ---------- narrow ---------- */
+@container (max-width: 460px) {
+  .dd-chart__frame:has(> .dd-chart__end) { grid-template-columns: auto minmax(0, 1fr); }
+  .dd-chart__end { display: none; }
+  .dd-chart__x > .is-minor { visibility: hidden; }
+  .dd-chart__hbar { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; padding-block: 5px; }
+  .dd-chart__hbar-label { grid-column: 1 / -1; }
+  .dd-chart__hbar-track::before { top: -2px; bottom: -2px; }
+  .dd-chart__seg { font-size: 10px; padding-inline: 5px; }
+}

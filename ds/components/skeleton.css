@@ -1,0 +1,40 @@
+/* Skeleton — the shape of content that is on its way: text lines, avatars, cards and table rows in a flat tone with a
+   slow shimmer. The tone is a 9% tint of the text colour, so it reads the same on the page and on a surface. Wrap a loading region in aria-busy="true" (and say "Loading…" for screen readers); the skeleton
+   pieces themselves are decoration. Under reduced motion the shimmer stops and the shapes stay still. */
+:root, [data-theme="dawn"] {
+  --dd-skeleton: color-mix(in oklab, var(--dd-text) 9%, transparent);
+  --dd-skeleton-shine: color-mix(in oklab, var(--dd-bg) 60%, transparent);
+}
+[data-theme="dusk"] {
+  --dd-skeleton: color-mix(in oklab, var(--dd-text) 9%, transparent);
+  --dd-skeleton-shine: color-mix(in oklab, var(--dd-text) 7%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --dd-skeleton-shine: color-mix(in oklab, var(--dd-text) 7%, transparent); }
+}
+
+.dd-skeleton {
+  display: block; flex: none; width: 100%; height: calc(var(--dd-u) * 4);
+  border-radius: var(--dd-r-ctl);
+  background-color: var(--dd-skeleton);
+  background-image: linear-gradient(100deg, transparent 30%, var(--dd-skeleton-shine) 50%, transparent 70%);
+  background-size: 250% 100%; background-repeat: no-repeat;
+  animation: dd-skeleton-shimmer 1.8s var(--dd-ease) infinite;
+}
+/* Text line: as tall as lowercase letters, spaced like a line of body text. */
+.dd-skeleton--text { height: .72em; margin-block: calc((1lh - .72em) / 2); border-radius: 3px; }
+.dd-skeleton--title { height: 1.1em; width: 45%; margin-bottom: calc(var(--dd-u) * 1); border-radius: 4px; }
+.dd-skeleton--circle { width: var(--dd-skeleton-size, calc(var(--dd-u) * 7.2)); height: var(--dd-skeleton-size, calc(var(--dd-u) * 7.2)); border-radius: 50%; }
+.dd-skeleton--block { height: auto; aspect-ratio: 16 / 9; border-radius: var(--dd-r-box); }
+.dd-skeleton--button { width: calc(var(--dd-u) * 20); height: calc(var(--dd-u) * 7.5); }
+
+/* A paragraph of lines; the last one stops short. */
+.dd-skeleton-lines { display: flex; flex-direction: column; width: 100%; font-size: var(--dd-fs-sm); line-height: var(--dd-lh); }
+.dd-skeleton-lines > .dd-skeleton:last-child:not(:only-child) { width: 62%; }
+
+/* A loading region: aria-busy content area. */
+.dd-skeleton-group { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 3); min-width: 0; }
+.dd-skeleton-group[aria-busy="true"] { cursor: progress; }
+
+@keyframes dd-skeleton-shimmer { from { background-position: 120% 0; } to { background-position: -20% 0; } }
+@media (prefers-reduced-motion: reduce) { .dd-skeleton { animation: none; background-image: none; } }

@@ -1,0 +1,46 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import Guides from '../../components/Guides.astro';
+import { base } from '../../lib/tokens';
+
+const radii = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-4); align-items: flex-end">
+  <div class="dd-stack" style="--dd-gap: 6px"><button class="dd-btn dd-btn--primary">Control</button><code class="dd-caption dd-mono">--dd-r-ctl · ${base['r-ctl']}</code></div>
+  <div class="dd-stack" style="--dd-gap: 6px"><div style="width: 140px; height: 80px; background: var(--dd-surface); border-radius: var(--dd-r-box)"></div><code class="dd-caption dd-mono">--dd-r-box · ${base['r-box']}</code></div>
+  <div class="dd-stack" style="--dd-gap: 6px"><div style="width: 180px; height: 110px; background: var(--dd-surface); border-radius: var(--dd-r-lg)"></div><code class="dd-caption dd-mono">--dd-r-lg · ${base['r-lg']}</code></div>
+  <div class="dd-stack" style="--dd-gap: 6px"><span style="display:inline-block; padding: 6px 14px; background: var(--dd-surface-2); border-radius: var(--dd-r-pill)">Pill</span><code class="dd-caption dd-mono">--dd-r-pill</code></div>
+</div>`;
+
+const float = `
+<div style="position: relative; height: 200px; background: var(--dd-surface); border-radius: var(--dd-r-box); padding: var(--dd-space-5)">
+  <p class="dd-small dd-muted">A card on the page — no shadow, no border.</p>
+  <div style="position: absolute; right: 28px; bottom: 24px; width: 230px; padding: var(--dd-space-3); background: var(--dd-bg); border-radius: var(--dd-r-box); box-shadow: var(--dd-shadow-float)">
+    <p class="dd-small" style="margin:0"><b>Floating layer</b></p>
+    <p class="dd-caption" style="margin:4px 0 0">Menus, popovers, toasts and dialogs use <code>--dd-shadow-float</code>.</p>
+  </div>
+</div>`;
+---
+<Docs title="Radius & depth" group="Foundations" lead="“Subtle” corners and “Borderless · deeper tone” depth: surfaces separate by tone, not by lines or shadows.">
+  <h2 id="radius">Radius</h2>
+  <Example code={radii} />
+
+  <h2 id="layers">Layers</h2>
+  <p>Each step mixes a little more text colour into the page. In dawn that makes containers slightly darker than the page; in dusk, slightly lighter. Hierarchy reads without a single border.</p>
+  <div class="doc-layers">
+    <div style="background: var(--dd-bg)"><b>bg</b><code>--dd-bg</code><span class="dd-caption">Page</span></div>
+    <div style="background: var(--dd-surface)"><b>surface</b><code>--dd-surface</code><span class="dd-caption">Cards, inputs, sidebars</span></div>
+    <div style="background: var(--dd-surface-2)"><b>surface-2</b><code>--dd-surface-2</code><span class="dd-caption">Hover, inset, secondary</span></div>
+    <div style="background: var(--dd-surface-3)"><b>surface-3</b><code>--dd-surface-3</code><span class="dd-caption">Pressed, active</span></div>
+  </div>
+
+  <h2 id="floating">Floating layers</h2>
+  <p>Things that float above the page — and only those — get a shadow. Backdrops behind dialogs and drawers use <code>--dd-overlay</code>.</p>
+  <Example code={float} />
+
+  <h2 id="texture">Texture</h2>
+  <p>The page carries a fine film grain (<code>--dd-grain</code>), applied by <code>base.css</code> to <code>&lt;body&gt;</code>. Solid surfaces cover it, which is what makes cards read as a shade apart — especially at dusk.</p>
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides do={['Use surface steps for grouping and hover.', 'Reserve <code>--dd-shadow-float</code> for layers that sit above content.']} dont={['Don’t add borders to cards or alerts.', 'Don’t stack more than three tonal steps in one area.']} />
+</Docs>

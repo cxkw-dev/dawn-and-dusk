@@ -1,0 +1,233 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+import { Code } from 'astro:components';
+
+const item = (icon: string, label: string, o: { section?: string; on?: boolean; extra?: string } = {}) =>
+  o.section
+    ? `<button class="dd-side-nav__item${o.on ? ' is-active' : ''}" type="button"${o.on ? ' aria-current="true"' : ''} data-dd-nav-section="${o.section}" data-label="${label}" aria-label="${label}">${i(icon)}</button>`
+    : `<a class="dd-side-nav__item" href="#" data-label="${label}" aria-label="${label}">${i(icon)}${o.extra ?? ''}</a>`;
+
+const link = (label: string, o: { current?: boolean; count?: string; dot?: string; badge?: string } = {}) =>
+  `<a class="dd-side-nav__link" href="#"${o.current ? ' aria-current="page"' : ''}>${o.dot ? `<span class="dd-side-nav__dot dd-side-nav__dot--${o.dot}"></span>` : ''}<span class="dd-side-nav__label">${label}</span>${o.count ? `<span class="dd-side-nav__count">${o.count}</span>` : ''}${o.badge ?? ''}</a>`;
+
+const shell = (id: string, h: string) => `
+<div class="dd-app-shell" style="--dd-app-shell-h: ${h}">
+  <nav class="dd-side-nav" id="${id}-nav" aria-label="Main">
+    <div class="dd-side-nav__rail">
+      <a class="dd-side-nav__logo dd-logo-tile" href="#" aria-label="dawn &amp; dusk — home">d&amp;</a>
+      ${item('server', 'Services', { section: 'services', on: true })}
+      ${item('folder', 'Projects', { section: 'projects' })}
+      ${item('chart', 'Analytics')}
+      ${item('database', 'Storage')}
+      <span class="dd-side-nav__spacer"></span>
+      ${item('bell', 'Inbox · 3 new', { extra: '<span class="dd-side-nav__dot"></span>' })}
+      ${item('settings', 'Settings')}
+      <span class="dd-side-nav__sep"></span>
+      <button class="dd-side-nav__item dd-side-nav__collapse" type="button" data-dd-nav-toggle aria-controls="${id}-panel" aria-expanded="true" aria-label="Collapse navigation" data-label="Collapse">${i('chevron-left')}</button>
+    </div>
+    <div class="dd-side-nav__panel" id="${id}-panel">
+      <div class="dd-side-nav__pane" data-dd-nav-pane="services">
+        <div class="dd-side-nav__head"><span class="dd-side-nav__title">services</span><span class="dd-side-nav__count">6</span></div>
+        <p class="dd-side-nav__section">Production</p>
+        ${link('auth-gateway', { current: true, dot: 'ok', count: '3' })}
+        ${link('billing-worker', { dot: 'bad', badge: '<span class="dd-side-nav__badge dd-side-nav__badge--solid">12</span>' })}
+        ${link('edge-cache', { dot: 'ok', count: '9' })}
+        ${link('search-indexer', { dot: 'warn', count: '1' })}
+        <p class="dd-side-nav__section">Staging</p>
+        ${link('auth-gateway', { dot: 'ok' })}
+        ${link('payments-v2', { dot: 'idle', badge: '<span class="dd-side-nav__badge dd-side-nav__badge--new">NEW</span>' })}
+        <div class="dd-side-nav__foot">
+          <div class="dd-side-nav__note"><span><b>Hobby plan</b> · 412k of 1M requests</span><span class="dd-side-nav__meter"><i style="width:41%"></i></span></div>
+        </div>
+      </div>
+      <div class="dd-side-nav__pane" data-dd-nav-pane="projects" hidden>
+        <div class="dd-side-nav__head"><span class="dd-side-nav__title">projects</span><span class="dd-side-nav__count">7</span></div>
+        <p class="dd-side-nav__section">Pinned</p>
+        ${link('dawn-and-dusk', { count: '24' })}
+        ${link('dockey-ui', { count: '9' })}
+        <p class="dd-side-nav__section">All</p>
+        ${link('ai-focus', { count: '31' })}
+        ${link('insomnia', { count: '6' })}
+        ${link('leetnode', { count: '41' })}
+      </div>
+    </div>
+  </nav>
+
+  <div class="dd-app-shell__main">
+    <header class="dd-top-bar">
+      <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-nav-open="#${id}-nav" aria-controls="${id}-nav" aria-expanded="false" aria-label="Open navigation">${i('menu')}</button>
+      <a class="dd-top-bar__brand dd-top-bar__narrow" href="#"><span class="dd-logo dd-logo--sm">dawn &amp; dusk</span></a>
+      <div class="dd-top-bar__context">
+        <button class="dd-top-bar__switch" type="button"><span class="dd-top-bar__mark">cx</span><span>cxkw</span></button>
+        <span class="dd-faint">/</span>
+        <button class="dd-top-bar__switch" type="button"><span>production</span>${i('sort')}</button>
+      </div>
+      <button class="dd-top-bar__search" type="button" aria-label="Search">${i('search')}<span>Search…</span><kbd class="dd-top-bar__kbd">⌘K</kbd></button>
+      <div class="dd-top-bar__actions">
+        <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__icon-btn" type="button" aria-label="Notifications, 3 new">${i('bell')}<span class="dd-top-bar__dot"></span></button>
+        <details class="dd-top-bar__user" data-dd-autoclose>
+          <summary aria-label="Account menu"><span class="dd-top-bar__avatar">cx</span></summary>
+          <div class="dd-top-bar__menu">
+            <div class="dd-top-bar__menu-head"><b>cxkw</b><span>hello@cxkw.dev</span></div>
+            <div class="dd-top-bar__menu-sep"></div>
+            <a class="dd-top-bar__menu-item" href="#">${i('settings')}Settings</a>
+            <button class="dd-top-bar__menu-item" type="button" data-dd-theme-toggle>${i('moon')}Toggle dusk</button>
+            <a class="dd-top-bar__menu-item" href="#">${i('logout')}Sign out</a>
+          </div>
+        </details>
+      </div>
+    </header>
+
+    <main class="dd-app-shell__content">
+      <div class="dd-app-shell__page">
+        <header class="dd-page-header">
+          <nav class="dd-breadcrumbs dd-breadcrumbs--sm" aria-label="Breadcrumb">
+            <ol class="dd-breadcrumbs__list">
+              <li class="dd-breadcrumbs__item"><a class="dd-breadcrumbs__link" href="#"><span>services</span></a></li>
+              <li class="dd-breadcrumbs__item"><a class="dd-breadcrumbs__link" aria-current="page"><span>auth-gateway</span></a></li>
+            </ol>
+          </nav>
+          <div class="dd-page-header__row">
+            <div class="dd-page-header__titles"><h1 class="dd-page-header__title">auth-gateway</h1></div>
+            <div class="dd-page-header__actions">
+              <button class="dd-btn dd-btn--secondary" type="button">${i('refresh')}<span>Redeploy</span></button>
+              <button class="dd-btn dd-btn--primary" type="button">${i('upload')}<span>Promote</span></button>
+            </div>
+          </div>
+          <ul class="dd-page-header__meta">
+            <li><span class="dd-page-header__status"></span>Healthy</li>
+            <li>${i('globe')}<b>fra1 · iad1 · sin1</b></li>
+            <li>${i('clock')}Deployed <b>4m ago</b></li>
+          </ul>
+          <nav aria-label="Service">
+            <div class="dd-tabs__list">
+              <a class="dd-tabs__tab" href="#" aria-current="page">Overview</a>
+              <a class="dd-tabs__tab" href="#">Deploys <span class="dd-tabs__count">32</span></a>
+              <a class="dd-tabs__tab" href="#">Logs</a>
+              <a class="dd-tabs__tab" href="#">Env vars <span class="dd-tabs__count">18</span></a>
+              <a class="dd-tabs__tab" href="#">Settings</a>
+            </div>
+          </nav>
+        </header>
+
+        <div class="dd-card-grid">
+          <article class="dd-card dd-card--stat"><div class="dd-card__body">
+            <p class="dd-card__eyebrow">${i('bolt')}<span>Requests · 24h</span></p>
+            <p class="dd-card__stat dd-num">1.82<small>M</small></p>
+            <div class="dd-card__foot"><span class="dd-card__delta is-up">${i('arrow-up')}+6.1%</span><span class="dd-card__meta">vs. yesterday</span></div>
+          </div></article>
+          <article class="dd-card dd-card--stat"><div class="dd-card__body">
+            <p class="dd-card__eyebrow">${i('clock')}<span>p95 latency</span></p>
+            <p class="dd-card__stat dd-num">142<small>ms</small></p>
+            <div class="dd-card__foot"><span class="dd-card__delta">${i('minus')}0ms</span><span class="dd-card__meta">within budget</span></div>
+          </div></article>
+          <article class="dd-card dd-card--stat"><div class="dd-card__body">
+            <p class="dd-card__eyebrow">${i('alert')}<span>Error rate</span></p>
+            <p class="dd-card__stat dd-num">0.04<small>%</small></p>
+            <div class="dd-card__foot"><span class="dd-card__delta is-up">${i('arrow-down')}−0.02%</span><span class="dd-card__meta">last hour</span></div>
+          </div></article>
+          <article class="dd-card dd-card--stat"><div class="dd-card__body">
+            <p class="dd-card__eyebrow">${i('shield')}<span>Uptime · 30d</span></p>
+            <p class="dd-card__stat dd-num">99.98<small>%</small></p>
+            <div class="dd-card__foot"><span class="dd-card__delta">${i('minus')}0.00%</span><span class="dd-card__meta">SLO 99.9%</span></div>
+          </div></article>
+        </div>
+
+        <div class="dd-card-grid">
+          <a class="dd-card dd-card--link dd-card--compact" href="#"><div class="dd-card__body">
+            <p class="dd-card__eyebrow">${i('cloud')}<span class="dd-mono">dpl_8f3a2c</span></p>
+            <h3 class="dd-card__title">Rotate signing keys</h3>
+            <div class="dd-card__foot"><span class="dd-card__meta">production · 4m ago</span><span class="dd-card__link">Open ${i('arrow-right')}</span></div>
+          </div></a>
+          <a class="dd-card dd-card--link dd-card--compact" href="#"><div class="dd-card__body">
+            <p class="dd-card__eyebrow">${i('cloud')}<span class="dd-mono">dpl_5c40d1</span></p>
+            <h3 class="dd-card__title">Cache JWKS for 10 minutes</h3>
+            <div class="dd-card__foot"><span class="dd-card__meta">production · 2h ago</span><span class="dd-card__link">Open ${i('arrow-right')}</span></div>
+          </div></a>
+          <a class="dd-card dd-card--link dd-card--compact" href="#"><div class="dd-card__body">
+            <p class="dd-card__eyebrow">${i('cloud')}<span class="dd-mono">dpl_2e91aa</span></p>
+            <h3 class="dd-card__title">Add sin1 region</h3>
+            <div class="dd-card__foot"><span class="dd-card__meta">production · yesterday</span><span class="dd-card__link">Open ${i('arrow-right')}</span></div>
+          </div></a>
+          <a class="dd-card dd-card--link dd-card--compact" href="#"><div class="dd-card__body">
+            <p class="dd-card__eyebrow">${i('cloud')}<span class="dd-mono">dpl_17c0be</span></p>
+            <h3 class="dd-card__title">Move to Node 22</h3>
+            <div class="dd-card__foot"><span class="dd-card__meta">production · 3 days ago</span><span class="dd-card__link">Open ${i('arrow-right')}</span></div>
+          </div></a>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>`;
+
+const full = shell('shell-demo', '700px');
+const phone = `<div class="as-phone">${shell('shell-demo-phone', '640px')}</div>`;
+
+const skeleton = `
+<div class="dd-app-shell">
+  <nav class="dd-side-nav" id="app-nav" aria-label="Main">
+    <div class="dd-side-nav__rail">…</div>
+    <div class="dd-side-nav__panel" id="app-nav-panel">…</div>
+  </nav>
+  <div class="dd-app-shell__main">
+    <header class="dd-top-bar">
+      <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" data-dd-nav-open="#app-nav" aria-label="Open navigation">…</button>
+      …
+    </header>
+    <main class="dd-app-shell__content">
+      <div class="dd-app-shell__page">
+        <header class="dd-page-header">…</header>
+        …
+      </div>
+    </main>
+  </div>
+</div>`;
+---
+<Docs title="App shell" group="Layout" lead="The page layout for apps: the side nav runs the full height on the left, the top bar and a scrolling content area share the rest. Fold the nav and the page reflows; on phones the nav slides in over the page." wide>
+  <style is:global>
+    .as-phone { max-width: 380px; margin: 28px auto; border-radius: var(--dd-r-lg); overflow: hidden;
+      box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 10%, transparent); }
+  </style>
+
+  <Example
+    title="Full shell"
+    description="Side nav, top bar, page header and content. The chevron at the foot of the rail folds the panel; the services and projects icons switch it. Shown 700px tall — in an app the shell is the viewport (100dvh) and only the content scrolls."
+    code={full}
+    stage="flush"
+  />
+
+  <h2 id="mobile">On a phone</h2>
+  <p>Under 768px of shell width the side nav leaves the flow. The top bar shows its menu button and the logo (<code>dd-top-bar__narrow</code>); the button opens the nav over a scrim. Esc, the scrim or a link closes it.</p>
+  <Example code={phone} stage="flush" />
+
+  <h2 id="anatomy">Anatomy</h2>
+  <p>The skeleton, without the contents. Wire the top bar’s menu button to the nav’s <code>id</code>; the nav’s collapsed state is remembered under that <code>id</code>.</p>
+  <div class="ex-frame"><details class="ex-code" open><summary>Skeleton</summary><Code code={skeleton.trim()} lang="html" theme="css-variables" wrap /></details></div>
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-app-shell', 'Flex row at <code>--dd-app-shell-h</code> (default <code>100dvh</code>). A size container: below 768px the side nav goes off-canvas.'],
+    ['.dd-app-shell > .dd-side-nav', 'Fills the height; no extra class needed. See <a href="side-nav">Side nav</a>.'],
+    ['__main', 'The column beside the nav: top bar, then content.'],
+    ['__content', 'The scrolling area, padded 40px / 50px (less on narrow shells).'],
+    ['__page', 'Centres the page at up to 1180px with a 40px rhythm between blocks. <code>--narrow</code> for forms and settings (760px).'],
+    ['--dd-app-shell-h', 'Shell height. Set it to fit a frame, or <code>auto</code> plus a sticky nav if the whole page should scroll.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute', 'What it does']} rows={[
+    ['data-dd-nav-toggle', 'On the rail’s chevron: folds the panel; remembered per nav <code>id</code>.'],
+    ['data-dd-nav-open="#id"', 'On the top bar’s menu button: opens the nav off-canvas on narrow shells.'],
+    ['data-dd-autoclose', 'On the avatar menu: closes on outside click, Esc or choosing an item.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use one shell per app and keep it on every page, so the nav never jumps.', 'Put the page’s title and main action in the page header, not the top bar.', 'Let the content scroll and the chrome stay still.']}
+    dont={['Don’t nest a second side nav inside the content; use vertical tabs.', 'Don’t centre content narrower than 760px on desktop unless it is a form.', 'Don’t hide the menu button on phones — it is the only way to the nav.']}
+  />
+</Docs>

@@ -1,0 +1,290 @@
+/* Data table — "Hairline". The dense table for large data sets: a toolbar (search, filter chips, column toggle, row count),
+   a bulk-action bar, a scroll container with a sticky header and a frozen first column, sortable headers, selectable,
+   expandable and grouped rows, status cells, loading and empty states, and a pagination footer.
+   Behaviour (sorting, selection, expand, filtering, column toggle) is in ds/behaviors/data-table.js — opt in with
+   [data-dd-data-table] on the root. Sticky cells need an opaque background: set --dd-data-table-bg when the table sits on
+   something other than the page (.dd-data-table--card does this for --dd-surface). */
+.dd-data-table {
+  --_bg: var(--dd-data-table-bg, var(--dd-bg));
+  --_grain: var(--dd-data-table-grain, var(--dd-grain));
+  --_line: var(--dd-border);
+  --_head-line: var(--dd-border-strong);
+  --_hover: color-mix(in oklab, var(--dd-text) 4.5%, var(--_bg));
+  --_sel: color-mix(in oklab, var(--dd-accent) 11%, var(--_bg));
+  --_sel-hover: color-mix(in oklab, var(--dd-accent) 15%, var(--_bg));
+  --_shade: color-mix(in oklab, var(--dd-text) 14%, transparent);
+  --_py: calc(var(--dd-u) * 1.7);
+  --_px: calc(var(--dd-u) * 2.5);
+  --_rn-w: 0px;
+  --_sel-w: 0px;
+  display: flex; flex-direction: column; gap: calc(var(--dd-u) * 2.5); min-width: 0;
+  font-size: var(--dd-fs-sm); color: var(--dd-text);
+}
+.dd-data-table:has(.dd-data-table__rownum) { --_rn-w: 44px; }
+.dd-data-table:has(.dd-data-table__select) { --_sel-w: 36px; }
+
+/* ---------- toolbar ---------- */
+.dd-data-table__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5); }
+.dd-data-table__search {
+  position: relative; display: flex; align-items: center; flex: 0 1 260px; min-width: 180px;
+}
+.dd-data-table__search > .dd-icon { position: absolute; left: calc(var(--dd-u) * 2.25); color: var(--dd-muted); pointer-events: none; }
+.dd-data-table__search input {
+  appearance: none; width: 100%; height: 32px; padding: 0 calc(var(--dd-u) * 2.5) 0 calc(var(--dd-u) * 7.5);
+  border: 0; border-radius: var(--dd-r-ctl); background: var(--dd-surface-2); color: var(--dd-text);
+  font: inherit; font-size: var(--dd-fs-sm); transition: background-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-data-table__search input::placeholder { color: var(--dd-muted); }
+.dd-data-table__search input:hover { background: var(--dd-surface-3); }
+.dd-data-table__search input:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
+.dd-data-table__search input::-webkit-search-cancel-button {
+  -webkit-appearance: none; appearance: none; width: 14px; height: 14px; cursor: pointer; background: var(--dd-muted);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 6l12 12M18 6L6 18' stroke='black' stroke-width='2.4' stroke-linecap='round'/></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 6l12 12M18 6L6 18' stroke='black' stroke-width='2.4' stroke-linecap='round'/></svg>") center / contain no-repeat;
+}
+.dd-data-table__search input::-webkit-search-cancel-button:hover { background: var(--dd-text); }
+
+.dd-data-table__chip {
+  appearance: none; display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1); height: 32px;
+  padding: 0 calc(var(--dd-u) * 2.5); border: 0; border-radius: var(--dd-r-ctl); background: transparent;
+  box-shadow: inset 0 0 0 1px var(--dd-border); color: var(--dd-muted); font: inherit; font-size: var(--dd-fs-sm); white-space: nowrap; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-data-table__chip b { font-weight: 600; color: var(--dd-text); }
+.dd-data-table__chip:hover { color: var(--dd-text); box-shadow: inset 0 0 0 1px var(--dd-border-strong); }
+.dd-data-table__chip:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
+.dd-data-table__chip .dd-icon { width: 1em; height: 1em; opacity: .7; }
+.dd-data-table__chip[aria-pressed="true"], .dd-data-table__chip.is-active {
+  background: var(--dd-accent-soft); color: var(--dd-accent); box-shadow: none; font-weight: 500;
+}
+.dd-data-table__chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint)); }
+
+.dd-data-table__tools { display: flex; align-items: center; gap: calc(var(--dd-u) * 1); margin-left: auto; }
+.dd-data-table__count { margin-right: calc(var(--dd-u) * 1); font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); white-space: nowrap; }
+
+/* column toggle: <details class="dd-data-table__menu"><summary>…</summary><div class="dd-data-table__menu-panel">… */
+.dd-data-table__menu { position: relative; }
+.dd-data-table__menu > summary { list-style: none; }
+.dd-data-table__menu > summary::-webkit-details-marker { display: none; }
+.dd-data-table__menu[open] > summary { background: var(--dd-surface-2); }
+.dd-data-table__menu-panel {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: var(--dd-z-overlay); min-width: 200px;
+  display: flex; flex-direction: column; padding: calc(var(--dd-u) * 1.25);
+  border-radius: var(--dd-r-box); background: var(--dd-bg); box-shadow: var(--dd-shadow-float);
+  animation: dd-data-table-pop var(--dd-dur-fast) var(--dd-ease);
+}
+[data-theme="dusk"] .dd-data-table__menu-panel { background: var(--dd-surface); }
+.dd-data-table__menu-title { margin: 0; padding: calc(var(--dd-u) * 1) calc(var(--dd-u) * 2) calc(var(--dd-u) * 1.5); font-family: var(--dd-font-mono);
+  font-size: var(--dd-fs-xs); letter-spacing: .06em; text-transform: uppercase; color: var(--dd-muted); }
+.dd-data-table__menu-panel label {
+  display: flex; align-items: center; gap: calc(var(--dd-u) * 2); padding: calc(var(--dd-u) * 1.25) calc(var(--dd-u) * 2);
+  border-radius: var(--dd-r-ctl); font-size: var(--dd-fs-sm); cursor: pointer; white-space: nowrap;
+}
+.dd-data-table__menu-panel label:hover { background: var(--dd-surface-2); }
+@keyframes dd-data-table-pop { from { opacity: 0; transform: translateY(-4px); } }
+
+/* ---------- bulk-action bar ---------- */
+.dd-data-table__bulk {
+  display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1) calc(var(--dd-u) * 1.5);
+  padding: calc(var(--dd-u) * 1) calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 1) calc(var(--dd-u) * 3);
+  border-radius: var(--dd-r-ctl); background: var(--dd-accent-soft); color: var(--dd-accent);
+  animation: dd-data-table-in var(--dd-dur) var(--dd-ease);
+}
+.dd-data-table__bulk[hidden] { display: none; }
+.dd-data-table__bulk-count { margin-right: calc(var(--dd-u) * 2); font-weight: 600; white-space: nowrap; }
+.dd-data-table__bulk-count span { font-family: var(--dd-font-mono); }
+.dd-data-table__bulk .dd-btn { color: var(--dd-accent); background: transparent; }
+.dd-data-table__bulk .dd-btn:hover { background: color-mix(in oklab, var(--dd-accent) 12%, transparent); }
+.dd-data-table__bulk .dd-btn--danger { color: var(--dd-bad); }
+.dd-data-table__bulk-end { margin-left: auto; }
+@keyframes dd-data-table-in { from { opacity: 0; transform: translateY(-3px); } }
+
+/* ---------- scroll container + table ---------- */
+.dd-data-table__scroll {
+  position: relative; max-width: 100%; max-height: var(--dd-data-table-height, 70vh); overflow: auto;
+  container-type: inline-size; overscroll-behavior-x: contain;
+  scrollbar-width: thin; scrollbar-color: var(--dd-surface-3) transparent;
+}
+.dd-data-table__scroll:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; border-radius: 2px; }
+.dd-data-table__table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+.dd-data-table__table :where(th, td) {
+  padding: var(--_py) var(--_px); text-align: left; white-space: nowrap; vertical-align: middle;
+  background: var(--_cell, var(--_bg)) var(--_grain) 0 0 / var(--dd-grain-size);
+}
+.dd-data-table__table thead th {
+  position: sticky; top: 0; z-index: 2;
+  padding-top: calc(var(--_py) * 1.2); padding-bottom: calc(var(--_py) * 1.2);
+  font-size: var(--dd-fs-xs); font-weight: 500; color: var(--dd-muted); letter-spacing: .01em;
+  box-shadow: inset 0 -1px 0 var(--_head-line);
+  transition: box-shadow var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-data-table.is-scrolled-y thead th { box-shadow: inset 0 -1px 0 var(--_head-line), 0 6px 10px -8px var(--_shade); }
+.dd-data-table__table tbody > tr > :is(td, th) { border-bottom: 1px solid var(--_line); }
+.dd-data-table__table tbody > tr:last-child > :is(td, th) { border-bottom-color: transparent; }
+.dd-data-table__table tbody > tr:not(.dd-data-table__group, .dd-data-table__detail, .dd-data-table__empty-row):hover { --_cell: var(--_hover); }
+.dd-data-table__table tbody > tr.is-selected { --_cell: var(--_sel); }
+.dd-data-table__table tbody > tr.is-selected:hover { --_cell: var(--_sel-hover); }
+.dd-data-table__table tbody th { font-weight: 600; }
+
+/* cell types */
+.dd-data-table .is-num { text-align: right; font-family: var(--dd-font-mono); font-size: .92em; }
+.dd-data-table thead .is-num { font-family: var(--dd-font-body); font-size: var(--dd-fs-xs); }
+.dd-data-table .is-mono { font-family: var(--dd-font-mono); font-size: .92em; }
+.dd-data-table .is-muted { color: var(--dd-muted); }
+.dd-data-table .is-faint { color: var(--dd-faint); }
+.dd-data-table .is-strong { font-weight: 600; }
+.dd-data-table .is-shrink { width: 1%; }
+.dd-data-table .is-actions { width: 1%; padding-top: 0; padding-bottom: 0; text-align: right; }
+.dd-data-table .is-actions .dd-btn { color: var(--dd-muted); }
+.dd-data-table .is-actions .dd-btn:hover { color: var(--dd-text); }
+.dd-data-table td a:not([class]) { color: inherit; text-decoration: none; font-weight: 600; }
+.dd-data-table td a:not([class]):hover { text-decoration: underline; text-decoration-color: var(--dd-faint); text-underline-offset: 3px; }
+.dd-data-table__unit { margin-left: .25em; color: var(--dd-muted); }
+
+/* status cell: data-status = ok | warn | bad | info | muted */
+.dd-data-table__status { display: inline-flex; align-items: center; gap: .5em; }
+.dd-data-table__status::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--dd-ok); }
+.dd-data-table__status[data-status="warn"]::before { background: var(--dd-warn); }
+.dd-data-table__status[data-status="bad"] { color: var(--dd-bad); font-weight: 500; }
+.dd-data-table__status[data-status="bad"]::before { background: var(--dd-bad); box-shadow: 0 0 0 3px color-mix(in oklab, var(--dd-bad) 22%, transparent); }
+.dd-data-table__status[data-status="info"]::before { background: var(--dd-info); }
+.dd-data-table__status[data-status="muted"] { color: var(--dd-muted); }
+.dd-data-table__status[data-status="muted"]::before { background: var(--dd-faint); }
+/* figure cells can carry a status tone too */
+.dd-data-table td.is-warn { color: color-mix(in oklab, var(--dd-warn) 70%, var(--dd-text)); }
+.dd-data-table td.is-bad { color: var(--dd-bad); }
+
+/* sortable header: <th aria-sort="none|ascending|descending"><button class="dd-data-table__sort">Label <icon chevron-down></button></th> */
+.dd-data-table__sort {
+  appearance: none; display: inline-flex; align-items: center; gap: calc(var(--dd-u) * .75); margin: -2px -4px; padding: 2px 4px;
+  border: 0; border-radius: 4px; background: none; color: inherit; font: inherit; letter-spacing: inherit; cursor: pointer;
+  transition: color var(--dd-dur-fast) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-data-table__sort:hover { color: var(--dd-text); }
+.dd-data-table__sort:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
+.dd-data-table__sort .dd-icon { width: 1.05em; height: 1.05em; opacity: 0; transition: opacity var(--dd-dur-fast) var(--dd-ease), transform var(--dd-dur) var(--dd-ease); }
+.dd-data-table__sort:is(:hover, :focus-visible) .dd-icon { opacity: .45; }
+.dd-data-table th.is-num .dd-data-table__sort { flex-direction: row-reverse; }
+.dd-data-table th:is([aria-sort="ascending"], [aria-sort="descending"]) { color: var(--dd-text); }
+.dd-data-table th:is([aria-sort="ascending"], [aria-sort="descending"]) .dd-data-table__sort .dd-icon { opacity: 1; }
+.dd-data-table th[aria-sort="ascending"] .dd-data-table__sort .dd-icon { transform: rotate(180deg); }
+
+/* ---------- frozen columns: row numbers · select · first data column ---------- */
+.dd-data-table__rownum, .dd-data-table__select, .dd-data-table .is-frozen { position: sticky; z-index: 1; }
+.dd-data-table thead :is(.dd-data-table__rownum, .dd-data-table__select, .is-frozen) { z-index: 3; }
+.dd-data-table__rownum {
+  left: 0; width: var(--_rn-w); min-width: var(--_rn-w); max-width: var(--_rn-w); text-align: right;
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-faint);
+}
+.dd-data-table__table .dd-data-table__select {
+  left: var(--_rn-w); width: var(--_sel-w); min-width: var(--_sel-w); max-width: var(--_sel-w);
+  padding-right: 0; text-align: left; line-height: 0;
+}
+.dd-data-table .is-frozen { left: calc(var(--_rn-w) + var(--_sel-w)); }
+.dd-data-table .is-frozen::after {
+  content: ""; position: absolute; top: 0; bottom: -1px; right: -10px; width: 10px; pointer-events: none;
+  background: linear-gradient(to right, var(--_shade), transparent); opacity: 0;
+  transition: opacity var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-data-table.is-scrolled-x .is-frozen { box-shadow: inset -1px 0 0 var(--_line); }
+.dd-data-table.is-scrolled-x thead .is-frozen { box-shadow: inset -1px 0 0 var(--_line), inset 0 -1px 0 var(--_head-line); }
+.dd-data-table.is-scrolled-x .is-frozen::after { opacity: .7; }
+
+/* checkbox — native input, restyled */
+.dd-data-table__check {
+  appearance: none; position: relative; display: inline-grid; place-content: center; width: 15px; height: 15px; margin: 0;
+  border-radius: 4px; background: transparent; box-shadow: inset 0 0 0 1.5px var(--dd-border-strong); cursor: pointer; vertical-align: middle;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-data-table__check::before {
+  content: ""; width: 9px; height: 9px; background: var(--dd-on-accent); transform: scale(0);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transition: transform var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-data-table__check:hover { box-shadow: inset 0 0 0 1.5px var(--dd-muted); }
+.dd-data-table__check:checked, .dd-data-table__check:indeterminate { background: var(--dd-accent); box-shadow: none; }
+.dd-data-table__check:checked::before { transform: scale(1); }
+.dd-data-table__check:indeterminate::before { transform: scale(1); height: 2px; clip-path: none; border-radius: 1px; }
+.dd-data-table__check:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+/* ---------- expandable rows ---------- */
+.dd-data-table__expand {
+  appearance: none; display: inline-grid; place-items: center; width: 20px; height: 20px; margin: -2px calc(var(--dd-u) * 1) -2px -4px; padding: 0;
+  border: 0; border-radius: 4px; background: none; color: var(--dd-muted); cursor: pointer; vertical-align: middle;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-data-table__expand:hover { background: var(--dd-surface-2); color: var(--dd-text); }
+.dd-data-table__expand:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
+.dd-data-table__expand .dd-icon { width: 14px; height: 14px; transition: transform var(--dd-dur) var(--dd-ease); }
+.dd-data-table__expand[aria-expanded="true"] .dd-icon { transform: rotate(90deg); }
+.dd-data-table__expand-spacer { display: inline-block; width: 20px; margin: 0 calc(var(--dd-u) * 1) 0 -4px; }
+.dd-data-table tr:has(> td > .dd-data-table__expand[aria-expanded="true"]) > :is(td, th) { border-bottom-color: transparent; }
+
+.dd-data-table__detail > td { padding: 0; --_cell: color-mix(in oklab, var(--dd-text) 2.5%, var(--_bg)); }
+.dd-data-table__detail-body {
+  position: sticky; left: 0; box-sizing: border-box; width: 100cqi; max-width: 100%;
+  padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 4) calc(var(--dd-u) * 4) calc(var(--_rn-w) + var(--_sel-w) + var(--_px) + 24px);
+  white-space: normal; animation: dd-data-table-in var(--dd-dur) var(--dd-ease);
+}
+.dd-data-table__facts {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: calc(var(--dd-u) * 3) calc(var(--dd-u) * 5); margin: 0;
+}
+.dd-data-table__facts > div { min-width: 0; }
+.dd-data-table__facts dt { font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+.dd-data-table__facts dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+
+/* ---------- grouped rows ---------- */
+.dd-data-table__group > :is(th, td) {
+  padding-top: calc(var(--_py) * .9); padding-bottom: calc(var(--_py) * .9);
+  --_cell: var(--dd-surface); font-size: var(--dd-fs-xs); font-weight: 600; color: var(--dd-muted); letter-spacing: .02em;
+}
+.dd-data-table__group-label { position: sticky; left: var(--_px); display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 2); }
+.dd-data-table__group-label b { color: var(--dd-text); font-weight: 600; }
+.dd-data-table__group-count { font-family: var(--dd-font-mono); font-weight: 400; color: var(--dd-muted); }
+
+/* ---------- loading + empty ---------- */
+.dd-data-table__skeleton {
+  display: block; width: var(--w, 72%); height: 9px; border-radius: 5px; margin-block: 4px;
+  background: linear-gradient(90deg, var(--dd-surface-2) 0%, color-mix(in oklab, var(--dd-surface-2) 35%, var(--_bg)) 50%, var(--dd-surface-2) 100%);
+  background-size: 200% 100%; animation: dd-data-table-shimmer 1.4s linear infinite;
+}
+.dd-data-table .is-num .dd-data-table__skeleton { margin-left: auto; }
+.dd-data-table__skeleton--box { width: 15px; height: 15px; border-radius: 4px; margin: 0; }
+@keyframes dd-data-table-shimmer { to { background-position: -200% 0; } }
+
+.dd-data-table__empty-row > td { padding: 0; }
+.dd-data-table__empty {
+  position: sticky; left: 0; box-sizing: border-box; width: 100cqi; max-width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: calc(var(--dd-u) * 1.25);
+  padding: calc(var(--dd-u) * 10) calc(var(--dd-u) * 5); text-align: center; white-space: normal; color: var(--dd-muted);
+}
+.dd-data-table__empty-icon { display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: calc(var(--dd-u) * 1);
+  border-radius: 50%; background: var(--dd-surface-2); font-size: 18px; }
+.dd-data-table__empty-title { margin: 0; color: var(--dd-text); font-size: var(--dd-fs-base); font-weight: 650; }
+.dd-data-table__empty p { margin: 0; max-width: 42ch; text-wrap: pretty; }
+.dd-data-table__empty .dd-row { justify-content: center; margin-top: calc(var(--dd-u) * 2); }
+
+/* ---------- footer ---------- */
+.dd-data-table__footer {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: calc(var(--dd-u) * 2) calc(var(--dd-u) * 4);
+  padding-top: calc(var(--dd-u) * .5); font-size: var(--dd-fs-sm); color: var(--dd-muted);
+}
+
+/* ---------- variants ---------- */
+.dd-data-table--compact { --_py: calc(var(--dd-u) * 1); --_px: calc(var(--dd-u) * 2); font-size: calc(var(--dd-fs-xs) * 1.12); }
+.dd-data-table--compact .dd-data-table__check { width: 13px; height: 13px; }
+.dd-data-table--compact .dd-data-table__check::before { width: 8px; height: 8px; }
+.dd-data-table--roomy { --_py: calc(var(--dd-u) * 2.5); }
+.dd-data-table--card {
+  --dd-data-table-bg: var(--dd-surface); --dd-data-table-grain: none; --_line: color-mix(in oklab, var(--dd-text) 9%, transparent);
+  padding: calc(var(--dd-u) * 3); border-radius: var(--dd-r-box); background: var(--dd-surface);
+}
+.dd-data-table--card .dd-data-table__search input, .dd-data-table--card .dd-pagination__select select { background: var(--dd-bg); }
+.dd-data-table--card .dd-data-table__group > :is(th, td) { --_cell: var(--dd-surface-2); }
+
+/* narrow: the search takes its own line; tools wrap under it */
+@media (max-width: 640px) {
+  .dd-data-table__search { flex: 1 1 100%; }
+  .dd-data-table__tools { margin-left: 0; flex: 1 1 100%; justify-content: space-between; }
+  .dd-data-table__detail-body { padding-left: calc(var(--dd-u) * 4); }
+}

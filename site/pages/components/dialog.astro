@@ -1,0 +1,243 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const close = `<button class="dd-dialog__close" type="button" data-dd-dialog-close aria-label="Close">${i('x')}</button>`;
+
+const confirm = `
+<button class="dd-btn dd-btn--primary" type="button" data-dd-dialog-open="#publish-dialog">${i('sparkle')}<span>Publish release</span></button>
+<dialog class="dd-dialog" id="publish-dialog" aria-labelledby="publish-title">
+  <header class="dd-dialog__head">
+    <div class="dd-dialog__titles">
+      <p class="dd-dialog__eyebrow">Release v0.4.0</p>
+      <h2 class="dd-dialog__title" id="publish-title">Publish dawn &amp; dusk?</h2>
+    </div>
+    ${close}
+  </header>
+  <div class="dd-dialog__body">
+    <p>The new tokens go live on cxkw.dev and in every app that pulls the release. You can roll back from the release history at any time.</p>
+  </div>
+  <footer class="dd-dialog__foot">
+    <span class="dd-dialog__hint">esc to cancel</span>
+    <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close>Cancel</button>
+    <button class="dd-btn dd-btn--primary" type="button" data-dd-dialog-close="publish">Publish</button>
+  </footer>
+</dialog>`;
+
+const destructive = `
+<button class="dd-btn dd-btn--danger" type="button" data-dd-dialog-open="#delete-dialog">${i('trash')}<span>Delete project</span></button>
+<dialog class="dd-dialog dd-dialog--sm dd-dialog--danger" id="delete-dialog" role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-desc">
+  <header class="dd-dialog__head">
+    <span class="dd-dialog__icon">${i('danger')}</span>
+    <div class="dd-dialog__titles">
+      <p class="dd-dialog__eyebrow">Danger zone</p>
+      <h2 class="dd-dialog__title" id="delete-title">Delete leetnode?</h2>
+    </div>
+  </header>
+  <div class="dd-dialog__body" id="delete-desc">
+    <p>This permanently removes the project, its <strong>24 deploys</strong> and 3 custom domains. It can’t be undone.</p>
+  </div>
+  <footer class="dd-dialog__foot">
+    <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close autofocus>Keep it</button>
+    <button class="dd-btn dd-btn--danger" type="button" data-dd-dialog-close="delete">${i('trash')}<span>Delete</span></button>
+  </footer>
+</dialog>`;
+
+const form = `
+<button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#domain-dialog">${i('globe')}<span>Add domain</span></button>
+<dialog class="dd-dialog" id="domain-dialog" aria-labelledby="domain-title">
+  <form class="dd-dialog__form" method="dialog">
+    <header class="dd-dialog__head">
+      <span class="dd-dialog__icon">${i('globe')}</span>
+      <div class="dd-dialog__titles">
+        <p class="dd-dialog__eyebrow">edge-cache</p>
+        <h2 class="dd-dialog__title" id="domain-title">Add a custom domain</h2>
+      </div>
+      ${close}
+    </header>
+    <div class="dd-dialog__body dd-form__body">
+      <div class="dd-field">
+        <label class="dd-field__label" for="domain-name">Domain</label>
+        <div class="dd-input"><input class="dd-input__control" id="domain-name" name="domain" placeholder="status.cxkw.dev" aria-describedby="domain-name-hint" required autofocus></div>
+        <p class="dd-field__hint" id="domain-name-hint">Point a CNAME at edge-cache.cxkw.dev, then verify.</p>
+      </div>
+      <div class="dd-field">
+        <label class="dd-field__label" for="domain-branch">Branch</label>
+        <div class="dd-input"><input class="dd-input__control dd-mono" id="domain-branch" name="branch" value="main"></div>
+      </div>
+    </div>
+    <footer class="dd-dialog__foot">
+      <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close>Cancel</button>
+      <button class="dd-btn dd-btn--primary" type="submit" value="add">${i('plus')}<span>Add domain</span></button>
+    </footer>
+  </form>
+</dialog>`;
+
+const long = `
+<button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#changelog-dialog">${i('info')}<span>What’s new</span></button>
+<dialog class="dd-dialog" id="changelog-dialog" aria-labelledby="changelog-title">
+  <header class="dd-dialog__head">
+    <span class="dd-dialog__icon">${i('sparkle')}</span>
+    <div class="dd-dialog__titles">
+      <p class="dd-dialog__eyebrow">Changelog</p>
+      <h2 class="dd-dialog__title" id="changelog-title">What’s new in v0.4</h2>
+    </div>
+    ${close}
+  </header>
+  <div class="dd-dialog__body">
+    <p>Dusk is now its own layer: every component was checked in the dark, and status containers use a solid fill instead of a wash.</p>
+    <h3>Components</h3>
+    <ul>
+      <li>Tables split into simple and dense families, both on a hairline rhythm.</li>
+      <li>Inputs moved to borderless fills with tucked labels.</li>
+      <li>Buttons gained a colour role: primary is the Golden hour apricot.</li>
+    </ul>
+    <h3>Infrastructure</h3>
+    <ul>
+      <li>auth-gateway and billing-worker deploy to fra1 and iad1 in parallel.</li>
+      <li>edge-cache purges by tag in under two seconds.</li>
+      <li>Release bundles ship as one stylesheet and one plain script.</li>
+    </ul>
+    <h3>Fixes</h3>
+    <p>Focus rings no longer clip inside scroll containers, and the theme toggle remembers your choice across tabs.</p>
+  </div>
+  <footer class="dd-dialog__foot">
+    <span class="dd-dialog__hint">body scrolls · head and foot stay</span>
+    <button class="dd-btn dd-btn--primary" type="button" data-dd-dialog-close>Got it</button>
+  </footer>
+</dialog>`;
+
+const sizes = `
+<div class="dd-row">
+  <button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#size-sm">Small</button>
+  <button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#size-md">Medium</button>
+  <button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#size-lg">Large</button>
+</div>
+<dialog class="dd-dialog dd-dialog--sm" id="size-sm" aria-labelledby="size-sm-title">
+  <header class="dd-dialog__head"><div class="dd-dialog__titles"><h2 class="dd-dialog__title" id="size-sm-title">Restart billing-worker?</h2></div></header>
+  <div class="dd-dialog__body"><p>Queued invoices wait about 20 seconds.</p></div>
+  <footer class="dd-dialog__foot">
+    <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close>Cancel</button>
+    <button class="dd-btn dd-btn--primary" type="button" data-dd-dialog-close="restart">Restart</button>
+  </footer>
+</dialog>
+<dialog class="dd-dialog" id="size-md" aria-labelledby="size-md-title">
+  <header class="dd-dialog__head"><div class="dd-dialog__titles"><p class="dd-dialog__eyebrow">Deploy #4821</p><h2 class="dd-dialog__title" id="size-md-title">Promote to production?</h2></div>${close}</header>
+  <div class="dd-dialog__body"><p>auth-gateway 9f3c2ab replaces the current production deploy in fra1 and iad1. Traffic shifts over two minutes.</p></div>
+  <footer class="dd-dialog__foot">
+    <span class="dd-dialog__hint">esc to cancel</span>
+    <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close>Cancel</button>
+    <button class="dd-btn dd-btn--primary" type="button" data-dd-dialog-close="promote">Promote</button>
+  </footer>
+</dialog>
+<dialog class="dd-dialog dd-dialog--lg" id="size-lg" aria-labelledby="size-lg-title">
+  <header class="dd-dialog__head"><div class="dd-dialog__titles"><p class="dd-dialog__eyebrow">Security</p><h2 class="dd-dialog__title" id="size-lg-title">Rotate API keys</h2></div>${close}</header>
+  <div class="dd-dialog__body">
+    <p>New keys are issued for auth-gateway, billing-worker and edge-cache. The old keys keep working for <strong>24 hours</strong> so running deploys can pick up the change, then they are revoked everywhere.</p>
+    <p>Services that read keys at start-up need a restart within that window.</p>
+  </div>
+  <footer class="dd-dialog__foot">
+    <span class="dd-dialog__hint">esc to cancel</span>
+    <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close>Cancel</button>
+    <button class="dd-btn dd-btn--primary" type="button" data-dd-dialog-close="rotate">${i('key')}<span>Rotate keys</span></button>
+  </footer>
+</dialog>`;
+---
+<Docs title="Dialog" group="Overlays" lead="A modal moment: a centred card on a dim scrim that asks for one decision. Built on the native dialog element, so focus, Esc and the top layer come for free.">
+  <p>Every example opens the real dialog; under each trigger is a still of it, so you can compare without clicking.</p>
+  <Example title="Confirm" description="The classic: eyebrow, title, one sentence of consequence, actions bottom-right with the primary last." code={confirm} />
+
+  <h2 id="destructive">Destructive</h2>
+  <p>Add <code>dd-dialog--danger</code> and an icon tile; the confirm button becomes <code>dd-btn--danger</code>. Use <code>role="alertdialog"</code> and put <code>autofocus</code> on the safe choice.</p>
+  <Example code={destructive} />
+
+  <h2 id="form">Form</h2>
+  <p>Wrap the parts in <code>&lt;form method="dialog" class="dd-dialog__form"&gt;</code> and use the same fields as any form, with tucked labels. Native validation runs first; a valid submit closes the dialog with the button’s <code>value</code> as <code>returnValue</code>.</p>
+  <Example code={form} />
+
+  <h2 id="long-content">Long content</h2>
+  <p>The dialog stops at 85% of the screen height. Only the body scrolls; a hairline appears at the edge where content is hidden.</p>
+  <Example code={long} />
+
+  <h2 id="sizes">Sizes</h2>
+  <p>Small (380px) for one-line confirms, medium (460px) by default, large (680px) when the body needs room. On a phone every size fills the screen width (less a 15px margin), and once the dialog is 360px or narrower the hint drops and the actions split the footer.</p>
+  <Example code={sizes} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['dialog.dd-dialog', 'The modal card. Open it with <code>showModal()</code> (or <code>data-dd-dialog-open</code>). The scrim is its <code>::backdrop</code>.'],
+    ['.dd-dialog__head', 'Top row: optional <code>__icon</code>, the <code>__titles</code> column and an optional <code>__close</code> button.'],
+    ['.dd-dialog__icon', 'Square tonal icon tile. Turns red-tinted inside <code>--danger</code>.'],
+    ['.dd-dialog__eyebrow', 'Mono caps context line above the title (project, release, section).'],
+    ['.dd-dialog__title', 'The question or task, set in the heading lockup. Point <code>aria-labelledby</code> at it.'],
+    ['.dd-dialog__close', 'Icon-only close button. Give it <code>aria-label="Close"</code> and <code>data-dd-dialog-close</code>.'],
+    ['.dd-dialog__body', 'Content. Scrolls when long; muted text with <code>strong</code> in ink.'],
+    ['.dd-dialog__foot', 'Actions, right-aligned, primary last. Split evenly when the dialog is 360px or narrower.'],
+    ['.dd-dialog__hint', 'Mono note pushed to the left of the footer (“esc to cancel”). Hidden when the dialog is 360px or narrower.'],
+    ['.dd-dialog__form', 'A <code>&lt;form method="dialog"&gt;</code> wrapping head, body and foot; it doesn’t affect layout. Inside, use the regular <a href="form-field"><code>.dd-field</code></a> and <a href="text-input"><code>.dd-input</code></a>; add <code>dd-form__body</code> to the body to space them.'],
+    ['.dd-dialog--danger', 'Destructive: tints the icon tile with <code>--dd-bad</code>.'],
+    ['.dd-dialog--sm / --lg', 'Sizes: 380px and 680px. Medium (460px) has no modifier.'],
+    ['.is-closing', 'Set by the script while the exit animation plays.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <p>Load <code>dawn-and-dusk.js</code>. The same script drives <a href="drawer">Drawer</a> and <a href="sheet">Sheet</a>.</p>
+  <ClassTable head={['Attribute / API', 'What it does']} rows={[
+    ['data-dd-dialog-open="#id"', 'On any element: opens that dialog modally and remembers the element so focus returns to it on close.'],
+    ['data-dd-dialog-close', 'On any element inside the dialog: closes it with the exit animation.'],
+    ['data-dd-dialog-close="value"', 'Closes and sets <code>dialog.returnValue</code> to <code>value</code>; read it in the native <code>close</code> event.'],
+    ['form[method="dialog"]', 'A valid submit closes with the submit button’s <code>value</code>.'],
+    ['data-dd-dialog-backdrop="static"', 'On the dialog: clicking the scrim does nothing (for forms with unsaved input). Esc still closes.'],
+    ['dd.dialog.open(sel) / dd.dialog.close(sel, value)', 'The same from script. <code>sel</code> is a selector or the element.'],
+  ]} />
+  <ClassTable head={['Key', 'What it does']} rows={[
+    ['Esc', 'Closes the dialog (animated).'],
+    ['Tab / Shift+Tab', 'Moves through the dialog only; the page behind is inert while it is open.'],
+    ['On open', 'Focus moves to the element with <code>autofocus</code>, else the first focusable control.'],
+    ['On close', 'Focus returns to the opener.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Title the dialog with the question: “Delete leetnode?”, not “Warning”.', 'Name the action on the button: “Delete”, “Publish”, never “OK”.', 'Say what happens and whether it can be undone in one or two sentences.', 'Autofocus the safe choice in destructive dialogs.']}
+    dont={['Don’t open a dialog from a dialog; use a step inside it or a drawer.', 'Don’t use a dialog for content people need to compare with the page — use a drawer.', 'Don’t put more than two actions in the footer.']}
+  />
+
+  <style is:global>
+    .dlg-preview {
+      position: relative; isolation: isolate; display: grid; place-items: center; margin-top: var(--dd-space-6);
+      padding: var(--dd-space-10) var(--dd-space-4); border-radius: var(--dd-r-box); overflow: hidden;
+      background:
+        linear-gradient(var(--dd-surface) 0 0) 24px 24px / 30% 14px no-repeat,
+        linear-gradient(var(--dd-surface) 0 0) 24px 50px / 62% 9px no-repeat,
+        linear-gradient(var(--dd-surface) 0 0) 24px 68px / 52% 9px no-repeat,
+        linear-gradient(var(--dd-surface) 0 0) 24px 100px / calc(50% - 36px) 160px no-repeat,
+        linear-gradient(var(--dd-surface) 0 0) right 24px top 100px / calc(50% - 36px) 160px no-repeat,
+        var(--dd-bg);
+    }
+    .dlg-preview + .dlg-preview { margin-top: var(--dd-space-3); }
+    .dlg-scrim { position: absolute; inset: 0; z-index: 0; background: var(--dd-overlay); }
+    .dlg-preview > dialog { position: relative; z-index: 1; inset: auto; margin: 0; width: min(var(--_w), 100%); max-height: 360px; animation: none; }
+  </style>
+  <script is:inline>
+    // Docs only: a still of each example's dialog, under its trigger.
+    document.querySelectorAll('.ex-stage').forEach((stage) => {
+      stage.querySelectorAll(':scope > dialog.dd-dialog').forEach((dlg) => {
+        const copy = dlg.cloneNode(true);
+        [copy, ...copy.querySelectorAll('[id], [for], [autofocus], [aria-labelledby], [aria-describedby]')].forEach((n) =>
+          ['id', 'for', 'autofocus', 'aria-labelledby', 'aria-describedby'].forEach((a) => n.removeAttribute(a)));
+        copy.setAttribute('open', '');
+        copy.inert = true;
+        const frame = document.createElement('div');
+        frame.className = 'dlg-preview';
+        frame.setAttribute('aria-hidden', 'true');
+        frame.innerHTML = '<span class="dlg-scrim"></span>';
+        frame.append(copy);
+        stage.append(frame);
+      });
+    });
+  </script>
+</Docs>

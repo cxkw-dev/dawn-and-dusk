@@ -1,0 +1,28 @@
+---
+// Builds the sidebar from site/nav/*.mjs — one file per section, so pages can be added without touching a shared list.
+const files = import.meta.glob('../nav/*.mjs', { eager: true });
+const sections = Object.values(files)
+  .map((m: any) => m.default)
+  .sort((a, b) => a.order - b.order);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const here = Astro.url.pathname.replace(/\/$/, '');
+---
+<nav class="doc-nav">
+  {sections.map((s) => (
+    <div class="doc-nav-group">
+      <p class="doc-nav-h">{s.group}</p>
+      <ul>
+        {s.items.map((it) => {
+          const href = `${base}/${it.href}`.replace(/\/$/, '');
+          return (
+            <li>
+              <a href={href} aria-current={href === here ? 'page' : undefined}>
+                {it.title}{it.tag && <span class="doc-nav-tag">{it.tag}</span>}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  ))}
+</nav>

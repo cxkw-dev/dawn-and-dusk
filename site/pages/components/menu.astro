@@ -1,0 +1,176 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const check = `<svg class="dd-icon dd-menu__check" aria-hidden="true"><use href="#dd-i-check"/></svg>`;
+const sub = `<svg class="dd-icon dd-menu__sub" aria-hidden="true"><use href="#dd-i-chevron-right"/></svg>`;
+const ic = (n: string) => `<svg class="dd-icon dd-menu__icon" aria-hidden="true"><use href="#dd-i-${n}"/></svg>`;
+
+const anatomy = `
+<div class="dd-menu" role="menu" aria-label="dawn-and-dusk">
+  <div class="dd-menu__group" role="group" aria-labelledby="mn-a-project">
+    <p class="dd-menu__label" id="mn-a-project">Project</p>
+    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Open<span class="dd-menu__desc">In a new window</span></span><kbd class="dd-menu__kbd">⌘O</kbd></button>
+    <button class="dd-menu__item is-active" role="menuitem"><span class="dd-menu__body">Duplicate<span class="dd-menu__desc">Keeps history and comments</span></span><kbd class="dd-menu__kbd">⌘D</kbd></button>
+    <button class="dd-menu__item" role="menuitem" aria-haspopup="menu" aria-expanded="false"><span class="dd-menu__body">Share<span class="dd-menu__desc">Link, embed or export</span></span>${sub}</button>
+  </div>
+  <hr class="dd-menu__sep">
+  <div class="dd-menu__group" role="group" aria-labelledby="mn-a-view">
+    <p class="dd-menu__label" id="mn-a-view">View</p>
+    <button class="dd-menu__item" role="menuitemcheckbox" aria-checked="true"><span class="dd-menu__body">Pin to sidebar</span>${check}</button>
+    <button class="dd-menu__item" role="menuitemcheckbox" aria-checked="false"><span class="dd-menu__body">Show dates</span>${check}</button>
+    <button class="dd-menu__item" role="menuitem" aria-disabled="true"><span class="dd-menu__body">Present<span class="dd-menu__desc">Connect a second display</span></span><kbd class="dd-menu__kbd">⌘P</kbd></button>
+  </div>
+  <hr class="dd-menu__sep">
+  <button class="dd-menu__item dd-menu__item--danger" role="menuitem"><span class="dd-menu__body">Delete project<span class="dd-menu__desc">This can’t be undone</span></span><kbd class="dd-menu__kbd">⌘⌫</kbd></button>
+</div>`;
+
+const dropdown = `
+<button class="dd-btn dd-btn--secondary" data-dd-menu="mn-project" aria-haspopup="menu" aria-expanded="false" aria-controls="mn-project">${i('folder')}<span>dawn-and-dusk</span>${i('chevron-down')}</button>
+<div class="dd-menu" id="mn-project" role="menu" aria-label="dawn-and-dusk" hidden>
+  <div class="dd-menu__group" role="group" aria-labelledby="mn-p-project">
+    <p class="dd-menu__label" id="mn-p-project">Project</p>
+    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Open<span class="dd-menu__desc">In a new window</span></span><kbd class="dd-menu__kbd">⌘O</kbd></button>
+    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Duplicate<span class="dd-menu__desc">Keeps history and comments</span></span><kbd class="dd-menu__kbd">⌘D</kbd></button>
+    <button class="dd-menu__item" role="menuitem" data-dd-menu="mn-share"><span class="dd-menu__body">Share<span class="dd-menu__desc">Link, embed or export</span></span>${sub}</button>
+  </div>
+  <hr class="dd-menu__sep">
+  <div class="dd-menu__group" role="group" aria-labelledby="mn-p-view">
+    <p class="dd-menu__label" id="mn-p-view">View</p>
+    <button class="dd-menu__item" role="menuitemcheckbox" aria-checked="true"><span class="dd-menu__body">Pin to sidebar</span>${check}</button>
+    <button class="dd-menu__item" role="menuitemcheckbox" aria-checked="false"><span class="dd-menu__body">Show dates</span>${check}</button>
+    <button class="dd-menu__item" role="menuitem" aria-disabled="true"><span class="dd-menu__body">Present<span class="dd-menu__desc">Connect a second display</span></span><kbd class="dd-menu__kbd">⌘P</kbd></button>
+  </div>
+  <hr class="dd-menu__sep">
+  <button class="dd-menu__item dd-menu__item--danger" role="menuitem"><span class="dd-menu__body">Delete project<span class="dd-menu__desc">This can’t be undone</span></span><kbd class="dd-menu__kbd">⌘⌫</kbd></button>
+</div>
+<div class="dd-menu" id="mn-share" role="menu" aria-label="Share" hidden>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Copy link</span><kbd class="dd-menu__kbd">⌘⇧L</kbd></button>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Embed…</span></button>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Export as ZIP</span></button>
+</div>`;
+
+const icons = `
+<div class="dd-menu" role="menu" aria-label="Account" style="width: min(260px, 100%)">
+  <div class="dd-menu__header"><span>atn</span><span>cxkw.dev · personal workspace</span></div>
+  <hr class="dd-menu__sep" style="margin-top: 0">
+  <button class="dd-menu__item" role="menuitem">${ic('user')}<span class="dd-menu__body">Profile</span><kbd class="dd-menu__kbd">⌘,</kbd></button>
+  <button class="dd-menu__item" role="menuitem">${ic('key')}<span class="dd-menu__body">API tokens</span></button>
+  <button class="dd-menu__item" role="menuitem">${ic('users')}<span class="dd-menu__body">Team<span class="dd-menu__desc">4 members · cxkw</span></span></button>
+  <button class="dd-menu__item" role="menuitem">${ic('moon')}<span class="dd-menu__body">Theme</span>${sub}</button>
+  <hr class="dd-menu__sep">
+  <button class="dd-menu__item" role="menuitem">${ic('logout')}<span class="dd-menu__body">Sign out</span></button>
+</div>`;
+
+const checkable = `
+<button class="dd-btn dd-btn--ghost" data-dd-menu="mn-logview" aria-haspopup="menu" aria-expanded="false" aria-controls="mn-logview">${i('settings')}<span>View options</span></button>
+<div class="dd-menu" id="mn-logview" role="menu" aria-label="Log view options" hidden>
+  <div class="dd-menu__group" role="group" aria-labelledby="mn-lv-region">
+    <p class="dd-menu__label" id="mn-lv-region">Region</p>
+    <button class="dd-menu__item" role="menuitemradio" aria-checked="true"><span class="dd-menu__body">All regions</span>${check}</button>
+    <button class="dd-menu__item" role="menuitemradio" aria-checked="false"><span class="dd-menu__body">iad1 · Washington</span>${check}</button>
+    <button class="dd-menu__item" role="menuitemradio" aria-checked="false"><span class="dd-menu__body">fra1 · Frankfurt</span>${check}</button>
+    <button class="dd-menu__item" role="menuitemradio" aria-checked="false"><span class="dd-menu__body">hnd1 · Tokyo</span>${check}</button>
+  </div>
+  <hr class="dd-menu__sep">
+  <div class="dd-menu__group" role="group" aria-labelledby="mn-lv-show">
+    <p class="dd-menu__label" id="mn-lv-show">Show</p>
+    <button class="dd-menu__item" role="menuitemcheckbox" aria-checked="true"><span class="dd-menu__body">Timestamps</span><kbd class="dd-menu__kbd">T</kbd>${check}</button>
+    <button class="dd-menu__item" role="menuitemcheckbox" aria-checked="false"><span class="dd-menu__body">Request IDs</span><kbd class="dd-menu__kbd">I</kbd>${check}</button>
+    <button class="dd-menu__item" role="menuitemcheckbox" aria-checked="true"><span class="dd-menu__body">Wrap long lines</span><kbd class="dd-menu__kbd">W</kbd>${check}</button>
+  </div>
+</div>`;
+
+const endAligned = `
+<div class="dd-surface" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px; max-width: 520px">
+  <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
+    <b style="font-weight: 600">auth-gateway</b>
+    <span class="dd-small dd-muted"><span class="dd-mono">a3f9c21</span> · deployed 4 min ago · iad1</span>
+  </span>
+  <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" data-dd-menu="mn-row" data-dd-placement="bottom-end" aria-haspopup="menu" aria-expanded="false" aria-controls="mn-row" aria-label="Deployment actions">${i('more')}</button>
+  <div class="dd-menu" id="mn-row" role="menu" aria-label="Deployment actions" hidden>
+    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">View logs</span><kbd class="dd-menu__kbd">L</kbd></button>
+    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Copy deployment URL</span><kbd class="dd-menu__kbd">⌘C</kbd></button>
+    <button class="dd-menu__item" role="menuitem" data-dd-menu="mn-row-promote"><span class="dd-menu__body">Promote to</span>${sub}</button>
+    <hr class="dd-menu__sep">
+    <button class="dd-menu__item dd-menu__item--danger" role="menuitem"><span class="dd-menu__body">Roll back</span></button>
+  </div>
+  <div class="dd-menu" id="mn-row-promote" role="menu" aria-label="Promote to" hidden>
+    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">staging</span></button>
+    <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">production</span></button>
+  </div>
+</div>`;
+
+const context = `
+<div tabindex="0" data-dd-contextmenu="mn-ctx" aria-describedby="mn-ctx-hint" class="dd-surface" style="display: grid; place-content: center; justify-items: center; gap: 5px; min-height: 150px; padding: 20px; text-align: center; outline-offset: 2px">
+  <span class="dd-row" style="--dd-gap: 5px; justify-content: center">${i('file')}<span class="dd-mono">billing-worker.log</span></span>
+  <span class="dd-small dd-muted" id="mn-ctx-hint">Right-click, or focus and press Shift F10</span>
+</div>
+<div class="dd-menu" id="mn-ctx" role="menu" aria-label="Log file" hidden>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Open in log viewer</span><kbd class="dd-menu__kbd">↵</kbd></button>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Copy path</span><kbd class="dd-menu__kbd">⌘⇧C</kbd></button>
+  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">Download</span></button>
+  <hr class="dd-menu__sep">
+  <button class="dd-menu__item dd-menu__item--danger" role="menuitem"><span class="dd-menu__body">Delete file</span><kbd class="dd-menu__kbd">⌫</kbd></button>
+</div>`;
+---
+<Docs title="Menu" group="Actions" lead="A list of actions or options that floats over the page: dropdowns, overflow menus and context menus. Grouped, text first, with shortcut hints; icons are optional.">
+  <Example title="Anatomy" description="Group labels, descriptions, shortcut hints, a submenu chevron, checked and disabled items, a divider and a danger item. Shown inline here; “Duplicate” is the highlighted row." code={anatomy} />
+  <h2 id="dropdown">Dropdown</h2>
+  <p>Put <code>data-dd-menu="menu-id"</code> on any button and <code>hidden</code> on the menu. The behaviour floats the menu below the trigger, flips it up when there’s no room, and moves focus into it. “Share” opens a submenu.</p>
+  <Example code={dropdown} />
+  <h2 id="checked">Checked items</h2>
+  <p><code>role="menuitemradio"</code> checks one item per group; <code>role="menuitemcheckbox"</code> toggles. Both keep the menu open so you can set several options. The check sits at the end and the label turns semibold.</p>
+  <Example code={checkable} />
+  <h2 id="icons">With icons</h2>
+  <p>Icons are optional; add them to every item of a menu or to none. A <code>.dd-menu__header</code> can say who or what the menu is about.</p>
+  <Example code={icons} />
+  <h2 id="overflow">Overflow menu</h2>
+  <p>A “more” button at the end of a row. <code>data-dd-placement="bottom-end"</code> aligns the menu’s right edge with the trigger.</p>
+  <Example code={endAligned} />
+  <h2 id="context">Context menu</h2>
+  <p><code>data-dd-contextmenu="menu-id"</code> on an area opens the menu at the pointer on right-click. Make the area focusable so keyboard users can open it with Shift F10 or the Menu key.</p>
+  <Example code={context} />
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-menu', 'The floating panel. Add <code>role="menu"</code>, an <code>aria-label</code> and <code>hidden</code> until opened. Without the behaviour it renders inline.'],
+    ['.dd-menu.is-floating', 'Set by the behaviour while open: fixed position, reveal motion, scrolls when taller than the viewport.'],
+    ['.dd-menu__header', 'Plain text above the items: first child bold, the rest small and muted.'],
+    ['.dd-menu__group + .dd-menu__label', 'A <code>role="group"</code> with a small-caps label (<code>aria-labelledby</code> it).'],
+    ['.dd-menu__sep', 'Full-bleed hairline divider. Use <code>&lt;hr&gt;</code>.'],
+    ['.dd-menu__item', 'A row. Use <code>&lt;button&gt;</code> or <code>&lt;a&gt;</code> with <code>role="menuitem"</code>, <code>menuitemcheckbox</code> or <code>menuitemradio</code>.'],
+    ['.dd-menu__body', 'Holds the label and an optional <code>.dd-menu__desc</code> second line. Grows to push trailing parts to the end.'],
+    ['.dd-menu__icon', 'Optional leading icon (<code>svg.dd-icon</code>).'],
+    ['.dd-menu__kbd', 'Shortcut hint, mono and faint. Use <code>&lt;kbd&gt;</code>.'],
+    ['.dd-menu__check', 'Check icon, visible when the item has <code>aria-checked="true"</code>.'],
+    ['.dd-menu__sub', 'Chevron for an item that opens a submenu.'],
+    ['.dd-menu__item--danger', 'Destructive item: red text, soft red highlight.'],
+    ['[aria-disabled="true"]', 'Disabled item: faint, skipped by the arrow keys.'],
+  ]} />
+  <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/menu.js</code>. It fills in <code>aria-haspopup</code>, <code>aria-expanded</code> and <code>aria-controls</code> on triggers if you leave them out.</p>
+  <ClassTable head={['Attribute', 'What it does']} rows={[
+    ['data-dd-menu="id"', 'On a button: toggles the menu with that id. With an empty value, the next <code>.dd-menu</code> sibling. On an item inside a menu: opens a submenu to its side.'],
+    ['data-dd-placement', '<code>bottom-start</code> (default), <code>bottom-end</code>, <code>top-start</code>, <code>top-end</code>. Menus flip when they would leave the viewport.'],
+    ['data-dd-contextmenu="id"', 'On an area: opens the menu at the pointer on right-click, Shift F10 or the Menu key.'],
+    ['role="menuitemcheckbox"', 'Click toggles <code>aria-checked</code>; the menu stays open.'],
+    ['role="menuitemradio"', 'Click checks this item and unchecks the others in its <code>role="group"</code>; the menu stays open.'],
+  ]} />
+  <ClassTable head={['Key', 'What it does']} rows={[
+    ['↓ / ↑ on the trigger', 'Opens the menu with the first / last item focused. Enter and Space open at the first item.'],
+    ['↓ ↑ · Home End', 'Move between items, wrapping at the ends; disabled items are skipped.'],
+    ['A letter', 'Jumps to the next item that starts with it.'],
+    ['Enter / Space', 'Runs the focused item, or opens its submenu.'],
+    ['→ / ←', 'Opens a submenu / closes it and returns to its parent item.'],
+    ['Esc', 'Closes the innermost menu and returns focus to its trigger.'],
+    ['Tab', 'Closes every menu and moves on from the trigger.'],
+  ]} />
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Group related items and label the groups; put destructive items last, after a divider.', 'Show the shortcut for anything that has one.', 'Keep labels to a verb and an object: “Copy path”, “Roll back”.']}
+    dont={['Don’t nest submenus more than one level deep.', 'Don’t put the only path to an action inside a context menu.', 'Don’t mix items with and without icons in one menu.']}
+  />
+</Docs>

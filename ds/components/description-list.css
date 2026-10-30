@@ -1,0 +1,88 @@
+/* Description list — key-value pairs: a deploy's facts, a service's settings, a key's metadata.
+   dl > div.__item > dt.__term + dd.__details. Inline by default (term column + value), stacked, or two columns.
+   Collapses to stacked / one column in narrow containers. Copyable values reuse [data-dd-copy]. */
+
+.dd-description-list {
+  --_line: color-mix(in oklab, var(--dd-text) 9%, transparent);
+  --_py: 2.5;
+  container: dd-description-list / inline-size;
+  margin: 0; font-size: var(--dd-fs-sm); color: var(--dd-text);
+}
+.dd-description-list__item {
+  display: grid; grid-template-columns: minmax(120px, 30%) minmax(0, 1fr); align-items: baseline;
+  gap: calc(var(--dd-u) * 1) var(--dd-space-4);
+  padding: calc(var(--dd-u) * var(--_py)) 0;
+  border-top: 1px solid var(--_line);
+}
+.dd-description-list__item:first-child { border-top: 0; }
+.dd-description-list__term { margin: 0; color: var(--dd-muted); }
+.dd-description-list__details {
+  display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5);
+  min-width: 0; margin: 0; overflow-wrap: anywhere;
+}
+.dd-description-list__details :where(a) {
+  color: inherit; text-decoration: underline dotted; text-decoration-color: var(--dd-faint);
+  text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+}
+.dd-description-list__details :where(a:hover) { text-decoration-color: currentColor; }
+.dd-description-list__mono { font-family: var(--dd-font-mono); font-size: 0.94em; font-variant-numeric: tabular-nums; }
+.dd-description-list__muted { color: var(--dd-muted); }
+
+/* Status dot before a value: data-status="ok | warn | bad | info | muted" */
+.dd-description-list__status { display: inline-flex; align-items: center; gap: 0.5em; }
+.dd-description-list__status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--dd-faint); }
+.dd-description-list__status[data-status='ok']::before { background: var(--dd-ok); }
+.dd-description-list__status[data-status='warn']::before { background: var(--dd-warn); }
+.dd-description-list__status[data-status='bad']::before { background: var(--dd-bad); }
+.dd-description-list__status[data-status='info']::before { background: var(--dd-info); }
+
+/* Copy: appears on hover / focus of the row; always visible on touch. */
+.dd-description-list__copy {
+  appearance: none; display: inline-grid; place-items: center; width: 24px; height: 24px; margin-block: -4px; padding: 0;
+  border: 0; border-radius: var(--dd-r-ctl); background: transparent; color: var(--dd-muted); cursor: pointer;
+  opacity: 0; transition: opacity var(--dd-dur-fast) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-description-list__copy > .dd-icon { width: 14px; height: 14px; grid-area: 1 / 1; }
+.dd-description-list__copy > .dd-icon:last-child { display: none; }
+.dd-description-list__copy[data-copied] > .dd-icon:first-child { display: none; }
+.dd-description-list__copy[data-copied] > .dd-icon:last-child { display: block; color: var(--dd-ok); }
+.dd-description-list__item:hover .dd-description-list__copy,
+.dd-description-list__item:focus-within .dd-description-list__copy,
+.dd-description-list__copy[data-copied] { opacity: 1; }
+.dd-description-list__copy:hover { background: var(--dd-surface-2); color: var(--dd-text); }
+.dd-description-list__copy:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
+@media (hover: none) { .dd-description-list__copy { opacity: 1; } }
+
+/* Stacked: term above value */
+.dd-description-list--stacked .dd-description-list__item { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.dd-description-list--stacked .dd-description-list__term { font-size: var(--dd-fs-xs); }
+
+/* Two columns of stacked items. Rules are drawn on every item and the first row's are clipped. */
+.dd-description-list--columns {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(max(220px, calc(50% - var(--dd-space-8))), 1fr));
+  column-gap: var(--dd-space-8); overflow: hidden;
+}
+.dd-description-list--columns .dd-description-list__item {
+  grid-template-columns: minmax(0, 1fr); gap: 2px; margin-top: -1px; border-top: 1px solid var(--_line);
+}
+.dd-description-list--columns .dd-description-list__term { font-size: var(--dd-fs-xs); }
+
+/* Compact rows */
+.dd-description-list--compact { --_py: 1.5; }
+
+/* On a tonal card */
+.dd-description-list--card {
+  --_py: 3;
+  padding: 0 var(--dd-space-5); border-radius: var(--dd-r-box); background: var(--dd-surface);
+}
+.dd-description-list--card.dd-description-list--compact { --_py: 2; }
+.dd-description-list--card .dd-description-list__copy:hover { background: var(--dd-surface-3); }
+
+/* Narrow containers: inline collapses to stacked. */
+@container dd-description-list (max-width: 420px) {
+  .dd-description-list__item { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .dd-description-list__term { font-size: var(--dd-fs-xs); }
+  /* Copy moves to the row's end so a long value never pushes it onto a line of its own. */
+  .dd-description-list__item:has(> dd > .dd-description-list__copy) { position: relative; padding-right: calc(var(--dd-u) * 6.5); }
+  .dd-description-list__copy { position: absolute; right: 0; bottom: calc(var(--dd-u) * var(--_py) - 2px); margin: 0; }
+}

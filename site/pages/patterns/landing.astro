@@ -1,0 +1,210 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+/* ---------- projects (from Card) ---------- */
+type Project = { name: string; icon: string; kind: string; text: string; meta: string; warm?: boolean };
+const projects: Project[] = [
+  { name: 'dawn-and-dusk', icon: 'layers', kind: 'Design system', text: 'Tokens, 58 components and an agent skill that switch between dawn and dusk without a hard-coded colour.', meta: 'CSS · v0.1', warm: true },
+  { name: 'dockey-ui', icon: 'box', kind: 'Swift · macOS', text: 'A native companion for the local Docker engine — containers, logs and volumes at a glance.', meta: 'v2.4 · 642 stars' },
+  { name: 'insomnia', icon: 'moon', kind: 'TypeScript · web', text: 'A sleep journal that reads like a ship’s log: bedtimes, wake-ups and the notes in between.', meta: 'Beta · 318 stars' },
+  { name: 'ai-focus', icon: 'sparkle', kind: 'Agents · MCP', text: 'Todos, notes and standups that an agent can read and write, so the plan lives in one place.', meta: 'Updated 2h ago', warm: true },
+  { name: 'leetnode', icon: 'code', kind: 'Node · CLI', text: 'Practice problems in the terminal, with a local judge and spaced repetition for the ones you missed.', meta: 'Archived · 41 stars' },
+  { name: 'cxkw.dev', icon: 'globe', kind: 'Astro · web', text: 'This site: the work, the notes and a status page, deployed from main to three regions.', meta: '1,284 deploys', warm: true },
+];
+const card = (p: Project) => `
+          <article class="dd-card dd-card--link">
+            <div class="dd-card__media${p.warm ? ' dd-card__media--warm' : ''}" role="img" aria-label="${p.name} cover"></div>
+            <div class="dd-card__body">
+              <p class="dd-card__eyebrow">${i(p.icon)}<span>${p.kind}</span></p>
+              <h3 class="dd-card__title"><a class="dd-card__stretch" href="#">${p.name}</a></h3>
+              <p class="dd-card__text">${p.text}</p>
+              <div class="dd-card__foot"><span class="dd-card__meta">${p.meta}</span><span class="dd-card__link">Case study ${i('arrow-right')}</span></div>
+            </div>
+          </article>`;
+
+/* ---------- stats (from Stat, joined grid) ---------- */
+const stat = (label: string, value: string, unit: string, compare: string) => `
+          <div class="dd-stat">
+            <p class="dd-stat__label">${label}</p>
+            <div class="dd-stat__main"><p class="dd-stat__value">${value}${unit ? `<span class="dd-stat__unit">${unit}</span>` : ''}</p></div>
+            <div class="dd-stat__foot"><span class="dd-stat__compare">${compare}</span></div>
+          </div>`;
+
+/* ---------- contact form (from Form layout / Form field) ---------- */
+const chev = `<span class="dd-select__chevron">${i('chevron-down')}</span>`;
+const field = (id: string, label: string, control: string, cls = '') => `
+              <div class="dd-field${cls ? ` ${cls}` : ''}">
+                <label class="dd-field__label" for="${id}">${label}</label>
+                ${control}
+              </div>`;
+
+const glue = `<style>
+  /* Page glue only: section rhythm and a two-column contact block. Every visual comes from a component. */
+  .dd-pattern-landing { container: dd-pattern-landing / inline-size; }
+  .dd-pattern-landing__wrap { max-width: 1080px; margin-inline: auto; padding-inline: calc(var(--dd-u) * 10); }
+  .dd-pattern-landing__hero { display: flex; flex-direction: column; align-items: flex-start; gap: calc(var(--dd-u) * 5); max-width: 46rem; padding-block: calc(var(--dd-u) * 20) calc(var(--dd-u) * 12); }
+  .dd-pattern-landing__section { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 6); padding-block: calc(var(--dd-u) * 12); }
+  .dd-pattern-landing__contact { display: grid; gap: calc(var(--dd-u) * 8); }
+  .dd-pattern-landing__footer { margin-top: calc(var(--dd-u) * 12); padding-block: calc(var(--dd-u) * 10); background: var(--dd-surface); }
+  .dd-pattern-landing__footer .dd-pattern-landing__wrap { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: calc(var(--dd-u) * 6); }
+  @container dd-pattern-landing (min-width: 900px) {
+    .dd-pattern-landing__contact { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: calc(var(--dd-u) * 12); }
+    .dd-pattern-landing .dd-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @container dd-pattern-landing (max-width: 560px) {
+    .dd-pattern-landing__wrap { padding-inline: calc(var(--dd-u) * 4); }
+    .dd-pattern-landing__hero { padding-block: calc(var(--dd-u) * 12) calc(var(--dd-u) * 6); }
+    .dd-pattern-landing__hero .dd-display { font-size: var(--dd-fs-3xl); }
+    .dd-pattern-landing__section { padding-block: calc(var(--dd-u) * 8); }
+  }
+</style>`;
+
+const page = `
+${glue}
+<div class="dd-pattern-landing">
+  <header class="dd-top-bar">
+    <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-menu="landing-menu" aria-haspopup="menu" aria-expanded="false" aria-controls="landing-menu" aria-label="Open menu">${i('menu')}</button>
+    <div class="dd-menu" id="landing-menu" role="menu" aria-label="Sections" hidden>
+      <a class="dd-menu__item" role="menuitem" href="#landing-work">Work</a>
+      <a class="dd-menu__item" role="menuitem" href="#landing-notes">Notes</a>
+      <a class="dd-menu__item" role="menuitem" href="#landing-contact">Contact</a>
+    </div>
+    <a class="dd-top-bar__brand" href="#"><span class="dd-logo">cxkw</span></a>
+    <nav aria-label="Sections">
+      <ul class="dd-top-bar__links">
+        <li><a class="dd-top-bar__link" href="#landing-work" aria-current="page">Work</a></li>
+        <li><a class="dd-top-bar__link" href="#landing-notes">Notes</a></li>
+        <li><a class="dd-top-bar__link" href="#landing-contact">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="dd-top-bar__actions">
+      <a class="dd-btn dd-btn--ghost dd-btn--icon" href="#" aria-label="GitHub">${i('code')}</a>
+      <button class="dd-btn dd-btn--ghost dd-btn--icon" type="button" data-dd-theme-toggle aria-label="Toggle dawn / dusk">${i('moon')}</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="dd-pattern-landing__wrap">
+      <section class="dd-pattern-landing__hero" aria-labelledby="landing-title">
+        <p class="dd-eyebrow">cxkw.dev · Andy Nguyen</p>
+        <h1 class="dd-display" id="landing-title">small tools for focused work</h1>
+        <p class="dd-lead">I design and build quiet software — a Docker companion for the Mac, a sleep journal, an agent-ready todo list — and the design system they all share.</p>
+        <div class="dd-row" style="--dd-gap: calc(var(--dd-u) * 2)">
+          <a class="dd-btn dd-btn--primary dd-btn--lg" href="#landing-contact"><span>Start a project</span>${i('arrow-right')}</a>
+          <a class="dd-btn dd-btn--secondary dd-btn--lg" href="#landing-work"><span>See the work</span></a>
+        </div>
+        <span class="dd-status-dot dd-status-dot--online dd-status-dot--live">Booking projects from January 2027</span>
+      </section>
+
+      <div class="dd-stat-grid dd-stat-grid--joined" style="--dd-stat-min: 180px">${stat('Projects shipped', '6', '', 'since <b>2021</b>')}${stat('Deploys this year', '1,284', '', '<b>4.1</b> a working day')}${stat('GitHub stars', '2.1', 'K', 'across <b>6</b> repos')}${stat('Uptime', '99.98', '%', 'last <b>90</b> days')}
+      </div>
+
+      <section class="dd-pattern-landing__section" id="landing-work" aria-labelledby="landing-work-title">
+        <header class="dd-stack" style="--dd-gap: calc(var(--dd-u) * 2)">
+          <p class="dd-eyebrow">Selected work</p>
+          <h2 class="dd-h2" id="landing-work-title">the lab</h2>
+        </header>
+        <div class="dd-card-grid">${projects.map(card).join('')}
+        </div>
+      </section>
+
+      <aside class="dd-callout dd-callout--tip" id="landing-notes">
+        <p class="dd-callout__title">${i('sparkle')}Now</p>
+        <p>Building <strong>ai-focus</strong> in the open: an MCP server that lets an agent keep your todos and standups. Notes on how it’s going go out every other Sunday — <a class="dd-link" href="#">read the latest</a>.</p>
+      </aside>
+
+      <section class="dd-pattern-landing__section" id="landing-contact" aria-labelledby="landing-contact-title">
+        <div class="dd-pattern-landing__contact">
+          <div class="dd-stack" style="--dd-gap: calc(var(--dd-u) * 4)">
+            <p class="dd-eyebrow">Contact</p>
+            <h2 class="dd-h2" id="landing-contact-title">say hello</h2>
+            <p class="dd-text dd-muted">Tell me what you’re making and when it needs to ship. I reply to every message within two working days.</p>
+            <dl class="dd-description-list dd-description-list--stacked dd-description-list--compact">
+              <div class="dd-description-list__item">
+                <dt class="dd-description-list__term">Email</dt>
+                <dd class="dd-description-list__details"><span class="dd-description-list__mono">hello@cxkw.dev</span><button class="dd-description-list__copy" type="button" data-dd-copy="hello@cxkw.dev" aria-label="Copy email">${i('copy')}${i('check')}</button></dd>
+              </div>
+              <div class="dd-description-list__item">
+                <dt class="dd-description-list__term">Time zone</dt>
+                <dd class="dd-description-list__details"><span class="dd-description-list__mono">UTC+1</span><span class="dd-description-list__muted">Berlin</span></dd>
+              </div>
+            </dl>
+          </div>
+          <form class="dd-form" onsubmit="return false">
+            <div class="dd-form__grid">${field('landing-name', 'Name', '<div class="dd-input"><input class="dd-input__control" id="landing-name" autocomplete="name" placeholder="Mira Kh."></div>')}${field('landing-email', 'Email', '<div class="dd-input"><input class="dd-input__control" id="landing-email" type="email" autocomplete="email" placeholder="mira@studio.dev"></div>')}${field('landing-kind', 'What are you building?', `<div class="dd-input dd-select"><select class="dd-input__control" id="landing-kind"><option>A new product</option><option>A design system</option><option>A small tool</option><option>Something else</option></select>${chev}</div>`)}${field('landing-when', 'Ship by', `<div class="dd-input dd-select"><select class="dd-input__control" id="landing-when"><option>This quarter</option><option selected>Q1 2027</option><option>No date yet</option></select>${chev}</div>`)}${field('landing-msg', 'Message', '<div class="dd-input dd-textarea"><textarea class="dd-input__control" id="landing-msg" rows="4" placeholder="A few lines about the project, the team and the timeline."></textarea></div>', 'dd-form__span')}
+            </div>
+            <div class="dd-form__footer">
+              <span class="dd-form__meta">${i('lock')}Only used to reply to you.</span>
+              <button class="dd-btn dd-btn--primary" type="submit">${i('send')}<span>Send message</span></button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="dd-pattern-landing__footer">
+    <div class="dd-pattern-landing__wrap">
+      <div class="dd-stack" style="--dd-gap: calc(var(--dd-u) * 3)">
+        <span class="dd-logo dd-logo--xl">cxkw</span>
+        <p class="dd-caption">© 2026 Andy Nguyen · set in <span class="dd-logo dd-logo--xs">dawn &amp; dusk</span></p>
+      </div>
+      <nav class="dd-row" style="--dd-gap: calc(var(--dd-u) * 5)" aria-label="Elsewhere">
+        <a class="dd-link dd-link--muted" href="#">GitHub</a>
+        <a class="dd-link dd-link--muted" href="#">Notes</a>
+        <a class="dd-link dd-link--muted" href="#">RSS</a>
+        <a class="dd-link dd-link--muted" href="mailto:hello@cxkw.dev">hello@cxkw.dev</a>
+      </nav>
+    </div>
+  </footer>
+</div>`;
+---
+<Docs title="Landing page" group="Patterns" lead="The cxkw.dev home page: who it is, what has shipped, and how to get in touch — a top bar, a lockup hero, the work, a few figures and a contact form, closing on the logo." wide>
+  <p>Built only from existing components and their documented markup. The hero is the heaviest type on the page (<code>.dd-display</code>, lowercase, tight), the cards and the joined stat grid carry the proof, and the contact form repeats the hero’s one primary action. The only extra CSS is the section rhythm, the two-column contact block and the footer band — the <code>&lt;style&gt;</code> at the top of the snippet.</p>
+
+  <Example
+    title="cxkw.dev"
+    description="Try it: open a card, copy the email, fill in the form, flip dawn / dusk from the moon button. Narrow the window and the links fold into the menu button."
+    code={page}
+    stage="flush"
+  />
+
+  <h2 id="anatomy">Anatomy</h2>
+  <ol>
+    <li><strong>Top bar</strong> — the site variant: wordmark, three section links and two ghost icon buttons. Under 640px the links fold into a menu.</li>
+    <li><strong>Hero</strong> — mono eyebrow, the lockup headline (<code>.dd-display</code>), a lead sentence, one primary and one secondary button, and a live status dot for availability.</li>
+    <li><strong>Stats</strong> — a joined stat grid: four figures, each with the period it covers.</li>
+    <li><strong>The work</strong> — a card grid with tonal media, an eyebrow, a stretched title link and a foot line.</li>
+    <li><strong>Callout</strong> — one “now” note between the work and the contact block.</li>
+    <li><strong>Contact</strong> — the pitch and a copyable email beside a tucked-label form; side by side from 900px, stacked below.</li>
+    <li><strong>Footer</strong> — a surface band with the wordmark, a credit line and muted links.</li>
+  </ol>
+
+  <h2 id="uses">What it uses</h2>
+  <ul>
+    <li><a href="../components/top-bar">Top bar</a> (site header), <a href="../components/menu">Menu</a>, <a href="../components/button">Button</a></li>
+    <li><a href="../foundations/typography">Typography</a> (<code>.dd-display</code>, <code>.dd-lead</code>, <code>.dd-eyebrow</code>), <a href="../components/status-dot">Status dot</a></li>
+    <li><a href="../components/stat">Stat</a> (joined grid), <a href="../components/card">Card</a> (media, link)</li>
+    <li><a href="../components/callout">Callout</a>, <a href="../components/link">Link</a></li>
+    <li><a href="../components/form-layout">Form layout</a>, <a href="../components/form-field">Form field</a>, <a href="../components/select">Select</a>, <a href="../components/textarea">Textarea</a>, <a href="../components/description-list">Description list</a></li>
+    <li><a href="../components/logo">Logo</a></li>
+  </ul>
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={[
+      'Write the headline in lowercase on purpose; keep it to one line on desktop, two on a phone.',
+      'Give the page one primary action. Here the hero button and the form’s submit are the same action — starting a project.',
+      'Let sections breathe (60–100px); let cards and the stat grid sit tight.',
+      'Keep the footer quiet: tone, a wordmark and muted links.',
+    ]}
+    dont={[
+      'Don’t add a second display headline; section titles step down to <code>.dd-h2</code>.',
+      'Don’t give project cards a shadow or a border — tone lifts them.',
+      'Don’t use the primary colour for links or the status dot; apricot means “do this”.',
+    ]}
+  />
+</Docs>

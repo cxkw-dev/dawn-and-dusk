@@ -1,0 +1,96 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import Guides from '../../components/Guides.astro';
+import { dawn, dusk, setNames } from '../../lib/tokens';
+
+type Row = [token: string, use: string];
+const groups: { title: string; id: string; intro: string; rows: Row[] }[] = [
+  { title: 'Surfaces', id: 'surfaces', intro: 'Greige Gallery, warmer. Surfaces separate by tone — each step is the text colour mixed a little further into the page.', rows: [
+    ['bg', 'Page background (with the film grain on top).'],
+    ['surface', 'Containers: cards, table cards, sidebars, inputs at rest.'],
+    ['surface-2', 'Inset fills, hover, secondary buttons, selected rows.'],
+    ['surface-3', 'Pressed, active, the strongest tonal step.'],
+    ['border', 'The rare hairline — dense tables and dividers only.'],
+    ['border-strong', 'Emphasised rules, e.g. under a table header.'],
+  ] },
+  { title: 'Text', id: 'text', intro: 'Warm near-black on cream; cream on warm near-black at dusk.', rows: [
+    ['text', 'Body copy, headings, icons.'],
+    ['muted', 'Secondary text, descriptions, table meta.'],
+    ['faint', 'Placeholders, disabled text, decorative rules.'],
+  ] },
+  { title: 'Accent & primary', id: 'accent', intro: 'Two roles. <b>Primary</b> (Golden hour apricot) fills the main action and nothing else. <b>Accent</b> (taupe ink) marks selection, focus and links.', rows: [
+    ['primary', 'Primary button fill.'],
+    ['primary-hover', 'Primary button hover.'],
+    ['primary-soft', 'Tinted backgrounds tied to the primary action.'],
+    ['on-primary', 'Text and icons on primary.'],
+    ['accent', 'Active nav item, selected tab marker, links on hover, focus ring source.'],
+    ['accent-soft', 'Selected / current backgrounds.'],
+    ['on-accent', 'Text on accent fills.'],
+  ] },
+  { title: 'Status', id: 'status', intro: 'Golden hour status colours — olive, honey, terracotta and dusk slate — so success and failure stay readable but match the warm system.', rows: [
+    ['ok', 'Success, healthy, live.'],
+    ['warn', 'Warning, degraded, beta.'],
+    ['bad', 'Error, down, destructive.'],
+    ['info', 'Neutral information, links to help.'],
+    ['ok-soft', 'Success tint (alert and label backgrounds).'],
+    ['warn-soft', 'Warning tint.'],
+    ['bad-soft', 'Error tint.'],
+    ['info-soft', 'Info tint.'],
+  ] },
+];
+
+const swatches = (rows: Row[]) => rows;
+const setKeys = Object.keys(setNames);
+
+const usage = `
+<div class="dd-row">
+  <span style="background: var(--dd-surface); padding: 10px 14px; border-radius: var(--dd-r-box)">--dd-surface</span>
+  <span style="background: var(--dd-surface-2); padding: 10px 14px; border-radius: var(--dd-r-box)">--dd-surface-2</span>
+  <span style="background: var(--dd-primary); color: var(--dd-on-primary); padding: 10px 14px; border-radius: var(--dd-r-box)">--dd-primary</span>
+  <span style="background: var(--dd-ok-soft); color: var(--dd-ok); padding: 10px 14px; border-radius: var(--dd-r-box)">--dd-ok-soft</span>
+</div>`;
+---
+<Docs title="Colors" group="Foundations" lead="Two themes from one set of names: dawn (light) and dusk (dark). Components only read tokens, so everything switches together.">
+  <h2 id="themes">Dawn & dusk</h2>
+  <p>Set <code>data-theme="dawn"</code> or <code>data-theme="dusk"</code> on <code>&lt;html&gt;</code> — or on any element to theme just that part. With no attribute the system follows the visitor’s OS preference. The values below are read straight from <code>ds/tokens.css</code>.</p>
+  <Example code={usage} description="Every colour is a CSS variable. Flip this example to dusk — same markup, different values." />
+
+  {groups.map((g) => (
+    <section>
+      <h2 id={g.id}>{g.title}</h2>
+      <p set:html={g.intro} />
+      <div class="doc-swatches">
+        <div class="doc-sw-row is-head"><span>Token</span><span>☀ dawn</span><span>☾ dusk</span><span>Use for</span></div>
+        {swatches(g.rows).map(([t, use]) => (
+          <div class="doc-sw-row">
+            <span><code>--dd-{t}</code></span>
+            <span class="doc-sw-mode" data-theme="dawn"><i class="doc-sw-chip" style={`background:${dawn[t]}`} /><span class="doc-sw-hex">{dawn[t]}</span></span>
+            <span class="doc-sw-mode" data-theme="dusk"><i class="doc-sw-chip" style={`background:${dusk[t]}`} /><span class="doc-sw-hex">{dusk[t]}</span></span>
+            <span>{use}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  ))}
+
+  <h2 id="color-set">Color set — golden hour</h2>
+  <p>Eight categorical colours for chips, tags, avatars, chart series and category labels. They carry no meaning on their own — use status colours for meaning. Use them in order (<code>--dd-set-1</code> first) so charts and tags look consistent across pages. Dusk values are lifted and softened to sit on dark grounds.</p>
+  <div class="doc-set">
+    {setKeys.map((k) => (
+      <div class="doc-set-i">
+        <i style={`background: var(--dd-${k})`} />
+        <span><b>{setNames[k]}</b><code>--dd-{k}</code><span class="dd-muted">{dawn[k]} · {dusk[k]}</span></span>
+      </div>
+    ))}
+  </div>
+
+  <h2 id="tones">Tones</h2>
+  <p>Three supporting neutrals from the palette — greige, stone and putty — for illustration, empty states and quiet decoration: <code>--dd-tone-1</code>, <code>--dd-tone-2</code>, <code>--dd-tone-3</code>.</p>
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Build hierarchy with surface steps before reaching for a border.', 'Keep <code>--dd-primary</code> for the single most important action.', 'Pair every status colour with an icon or word — never colour alone.', 'Check every screen in dusk; it is a first-class theme, not an afterthought.']}
+    dont={['Don’t hard-code hex values in components — read tokens.', 'Don’t use the color set to mean success or failure.', 'Don’t put primary-coloured text on primary-soft backgrounds for long copy.']}
+  />
+</Docs>

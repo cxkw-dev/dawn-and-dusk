@@ -1,0 +1,125 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const crumb = (label: string, o: { icon?: string; current?: boolean; mono?: boolean } = {}) =>
+  `<li class="dd-breadcrumbs__item"><a class="dd-breadcrumbs__link${o.mono ? ' dd-mono' : ''}"${o.current ? ' aria-current="page"' : ' href="#"'}>${o.icon ? i(o.icon) : ''}<span>${label}</span></a></li>`;
+
+const basic = `
+<nav class="dd-breadcrumbs" aria-label="Breadcrumb">
+  <ol class="dd-breadcrumbs__list">
+    ${crumb('cxkw')}
+    ${crumb('services')}
+    ${crumb('auth-gateway', { current: true })}
+  </ol>
+</nav>`;
+
+const withIcons = `
+<nav class="dd-breadcrumbs" aria-label="Breadcrumb">
+  <ol class="dd-breadcrumbs__list">
+    ${crumb('Home', { icon: 'home' })}
+    ${crumb('dawn-and-dusk', { icon: 'folder' })}
+    ${crumb('Deploys')}
+    ${crumb('dpl_8f3a2c', { current: true, mono: true })}
+  </ol>
+</nav>`;
+
+const overflow = `
+<nav class="dd-breadcrumbs" aria-label="Breadcrumb">
+  <ol class="dd-breadcrumbs__list">
+    ${crumb('cxkw', { icon: 'home' })}
+    <li class="dd-breadcrumbs__item">
+      <details class="dd-breadcrumbs__more" data-dd-autoclose>
+        <summary aria-label="Show 3 hidden levels">…</summary>
+        <ul class="dd-breadcrumbs__menu">
+          <li><a class="dd-breadcrumbs__menu-link" href="#">${i('folder')}infrastructure</a></li>
+          <li><a class="dd-breadcrumbs__menu-link" href="#">${i('folder')}production</a></li>
+          <li><a class="dd-breadcrumbs__menu-link" href="#">${i('globe')}eu-central</a></li>
+        </ul>
+      </details>
+    </li>
+    ${crumb('edge-cache')}
+    ${crumb('Purge rules', { current: true })}
+  </ol>
+</nav>`;
+
+const open = `
+<nav class="dd-breadcrumbs" aria-label="Breadcrumb">
+  <ol class="dd-breadcrumbs__list">
+    ${crumb('cxkw', { icon: 'home' })}
+    <li class="dd-breadcrumbs__item">
+      <details class="dd-breadcrumbs__more" data-dd-autoclose open>
+        <summary aria-label="Show 3 hidden levels">…</summary>
+        <ul class="dd-breadcrumbs__menu">
+          <li><a class="dd-breadcrumbs__menu-link" href="#">${i('folder')}infrastructure</a></li>
+          <li><a class="dd-breadcrumbs__menu-link" href="#">${i('folder')}production</a></li>
+          <li><a class="dd-breadcrumbs__menu-link" href="#">${i('globe')}eu-central</a></li>
+        </ul>
+      </details>
+    </li>
+    ${crumb('edge-cache')}
+    ${crumb('Purge rules', { current: true })}
+  </ol>
+</nav>`;
+
+const long = `
+<div class="dd-stack" style="--dd-gap: 20px">
+  <nav class="dd-breadcrumbs" aria-label="Breadcrumb">
+    <ol class="dd-breadcrumbs__list">
+      ${crumb('cxkw')}
+      ${crumb('billing-worker')}
+      ${crumb('Jobs')}
+      ${crumb('reconcile-stripe-invoices-for-annual-plans-eu', { current: true })}
+    </ol>
+  </nav>
+  <nav class="dd-breadcrumbs dd-breadcrumbs--sm" aria-label="Breadcrumb">
+    <ol class="dd-breadcrumbs__list">
+      ${crumb('cxkw')}
+      ${crumb('leetnode')}
+      ${crumb('Settings')}
+      ${crumb('Environment variables', { current: true })}
+    </ol>
+  </nav>
+</div>`;
+---
+<Docs title="Breadcrumbs" group="Navigation" lead="Where you are and how you got there. Muted links divided by faint slashes; the current page is in ink and is not a link.">
+  <Example title="Default" code={basic} />
+
+  <h2 id="icons">With icons and IDs</h2>
+  <p>An icon on the root or a typed object helps scanning. Set IDs and hashes in mono with <code>dd-mono</code> on the link.</p>
+  <Example code={withIcons} />
+
+  <h2 id="overflow">Overflow</h2>
+  <p>For deep trails, keep the root and the last two levels and fold the rest into “…”. It opens a small menu of the skipped levels; Esc or a click outside closes it.</p>
+  <Example code={overflow} />
+  <Example title="Overflow, open" code={open} minHeight="220px" />
+
+  <h2 id="long">Long labels and small</h2>
+  <p>Each crumb truncates at 24 characters with an ellipsis. Screen readers still get the full text; add a <code>title</code> if sighted users need it too. The small size fits inside a top bar.</p>
+  <Example code={long} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-breadcrumbs', 'The <code>&lt;nav aria-label="Breadcrumb"&gt;</code>.'],
+    ['__list / __item', 'The <code>&lt;ol&gt;</code> and its items. Separators are drawn between items.'],
+    ['__link', 'A crumb. The last one gets <code>aria-current="page"</code> and no <code>href</code>. Wrap text in a <code>&lt;span&gt;</code> so it truncates.'],
+    ['__more / __menu / __menu-link', 'The “…” overflow: a <code>&lt;details data-dd-autoclose&gt;</code> with a list of links.'],
+    ['.dd-breadcrumbs--sm', 'Extra-small text for top bars and dense headers.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute / key', 'What it does']} rows={[
+    ['data-dd-autoclose', 'On the overflow <code>&lt;details&gt;</code>: closes on a click outside, after choosing a level, or when another dropdown opens.'],
+    ['↓ / ↑', 'Open the menu from the “…” and move between levels.'],
+    ['Esc', 'Close the menu; focus returns to “…”.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Show breadcrumbs from the second level down; the top level has nowhere to go back to.', 'Use the same names as the side nav and page titles.', 'Fold the middle, never the root or the parent.']}
+    dont={['Don’t make the current page a link.', 'Don’t use breadcrumbs as the only navigation.', 'Don’t put actions in the trail.']}
+  />
+</Docs>

@@ -1,0 +1,50 @@
+/* App shell — the page layout: the side nav runs the full height on the left; the top bar and a scrolling content
+   area share the rest. The shell is the viewport by default (--dd-app-shell-h: 100dvh). Under 768px of shell width the
+   side nav goes off-canvas and the top bar's menu button opens it. */
+.dd-app-shell {
+  container: dd-app-shell / inline-size;
+  contain: layout; /* own stacking context; the off-canvas nav is fixed to the shell, which is the viewport in an app */
+  position: relative; display: flex; height: var(--dd-app-shell-h, 100dvh); overflow: hidden;
+  background-color: var(--dd-bg); color: var(--dd-text);
+}
+.dd-app-shell > .dd-side-nav { position: relative; top: auto; height: 100%; }
+.dd-app-shell__main { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
+.dd-app-shell__main > .dd-top-bar { position: relative; flex: none; }
+.dd-app-shell__content {
+  flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin;
+  padding: calc(var(--dd-u) * 8) calc(var(--dd-u) * 10) calc(var(--dd-u) * 12);
+}
+.dd-app-shell__page { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 8); width: 100%; max-width: 1180px; margin-inline: auto; }
+.dd-app-shell__page--narrow { max-width: 760px; }
+
+@container dd-app-shell (max-width: 1023px) {
+  .dd-app-shell__content { padding: calc(var(--dd-u) * 6) calc(var(--dd-u) * 6) calc(var(--dd-u) * 10); }
+}
+
+/* Wide: the side nav is in view and carries the logo, so the top bar drops its menu button and narrow-only logo even
+   when the bar itself is under 640px, and keeps the workspace / project context on the left. */
+@container dd-app-shell (min-width: 768px) {
+  .dd-app-shell .dd-top-bar__nav-btn, .dd-app-shell .dd-top-bar__narrow { display: none !important; }
+  .dd-app-shell .dd-top-bar__context { display: flex; }
+}
+
+/* Narrow: the side nav leaves the flow and slides in over a scrim (same rules as .dd-side-nav--offcanvas). */
+@container dd-app-shell (max-width: 767px) {
+  .dd-app-shell > .dd-side-nav {
+    position: fixed; inset-block: 0; top: 0; left: calc(-1 * (var(--dd-side-nav-rail) + var(--dd-side-nav-panel)) - 48px);
+    z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden;
+    transition: left var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
+  }
+  .dd-app-shell > .dd-side-nav::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; background: var(--dd-overlay); opacity: 0; pointer-events: none;
+    transition: opacity var(--dd-dur) var(--dd-ease);
+  }
+  .dd-app-shell > .dd-side-nav .dd-side-nav__panel { width: var(--dd-side-nav-panel); min-width: 0; flex-shrink: 1; visibility: inherit; }
+  .dd-app-shell > .dd-side-nav .dd-side-nav__collapse > .dd-icon { rotate: 0deg; }
+  .dd-app-shell > .dd-side-nav.is-mobile-open { left: 0; visibility: visible; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
+  .dd-app-shell > .dd-side-nav.is-mobile-open::before { opacity: 1; pointer-events: auto; }
+  .dd-app-shell .dd-top-bar__nav-btn { display: inline-flex; }
+  .dd-app-shell .dd-top-bar__narrow { display: inline-flex !important; }
+  .dd-app-shell__content { padding: calc(var(--dd-u) * 5) calc(var(--dd-u) * 4) calc(var(--dd-u) * 10); }
+  .dd-app-shell__page { gap: calc(var(--dd-u) * 6); }
+}

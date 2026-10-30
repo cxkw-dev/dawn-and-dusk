@@ -1,0 +1,119 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { Code } from 'astro:components';
+import { i } from '../../lib/icon';
+
+const basic = `
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--dd-space-2) var(--dd-space-4); max-width: 520px; margin-inline: auto; padding: var(--dd-space-3) var(--dd-space-3) var(--dd-space-3) var(--dd-space-4); border-radius: var(--dd-r-box); background: var(--dd-surface)">
+  <div style="flex: 1 1 220px; min-width: 0">
+    <p class="dd-small" style="margin: 0; font-weight: 600">dockey-ui preview <span class="dd-mono dd-muted" style="font-weight: 400">c41d9e0</span></p>
+    <p class="dd-caption" style="margin: 0">Ready 2 minutes ago · pushed by andy</p>
+  </div>
+  <button class="dd-btn dd-btn--primary dd-btn--sm" type="button" popovertarget="pop-promote">${i('upload')}<span>Promote</span></button>
+</div>
+<div class="dd-popover" id="pop-promote" popover role="dialog" aria-labelledby="pop-promote-title" data-dd-placement="bottom-end">
+  <span class="dd-popover__arrow"></span>
+  <div class="dd-popover__header">
+    <div>
+      <p class="dd-popover__eyebrow">dockey-ui · <span class="dd-mono">c41d9e0</span></p>
+      <h3 class="dd-popover__title" id="pop-promote-title">Promote to production?</h3>
+    </div>
+    <button class="dd-popover__close" type="button" popovertarget="pop-promote" popovertargetaction="hide" aria-label="Close">${i('x')}</button>
+  </div>
+  <div class="dd-popover__body">
+    <p>This preview replaces <strong>v0.9.3</strong> in fra1, sfo3 and sgp1. Traffic moves over in about a minute; you can roll back any time.</p>
+  </div>
+  <div class="dd-popover__actions">
+    <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" popovertarget="pop-promote" popovertargetaction="hide">Cancel</button>
+    <button class="dd-btn dd-btn--primary dd-btn--sm" type="button" popovertarget="pop-promote" popovertargetaction="hide">${i('upload')}<span>Promote</span></button>
+  </div>
+</div>`;
+
+const anatomy = `
+<div class="dd-popover dd-popover--static" data-placement="bottom" role="dialog" aria-labelledby="pop-static-title" style="--dd-arrow-x: 40px">
+  <span class="dd-popover__arrow"></span>
+  <div class="dd-popover__header">
+    <h3 class="dd-popover__title" id="pop-static-title">Rotate API key</h3>
+    <button class="dd-popover__close" type="button" aria-label="Close">${i('x')}</button>
+  </div>
+  <div class="dd-popover__body"><p>The old key for <span class="dd-mono">auth-gateway</span> keeps working for 24 hours, then stops.</p></div>
+  <div class="dd-popover__actions">
+    <span class="dd-popover__meta">Last rotated 41 days ago</span>
+    <button class="dd-btn dd-btn--sm" type="button">Rotate</button>
+  </div>
+</div>`;
+
+const info = `
+<p class="dd-text">
+  Deploys run in three regions
+  <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" type="button" popovertarget="pop-regions" aria-label="About regions" style="font-size: var(--dd-fs-sm); margin-block: -0.5em; vertical-align: middle">${i('question')}</button>
+</p>
+<div class="dd-popover" id="pop-regions" popover role="dialog" aria-label="About regions" data-dd-placement="right">
+  <span class="dd-popover__arrow"></span>
+  <div class="dd-popover__body">
+    <p><strong>fra1</strong> Frankfurt · <strong>sfo3</strong> San Francisco · <strong>sgp1</strong> Singapore.</p>
+    <p>Each region builds once and serves from edge-cache; a failed region never blocks the others.</p>
+  </div>
+</div>`;
+
+const placements = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-3)">
+  <button class="dd-btn" type="button" popovertarget="pop-top">${i('arrow-up')}<span>Top</span></button>
+  <button class="dd-btn" type="button" popovertarget="pop-bottom-start">${i('arrow-down')}<span>Bottom start</span></button>
+  <button class="dd-btn" type="button" popovertarget="pop-left">${i('arrow-left')}<span>Left</span></button>
+</div>
+<div class="dd-popover" id="pop-top" popover role="dialog" aria-label="Top" data-dd-placement="top"><span class="dd-popover__arrow"></span><p class="dd-popover__body">Above the button, flipping below if there’s no room.</p></div>
+<div class="dd-popover" id="pop-bottom-start" popover role="dialog" aria-label="Bottom start" data-dd-placement="bottom-start"><span class="dd-popover__arrow"></span><p class="dd-popover__body">Below, aligned to the button’s left edge.</p></div>
+<div class="dd-popover" id="pop-left" popover role="dialog" aria-label="Left" data-dd-placement="left"><span class="dd-popover__arrow"></span><p class="dd-popover__body">To the left; on small screens it falls back to below.</p></div>`;
+
+const js = `const panel = document.getElementById('pop-promote');
+dd.popover.open(panel, someButton);   // place beside someButton
+dd.popover.close(panel);
+panel.addEventListener('toggle', (e) => console.log(e.newState)); // 'open' | 'closed'`;
+---
+<Docs title="Popover" group="Feedback & status" lead="A small panel that opens on click, next to the thing that opened it: a confirmation, a short explanation, a couple of settings. It closes on Esc, on a click outside, or from its own buttons.">
+  <Example title="Confirm in place" description="Press Promote. Header with an eyebrow and a close button, a sentence of body, and actions. Built on the native popover attribute: the browser handles open, Esc and outside clicks, and the panel floats above everything." code={basic} />
+
+  <h2 id="anatomy">Anatomy</h2>
+  <p>A floating layer on <code>--dd-float-bg</code> with <code>--dd-shadow-float</code>: a shade lighter than the page in dawn, so it reads as raised paper, and a step up in dusk. 8px radius, 20px padding, an arrow aimed at the trigger. <code>--static</code> shows one in the flow.</p>
+  <Example code={anatomy} stage="center" />
+
+  <h2 id="info">Explain a term</h2>
+  <p>Body only, no header — for a “what’s this?” next to a label.</p>
+  <Example code={info} stage="center" />
+
+  <h2 id="placement">Placement</h2>
+  <p>Below the trigger by default. <code>data-dd-placement</code> on the popover asks for <code>top</code>, <code>left</code> or <code>right</code>, with <code>-start</code> / <code>-end</code> to align to an edge. It flips when there isn’t room and follows the trigger as the page scrolls.</p>
+  <Example code={placements} stage="center" minHeight="220px" />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-popover[popover]', 'The panel. Give it an <code>id</code>, <code>role="dialog"</code> and a label.'],
+    ['.dd-popover__arrow', 'Optional arrow; the JS aims it at the trigger.'],
+    ['.dd-popover__header', 'Header row: optional <code>__eyebrow</code> (mono), <code>__title</code>, and a <code>__close</code> button.'],
+    ['.dd-popover__body', 'Muted text; <code>strong</code> and <code>code</code> step up to the text colour.'],
+    ['.dd-popover__actions', 'Buttons, right-aligned. A <code>.dd-popover__meta</code> span sits on the left.'],
+    ['.dd-popover--wide', '400px instead of up to 340px.'],
+    ['.dd-popover--static', 'In-flow rendering for docs and mockups (set <code>data-placement</code>).'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute / API', 'What it does']} rows={[
+    ['popovertarget="id"', 'On the trigger button: opens and closes the popover (native). <code>popovertargetaction="hide"</code> on buttons inside closes it.'],
+    ['data-dd-placement', 'On the popover: preferred side, <code>bottom</code> by default.'],
+    ['aria-expanded', 'Kept in sync on the trigger by the JS.'],
+    ['Esc · outside click', 'Close the popover (native light dismiss). Focus returns to the trigger when it was inside.'],
+    ['Tab', 'From the trigger, Tab moves into the open popover.'],
+    ['dd.popover.open(el, anchor)', 'Open from code, anchored to any element. Also <code>close(el)</code> and <code>toggle(el, anchor)</code>.'],
+  ]} />
+  <Code code={js} lang="js" theme="css-variables" wrap />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use a popover for a quick decision that belongs to one control.', 'Keep it short: a title, a sentence, two buttons.', 'Make the safe choice the ghost button and put it first.']}
+    dont={['Don’t put a form longer than two fields in a popover — use a dialog or drawer.', 'Don’t open popovers on hover; that’s a tooltip.', 'Don’t nest popovers.']}
+  />
+</Docs>

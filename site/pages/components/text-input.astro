@@ -1,0 +1,262 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const basic = `
+<div class="dd-form__grid">
+  <div class="dd-field">
+    <label class="dd-field__label" for="ti-name">Project name</label>
+    <div class="dd-input"><input class="dd-input__control" id="ti-name" placeholder="dockey-ui"></div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ti-email">Billing email</label>
+    <div class="dd-input">
+      <input class="dd-input__control" id="ti-email" type="email" value="hello@cxkw.dev">
+      <span class="dd-input__affix dd-input__status">${i('check')}</span>
+    </div>
+  </div>
+</div>`;
+
+const states = `
+<div class="dd-form__grid dd-form__grid--3">
+  <div class="dd-field">
+    <label class="dd-field__label" for="ts-1">Default</label>
+    <div class="dd-input"><input class="dd-input__control" id="ts-1" placeholder="auth-gateway"></div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ts-2">Focused</label>
+    <div class="dd-input is-focus"><input class="dd-input__control" id="ts-2" value="billing-wor"></div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ts-3">Filled</label>
+    <div class="dd-input"><input class="dd-input__control" id="ts-3" value="edge-cache"></div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ts-4">Website</label>
+    <div class="dd-input">
+      <input class="dd-input__control" id="ts-4" value="cxkw" aria-invalid="true" aria-describedby="ts-4-err">
+      <span class="dd-input__affix dd-input__status">${i('alert')}</span>
+    </div>
+    <p class="dd-field__error" id="ts-4-err">Use the full address, like https://cxkw.dev</p>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ts-5">Plan</label>
+    <div class="dd-input"><input class="dd-input__control" id="ts-5" value="Studio" disabled></div>
+    <p class="dd-field__hint">Change plans in Billing.</p>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ts-6">Project ID</label>
+    <div class="dd-input">
+      <input class="dd-input__control dd-mono" id="ts-6" value="prj_7f3a91c2" readonly>
+      <span class="dd-input__affix">${i('lock')}</span>
+    </div>
+    <p class="dd-field__hint">Read-only. Select it to copy.</p>
+  </div>
+</div>`;
+
+const affixes = `
+<div class="dd-form__grid">
+  <div class="dd-field">
+    <label class="dd-field__label" for="ta-1">Homepage</label>
+    <div class="dd-input">
+      <span class="dd-input__unit dd-input__prefix">https://</span>
+      <input class="dd-input__control" id="ta-1" value="cxkw.dev/leetnode">
+    </div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ta-2">Subdomain</label>
+    <div class="dd-input">
+      <input class="dd-input__control" id="ta-2" value="insomnia">
+      <span class="dd-input__unit">.cxkw.dev</span>
+    </div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ta-3">Monthly budget</label>
+    <div class="dd-input">
+      <span class="dd-input__affix">$</span>
+      <input class="dd-input__control dd-num" id="ta-3" inputmode="decimal" value="1,200">
+      <span class="dd-input__unit">USD / mo</span>
+    </div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ta-4">Memory limit</label>
+    <div class="dd-input">
+      <input class="dd-input__control dd-num" id="ta-4" inputmode="numeric" value="512">
+      <span class="dd-input__unit">MiB</span>
+    </div>
+  </div>
+</div>`;
+
+const icons = `
+<div class="dd-form__grid">
+  <div class="dd-field">
+    <label class="dd-field__label" for="tic-1">Invite by email</label>
+    <div class="dd-input">
+      <span class="dd-input__affix">${i('mail')}</span>
+      <input class="dd-input__control" id="tic-1" type="email" placeholder="name@cxkw.dev">
+    </div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="tic-2">Webhook URL</label>
+    <div class="dd-input">
+      <span class="dd-input__affix">${i('link')}</span>
+      <input class="dd-input__control" id="tic-2" type="url" value="https://hooks.cxkw.dev/deploys">
+    </div>
+  </div>
+</div>`;
+
+const password = `
+<div class="dd-form__grid">
+  <div class="dd-field">
+    <label class="dd-field__label" for="tp-1">API secret</label>
+    <div class="dd-input">
+      <span class="dd-input__affix">${i('key')}</span>
+      <input class="dd-input__control dd-mono" id="tp-1" type="password" value="dd_live_51Hc0deX9" autocomplete="off">
+      <span class="dd-input__affix">
+        <button class="dd-input__btn" type="button" data-dd-reveal aria-pressed="false" aria-label="Show password">
+          <span class="dd-input__show">${i('eye')}</span><span class="dd-input__hide">${i('eye-off')}</span>
+        </button>
+      </span>
+    </div>
+    <p class="dd-field__hint">Rotate it from the Keys page if it leaks.</p>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="tp-2">New password</label>
+    <div class="dd-input">
+      <input class="dd-input__control" id="tp-2" type="password" placeholder="At least 12 characters" autocomplete="new-password">
+      <span class="dd-input__affix">
+        <button class="dd-input__btn" type="button" data-dd-reveal aria-pressed="false" aria-label="Show password">
+          <span class="dd-input__show">${i('eye')}</span><span class="dd-input__hide">${i('eye-off')}</span>
+        </button>
+      </span>
+    </div>
+  </div>
+</div>`;
+
+const search = `
+<div class="dd-stack">
+  <div class="dd-input" style="max-width: 360px">
+    <span class="dd-input__affix">${i('search')}</span>
+    <input class="dd-input__control" type="search" aria-label="Search deploys" placeholder="Search deploys…" value="billing">
+    <span class="dd-input__affix"><button class="dd-input__btn" type="button" data-dd-clear aria-label="Clear search">${i('x')}</button></span>
+  </div>
+  <div class="dd-field" style="max-width: 360px">
+    <label class="dd-field__label" for="tsr-1">Find a service</label>
+    <div class="dd-input">
+      <span class="dd-input__affix">${i('search')}</span>
+      <input class="dd-input__control" id="tsr-1" type="search" placeholder="auth-gateway, edge-cache…">
+      <span class="dd-input__affix"><button class="dd-input__btn" type="button" data-dd-clear aria-label="Clear search">${i('x')}</button></span>
+    </div>
+  </div>
+</div>`;
+
+const stepper = (id: string, label: string, value: number, min: number, max: number, step = 1, unit = '') => `
+  <div class="dd-field">
+    <label class="dd-field__label" for="${id}">${label}</label>
+    <div class="dd-input">
+      <input class="dd-input__control" id="${id}" type="number" value="${value}" min="${min}" max="${max}" step="${step}">${unit ? `
+      <span class="dd-input__unit">${unit}</span>` : ''}
+      <span class="dd-input__affix dd-input__steppers">
+        <button class="dd-input__btn" type="button" data-dd-step="-1" aria-label="Decrease">${i('minus')}</button>
+        <button class="dd-input__btn" type="button" data-dd-step="1" aria-label="Increase">${i('plus')}</button>
+      </span>
+    </div>
+  </div>`;
+const number = `
+<div class="dd-form__grid dd-form__grid--3">${stepper('tn-1', 'Replicas', 3, 1, 12)}${stepper('tn-2', 'Timeout', 3000, 500, 30000, 500, 'ms')}${stepper('tn-3', 'Retries', 2, 0, 5)}
+</div>`;
+
+const sizes = `
+<div class="dd-form__grid dd-form__grid--3">
+  <div class="dd-field">
+    <label class="dd-field__label" for="tz-1">Small</label>
+    <div class="dd-input dd-input--sm"><input class="dd-input__control" id="tz-1" value="eu-west-1"></div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="tz-2">Medium</label>
+    <div class="dd-input"><input class="dd-input__control" id="tz-2" value="eu-west-1"></div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="tz-3">Large</label>
+    <div class="dd-input dd-input--lg"><input class="dd-input__control" id="tz-3" value="eu-west-1"></div>
+  </div>
+</div>`;
+
+const standalone = `
+<div class="dd-row">
+  <div class="dd-input dd-input--sm" style="width: 200px">
+    <span class="dd-input__affix">${i('filter')}</span>
+    <input class="dd-input__control" aria-label="Filter logs" placeholder="Filter logs">
+  </div>
+  <div class="dd-input" style="width: 240px">
+    <span class="dd-input__affix">${i('search')}</span>
+    <input class="dd-input__control" aria-label="Search" placeholder="Search">
+  </div>
+  <button class="dd-btn dd-btn--primary">${i('plus')}<span>New deploy</span></button>
+</div>`;
+---
+<Docs title="Text input" group="Forms" lead="A single line of text in the tonal, borderless box. Inside a form field the label tucks into the fill; on its own the box is exactly button height, so it lines up in toolbars.">
+  <Example title="Tucked label" description="The default. Wrap the box in a .dd-field and give it a label; the box grows a top pad for it. Focus clears the fill and lifts the box." code={basic} />
+
+  <h2 id="states">States</h2>
+  <p>Error, disabled and read-only come from the control itself: set <code>aria-invalid="true"</code>, <code>disabled</code> or <code>readonly</code> and the box and label follow. <code>.is-focus</code> forces the focused look for documentation.</p>
+  <Example code={states} />
+
+  <h2 id="affixes">Prefix, suffix and units</h2>
+  <p>Fixed text that is not part of the value sits in <code>.dd-input__unit</code> (mono, muted). Add <code>.dd-input__prefix</code> to fade a leading scheme like <code>https://</code>.</p>
+  <Example code={affixes} />
+
+  <h2 id="icons">Leading icon</h2>
+  <Example code={icons} />
+
+  <h2 id="password">Password with reveal</h2>
+  <p>A <code>data-dd-reveal</code> button flips the control between <code>password</code> and <code>text</code> and keeps <code>aria-pressed</code> and its label in sync.</p>
+  <Example code={password} />
+
+  <h2 id="search">Search with clear</h2>
+  <p>The clear button hides itself while the field is empty (the input needs a placeholder). Escape also clears a native search field.</p>
+  <Example code={search} />
+
+  <h2 id="number">Number with steppers</h2>
+  <p>Native spinners are hidden; the minus and plus buttons call <code>stepDown()</code> / <code>stepUp()</code>, so <code>min</code>, <code>max</code> and <code>step</code> are honoured. Arrow keys still work in the field.</p>
+  <Example code={number} />
+
+  <h2 id="sizes">Sizes</h2>
+  <p>Medium is the default. Small for dense filters and table toolbars; large for sign-in and onboarding.</p>
+  <Example code={sizes} />
+
+  <h2 id="standalone">Without a field</h2>
+  <p>On its own the box drops the tucked pad and matches button heights at every size. Give it an <code>aria-label</code>.</p>
+  <Example code={standalone} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-input', 'The tonal box. Holds one control plus any affixes. Tucks automatically inside a <code>.dd-field</code>.'],
+    ['.dd-input__control', 'The <code>&lt;input&gt;</code> itself: transparent, fills the box, carries the block padding.'],
+    ['.dd-input__affix', 'Icon or short text before/after the value. Not clickable unless it holds a button.'],
+    ['.dd-input__unit', 'Mono, muted unit or suffix: <code>MiB</code>, <code>USD / mo</code>, <code>.cxkw.dev</code>.'],
+    ['.dd-input__prefix', 'Fades a leading unit, like a URL scheme.'],
+    ['.dd-input__status', 'Trailing check (ok). Turns red when the control is invalid.'],
+    ['.dd-input__btn', 'Small inline icon button inside an affix: reveal, clear, steppers.'],
+    ['.dd-input__steppers', 'Affix holding the minus / plus pair.'],
+    ['.dd-input--sm / --lg', 'Sizes. The tucked label follows.'],
+    ['.is-focus · .is-invalid · .is-disabled', 'Force a state on the box (docs, or custom controls). Native attributes are preferred.'],
+    ['[aria-invalid] · [disabled] · [readonly]', 'Set on the control; the box and the field label react.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute', 'What it does']} rows={[
+    ['data-dd-reveal', 'On a button in the box: toggles the control’s <code>type</code> between password and text, sets <code>aria-pressed</code> and swaps <code>.dd-input__show</code> / <code>.dd-input__hide</code>.'],
+    ['data-dd-clear', 'On a button in the box: empties the control, fires <code>input</code> and <code>change</code>, returns focus.'],
+    ['data-dd-step="1" / "-1"', 'On a button in the box: steps a number control and fires <code>input</code> and <code>change</code>.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Keep labels to one or two words; put the explanation in a hint below.', 'Use a unit affix instead of writing the unit into the label.', 'Size the box to the expected value when it is short (ports, codes, counts).']}
+    dont={['Don’t use the placeholder as the label — it disappears on the first keystroke.', 'Don’t disable a field without a hint that says why.', 'Don’t validate on every keystroke; validate on blur or submit.']}
+  />
+</Docs>

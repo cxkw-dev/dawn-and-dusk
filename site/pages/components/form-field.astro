@@ -1,0 +1,116 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const anatomy = `
+<div class="dd-field" style="max-width: 380px">
+  <label class="dd-field__label" for="ff-1">Service name</label>
+  <div class="dd-input">
+    <input class="dd-input__control" id="ff-1" value="billing-worker" maxlength="40" aria-describedby="ff-1-hint">
+  </div>
+  <div class="dd-field__foot">
+    <p class="dd-field__hint" id="ff-1-hint">Lowercase, numbers and dashes. Used in URLs.</p>
+    <span class="dd-field__counter">14 / 40</span>
+  </div>
+</div>`;
+
+const above = `
+<div class="dd-stack" style="--dd-gap: 20px; max-width: 420px">
+  <div class="dd-field dd-field--above">
+    <label class="dd-field__label" for="ff-2">Workspace name</label>
+    <div class="dd-input"><input class="dd-input__control" id="ff-2" value="cxkw.dev"></div>
+    <p class="dd-field__hint">Shown on invoices and invites.</p>
+  </div>
+  <div class="dd-field dd-field--above">
+    <label class="dd-field__label" for="ff-3">Support email <span class="dd-field__opt">· optional</span></label>
+    <p class="dd-field__desc" id="ff-3-desc">Where customers reply to status emails.</p>
+    <div class="dd-input"><input class="dd-input__control" id="ff-3" type="email" placeholder="help@cxkw.dev" aria-describedby="ff-3-desc"></div>
+  </div>
+</div>`;
+
+const messages = `
+<div class="dd-form__grid">
+  <div class="dd-field">
+    <label class="dd-field__label" for="ff-4">Custom domain</label>
+    <div class="dd-input">
+      <input class="dd-input__control" id="ff-4" value="status.cxkw" aria-invalid="true" aria-describedby="ff-4-err">
+      <span class="dd-input__affix dd-input__status">${i('alert')}</span>
+    </div>
+    <p class="dd-field__error" id="ff-4-err">${i('error')}Add a top-level domain, like status.cxkw.dev.</p>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ff-5">Deploy hook name <span class="dd-field__opt">· optional</span></label>
+    <div class="dd-input"><input class="dd-input__control" id="ff-5" maxlength="24" value="nightly-rebuild-leetnode" aria-describedby="ff-5-c"></div>
+    <div class="dd-field__foot">
+      <p class="dd-field__hint">Shown in the deploy log.</p>
+      <span class="dd-field__counter is-near" id="ff-5-c">24 / 24</span>
+    </div>
+  </div>
+</div>`;
+
+const any = `
+<div class="dd-form__grid">
+  <div class="dd-field">
+    <label class="dd-field__label" for="ff-6">Region</label>
+    <div class="dd-input dd-select">
+      <select class="dd-input__control" id="ff-6"><option>eu-west-1 · Dublin</option><option>us-east-1 · N. Virginia</option></select>
+      <span class="dd-select__chevron">${i('chevron-down')}</span>
+    </div>
+  </div>
+  <div class="dd-field">
+    <label class="dd-field__label" for="ff-7">Port</label>
+    <div class="dd-input">
+      <input class="dd-input__control dd-num" id="ff-7" type="number" value="8080">
+      <span class="dd-input__unit">TCP</span>
+    </div>
+  </div>
+  <div class="dd-field dd-form__span">
+    <label class="dd-field__label" for="ff-8">Description</label>
+    <div class="dd-input dd-textarea"><textarea class="dd-input__control" id="ff-8" rows="2" placeholder="What does this service do?"></textarea></div>
+  </div>
+</div>`;
+---
+<Docs title="Form field" group="Forms" lead="The wrapper around one control: its label, hint, error and counter. By default the label tucks into the tonal box; a label-above variant is there for long labels and dense settings.">
+  <Example title="Anatomy" description="Label, box, then a foot with a hint and a counter. Hints and errors indent to the value’s left edge." code={anatomy} />
+
+  <h2 id="above">Label above</h2>
+  <p><code>.dd-field--above</code> puts a regular label over the box — better for long labels, an <code>optional</code> marker, or a description line (<code>.dd-field__desc</code>) between label and box.</p>
+  <Example code={above} />
+
+  <h2 id="messages">Hint, error and counter</h2>
+  <p>Set <code>aria-invalid="true"</code> on the control and the label, box and status icon turn red; put the reason in <code>.dd-field__error</code> and link it with <code>aria-describedby</code>. The counter updates as you type.</p>
+  <Example code={messages} />
+
+  <h2 id="controls">Any control</h2>
+  <p>The field works with every box-based control: text input, select, combobox, date picker and textarea. The tucked label finds the box directly inside the field or one wrapper deep.</p>
+  <Example code={any} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-field', 'Wrapper. Tucks the label into the box by default.'],
+    ['.dd-field--above', 'Label sits above the box; hints align with the label.'],
+    ['.dd-field__label', 'The <code>&lt;label for&gt;</code> (or a <code>&lt;span id&gt;</code> for button triggers). Turns accent on focus, red when invalid.'],
+    ['.dd-field__opt', 'Muted “optional” marker inside the label.'],
+    ['.dd-field__desc', 'Description between label and box (label-above only).'],
+    ['.dd-field__hint', 'Muted help text under the box.'],
+    ['.dd-field__error', 'Error message in red, with an optional leading icon.'],
+    ['.dd-field__foot', 'Row under the box: hint or error on the left, counter on the right.'],
+    ['.dd-field__counter', 'Mono character counter. <code>.is-near</code> (90%), <code>.is-over</code>.'],
+    ['.is-invalid', 'Force the invalid look on the field (prefer <code>aria-invalid</code> on the control).'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute', 'What it does']} rows={[
+    ['.dd-field__counter', 'Counts the field’s input or textarea on every keystroke: <code>n / maxlength</code>.'],
+    ['data-dd-counter="280"', 'Soft limit instead of <code>maxlength</code>: typing past it is allowed but marks the control invalid until it is back under.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Keep tucked labels to a few words — they sit in 11px type.', 'Put format rules in the hint before people type, not only in the error after.', 'Write errors as the fix: “Add a top-level domain”, not “Invalid domain”.']}
+    dont={['Don’t mix tucked and label-above fields in one form section.', 'Don’t show an error while the person is still typing the first value.', 'Don’t mark required fields with an asterisk; mark the optional ones.']}
+  />
+</Docs>

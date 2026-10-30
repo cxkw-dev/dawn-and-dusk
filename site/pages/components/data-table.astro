@@ -1,0 +1,336 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+// Service fleet: [id, name, status, label, region, version, owner, req/min, error %, p95 ms, cpu %, updated]
+const services = [
+  ['svc-0141', 'auth-gateway', 'ok', 'Healthy', 'us-east-1', 'v2.14.0', 'platform', 12480, 0.02, 84, 41, '09:41:07'],
+  ['svc-0152', 'billing-worker', 'ok', 'Healthy', 'us-east-1', 'v1.8.3', 'payments', 3212, 0.11, 142, 58, '09:41:02'],
+  ['svc-0167', 'search-indexer', 'warn', 'Degraded', 'us-east-1', 'v0.9.12', 'search', 8904, 1.84, 611, 87, '09:40:55'],
+  ['svc-0171', 'edge-cache', 'ok', 'Healthy', 'us-east-1', 'v3.2.1', 'platform', 41337, 0, 12, 33, '09:40:51'],
+  ['svc-0203', 'ledger-sync', 'ok', 'Healthy', 'eu-west-2', 'v1.2.0', 'payments', 1048, 0.05, 96, 22, '09:40:48'],
+  ['svc-0219', 'notify-fanout', 'bad', 'Down', 'eu-west-2', 'v2.0.0-rc.2', 'growth', 0, null, null, 0, '09:39:12'],
+  ['svc-0224', 'mail-relay', 'ok', 'Healthy', 'eu-west-2', 'v4.1.7', 'growth', 2771, 0.08, 133, 19, '09:40:40'],
+  ['svc-0230', 'session-store', 'ok', 'Healthy', 'eu-west-2', 'v5.0.2', 'platform', 18452, 0.01, 9, 47, '09:40:38'],
+  ['svc-0310', 'image-resizer', 'ok', 'Healthy', 'ap-south-1', 'v1.5.0', 'media', 6502, 0.32, 188, 64, '09:40:37'],
+  ['svc-0318', 'metrics-agg', 'warn', 'Degraded', 'ap-south-1', 'v2.3.4', 'observability', 19220, 0.94, 402, 91, '09:40:33'],
+  ['svc-0327', 'cron-runner', 'ok', 'Healthy', 'ap-south-1', 'v1.0.9', 'platform', 112, 0, 51, 6, '09:40:29'],
+  ['svc-0331', 'webhook-relay', 'ok', 'Healthy', 'ap-south-1', 'v2.7.1', 'growth', 4380, 0.21, 117, 38, '09:40:21'],
+];
+const fmt = (n) => n.toLocaleString('en-US');
+const dash = '<span class="is-faint">—</span>';
+const errCell = (e) => e === null ? `<td class="is-num">${dash}</td>` : `<td class="is-num${e >= 1 ? ' is-warn' : ''}">${e.toFixed(2)}%</td>`;
+const p95Cell = (p) => p === null ? `<td class="is-num">${dash}</td>` : `<td class="is-num${p >= 400 ? ' is-warn' : ''}" data-value="${p}">${p}<span class="dd-data-table__unit">ms</span></td>`;
+const cpuCell = (c) => `<td class="is-num${c >= 85 ? ' is-warn' : ''}">${c}%</td>`;
+const commits = { 'auth-gateway': ['a41f9c2', 'Rotate JWKS keys every 6h'], 'search-indexer': ['c90e5aa', 'Batch shard merges'], 'billing-worker': ['7be03d1', 'Retry idempotent charges'] };
+const SEL = ['billing-worker', 'ledger-sync'];
+const OPEN = ['search-indexer'];
+
+const sortTh = (label, col, cls = '', sort = 'none') =>
+  `<th${cls ? ` class="${cls}"` : ''} data-col="${col}" aria-sort="${sort}"><button class="dd-data-table__sort" type="button">${label}${i('chevron-down')}</button></th>`;
+
+const flagRows = services.map(([id, name, s, label, region, ver, owner, req, err, p95, cpu, at], n) => {
+  const open = OPEN.includes(name);
+  const sel = SEL.includes(name);
+  const [sha, msg] = commits[name] ?? ['3f0d8b1', 'Bump runtime to node 22.12'];
+  return `
+      <tr${sel ? ' class="is-selected"' : ''}>
+        <td class="dd-data-table__select"><input class="dd-data-table__check" type="checkbox" aria-label="Select ${name}"${sel ? ' checked' : ''}></td>
+        <td class="is-frozen" data-col="service"><button class="dd-data-table__expand" type="button" aria-expanded="${open}" aria-controls="dt-${id}" aria-label="Details for ${name}">${i('chevron-right')}</button><a href="#">${name}</a></td>
+        <td class="is-mono is-muted" data-col="id">${id}</td>
+        <td data-col="status" data-value="${s}"><span class="dd-data-table__status" data-status="${s}">${label}</span></td>
+        <td data-col="region">${region}</td>
+        <td class="is-mono" data-col="version">${ver}</td>
+        <td class="is-muted" data-col="owner">${owner}</td>
+        <td class="is-num">${fmt(req)}</td>
+        ${errCell(err)}
+        ${p95Cell(p95)}
+        ${cpuCell(cpu)}
+        <td class="is-num is-muted">${at}</td>
+        <td class="is-actions"><button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-label="Actions for ${name}">${i('more')}</button></td>
+      </tr>
+      <tr class="dd-data-table__detail" id="dt-${id}"${open ? '' : ' hidden'}>
+        <td colspan="13"><div class="dd-data-table__detail-body">
+          <dl class="dd-data-table__facts">
+            <div><dt>Last deploy</dt><dd><span class="dd-mono">${sha}</span> · ${msg}</dd></div>
+            <div><dt>Instances</dt><dd class="dd-mono">${s === 'bad' ? '0 / 3' : n % 2 ? '6 / 6' : '3 / 3'}</dd></div>
+            <div><dt>Uptime (30d)</dt><dd class="dd-mono">${s === 'bad' ? '97.12%' : s === 'warn' ? '99.71%' : '99.99%'}</dd></div>
+            <div><dt>Endpoint</dt><dd class="dd-mono">${name}.${region}.cxkw.dev</dd></div>
+          </dl>
+        </div></td>
+      </tr>`;
+}).join('');
+
+const head = (cols) => `<thead>
+      <tr>${cols}
+      </tr>
+    </thead>`;
+
+const flagship = `
+<div class="dd-data-table" data-dd-data-table style="--dd-data-table-height: 460px">
+  <div class="dd-data-table__toolbar">
+    <label class="dd-data-table__search">${i('search')}<input type="search" placeholder="Filter services…" aria-label="Filter services" data-dd-data-table-search></label>
+    <button class="dd-data-table__chip" type="button"><span>Region</span> <b>all</b>${i('chevron-down')}</button>
+    <button class="dd-data-table__chip" type="button" aria-pressed="false" data-dd-data-table-filter="status=warn"><span class="dd-data-table__chip-dot" style="--_c: var(--dd-warn)"></span>Degraded</button>
+    <button class="dd-data-table__chip" type="button" aria-pressed="false" data-dd-data-table-filter="status=bad"><span class="dd-data-table__chip-dot" style="--_c: var(--dd-bad)"></span>Down</button>
+    <div class="dd-data-table__tools">
+      <span class="dd-data-table__count" data-dd-data-table-count="services">12 services</span>
+      <details class="dd-data-table__menu">
+        <summary class="dd-btn dd-btn--ghost dd-btn--sm">${i('layers')}<span>Columns</span></summary>
+        <div class="dd-data-table__menu-panel">
+          <p class="dd-data-table__menu-title">Show columns</p>
+          <label><input class="dd-data-table__check" type="checkbox" data-dd-data-table-column="id" checked> ID</label>
+          <label><input class="dd-data-table__check" type="checkbox" data-dd-data-table-column="region" checked> Region</label>
+          <label><input class="dd-data-table__check" type="checkbox" data-dd-data-table-column="version" checked> Version</label>
+          <label><input class="dd-data-table__check" type="checkbox" data-dd-data-table-column="owner"> Owner</label>
+        </div>
+      </details>
+      <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button">${i('download')}<span>Export</span></button>
+    </div>
+  </div>
+  <div class="dd-data-table__bulk" role="region" aria-label="Bulk actions">
+    <span class="dd-data-table__bulk-count"><span data-dd-data-table-selected>2</span> selected</span>
+    <button class="dd-btn dd-btn--sm" type="button">${i('refresh')}<span>Restart</span></button>
+    <button class="dd-btn dd-btn--sm" type="button">${i('pause')}<span>Pause</span></button>
+    <button class="dd-btn dd-btn--sm" type="button">${i('download')}<span>Export</span></button>
+    <button class="dd-btn dd-btn--sm dd-data-table__bulk-end" type="button" data-dd-data-table-clear>Clear</button>
+  </div>
+  <div class="dd-data-table__scroll" tabindex="0" role="region" aria-label="Services">
+    <table class="dd-data-table__table">
+      ${head(`
+        <th class="dd-data-table__select"><input class="dd-data-table__check" type="checkbox" aria-label="Select all services"></th>
+        ${sortTh('Service', 'service', 'is-frozen')}
+        <th data-col="id">ID</th>
+        ${sortTh('Status', 'status')}
+        ${sortTh('Region', 'region')}
+        <th data-col="version">Version</th>
+        <th data-col="owner">Owner</th>
+        ${sortTh('Req / min', 'req', 'is-num')}
+        ${sortTh('Errors', 'err', 'is-num')}
+        ${sortTh('p95', 'p95', 'is-num')}
+        ${sortTh('CPU', 'cpu', 'is-num')}
+        ${sortTh('Updated', 'at', 'is-num')}
+        <th class="is-actions"><span class="dd-visually-hidden">Actions</span></th>`)}
+      <tbody>${flagRows}
+      <tr class="dd-data-table__empty-row" hidden>
+        <td colspan="13"><div class="dd-data-table__empty">
+          <span class="dd-data-table__empty-icon">${i('search')}</span>
+          <p class="dd-data-table__empty-title">No services match <span data-dd-data-table-query></span></p>
+          <p>Try another name or region, or clear the filters.</p>
+          <div class="dd-row"><button class="dd-btn dd-btn--secondary dd-btn--sm" type="button" data-dd-data-table-reset>Clear filters</button></div>
+        </div></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="dd-data-table__footer">
+    <label class="dd-pagination__size">Rows per page
+      <span class="dd-pagination__select"><select aria-label="Rows per page"><option>25</option><option selected>50</option><option>100</option></select>${i('chevron-down')}</span>
+    </label>
+    <nav class="dd-pagination dd-pagination--compact" aria-label="Pagination">
+      <span class="dd-pagination__range"><b>1–12</b> of 2,481</span>
+      <button class="dd-pagination__step" type="button" aria-label="Previous page" disabled>${i('chevron-left')}</button>
+      <button class="dd-pagination__step" type="button" aria-label="Next page">${i('chevron-right')}</button>
+    </nav>
+  </div>
+</div>`;
+
+// Grouped, numbered, read-only, compact
+let last = '';
+const grouped = `
+<div class="dd-data-table dd-data-table--compact" data-dd-data-table>
+  <div class="dd-data-table__scroll" tabindex="0" role="region" aria-label="Services by region">
+    <table class="dd-data-table__table">
+      ${head(`
+        <th class="dd-data-table__rownum"><span class="dd-visually-hidden">Row</span></th>
+        <th class="is-frozen">Service</th>
+        <th>Status</th>
+        ${sortTh('Req / min', 'req', 'is-num')}
+        ${sortTh('p95', 'p95', 'is-num')}
+        <th class="is-num">Updated</th>`)}
+      <tbody>${services.map(([id, name, s, label, region, , , req, , p95, , at], n) => {
+        const g = region !== last ? `
+        <tr class="dd-data-table__group"><th colspan="6" scope="colgroup"><span class="dd-data-table__group-label"><b>${region}</b><span class="dd-data-table__group-count">${services.filter((r) => r[4] === region).length} services</span></span></th></tr>` : '';
+        last = region;
+        return `${g}
+        <tr>
+          <td class="dd-data-table__rownum">${n + 1}</td>
+          <td class="is-frozen">${name}</td>
+          <td><span class="dd-data-table__status" data-status="${s}">${label}</span></td>
+          <td class="is-num">${fmt(req)}</td>
+          ${p95Cell(p95)}
+          <td class="is-num is-muted">${at}</td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+    </table>
+  </div>
+</div>`;
+
+const skelRow = (w) => `
+        <tr>
+          <td class="dd-data-table__select"><span class="dd-data-table__skeleton dd-data-table__skeleton--box"></span></td>
+          <td class="is-frozen"><span class="dd-data-table__skeleton" style="--w: ${w}px"></span></td>
+          <td><span class="dd-data-table__skeleton" style="--w: 64px"></span></td>
+          <td><span class="dd-data-table__skeleton" style="--w: 72px"></span></td>
+          <td class="is-num"><span class="dd-data-table__skeleton" style="--w: 48px"></span></td>
+          <td class="is-num"><span class="dd-data-table__skeleton" style="--w: 40px"></span></td>
+        </tr>`;
+const loadHead = head(`
+        <th class="dd-data-table__select"><input class="dd-data-table__check" type="checkbox" aria-label="Select all" disabled></th>
+        <th class="is-frozen">Service</th>
+        <th>Status</th>
+        <th>Region</th>
+        <th class="is-num">Req / min</th>
+        <th class="is-num">p95</th>`);
+const loading = `
+<div class="dd-data-table">
+  <div class="dd-data-table__scroll" role="region" aria-label="Services" aria-busy="true">
+    <table class="dd-data-table__table">
+      ${loadHead}
+      <tbody>${[112, 96, 128, 84, 104].map(skelRow).join('')}
+      </tbody>
+    </table>
+  </div>
+</div>`;
+
+const empty = `
+<div class="dd-data-table" data-dd-data-table>
+  <div class="dd-data-table__toolbar">
+    <label class="dd-data-table__search">${i('search')}<input type="search" value="edge-proxy" aria-label="Filter services" data-dd-data-table-search></label>
+    <button class="dd-data-table__chip" type="button" aria-pressed="true" data-dd-data-table-filter="region=eu-west-2">Region <b>eu-west-2</b>${i('x')}</button>
+    <div class="dd-data-table__tools"><span class="dd-data-table__count" data-dd-data-table-count="services">0 of 3 services</span></div>
+  </div>
+  <div class="dd-data-table__scroll" role="region" aria-label="Services">
+    <table class="dd-data-table__table">
+      ${head(`
+        <th class="is-frozen">Service</th>
+        <th>Status</th>
+        <th data-col="region">Region</th>
+        <th class="is-num">Req / min</th>`)}
+      <tbody>${services.slice(0, 3).map(([, name, s, label, region, , , req]) => `
+        <tr><td class="is-frozen">${name}</td><td><span class="dd-data-table__status" data-status="${s}">${label}</span></td><td data-col="region">${region}</td><td class="is-num">${fmt(req)}</td></tr>`).join('')}
+        <tr class="dd-data-table__empty-row">
+          <td colspan="4"><div class="dd-data-table__empty">
+            <span class="dd-data-table__empty-icon">${i('filter')}</span>
+            <p class="dd-data-table__empty-title">No services match <span data-dd-data-table-query>“edge-proxy”</span></p>
+            <p>Nothing in eu-west-2 has that name. Check the spelling or search every region.</p>
+            <div class="dd-row"><button class="dd-btn dd-btn--secondary dd-btn--sm" type="button" data-dd-data-table-reset>Clear filters</button></div>
+          </div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>`;
+
+const noData = `
+<div class="dd-data-table dd-data-table--card">
+  <div class="dd-data-table__scroll" role="region" aria-label="Webhooks">
+    <table class="dd-data-table__table">
+      ${head(`
+        <th class="is-frozen">Endpoint</th>
+        <th>Events</th>
+        <th class="is-num">Success</th>
+        <th class="is-num">Last delivery</th>`)}
+      <tbody>
+        <tr class="dd-data-table__empty-row">
+          <td colspan="4"><div class="dd-data-table__empty">
+            <span class="dd-data-table__empty-icon">${i('link')}</span>
+            <p class="dd-data-table__empty-title">No webhooks yet</p>
+            <p>Send deploy and incident events from billing-worker to your own endpoint.</p>
+            <div class="dd-row"><button class="dd-btn dd-btn--primary dd-btn--sm" type="button">${i('plus')}<span>Add webhook</span></button></div>
+          </div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>`;
+---
+<Docs title="Data table" group="Data display" lead="The dense table for large data sets: search and filter, sort, select in bulk, expand a row for detail, and scroll wide data with the header and first column pinned." wide>
+  <Example
+    title="Hairline"
+    description="Toolbar, bulk actions, sticky header, frozen service column, sortable figures, selectable and expandable rows, pagination. Try it: sort a column, filter for “cache”, toggle Degraded, select rows, open the Columns menu, scroll sideways."
+    code={flagship}
+    stage="pad"
+  />
+
+  <h2 id="anatomy">Anatomy</h2>
+  <ul>
+    <li><strong>Toolbar</strong>: search on the left, filter chips, then the row count, column toggle and table-level actions on the right. It wraps on narrow screens; search takes the first line.</li>
+    <li><strong>Bulk bar</strong>: appears under the toolbar while rows are selected, in the accent tone, with the count and the actions that apply to the selection.</li>
+    <li><strong>Scroll container</strong>: <code>.dd-data-table__scroll</code> scrolls both ways. The header sticks to its top; the select and first data column stick to its left and cast a soft edge once you scroll. Cap its height with <code>--dd-data-table-height</code> (default <code>70vh</code>).</li>
+    <li><strong>Footer</strong>: page size and the <a href="pagination">pagination</a> range.</li>
+  </ul>
+
+  <h2 id="columns">Columns and cells</h2>
+  <p>Text columns align left; figures align right in DM Mono with tabular digits (<code>.is-num</code>) so magnitudes line up. Units sit in a muted <code>.dd-data-table__unit</code>. Cells past a threshold take <code>.is-warn</code> or <code>.is-bad</code>, and status cells pair a dot with a word.</p>
+
+  <h2 id="grouped">Grouped rows and row numbers</h2>
+  <p>Group rows are a tonal band whose label stays visible while the table scrolls sideways. Sorting keeps rows inside their group. Row numbers (<code>.dd-data-table__rownum</code>) make a read-only table feel like a sheet. This one is <code>--compact</code>.</p>
+  <Example code={grouped} />
+
+  <h2 id="loading">Loading</h2>
+  <p>Keep the header and draw skeleton bars where values will land, with widths that vary like real data. Set <code>aria-busy="true"</code> on the region.</p>
+  <Example code={loading} />
+
+  <h2 id="empty">Empty and filtered</h2>
+  <p>When filters hide everything, say so, name the query and offer to clear the filters. The behaviour fills in the query and shows <code>.dd-data-table__empty-row</code> for you.</p>
+  <Example code={empty} />
+  <p>With no data at all, explain what will appear and give the one action that creates it. <code>--card</code> puts the whole table on <code>--dd-surface</code>.</p>
+  <Example code={noData} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-data-table', 'Root: a column of toolbar, bulk bar, scroll container and footer. Add <code>data-dd-data-table</code> for behaviour.'],
+    ['.dd-data-table__toolbar', 'Wrapping row. Holds <code>__search</code> (label + icon + input), <code>__chip</code>s and <code>__tools</code> (pushed right).'],
+    ['.dd-data-table__chip', 'Filter chip. <code>aria-pressed="true"</code> or <code>.is-active</code> for an applied filter; <code>__chip-dot</code> adds a status dot (<code>--_c</code>).'],
+    ['.dd-data-table__count', 'Row count, mono.'],
+    ['.dd-data-table__menu (+ __menu-panel, __menu-title)', 'Column toggle built on <code>&lt;details&gt;</code>; the panel floats.'],
+    ['.dd-data-table__bulk (+ __bulk-count, __bulk-end)', 'Bulk-action bar; hidden with the <code>hidden</code> attribute while nothing is selected.'],
+    ['.dd-data-table__scroll', 'Scroll container (both axes). Give it <code>tabindex="0"</code>, <code>role="region"</code> and an <code>aria-label</code>.'],
+    ['.dd-data-table__table', 'The <code>&lt;table&gt;</code>.'],
+    ['.dd-data-table__sort', 'Button inside a sortable <code>&lt;th aria-sort&gt;</code>, with a <code>chevron-down</code> icon.'],
+    ['.dd-data-table__rownum · __select · .is-frozen', 'Sticky columns, left to right: row numbers, checkbox, first data column.'],
+    ['.dd-data-table__check', 'Restyled native checkbox (checked and indeterminate).'],
+    ['.is-num · .is-mono · .is-muted · .is-faint · .is-strong · .is-shrink · .is-actions', 'Cell helpers.'],
+    ['td.is-warn · td.is-bad', 'Tint a figure past its threshold.'],
+    ['.dd-data-table__status[data-status]', 'Dot + label: <code>ok · warn · bad · info · muted</code>.'],
+    ['.dd-data-table__unit', 'Muted unit after a figure (“ms”).'],
+    ['.dd-data-table__expand', 'Row disclosure button (<code>aria-expanded</code>, <code>aria-controls</code>).'],
+    ['.dd-data-table__detail (+ __detail-body, __facts)', 'The detail row; its body stays in view while scrolling sideways.'],
+    ['.dd-data-table__group (+ __group-label, __group-count)', 'Group header row; put a <code>&lt;th colspan scope="colgroup"&gt;</code> in it.'],
+    ['.dd-data-table__skeleton (--box)', 'Shimmering placeholder bar; width via <code>--w</code>.'],
+    ['.dd-data-table__empty-row + __empty', 'Empty / filtered state row (<code>__empty-icon</code>, <code>__empty-title</code>).'],
+    ['.dd-data-table__footer', 'Footer row for page size and pagination.'],
+    ['.dd-data-table--compact · --roomy', 'Density.'],
+    ['.dd-data-table--card', 'The whole table on <code>--dd-surface</code>.'],
+    ['--dd-data-table-height · --dd-data-table-bg', 'Scroll height cap (default <code>70vh</code>) and the opaque colour behind sticky cells (default <code>--dd-bg</code>).'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <p>Load <code>dawn-and-dusk.js</code> and add <code>data-dd-data-table</code> to the root. Everything is delegated, so rows added later just work.</p>
+  <ClassTable head={['Attribute / element', 'Behaviour']} rows={[
+    ['th[aria-sort] .dd-data-table__sort', 'Click cycles <code>none → ascending → descending → none</code> and sorts the rows (numerically for <code>.is-num</code>; a cell’s <code>data-value</code> wins over its text). Blanks sort last; groups and detail rows stay together.'],
+    ['thead .dd-data-table__check', 'Selects or clears every visible row; shows indeterminate when some are selected.'],
+    ['tbody .dd-data-table__check', 'Selects the row (<code>.is-selected</code>). Shift-click selects a range.'],
+    ['[data-dd-data-table-selected]', 'Receives the selected count. <code>.dd-data-table__bulk</code> is shown while it is above zero.'],
+    ['[data-dd-data-table-clear]', 'Clears the selection.'],
+    ['.dd-data-table__expand', 'Toggles <code>aria-expanded</code> and the <code>hidden</code> detail row named by <code>aria-controls</code>.'],
+    ['[data-dd-data-table-search]', 'Filters rows by their text as you type.'],
+    ['[data-dd-data-table-filter="col=value"]', 'Toggle chip (<code>aria-pressed</code>). Matches cells with <code>data-col="col"</code> by <code>data-value</code> or text. Same column = any, different columns = all.'],
+    ['[data-dd-data-table-count="noun"]', 'Shows “12 services”, or “3 of 12 services” while filtered.'],
+    ['[data-dd-data-table-query]', 'Receives the quoted search text in the empty state.'],
+    ['[data-dd-data-table-reset]', 'Clears search and chips.'],
+    ['[data-dd-data-table-column="col"]', 'Checkbox that shows / hides the column whose header has <code>data-col="col"</code>.'],
+    ['Keyboard', 'Every control is a native button, checkbox or input. The scroll region is focusable, so arrow keys scroll it. <kbd>Esc</kbd> closes the column menu.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Freeze the column that names the row so it stays in view while scrolling sideways.', 'Right-align figures, use mono and keep one unit per column.', 'Show the selected count and only the bulk actions that apply to it.', 'Keep sorting, filtering and selection state in the URL in real apps.']}
+    dont={['Don’t wrap cells; truncate and show the rest in the expanded row.', 'Don’t hide the header or the count while filtering.', 'Don’t paint whole rows red; mark the cell and the status.', 'Don’t put primary buttons inside rows. Use a ghost “more” menu.']}
+  />
+</Docs>

@@ -1,0 +1,91 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const kinds = `
+<div class="dd-stack">
+  <aside class="dd-callout dd-callout--note">
+    <p class="dd-callout__title">${i('info')}Note</p>
+    <p>Tokens are final. Components read them and nothing else, so a theme change never needs a component change.</p>
+  </aside>
+  <aside class="dd-callout dd-callout--tip">
+    <p class="dd-callout__title">${i('sparkle')}Tip</p>
+    <p>Set <code>data-theme="dusk"</code> on any element to preview one panel in dusk without flipping the whole page.</p>
+  </aside>
+  <aside class="dd-callout dd-callout--important">
+    <p class="dd-callout__title">${i('flag')}Important</p>
+    <p>Primary apricot is for primary actions only. Selection, focus and links use the taupe accent.</p>
+  </aside>
+  <aside class="dd-callout dd-callout--warning">
+    <p class="dd-callout__title">${i('alert')}Warning</p>
+    <p>Rotating the signing key logs everyone out of auth-gateway. Do it outside working hours.</p>
+  </aside>
+  <aside class="dd-callout dd-callout--caution">
+    <p class="dd-callout__title">${i('danger')}Caution</p>
+    <p><code>dd reset --hard</code> deletes every deploy preview in the project. It can’t be undone.</p>
+  </aside>
+</div>`;
+
+const rich = `
+<aside class="dd-callout dd-callout--tip">
+  <p class="dd-callout__title">${i('terminal')}Run the docs locally</p>
+  <p>The site and the design system build together. From the repo root:</p>
+  <pre>npm install
+npm run dev   # rebuilds ds/ and starts Astro on :4321</pre>
+  <ul>
+    <li>Edit files in <code>ds/</code>, never the generated <code>dawn-and-dusk.css</code>.</li>
+    <li>Each section of the sidebar is one file in <code>site/nav/</code>.</li>
+  </ul>
+  <p>Stuck? Read the <a href="#build">build notes</a>.</p>
+</aside>`;
+
+const compact = `
+<div class="dd-stack">
+  <p class="dd-callout dd-callout--compact dd-callout--note">${i('info')}<span>Available since dawn-and-dusk v0.2.</span></p>
+  <p class="dd-callout dd-callout--compact dd-callout--warning">${i('alert')}<span>Deprecated — use <code>.dd-btn--ink</code> instead.</span></p>
+</div>`;
+
+const prose = `
+<article style="max-width: 62ch">
+  <h3 class="dd-h4">Rolling back a deploy</h3>
+  <p class="dd-text" style="margin: var(--dd-space-2) 0 var(--dd-space-4)">Every deploy keeps its build for 30 days. Rolling back points the region at an older build; nothing is rebuilt, so it takes seconds.</p>
+  <aside class="dd-callout dd-callout--important">
+    <p class="dd-callout__title">${i('flag')}Important</p>
+    <p>Database migrations don’t roll back with the code. Check the migration log for the build you’re returning to.</p>
+  </aside>
+  <p class="dd-text" style="margin-top: var(--dd-space-4)">Open the deploy, choose <b>Roll back to here</b> and confirm the region. Edge caches purge on their own within a minute.</p>
+</article>`;
+---
+<Docs title="Callout" group="Feedback & status" lead="An aside in docs and long-form writing: a note, a tip, something important, a warning. Quiet surface, coloured label — it should catch the eye without breaking the reading.">
+  <Example title="Kinds" description="Note, tip, important and warning, plus caution for the irreversible. Only the icon and the label carry colour; the block itself is a neutral surface." code={kinds} />
+
+  <h2 id="rich">Rich content</h2>
+  <p>The title can say anything. The body takes paragraphs, lists, code and links, all indented to line up with the title text.</p>
+  <Example code={rich} />
+
+  <h2 id="compact">Compact</h2>
+  <p>One sentence, no title — for version notes and deprecations next to an API.</p>
+  <Example code={compact} />
+
+  <h2 id="in-prose">In prose</h2>
+  <p>Callouts sit in the flow of an article. Give them the same spacing as a paragraph.</p>
+  <Example code={prose} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-callout', 'The block. Use <code>&lt;aside&gt;</code> in articles.'],
+    ['.dd-callout--{kind}', 'Kind: <code>note</code> (info, the default) · <code>tip</code> (ok) · <code>important</code> (accent) · <code>warning</code> (warn) · <code>caution</code> (bad).'],
+    ['.dd-callout__title', 'Icon and label row. Icons: <code>info</code>, <code>sparkle</code>, <code>flag</code>, <code>alert</code>, <code>danger</code>.'],
+    ['.dd-callout > *', 'Any prose after the title: <code>p</code>, <code>ul</code>, <code>pre</code>, <code>code</code>, links.'],
+    ['.dd-callout--compact', 'Icon + one line, no title.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use the kind that matches the consequence: tip for shortcuts, warning for side effects, caution for data loss.', 'Keep it to two or three sentences.', 'Write the title as the label (“Note”) or as the point itself (“Migrations don’t roll back”).']}
+    dont={['Don’t put more than one callout in a row — merge them.', 'Don’t use callouts for live status; that’s an alert.', 'Don’t make everything important.']}
+  />
+</Docs>

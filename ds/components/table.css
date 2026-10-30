@@ -1,0 +1,87 @@
+/* Table — "Quiet card". A simple table for a handful of rows: single-line cells on one rounded surface, hairlines between
+   rows, a quiet header. The card is also the horizontal scroll container, so wide tables never break the layout.
+   Markup: <div class="dd-table"><table>…</table></div>. Use .dd-data-table for large, interactive data sets. */
+.dd-table {
+  --_line: color-mix(in oklab, var(--dd-text) 9%, transparent);
+  --_px: calc(var(--dd-u) * 4);
+  --_py: calc(var(--dd-u) * 2.5);
+  max-width: 100%; overflow-x: auto; border-radius: var(--dd-r-box); background: var(--dd-surface);
+  font-size: var(--dd-fs-sm); color: var(--dd-text);
+  scrollbar-width: thin; scrollbar-color: var(--dd-surface-3) transparent;
+}
+.dd-table > table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+.dd-table :is(th, td) {
+  padding: var(--_py) var(--_px); text-align: left; white-space: nowrap; vertical-align: middle;
+}
+.dd-table th:not(:first-child), .dd-table td:not(:first-child) { padding-left: calc(var(--_px) * .75); }
+.dd-table thead th {
+  padding-top: calc(var(--_py) * 1.1); font-size: var(--dd-fs-xs); font-weight: 500; color: var(--dd-muted); letter-spacing: .01em;
+}
+.dd-table tbody :is(td, th) { border-top: 1px solid var(--_line); }
+.dd-table tbody th { font-weight: 600; }
+.dd-table tfoot :is(td, th) { border-top: 1px solid var(--_line); color: var(--dd-muted); font-weight: 500; }
+
+/* Cells */
+.dd-table .is-num { text-align: right; }
+.dd-table .is-muted { color: var(--dd-muted); }
+.dd-table .is-strong { font-weight: 600; }
+.dd-table .is-mono { font-family: var(--dd-font-mono); font-size: .92em; }
+.dd-table .is-shrink { width: 1%; }
+.dd-table td a:not([class]) { color: inherit; text-decoration: none; font-weight: 600; }
+.dd-table td a:not([class]):hover { text-decoration: underline; text-decoration-color: var(--dd-faint); text-underline-offset: 3px; }
+.dd-table td .dd-btn { margin-block: calc(var(--dd-u) * -1.25); }
+
+/* Status: a dot + label. data-status = ok | warn | bad | info | muted */
+.dd-table__status { display: inline-flex; align-items: center; gap: .5em; }
+.dd-table__status::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--dd-ok); }
+.dd-table__status[data-status="warn"]::before { background: var(--dd-warn); }
+.dd-table__status[data-status="bad"]::before { background: var(--dd-bad); }
+.dd-table__status[data-status="bad"] { color: var(--dd-bad); }
+.dd-table__status[data-status="info"]::before { background: var(--dd-info); }
+.dd-table__status[data-status="muted"] { color: var(--dd-muted); }
+.dd-table__status[data-status="muted"]::before { background: var(--dd-faint); }
+
+/* Interactive rows: the whole row reads as one target. */
+.dd-table--interactive tbody tr { cursor: pointer; transition: background-color var(--dd-dur-fast) var(--dd-ease); }
+.dd-table--interactive tbody tr:hover { background: var(--dd-surface-2); }
+
+/* Variants */
+.dd-table--compact { --_py: calc(var(--dd-u) * 1.5); --_px: calc(var(--dd-u) * 3); }
+.dd-table--mono :is(td, tbody th).is-num { font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); letter-spacing: 0; }
+.dd-table--plain { background: transparent; border-radius: 0; --_px: 0px; }
+.dd-table--plain :is(th, td):not(:first-child) { padding-left: calc(var(--dd-u) * 4); }
+
+/* Title + action, above the card */
+.dd-table-header {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 3);
+  margin-bottom: calc(var(--dd-u) * 2.5);
+}
+.dd-table-header__title {
+  margin: 0; font-family: var(--dd-font-display); font-size: var(--dd-fs-lg); font-weight: var(--dd-h-weight);
+  letter-spacing: var(--dd-h-tracking); line-height: 1; text-transform: var(--dd-h-case);
+}
+.dd-table-header__meta { font-size: var(--dd-fs-xs); color: var(--dd-muted); font-family: var(--dd-font-mono); }
+.dd-table-header__action {
+  display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); margin-left: auto;
+  font-size: var(--dd-fs-sm); font-weight: 600; color: var(--dd-accent); text-decoration: none;
+  border-radius: var(--dd-r-ctl); transition: color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-table-header__action:hover { color: var(--dd-accent-hover); }
+.dd-table-header__action .dd-icon { transition: transform var(--dd-dur-fast) var(--dd-ease); }
+.dd-table-header__action:hover .dd-icon:last-child { transform: translateX(2px); }
+.dd-table-header > .dd-btn { margin-left: auto; align-self: center; }
+
+/* Empty state: sits inside the card, under the header row (or alone). */
+.dd-table__empty {
+  display: flex; flex-direction: column; align-items: center; gap: calc(var(--dd-u) * 1.25);
+  padding: calc(var(--dd-u) * 8) calc(var(--dd-u) * 5); text-align: center; color: var(--dd-muted); font-size: var(--dd-fs-sm);
+  white-space: normal;
+}
+.dd-table > table + .dd-table__empty { border-top: 1px solid var(--_line); }
+.dd-table__empty-icon {
+  display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: calc(var(--dd-u) * 1);
+  border-radius: 50%; background: var(--dd-surface-2); color: var(--dd-muted); font-size: 18px;
+}
+.dd-table__empty-title { margin: 0; color: var(--dd-text); font-size: var(--dd-fs-base); font-weight: 650; }
+.dd-table__empty p { margin: 0; max-width: 40ch; text-wrap: pretty; }
+.dd-table__empty .dd-btn { margin-top: calc(var(--dd-u) * 2); }

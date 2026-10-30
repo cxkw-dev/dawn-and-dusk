@@ -1,0 +1,57 @@
+/* Spinner — something is working and we can't say how long. A thin ring (the same one the loading button uses; it
+   reuses the dd-spin keyframes from button.css), three breathing dots for chat-like waits, an inline "Loading…"
+   line and a page loader. Spinners inherit currentColor. Under reduced motion they slow right down instead of
+   freezing, so a stopped ring never reads as "done". */
+.dd-spinner {
+  --_s: 18px; --_w: 2px;
+  display: inline-block; flex: none; box-sizing: border-box; width: var(--_s); height: var(--_s); vertical-align: middle;
+  border: var(--_w) solid color-mix(in oklab, currentColor 18%, transparent); border-top-color: currentColor; border-radius: 50%;
+  color: var(--dd-accent);
+  animation: dd-spin .8s linear infinite;
+}
+.dd-spinner--sm { --_s: 14px; }
+.dd-spinner--lg { --_s: 28px; --_w: 2.5px; }
+.dd-spinner--xl { --_s: 40px; --_w: 3px; }
+/* Inline: sized to the surrounding text. */
+.dd-spinner--inline { --_s: 1em; --_w: max(1.5px, .13em); vertical-align: -.15em; }
+.dd-spinner--muted { color: var(--dd-muted); }
+
+/* Dots: <span class="dd-spinner dd-spinner--dots"><i></i><i></i><i></i></span> */
+.dd-spinner--dots {
+  display: inline-flex; align-items: center; gap: calc(var(--_s) * .18); width: auto; height: var(--_s);
+  border: 0; border-radius: 0; animation: none;
+}
+.dd-spinner--dots > i {
+  display: block; width: calc(var(--_s) * .28); height: calc(var(--_s) * .28); border-radius: 50%; background: currentColor;
+  animation: dd-spinner-dots 1.2s var(--dd-ease) infinite both;
+}
+.dd-spinner--dots > i:nth-child(2) { animation-delay: .16s; }
+.dd-spinner--dots > i:nth-child(3) { animation-delay: .32s; }
+@keyframes dd-spinner-dots { 0%, 75%, 100% { opacity: .25; transform: scale(.75); } 35% { opacity: 1; transform: scale(1); } }
+
+/* Inline loading text: spinner + what is loading. */
+.dd-loading { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 2); color: var(--dd-muted); font-size: var(--dd-fs-sm); line-height: 1.3; }
+.dd-loading > .dd-spinner { --_s: 1.05em; --_w: 1.5px; }
+.dd-loading > .dd-spinner--dots { --_s: 1em; }
+
+/* Page loader: centred in the space the page will fill. --overlay covers what is already there. */
+.dd-page-loader {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(var(--dd-u) * 3);
+  min-height: min(60vh, 480px); padding: calc(var(--dd-u) * 8); text-align: center; color: var(--dd-text);
+}
+.dd-page-loader > .dd-spinner { --_s: 32px; --_w: 2.5px; }
+.dd-page-loader__label { margin: 0; font-size: var(--dd-fs-sm); font-weight: 600; }
+.dd-page-loader__meta { margin: -6px 0 0; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+.dd-page-loader:is(.dd-page-loader--overlay, .dd-page-loader--fixed) {
+  position: absolute; inset: 0; z-index: var(--dd-z-sticky); min-height: 0;
+  background: color-mix(in oklab, var(--dd-bg) 78%, transparent); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+}
+/* The overlay's parent becomes its own stacking layer, so the wash covers the section but never the app's sticky
+   header or open menus. */
+:where(:has(> .dd-page-loader--overlay:not(.dd-page-loader--fixed))) { isolation: isolate; }
+.dd-page-loader.dd-page-loader--fixed { position: fixed; z-index: var(--dd-z-overlay); }
+
+@media (prefers-reduced-motion: reduce) {
+  .dd-spinner:not(.dd-spinner--dots) { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
+  .dd-spinner--dots > i { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
+}

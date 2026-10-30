@@ -1,0 +1,104 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const INTENTS: [string, string][] = [['neutral', 'Draft'], ['accent', 'New'], ['ok', 'Live'], ['warn', 'Beta'], ['bad', 'Failed'], ['info', 'Info']];
+const row = (style: string) => `<div class="dd-row">
+  ${INTENTS.map(([k, l]) => `<span class="dd-badge dd-badge--${style} dd-badge--${k}">${l}</span>`).join('\n  ')}
+</div>`;
+const cap = (t: string) => `<p class="dd-eyebrow" style="font-size: 10px">${t}</p>`;
+
+const family = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-2)">
+${['soft', 'solid', 'outline', 'dot', 'ghost'].map((s) => `${cap(s)}\n${row(s)}`).join('\n')}
+</div>`;
+
+const sizes = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-3)">
+  <span class="dd-badge dd-badge--solid dd-badge--ok">Live</span>
+  <span class="dd-badge dd-badge--solid dd-badge--ok dd-badge--md">Live</span>
+  <span class="dd-badge dd-badge--accent">New</span>
+  <span class="dd-badge dd-badge--accent dd-badge--md">New</span>
+  <span class="dd-badge dd-badge--outline">Draft</span>
+  <span class="dd-badge dd-badge--outline dd-badge--md">Draft</span>
+  <span class="dd-badge dd-badge--dot dd-badge--warn">Degraded</span>
+  <span class="dd-badge dd-badge--dot dd-badge--warn dd-badge--md">Degraded</span>
+</div>`;
+
+const iconCount = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-3)">
+  <span class="dd-badge dd-badge--solid dd-badge--ok">${i('check')}Live</span>
+  <span class="dd-badge dd-badge--bad">${i('alert')}Failed</span>
+  <span class="dd-badge dd-badge--info">${i('lock')}Private</span>
+  <span class="dd-badge">Inbox<span class="dd-badge__count">12</span></span>
+  <span class="dd-badge dd-badge--solid dd-badge--accent dd-badge--md">New<span class="dd-badge__count">3</span></span>
+  <span class="dd-badge dd-badge--outline dd-badge--warn">Flaky<span class="dd-badge__count">2/14</span></span>
+</div>`;
+
+const counts = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-6)">
+  <button class="dd-btn dd-btn--ghost dd-btn--icon" type="button" aria-label="Notifications, 3 unread">${i('bell')}<span class="dd-badge dd-badge--count dd-badge--solid dd-badge--bad dd-badge--corner" aria-hidden="true">3</span></button>
+  <button class="dd-btn dd-btn--ghost dd-btn--icon" type="button" aria-label="Messages, new">${i('chat')}<span class="dd-badge dd-badge--solid dd-badge--accent dd-badge--corner" aria-hidden="true"></span></button>
+  <span class="dd-row" style="--dd-gap: var(--dd-space-2)">Deploys <span class="dd-badge dd-badge--count">128</span></span>
+  <span class="dd-row" style="--dd-gap: var(--dd-space-2)">Open issues <span class="dd-badge dd-badge--count dd-badge--warn">7</span></span>
+  <span class="dd-row" style="--dd-gap: var(--dd-space-2)">Failing <span class="dd-badge dd-badge--count dd-badge--solid dd-badge--bad">2</span></span>
+</div>`;
+
+const context = `
+<div class="dd-stack" style="--dd-gap: 0; max-width: 560px">
+  <div class="dd-row" style="justify-content: space-between; padding: var(--dd-space-3) 0; box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--dd-text) 8%, transparent)">
+    <span class="dd-row" style="--dd-gap: var(--dd-space-2)"><b>auth-gateway</b><span class="dd-mono dd-muted dd-small">v3.2.0</span></span>
+    <span class="dd-badge dd-badge--dot dd-badge--ok">Live</span>
+  </div>
+  <div class="dd-row" style="justify-content: space-between; padding: var(--dd-space-3) 0; box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--dd-text) 8%, transparent)">
+    <span class="dd-row" style="--dd-gap: var(--dd-space-2)"><b>billing-worker</b><span class="dd-mono dd-muted dd-small">v1.9.4</span><span class="dd-badge dd-badge--accent">Canary</span></span>
+    <span class="dd-badge dd-badge--dot dd-badge--warn">Building</span>
+  </div>
+  <div class="dd-row" style="justify-content: space-between; padding: var(--dd-space-3) 0">
+    <span class="dd-row" style="--dd-gap: var(--dd-space-2)"><b>edge-cache</b><span class="dd-mono dd-muted dd-small">v0.7.1</span></span>
+    <span class="dd-badge dd-badge--dot dd-badge--bad">Failed</span>
+  </div>
+</div>`;
+---
+<Docs title="Badge" group="Feedback & status" lead="A tiny label for status and metadata: live, beta, failed, private. Micro caps with room to breathe — tracked uppercase in a compact tile, optically centred.">
+  <Example title="The family" description="Five styles across six intents. Soft is the default and covers most cases; solid is for the one status that must jump out; outline and ghost sit quietly in dense rows; dot keeps the label neutral and lets a coloured dot carry the state." code={family} />
+
+  <h2 id="sizes">Sizes</h2>
+  <p>Small is the default — for table cells, list rows and next to headings. <code>--md</code> is for cards and page headers.</p>
+  <Example code={sizes} />
+
+  <h2 id="icon-count">Icon and count</h2>
+  <p>A leading icon reinforces the state; a mono count after a hairline splits off a number.</p>
+  <Example code={iconCount} />
+
+  <h2 id="counts">Counts</h2>
+  <p><code>--count</code> is a bare mono number in a pill — totals in navigation and tabs. <code>--corner</code> pins a count, or an empty dot, to the corner of an icon button (the button already has <code>position: relative</code>). Say the number in the button’s <code>aria-label</code>.</p>
+  <Example code={counts} />
+
+  <h2 id="in-context">In context</h2>
+  <Example code={context} />
+
+  <h2 id="centring">Optical centring</h2>
+  <p>Figtree’s capitals sit exactly in the middle of a <code>line-height: 1</code> box (0.15em above the cap height, 0.15em below the baseline), so the badge trims that much off its vertical padding — the caps look centred and the tile stays as small as a trimmed one. The trailing letter-spacing is taken off the end padding so the word sits in the middle horizontally too. It works with a bare text node; no inner span needed.</p>
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-badge', 'Base: micro caps, soft neutral. Works on <code>&lt;span&gt;</code>, <code>&lt;a&gt;</code> and <code>&lt;button&gt;</code>.'],
+    ['.dd-badge--{style}', 'Style: <code>soft</code> (default) · <code>solid</code> · <code>outline</code> · <code>dot</code> · <code>ghost</code>.'],
+    ['.dd-badge--{intent}', 'Intent: <code>neutral</code> (default) · <code>accent</code> · <code>ok</code> · <code>warn</code> · <code>bad</code> · <code>info</code>.'],
+    ['.dd-badge--md', 'Medium size. Small has no modifier.'],
+    ['> .dd-icon', 'Leading icon, sized to the caps.'],
+    ['.dd-badge__count', 'Mono number after a hairline.'],
+    ['.dd-badge--count', 'Bare number pill (no caps, no tracking).'],
+    ['.dd-badge--corner', 'Pinned to the top-right of a positioned parent, ringed in <code>--dd-badge-ring</code> (default <code>--dd-bg</code>). Empty = dot.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Keep labels to one word, two at most.', 'Use the same word for the same state everywhere: Live, Building, Failed.', 'Use solid sparingly — one per row at most.']}
+    dont={['Don’t make badges clickable unless they filter; use a chip.', 'Don’t rely on colour alone — the word carries the meaning.', 'Don’t use badges for categories and tags; chips in the Color set do that.']}
+  />
+</Docs>

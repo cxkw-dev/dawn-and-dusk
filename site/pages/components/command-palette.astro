@@ -1,0 +1,127 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+type Row = { icon: string; name: string; meta?: string; keys?: string[]; then?: boolean; kw?: string };
+type Group = { label: string; rows: Row[] };
+
+const ci = (n: string) => `<svg class="dd-icon dd-command__icon" aria-hidden="true"><use href="#dd-i-${n}"/></svg>`;
+const keys = (r: Row) => !r.keys ? '' : r.then
+  ? `<kbd class="dd-kbd-combo"><kbd class="dd-kbd dd-kbd--sm">${r.keys[0]}</kbd><span class="dd-kbd-combo__sep">then</span><kbd class="dd-kbd dd-kbd--sm">${r.keys[1]}</kbd></kbd>`
+  : `<kbd class="dd-kbd-combo">${r.keys.map((k) => `<kbd class="dd-kbd dd-kbd--sm">${k}</kbd>`).join('')}</kbd>`;
+
+function palette(id: string, groups: Group[], { query = '', selected = 0, tag = 'div', hotkey = false } = {}) {
+  let n = 0;
+  const empty = groups.length === 0;
+  const list = groups.map((g, gi) => `    <div class="dd-command__group" role="group" aria-labelledby="${id}-g${gi}">
+      <p class="dd-command__label" id="${id}-g${gi}">${g.label}</p>
+${g.rows.map((r) => { const k = n++; return `      <div class="dd-command__item" role="option" id="${id}-${k}" aria-selected="${k === selected}"${r.kw ? ` data-keywords="${r.kw}"` : ''}>${ci(r.icon)}<span class="dd-command__body"><span>${r.name}</span>${r.meta ? `<span class="dd-command__meta">${r.meta}</span>` : ''}</span><span class="dd-command__hint"><kbd class="dd-kbd dd-kbd--sm dd-command__enter">↵</kbd>${keys(r)}</span></div>`; }).join('\n')}
+    </div>`).join('\n');
+  const attrs = tag === 'dialog' ? ` id="${id}" aria-label="Command palette"${hotkey ? ' data-dd-hotkey' : ''}` : ` aria-label="Command palette"`;
+  return `<${tag} class="dd-command"${attrs}>
+  <div class="dd-command__search">
+    ${i('search')}
+    <input class="dd-command__input" type="text" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="${id}-list"${!empty ? ` aria-activedescendant="${id}-${selected}"` : ''} aria-label="Search" placeholder="Search projects, services and commands…" autocomplete="off" spellcheck="false"${query ? ` value="${query}"` : ''}>
+    <kbd class="dd-kbd dd-kbd--sm">esc</kbd>
+  </div>
+  <div class="dd-command__list" role="listbox" id="${id}-list" aria-label="Results"${empty ? ' hidden' : ''}>
+${list}
+  </div>
+  <div class="dd-command__empty"${empty ? '' : ' hidden'}>
+    ${i('search')}
+    <b>No results for “<span class="dd-command__query">${query}</span>”</b>
+    <p>Try a project, a service such as <span class="dd-mono">auth-gateway</span>, or a command like “redeploy”.</p>
+  </div>
+  <div class="dd-command__foot">
+    <span class="dd-command__brand">cxkw.dev</span>
+    <span><kbd class="dd-kbd dd-kbd--sm">↑</kbd><kbd class="dd-kbd dd-kbd--sm">↓</kbd> move</span>
+    <span><kbd class="dd-kbd dd-kbd--sm">↵</kbd> run</span>
+    <span><kbd class="dd-kbd dd-kbd--sm">esc</kbd> close</span>
+  </div>
+</${tag}>`;
+}
+
+const all: Group[] = [
+  { label: 'Projects', rows: [
+    { icon: 'folder', name: 'dawn-and-dusk', meta: 'Design system · cxkw.dev' },
+    { icon: 'folder', name: 'dockey-ui', meta: 'Keyboard-first dock for macOS' },
+    { icon: 'folder', name: 'ai-focus', meta: 'Todos, notes and focus sessions' },
+  ] },
+  { label: 'Services', rows: [
+    { icon: 'server', name: 'auth-gateway', meta: 'iad1 · fra1 · healthy', kw: 'service' },
+    { icon: 'server', name: 'billing-worker', meta: 'iad1 · 3 errors in the last hour', kw: 'service' },
+    { icon: 'cloud', name: 'edge-cache', meta: '12 regions · 98.7% hit rate', kw: 'service cdn' },
+  ] },
+  { label: 'Commands', rows: [
+    { icon: 'refresh', name: 'Redeploy auth-gateway', keys: ['⌘', '⇧', 'R'], kw: 'deploy' },
+    { icon: 'terminal', name: 'Open logs', keys: ['G', 'L'], then: true },
+    { icon: 'moon', name: 'Switch to dusk', keys: ['⌥', 'T'], kw: 'theme dark' },
+    { icon: 'users', name: 'Invite a teammate…', kw: 'team member' },
+  ] },
+];
+
+const filtered: Group[] = [
+  { label: 'Commands', rows: [
+    { icon: 'refresh', name: 'Redeploy auth-gateway', keys: ['⌘', '⇧', 'R'] },
+    { icon: 'play', name: 'Deploy dawn-and-dusk to preview', keys: ['⌘', '↵'] },
+    { icon: 'arrow-left', name: 'Roll back last deploy', meta: 'edge-cache · 2h ago' },
+  ] },
+  { label: 'Recent deploys', rows: [
+    { icon: 'clock', name: '<span class="dd-mono">dpl_a3f9c21</span>', meta: 'auth-gateway · 4 min ago · ready' },
+    { icon: 'clock', name: '<span class="dd-mono">dpl_7be04d2</span>', meta: 'billing-worker · 1h ago · failed' },
+  ] },
+];
+
+const open = palette('cp-open', all, { selected: 1 });
+const search = palette('cp-filter', filtered, { query: 'deploy', selected: 0 });
+const empty = palette('cp-empty', [], { query: 'kubernetes' });
+
+const live = `
+<button class="dd-btn dd-btn--secondary" data-dd-command="cp-live">${i('search')}<span>Search or run a command</span><kbd class="dd-kbd-combo"><kbd class="dd-kbd dd-kbd--sm">⌘</kbd><kbd class="dd-kbd dd-kbd--sm">K</kbd></kbd></button>
+${palette('cp-live', all, { tag: 'dialog', hotkey: true })}`;
+---
+<Docs title="Command palette" group="Actions" lead="The ⌘K dialog: jump to any project, service or command by typing. A large search field, grouped results with shortcut hints, one selected row, and a calm empty state.">
+  <Example title="Open" description="Shown inline. The selected row takes the deeper tone and trades its shortcut for ↵. Type in the field to filter, or use ↑ ↓." code={open} stage="center" />
+  <h2 id="filtered">Filtered</h2>
+  <p>Typing narrows every group at once; groups with no matches disappear and the first match is selected. Rows also match their <code>data-keywords</code>, so “service” finds auth-gateway.</p>
+  <Example code={search} stage="center" />
+  <h2 id="empty">Empty state</h2>
+  <p>When nothing matches, the list hides and <code>.dd-command__empty</code> echoes the query and suggests what to try.</p>
+  <Example code={empty} stage="center" />
+  <h2 id="dialog">As a dialog</h2>
+  <p>Make it a <code>&lt;dialog class="dd-command"&gt;</code> and open it from any <code>[data-dd-command]</code> button, or press <kbd class="dd-kbd-combo"><kbd class="dd-kbd">⌘</kbd><kbd class="dd-kbd">K</kbd></kbd> (Ctrl K on Windows and Linux) anywhere on this page. It opens a third of the way down over a dimmed page.</p>
+  <Example code={live} />
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-command', 'The panel. A <code>&lt;dialog&gt;</code> for the real thing, a <code>&lt;div&gt;</code> to show it inline.'],
+    ['.dd-command__search', 'The search row: a search icon, the input and an <code>esc</code> hint.'],
+    ['.dd-command__input', 'The field. <code>role="combobox"</code> with <code>aria-controls</code> → the list and <code>aria-activedescendant</code> → the selected row.'],
+    ['.dd-command__list', 'Scrolling results, <code>role="listbox"</code>.'],
+    ['.dd-command__group + __label', 'A <code>role="group"</code> of results with a small-caps label.'],
+    ['.dd-command__item', 'A result, <code>role="option"</code>. <code>aria-selected="true"</code> marks the selected row. Optional <code>data-keywords</code> and <code>data-value</code>.'],
+    ['.dd-command__icon', 'Leading icon; turns full-strength on the selected row.'],
+    ['.dd-command__body + __meta', 'The name, then muted detail that truncates first (hidden below 560px).'],
+    ['.dd-command__hint', 'Trailing shortcut keys (<code>.dd-kbd</code>).'],
+    ['.dd-command__enter', 'A ↵ key inside the hint, shown only on the selected row (and hiding the shortcut after it).'],
+    ['.dd-command__empty', 'Empty state; any <code>.dd-command__query</code> inside it echoes the search.'],
+    ['.dd-command__foot + __brand', 'Footer with keyboard hints on a deeper tone; the brand sits at the start.'],
+  ]} />
+  <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/command-palette.js</code>. Filtering and keyboard selection also work on inline palettes.</p>
+  <ClassTable head={['Attribute / key', 'What it does']} rows={[
+    ['data-dd-command="id"', 'On a button: opens that <code>&lt;dialog class="dd-command"&gt;</code> (empty value → the first on the page), clears the search and focuses it.'],
+    ['data-dd-hotkey', 'On the dialog: the one ⌘K / Ctrl K toggles. Without it, the first palette on the page.'],
+    ['Typing', 'Filters rows by their text and <code>data-keywords</code> (every word must match); selects the first match.'],
+    ['↑ ↓ · Ctrl P / Ctrl N', 'Move the selected row, wrapping at the ends; the list scrolls to keep it in view.'],
+    ['Enter / click', 'Runs the row: clicks it (links navigate), fires a bubbling <code>dd:command</code> event with <code>detail.item</code> and <code>detail.value</code>, and closes the dialog.'],
+    ['Esc', 'Clears the search; a second Esc closes. Clicking the backdrop closes too, and focus returns to the opener.'],
+  ]} />
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Lead with what people jump to most: recent projects, then services, then commands.', 'Show the shortcut beside each command so the palette teaches the keyboard.', 'Keep result names short and put detail in the muted meta.']}
+    dont={['Don’t put destructive commands in the palette without a confirmation step.', 'Don’t show more than about eight rows per group; let people type.', 'Don’t bind ⌘K to anything else on a page that has a palette.']}
+  />
+</Docs>

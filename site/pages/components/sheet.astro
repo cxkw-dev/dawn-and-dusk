@@ -1,0 +1,149 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const close = `<button class="dd-sheet__close" type="button" data-dd-dialog-close aria-label="Close">${i('x')}</button>`;
+
+const confirm = `
+<button class="dd-btn dd-btn--primary" type="button" data-dd-dialog-open="#rollback-sheet">${i('refresh')}<span>Roll back</span></button>
+<dialog class="dd-sheet" id="rollback-sheet" aria-labelledby="rollback-title">
+  <span class="dd-sheet__handle" aria-hidden="true"></span>
+  <header class="dd-sheet__head">
+    <div class="dd-sheet__titles">
+      <h2 class="dd-sheet__title" id="rollback-title">Roll back billing-worker?</h2>
+      <p class="dd-sheet__desc">Production returns to deploy #4817 (a41d0e9) in fra1 and iad1. Invoices queued in the last 6 minutes are replayed.</p>
+    </div>
+  </header>
+  <footer class="dd-sheet__foot">
+    <button class="dd-btn dd-btn--secondary dd-btn--lg" type="button" data-dd-dialog-close>Cancel</button>
+    <button class="dd-btn dd-btn--primary dd-btn--lg" type="button" data-dd-dialog-close="rollback">Roll back</button>
+  </footer>
+</dialog>`;
+
+const actions = `
+<button class="dd-btn dd-btn--secondary dd-btn--icon" type="button" data-dd-dialog-open="#project-sheet" aria-label="Project actions">${i('more')}</button>
+<dialog class="dd-sheet" id="project-sheet" aria-labelledby="project-sheet-title">
+  <span class="dd-sheet__handle" aria-hidden="true"></span>
+  <header class="dd-sheet__head">
+    <div class="dd-sheet__titles">
+      <h2 class="dd-sheet__title" id="project-sheet-title">dawn-and-dusk</h2>
+      <p class="dd-sheet__desc">Design system · updated 2 hours ago</p>
+    </div>
+    ${close}
+  </header>
+  <div class="dd-sheet__body">
+    <div class="dd-sheet__list" role="menu" aria-labelledby="project-sheet-title">
+      <button class="dd-sheet__item" type="button" role="menuitem" data-dd-dialog-close="share">${i('link')}<span class="dd-sheet__item-label">Copy share link</span></button>
+      <button class="dd-sheet__item" type="button" role="menuitem" data-dd-dialog-close="duplicate">${i('copy')}<span class="dd-sheet__item-label">Duplicate</span></button>
+      <button class="dd-sheet__item" type="button" role="menuitem" data-dd-dialog-close="pin">${i('pin')}<span class="dd-sheet__item-label">Pin to sidebar</span><span class="dd-sheet__item-meta">P</span></button>
+      <button class="dd-sheet__item" type="button" role="menuitem" data-dd-dialog-close="archive">${i('archive')}<span class="dd-sheet__item-label">Archive</span></button>
+      <hr class="dd-sheet__sep" />
+      <button class="dd-sheet__item dd-sheet__item--danger" type="button" role="menuitem" data-dd-dialog-close="delete">${i('trash')}<span class="dd-sheet__item-label">Delete project</span></button>
+    </div>
+  </div>
+</dialog>`;
+
+const regions = [
+  ['fra1', 'Frankfurt', true], ['iad1', 'Washington, D.C.'], ['sfo1', 'San Francisco'], ['lhr1', 'London'], ['cdg1', 'Paris'],
+  ['hnd1', 'Tokyo'], ['sin1', 'Singapore'], ['syd1', 'Sydney'], ['gru1', 'São Paulo'], ['bom1', 'Mumbai'],
+];
+const choices = `
+<button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#region-sheet">${i('globe')}<span>fra1 · Frankfurt</span>${i('chevron-down')}</button>
+<dialog class="dd-sheet" id="region-sheet" aria-labelledby="region-title">
+  <span class="dd-sheet__handle" aria-hidden="true"></span>
+  <header class="dd-sheet__head">
+    <div class="dd-sheet__titles">
+      <h2 class="dd-sheet__title" id="region-title">Primary region</h2>
+      <p class="dd-sheet__desc">Where auth-gateway runs its writes. Reads follow the edge.</p>
+    </div>
+    ${close}
+  </header>
+  <div class="dd-sheet__body">
+    <div class="dd-sheet__list" role="menu" aria-labelledby="region-title">
+${regions.map(([code, city, on]) => `      <button class="dd-sheet__item" type="button" role="menuitemradio" aria-checked="${on ? 'true' : 'false'}" data-dd-dialog-close="${code}"><span class="dd-sheet__item-label">${city}</span><span class="dd-sheet__item-meta">${code}</span>${i('check').replace('class="dd-icon"', 'class="dd-icon dd-sheet__check"')}</button>`).join('\n')}
+    </div>
+  </div>
+  <footer class="dd-sheet__foot">
+    <button class="dd-btn dd-btn--secondary dd-btn--lg" type="button" data-dd-dialog-close>Done</button>
+  </footer>
+</dialog>`;
+---
+<Docs title="Sheet" group="Overlays" lead="A bottom sheet for small screens: it rises from the bottom edge with a grab handle, keeps actions within thumb reach, and never covers more than 85% of the screen.">
+  <p>Every example opens the real sheet; under the trigger is a still of it on a phone-sized frame. On wide screens a sheet stays a centred 560px column.</p>
+  <Example title="Confirm" description="A title, one or two sentences, and full-width actions with the primary on the right." code={confirm} />
+
+  <h2 id="actions">List of actions</h2>
+  <p>The mobile stand-in for a menu: big touch rows with a leading icon, an optional shortcut or count, and the destructive action last, apart.</p>
+  <Example code={actions} />
+
+  <h2 id="choices">Choices · long content</h2>
+  <p>For picking one of many. Mark the current row with <code>aria-checked="true"</code>; past 85% of the screen the body scrolls and the footer stays.</p>
+  <Example code={choices} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['dialog.dd-sheet', 'The sheet, pinned to the bottom edge. Open with <code>showModal()</code> or <code>data-dd-dialog-open</code>.'],
+    ['.dd-sheet__handle', 'The grab handle. Decorative: <code>aria-hidden="true"</code>.'],
+    ['.dd-sheet__head / __titles', 'Title row with an optional <code>__close</code> button.'],
+    ['.dd-sheet__title', 'In the heading lockup. Point <code>aria-labelledby</code> at it.'],
+    ['.dd-sheet__desc', 'A muted line or two under the title.'],
+    ['.dd-sheet__close', 'Icon-only close button (<code>aria-label="Close"</code>, <code>data-dd-dialog-close</code>).'],
+    ['.dd-sheet__body', 'Scrolls once the sheet reaches 85% of the screen height.'],
+    ['.dd-sheet__list', 'A column of touch rows; bleeds slightly into the padding so hovers line up with the edges.'],
+    ['.dd-sheet__item', '50px touch row: icon, <code>__item-label</code>, optional <code>__item-meta</code> (mono shortcut, code, count).'],
+    ['.dd-sheet__item--danger', 'Destructive row, in <code>--dd-bad</code>. Put it last, after a <code>__sep</code>.'],
+    ['[aria-checked="true"] / .is-selected', 'The current choice: a tonal row and a visible <code>.dd-sheet__check</code> icon.'],
+    ['.dd-sheet__sep', 'A hairline between groups of rows (<code>&lt;hr&gt;</code>).'],
+    ['.dd-sheet__foot', 'Full-width actions sharing the row. <code>--stack</code> stacks them, primary on top.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <p>The sheet shares its script with <a href="dialog">Dialog</a>: <code>data-dd-dialog-open="#id"</code> opens it, <code>data-dd-dialog-close="value"</code> on a row or button closes it and sets <code>returnValue</code>, a tap on the scrim or Esc slides it away, and focus returns to the opener.</p>
+  <ClassTable head={['Key', 'What it does']} rows={[
+    ['Esc', 'Closes the sheet.'],
+    ['Tab / Shift+Tab', 'Stays inside the sheet; the page behind is inert.'],
+    ['Enter / Space', 'Activates the focused row.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use a sheet on phones where a desktop would use a menu, popover or small dialog.', 'Keep it short: one task, or up to about seven actions.', 'Put the destructive action last and separate it.']}
+    dont={['Don’t nest sheets or open a dialog from a sheet.', 'Don’t rely on the handle alone to close — keep a close button, Cancel, or a scrim tap.', 'Don’t use a sheet on wide screens for long forms; use a drawer.']}
+  />
+
+  <style is:global>
+    .sht-preview {
+      position: relative; isolation: isolate; width: min(100%, 380px); height: 600px; margin: var(--dd-space-6) auto 0;
+      border-radius: calc(var(--dd-r-lg) * 2.4); overflow: hidden;
+      background:
+        linear-gradient(var(--dd-surface) 0 0) 20px 28px / 44% 14px no-repeat,
+        linear-gradient(var(--dd-surface) 0 0) 20px 54px / 70% 9px no-repeat,
+        repeating-linear-gradient(var(--dd-surface) 0 70px, transparent 70px 82px) 20px 86px / calc(100% - 40px) 500px no-repeat,
+        var(--dd-bg);
+      box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 10%, transparent);
+    }
+    .sht-scrim { position: absolute; inset: 0; z-index: 0; background: var(--dd-overlay); }
+    .sht-preview > dialog { position: absolute; z-index: 1; inset: auto 0 0 0; width: 100%; max-height: 85%; animation: none; }
+  </style>
+  <script is:inline>
+    // Docs only: a still of the example's sheet, on a phone-sized frame under its trigger.
+    document.querySelectorAll('.ex-stage').forEach((stage) => {
+      stage.querySelectorAll(':scope > dialog.dd-sheet').forEach((dlg) => {
+        const copy = dlg.cloneNode(true);
+        [copy, ...copy.querySelectorAll('[id], [autofocus], [aria-labelledby]')].forEach((n) =>
+          ['id', 'autofocus', 'aria-labelledby'].forEach((a) => n.removeAttribute(a)));
+        copy.setAttribute('open', '');
+        copy.inert = true;
+        const frame = document.createElement('div');
+        frame.className = 'sht-preview';
+        frame.setAttribute('aria-hidden', 'true');
+        frame.innerHTML = '<span class="sht-scrim"></span>';
+        frame.append(copy);
+        stage.append(frame);
+      });
+    });
+  </script>
+</Docs>

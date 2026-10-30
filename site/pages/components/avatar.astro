@@ -1,0 +1,133 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+// Stand-in photos: tiny inline SVG portraits, so the docs need no image files.
+const photo = (a: string, b: string, skin: string, hair: string, top: string) =>
+  'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="64" height="64" fill="url(#g)"/><circle cx="32" cy="27" r="14" fill="${hair}"/><ellipse cx="32" cy="64" rx="22" ry="16" fill="${top}"/><rect x="28" y="36" width="8" height="10" rx="3" fill="${skin}"/><circle cx="32" cy="30" r="11" fill="${skin}"/><path d="M20 28c1-8 6-12 12-12s11 4 12 12c-4-4-8-5-12-5s-8 1-12 5z" fill="${hair}"/></svg>`);
+const P1 = photo('#f6d2b2', '#e09a72', '#eab993', '#3b2a22', '#6a5c4e');
+const P2 = photo('#d5dde3', '#8aa2b6', '#c99a78', '#1f1a17', '#e8e3db');
+const P3 = photo('#efdcae', '#c99c4a', '#f0caa8', '#8a5233', '#9c4f5f');
+
+const PEOPLE: [string, string][] = [['AN', 'Andy Nguyen'], ['MK', 'Mai Kha'], ['JS', 'Jonas Sauer'], ['RL', 'Rosa Lind'], ['TC', 'Tomás Cruz'], ['EV', 'Elif Varol'], ['OB', 'Omar Bello'], ['HP', 'Hana Park']];
+
+const initials = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-3)">
+  ${PEOPLE.map(([ini, name], n) => `<span class="dd-avatar dd-avatar--set-${n + 1}" role="img" aria-label="${name}">${ini}</span>`).join('\n  ')}
+</div>`;
+
+const sizes = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-4); align-items: end">
+  <span class="dd-avatar dd-avatar--xs dd-avatar--set-3" role="img" aria-label="Andy Nguyen">AN</span>
+  <span class="dd-avatar dd-avatar--sm dd-avatar--set-3" role="img" aria-label="Andy Nguyen">AN</span>
+  <span class="dd-avatar dd-avatar--set-3" role="img" aria-label="Andy Nguyen">AN</span>
+  <span class="dd-avatar dd-avatar--lg dd-avatar--set-3" role="img" aria-label="Andy Nguyen">AN</span>
+  <span class="dd-avatar dd-avatar--xl dd-avatar--set-3" role="img" aria-label="Andy Nguyen">AN</span>
+  <span class="dd-avatar dd-avatar--xs"><img src="${P1}" alt="Mai Kha"></span>
+  <span class="dd-avatar dd-avatar--sm"><img src="${P1}" alt="Mai Kha"></span>
+  <span class="dd-avatar"><img src="${P1}" alt="Mai Kha"></span>
+  <span class="dd-avatar dd-avatar--lg"><img src="${P1}" alt="Mai Kha"></span>
+  <span class="dd-avatar dd-avatar--xl"><img src="${P1}" alt="Mai Kha"></span>
+</div>`;
+
+const images = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-3)">
+  <span class="dd-avatar dd-avatar--lg"><img src="${P1}" alt="Mai Kha"></span>
+  <span class="dd-avatar dd-avatar--lg"><img src="${P2}" alt="Jonas Sauer"></span>
+  <span class="dd-avatar dd-avatar--lg"><img src="${P3}" alt="Rosa Lind"></span>
+  <span class="dd-avatar dd-avatar--lg dd-avatar--square dd-avatar--set-3" role="img" aria-label="dawn-and-dusk">dd</span>
+  <span class="dd-avatar dd-avatar--lg dd-avatar--square dd-avatar--set-6" role="img" aria-label="insomnia">${i('moon')}</span>
+  <span class="dd-avatar dd-avatar--lg dd-avatar--square dd-avatar--set-1" role="img" aria-label="ai-focus">${i('sparkle')}</span>
+  <span class="dd-avatar dd-avatar--lg dd-avatar--square" role="img" aria-label="edge-cache">${i('server')}</span>
+</div>`;
+
+const group = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-4)">
+  <div class="dd-avatar-group" role="group" aria-label="Reviewers: Andy Nguyen, Mai Kha, Jonas Sauer, Rosa Lind and 3 more">
+    <span class="dd-avatar dd-avatar--set-1" aria-hidden="true">AN</span>
+    <span class="dd-avatar" aria-hidden="true"><img src="${P1}" alt=""></span>
+    <span class="dd-avatar dd-avatar--set-4" aria-hidden="true">JS</span>
+    <span class="dd-avatar" aria-hidden="true"><img src="${P3}" alt=""></span>
+    <span class="dd-avatar dd-avatar--more" aria-hidden="true">+3</span>
+  </div>
+  <div class="dd-avatar-group" role="group" aria-label="Watching: 5 people">
+    <span class="dd-avatar dd-avatar--sm dd-avatar--set-2" aria-hidden="true">TC</span>
+    <span class="dd-avatar dd-avatar--sm dd-avatar--set-5" aria-hidden="true">EV</span>
+    <span class="dd-avatar dd-avatar--sm" aria-hidden="true"><img src="${P2}" alt=""></span>
+    <span class="dd-avatar dd-avatar--sm dd-avatar--set-8" aria-hidden="true">HP</span>
+    <span class="dd-avatar dd-avatar--sm dd-avatar--more" aria-hidden="true">+1</span>
+  </div>
+  <div class="dd-surface" style="padding: var(--dd-space-4); --dd-avatar-ring: var(--dd-surface)">
+    <div class="dd-avatar-group" role="group" aria-label="On a surface: 4 people">
+      <span class="dd-avatar dd-avatar--sm dd-avatar--set-6" aria-hidden="true">OB</span>
+      <span class="dd-avatar dd-avatar--sm dd-avatar--set-7" aria-hidden="true">RL</span>
+      <span class="dd-avatar dd-avatar--sm dd-avatar--set-3" aria-hidden="true">AN</span>
+      <span class="dd-avatar dd-avatar--sm dd-avatar--more" aria-hidden="true">+1</span>
+    </div>
+  </div>
+</div>`;
+
+const status = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-4)">
+  <span class="dd-avatar dd-avatar--set-1" role="img" aria-label="Andy Nguyen, online">AN<span class="dd-status-dot dd-status-dot--online"></span></span>
+  <span class="dd-avatar" role="img" aria-label="Mai Kha, idle"><img src="${P1}" alt=""><span class="dd-status-dot dd-status-dot--idle"></span></span>
+  <span class="dd-avatar dd-avatar--set-4" role="img" aria-label="Jonas Sauer, offline">JS<span class="dd-status-dot dd-status-dot--offline"></span></span>
+  <span class="dd-avatar dd-avatar--lg" role="img" aria-label="Rosa Lind, online"><img src="${P3}" alt=""><span class="dd-status-dot dd-status-dot--online"></span></span>
+  <span class="dd-avatar dd-avatar--lg dd-avatar--square" role="img" aria-label="billing-worker, error">${i('server')}<span class="dd-status-dot dd-status-dot--error"></span></span>
+</div>`;
+
+const label = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-4)">
+  <span class="dd-avatar-label">
+    <span class="dd-avatar dd-avatar--set-1" aria-hidden="true">AN<span class="dd-status-dot dd-status-dot--online"></span></span>
+    <span class="dd-avatar-label__text"><span>Andy Nguyen</span><span>andy@cxkw.dev · Owner</span></span>
+  </span>
+  <span class="dd-avatar-label">
+    <span class="dd-avatar dd-avatar--sm" aria-hidden="true"><img src="${P2}" alt=""></span>
+    <span class="dd-avatar-label__text"><span>Jonas Sauer</span><span>Pushed 3 commits to dockey-ui</span></span>
+  </span>
+</div>`;
+---
+<Docs title="Avatar" group="Feedback & status" lead="A person, a team, a project or a service — as a photo, initials or an icon. Initials take a colour from the Color set, washed the same way as a chip.">
+  <Example title="Initials" description="30% of a Color set hue over the page, deep text in the same hue. Pick the colour from a hash of the user id so a person keeps their colour everywhere." code={initials} />
+
+  <h2 id="sizes">Sizes</h2>
+  <p>xs 20 · sm 28 · md 36 (default) · lg 48 · xl 64. Initials scale with the circle.</p>
+  <Example code={sizes} />
+
+  <h2 id="images">Photos, projects and services</h2>
+  <p>A photo fills the circle. Projects, teams and services are square, with initials or an icon.</p>
+  <Example code={images} />
+
+  <h2 id="group">Group</h2>
+  <p>Avatars overlap a little, each ringed in the page colour so the edges read; a “+3” closes the group. On a surface, set <code>--dd-avatar-ring: var(--dd-surface)</code> on the container — the ring and the initials wash both follow it. Label the group, not each avatar.</p>
+  <Example code={group} />
+
+  <h2 id="status">Status</h2>
+  <p>Drop a <a href="status-dot">status dot</a> inside and it pins to the bottom-right, ringed like the group. Put the status in the label too.</p>
+  <Example code={status} />
+
+  <h2 id="label">With a name</h2>
+  <Example code={label} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-avatar', 'Circle, 36px. Holds initials, an <code>&lt;img&gt;</code> or an icon. Neutral greige without a colour.'],
+    ['.dd-avatar--set-{1…8}', 'Initials colour from the Color set (or set <code>--dd-avatar-color</code>).'],
+    ['.dd-avatar--{size}', 'Size: <code>xs</code> 20 · <code>sm</code> 28 · <code>md</code> 36 · <code>lg</code> 48 · <code>xl</code> 64px. Or set <code>--dd-avatar-size</code>.'],
+    ['.dd-avatar--square', 'Rounded square, for projects, teams and services.'],
+    ['.dd-avatar--more', 'The “+3” overflow count.'],
+    ['> .dd-status-dot', 'Presence, pinned bottom-right.'],
+    ['.dd-avatar-group', 'Overlapping row. Ring colour: <code>--dd-avatar-ring</code> (default <code>--dd-bg</code>).'],
+    ['.dd-avatar-label / __text', 'Avatar beside a name and a muted second line.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use two initials, uppercase.', 'Give photo avatars real alt text, or <code>alt=""</code> when the name is right beside them.', 'Show at most five in a group, then “+N”.']}
+    dont={['Don’t pick avatar colours by hand per screen — derive them from the id.', 'Don’t use primary apricot for people; it means “do this”.', 'Don’t rely on the status dot alone to say someone is offline.']}
+  />
+</Docs>

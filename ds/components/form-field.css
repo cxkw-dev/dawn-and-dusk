@@ -1,0 +1,51 @@
+/* Form field — the wrapper around one control: label, hint, error and counter.
+   Default is the "Tucked label" pick: a micro label sits inside the tonal, borderless box and the value sits under it.
+   .dd-field--above moves the label over the box. The box itself is .dd-input (text-input.css) or one of its kin
+   (textarea, select, combobox, date picker), placed directly inside the field or one wrapper deep. */
+.dd-field {
+  position: relative; display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1.25); min-width: 0;
+  font-size: var(--dd-fs-sm);
+}
+
+/* Tucked label: positioned over the box's top padding. Clicks pass through to the control underneath. */
+.dd-field__label {
+  position: absolute; z-index: 1; top: calc(var(--dd-u) * 2); left: calc(var(--dd-u) * 3);
+  max-width: calc(100% - var(--dd-u) * 6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1.2; color: var(--dd-muted);
+  pointer-events: none; transition: color var(--dd-dur) var(--dd-ease);
+}
+.dd-field:has(> .dd-input--sm, > * > .dd-input--sm) > .dd-field__label {
+  top: calc(var(--dd-u) * 1.5); left: calc(var(--dd-u) * 2.5); font-size: calc(var(--dd-fs-xs) * .88);
+}
+.dd-field:has(> .dd-input--lg, > * > .dd-input--lg) > .dd-field__label { top: calc(var(--dd-u) * 2.6); left: calc(var(--dd-u) * 4); }
+.dd-field:focus-within > .dd-field__label, .dd-field:has(> .is-focus, > * > .is-focus) > .dd-field__label { color: var(--dd-accent); }
+.dd-field__opt { font-weight: 400; color: var(--dd-muted); }
+
+/* Hint, error and counter sit under the box, indented to the value's left edge. */
+.dd-field > .dd-field__hint, .dd-field > .dd-field__error, .dd-field__foot { padding-inline: calc(var(--dd-u) * 3); }
+.dd-field__foot { display: flex; align-items: flex-start; gap: calc(var(--dd-u) * 3); min-width: 0; }
+.dd-field__foot > :first-child { flex: 1; min-width: 0; }
+.dd-field__hint, .dd-field__error { margin: 0; font-size: var(--dd-fs-xs); line-height: 1.45; color: var(--dd-muted); overflow-wrap: anywhere; }
+.dd-field__error { display: flex; align-items: flex-start; gap: calc(var(--dd-u) * 1.25); color: var(--dd-bad); font-weight: 500; }
+.dd-field__error > .dd-icon { margin-top: .1em; }
+.dd-field__counter {
+  flex: none; margin-left: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); line-height: 1.45;
+  font-variant-numeric: tabular-nums; color: var(--dd-muted); transition: color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-field__counter.is-near { color: var(--dd-warn); }
+.dd-field__counter.is-over { color: var(--dd-bad); }
+
+/* States read from the control, so authors only set aria-invalid / disabled once. */
+.dd-field.is-invalid > .dd-field__label,
+.dd-field:has([aria-invalid='true']) > .dd-field__label { color: var(--dd-bad); }
+.dd-field:has(.dd-input__control:disabled, .dd-input:disabled) > .dd-field__label { color: color-mix(in oklab, var(--dd-muted) 55%, var(--dd-faint)); }
+
+/* Label above: a plain label over the box; hints line up with the label. */
+.dd-field--above { gap: calc(var(--dd-u) * 1.5); }
+.dd-field--above > .dd-field__label {
+  position: static; max-width: none; overflow: visible; white-space: normal; pointer-events: auto;
+  font-size: var(--dd-fs-sm); font-weight: 600; line-height: var(--dd-lh-tight); color: var(--dd-text);
+}
+.dd-field--above:focus-within > .dd-field__label { color: var(--dd-text); }
+.dd-field--above > .dd-field__hint, .dd-field--above > .dd-field__error, .dd-field--above > .dd-field__foot { padding-inline: 0; }
+.dd-field__desc { margin: calc(var(--dd-u) * -.75) 0 0; font-size: var(--dd-fs-xs); line-height: 1.45; color: var(--dd-muted); }

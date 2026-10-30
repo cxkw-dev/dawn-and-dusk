@@ -1,0 +1,76 @@
+/* Radio — "Crisp checks": a 20px circle with a hairline edge; selected draws an 8px accent dot and an accent edge.
+   .dd-radio-group stacks options in a fieldset. .dd-radio-card turns each option into a selectable box
+   (a radio box group): the native radio is visually hidden; the chosen card tints with the accent and shows a
+   check badge (tone, not an edge). */
+.dd-radio {
+  display: inline-flex; align-items: flex-start; gap: calc(var(--dd-u) * 2.5); min-width: 0;
+  font-size: var(--dd-fs-sm); line-height: 1.45; color: var(--dd-text); cursor: pointer;
+}
+.dd-radio__input {
+  appearance: none; flex: none; display: inline-grid; place-items: center; box-sizing: border-box;
+  width: 20px; height: 20px; margin: calc((1.45em - 20px) / 2) 0 0; padding: 0;
+  border: 1px solid var(--dd-border-strong); border-radius: 50%; background: var(--dd-surface); cursor: pointer;
+  transition: border-color var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-radio__input::before {
+  content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--dd-accent);
+  transform: scale(0); transition: transform var(--dd-dur) var(--dd-ease);
+}
+.dd-radio__input:hover { border-color: var(--dd-muted); }
+.dd-radio__input:checked { border-color: var(--dd-accent); }
+.dd-radio__input:checked::before { transform: scale(1); }
+.dd-radio__input:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-radio__input[aria-invalid='true'] { border-color: var(--dd-bad); }
+.dd-radio__input:disabled { opacity: .4; cursor: not-allowed; }
+.dd-radio:has(.dd-radio__input:disabled) { cursor: not-allowed; color: var(--dd-muted); }
+.dd-radio__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dd-radio__label { font-weight: 500; }
+.dd-radio__desc { font-size: var(--dd-fs-xs); line-height: 1.4; color: var(--dd-muted); }
+
+.dd-radio-group { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 3); min-width: 0; margin: 0; padding: 0; border: 0; }
+.dd-radio-group--inline { flex-direction: row; flex-wrap: wrap; gap: calc(var(--dd-u) * 3) calc(var(--dd-u) * 6); }
+.dd-radio-group__legend { float: left; width: 100%; margin: 0 0 calc(var(--dd-u) * .5); padding: 0; font-size: var(--dd-fs-sm); font-weight: 600; color: var(--dd-text); }
+.dd-radio-group__hint { margin: calc(var(--dd-u) * -2) 0 0; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+
+/* Radio box group */
+.dd-radio-cards {
+  --_min: 11rem;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--_min)), 1fr)); gap: calc(var(--dd-u) * 2);
+  min-width: 0; margin: 0; padding: 0; border: 0;
+}
+.dd-radio-cards > .dd-radio-group__legend { grid-column: 1 / -1; margin-bottom: calc(var(--dd-u) * 1); }
+.dd-radio-card {
+  position: relative; display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1); min-width: 0;
+  padding: calc(var(--dd-u) * 4) calc(var(--dd-u) * 4) calc(var(--dd-u) * 3.5); border-radius: var(--dd-r-box);
+  background: var(--dd-surface); color: var(--dd-text); font-size: var(--dd-fs-sm); line-height: 1.45; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-radio-card:hover { background: var(--dd-surface-2); }
+.dd-radio-card > .dd-radio__input { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; margin: 0; }
+.dd-radio-card:has(.dd-radio__input:checked) { background: color-mix(in oklab, var(--dd-accent) 14%, var(--dd-surface)); }
+.dd-radio-card:has(.dd-radio__input:checked):hover { background: color-mix(in oklab, var(--dd-accent) 18%, var(--dd-surface)); }
+.dd-radio-card:has(.dd-radio__input:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-radio-card:has(.dd-radio__input:disabled) { opacity: .6; cursor: not-allowed; }
+.dd-radio-card:has(.dd-radio__input:disabled):hover { background: var(--dd-surface); }
+.dd-radio-card__icon { display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: calc(var(--dd-u) * 1.5); border-radius: var(--dd-r-ctl); background: var(--dd-surface-2); color: var(--dd-muted); transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease); }
+.dd-radio-card:hover .dd-radio-card__icon { background: var(--dd-surface-3); }
+.dd-radio-card:has(:checked) .dd-radio-card__icon { background: var(--dd-accent); color: var(--dd-on-accent); }
+.dd-radio-card__title { padding-right: calc(var(--dd-u) * 5); font-weight: 600; }
+.dd-radio-card__desc { font-size: var(--dd-fs-xs); line-height: 1.4; color: var(--dd-muted); }
+.dd-radio-card__meta { margin-top: auto; padding-top: calc(var(--dd-u) * 1.5); font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+.dd-radio-card__meta b { font-family: var(--dd-font-body); font-size: var(--dd-fs-base); font-weight: 650; color: var(--dd-text); }
+.dd-radio-card__mark {
+  position: absolute; top: calc(var(--dd-u) * 3); right: calc(var(--dd-u) * 3); display: grid; place-items: center;
+  width: 18px; height: 18px; border-radius: 50%; background: var(--dd-accent); color: var(--dd-on-accent);
+  transform: scale(0); transition: transform var(--dd-dur) var(--dd-ease);
+}
+.dd-radio-card__mark > .dd-icon { width: 12px; height: 12px; vertical-align: 0; }
+.dd-radio-card:has(:checked) .dd-radio-card__mark { transform: scale(1); }
+/* Compact: one line per option, mark on the right — good for 2–3 short choices. */
+.dd-radio-card--row { flex-direction: row; align-items: center; gap: calc(var(--dd-u) * 3); padding-block: calc(var(--dd-u) * 3); }
+.dd-radio-card--row .dd-radio-card__icon { margin: 0; flex: none; }
+.dd-radio-card--row .dd-radio-card__mark { position: static; flex: none; margin-left: auto; }
+.dd-radio-card--row > .dd-radio__text { flex: 1; }
+.dd-radio-card--row .dd-radio-card__title { padding-right: 0; }
+.dd-radio-card--row .dd-radio-card__meta { flex: none; margin: 0; padding: 0; }
+.dd-radio-card--row .dd-radio-card__mark { margin-left: 0; }

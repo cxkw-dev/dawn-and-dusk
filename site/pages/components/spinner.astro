@@ -1,0 +1,88 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+
+const sizes = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-6)">
+  <span class="dd-spinner dd-spinner--sm" role="status" aria-label="Loading"></span>
+  <span class="dd-spinner" role="status" aria-label="Loading"></span>
+  <span class="dd-spinner dd-spinner--lg" role="status" aria-label="Loading"></span>
+  <span class="dd-spinner dd-spinner--xl" role="status" aria-label="Loading"></span>
+  <span class="dd-spinner dd-spinner--lg dd-spinner--muted" role="status" aria-label="Loading"></span>
+  <span class="dd-spinner dd-spinner--lg" style="color: var(--dd-primary)" role="status" aria-label="Loading"></span>
+</div>`;
+
+const dots = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-6)">
+  <span class="dd-spinner dd-spinner--dots dd-spinner--sm" role="status" aria-label="Loading"><i></i><i></i><i></i></span>
+  <span class="dd-spinner dd-spinner--dots" role="status" aria-label="Loading"><i></i><i></i><i></i></span>
+  <span class="dd-spinner dd-spinner--dots dd-spinner--lg dd-spinner--muted" role="status" aria-label="Loading"><i></i><i></i><i></i></span>
+  <span class="dd-loading" role="status"><span class="dd-spinner dd-spinner--dots"><i></i><i></i><i></i></span>ai-focus is thinking</span>
+</div>`;
+
+const inline = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-4)">
+  <span class="dd-loading" role="status"><span class="dd-spinner"></span>Loading deploys…</span>
+  <span class="dd-loading" role="status"><span class="dd-spinner"></span>Fetching logs from <span class="dd-mono">edge-cache</span> · fra1</span>
+  <p class="dd-text">Checking 14 domains <span class="dd-spinner dd-spinner--inline dd-spinner--muted" role="status" aria-label="in progress"></span> — this takes a few seconds.</p>
+  <button class="dd-btn dd-btn--primary is-loading" type="button" aria-busy="true" style="align-self: flex-start"><span class="dd-btn__spinner"></span><span>Deploying</span></button>
+</div>`;
+
+const page = `
+<div class="dd-page-loader" role="status" style="min-height: 240px">
+  <span class="dd-spinner"></span>
+  <p class="dd-page-loader__label">Loading dashboard</p>
+  <p class="dd-page-loader__meta">cxkw.dev · 3 regions</p>
+</div>`;
+
+const overlay = `
+<div style="position: relative; min-height: 220px; padding: var(--dd-space-6)">
+  <p class="dd-eyebrow">billing-worker · invoices</p>
+  <p class="dd-h3" style="margin: var(--dd-space-2) 0 var(--dd-space-4)">october</p>
+  <p class="dd-text dd-muted">142 invoices · $18,420.00 · 3 overdue</p>
+  <p class="dd-text dd-muted">Last sync 09:41 UTC</p>
+  <div class="dd-page-loader dd-page-loader--overlay" role="status">
+    <span class="dd-spinner"></span>
+    <p class="dd-page-loader__label">Recalculating totals</p>
+  </div>
+</div>`;
+---
+<Docs title="Spinner" group="Feedback & status" lead="Something is working and we can’t say for how long. A thin taupe ring for most waits, three dots for conversational ones, a line of text when it’s inline, a loader when the whole page waits.">
+  <Example title="Sizes" description="sm 14 · md 18 (default) · lg 28 · xl 40. The ring takes currentColor — the taupe accent by default, muted for quiet places." code={sizes} stage="center" />
+
+  <h2 id="dots">Dots</h2>
+  <p>Three dots that breathe in turn — for a reply that’s being written or a stream that’s about to start.</p>
+  <Example code={dots} stage="center" />
+
+  <h2 id="inline">Inline loading</h2>
+  <p>A spinner beside the thing that’s loading, in muted text. <code>--inline</code> sizes the ring to the surrounding type. Buttons have their own spinner — see <a href="button">Button</a>.</p>
+  <Example code={inline} />
+
+  <h2 id="page">Page loader</h2>
+  <p>Centred in the space the page will fill (at least 60% of the viewport, up to 480px — the example is shorter). <code>--overlay</code> lays it over content that’s being recalculated (its parent needs <code>position: relative</code>); <code>--fixed</code> covers the viewport.</p>
+  <Example code={page} stage="flush" />
+  <Example code={overlay} stage="flush" />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-spinner', 'A ring spinner, 18px, in the accent colour (any <code>color</code> works). Give it <code>role="status"</code> and a label, or put it inside something that has one.'],
+    ['.dd-spinner--sm / --lg / --xl', '14 / 28 / 40px.'],
+    ['.dd-spinner--inline', 'Sized to the text around it.'],
+    ['.dd-spinner--muted', 'Muted colour.'],
+    ['.dd-spinner--dots', 'Three dots; needs three <code>&lt;i&gt;</code> children.'],
+    ['.dd-loading', 'Spinner + muted text in a row.'],
+    ['.dd-page-loader', 'Centred loader for a page or section, with <code>__label</code> and <code>__meta</code>.'],
+    ['.dd-page-loader--overlay / --fixed', 'Cover the parent / the viewport with a translucent wash.'],
+  ]} />
+
+  <h2 id="motion">Motion</h2>
+  <p>The ring turns once every 0.8s with the <code>dd-spin</code> keyframes it shares with the loading button. Under reduced motion a stopped ring would look finished, so spinners keep turning, three times slower.</p>
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Say what’s loading: “Loading deploys…”.', 'Wait ~300ms before showing a spinner so fast loads don’t flash.', 'Prefer a skeleton when you know the shape of what’s coming.']}
+    dont={['Don’t put more than one spinner in a view.', 'Don’t block the whole page for something one panel needs.', 'Don’t use a spinner for progress you can measure — use a progress bar.']}
+  />
+</Docs>

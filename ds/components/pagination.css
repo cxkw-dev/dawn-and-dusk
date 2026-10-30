@@ -1,0 +1,55 @@
+/* Pagination — numbered pages, a compact prev/next with a range ("1–50 of 2,481") and a page-size select.
+   Tone, not lines: the current page sits on --dd-surface-2; hover steps one tone. Works with <a> or <button>. */
+.dd-pagination {
+  display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 4);
+  font-size: var(--dd-fs-sm); color: var(--dd-muted); font-variant-numeric: tabular-nums;
+}
+.dd-pagination__pages { display: flex; align-items: center; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.dd-pagination__pages > li:not([class]) { display: contents; }
+.dd-pagination__page, .dd-pagination__step {
+  appearance: none; display: inline-grid; place-items: center; min-width: 30px; height: 30px; padding: 0 calc(var(--dd-u) * 1.5);
+  border: 0; border-radius: var(--dd-r-ctl); background: transparent; color: var(--dd-muted);
+  font: inherit; font-family: var(--dd-font-mono); font-size: calc(var(--dd-fs-sm) * .9); line-height: 1; text-decoration: none; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-pagination__step { font-family: var(--dd-font-body); color: var(--dd-text); }
+.dd-pagination__step .dd-icon { width: 1.2em; height: 1.2em; }
+/* Tones mix from the text colour so they read on the page, on a card and in dusk alike. */
+.dd-pagination__page:hover, .dd-pagination__step:hover { background: color-mix(in oklab, var(--dd-text) 6%, transparent); color: var(--dd-text); }
+.dd-pagination__page[aria-current="page"] { background: color-mix(in oklab, var(--dd-text) 10%, transparent); color: var(--dd-text); font-weight: 500; cursor: default; }
+.dd-pagination :is(.dd-pagination__page, .dd-pagination__step):focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
+.dd-pagination__step:disabled, .dd-pagination__step[aria-disabled="true"] { opacity: .4; pointer-events: none; }
+.dd-pagination__gap { display: inline-grid; place-items: center; min-width: 22px; color: var(--dd-faint); user-select: none; }
+.dd-pagination__step--label { gap: calc(var(--dd-u) * 1); grid-auto-flow: column; padding: 0 calc(var(--dd-u) * 2.25); font-size: var(--dd-fs-sm); font-weight: 500; }
+
+/* Range text ("1–50 of 2,481") and the page-of-pages status used on narrow screens */
+.dd-pagination__range { white-space: nowrap; }
+.dd-pagination__range b { color: var(--dd-text); font-weight: 600; }
+.dd-pagination__status { display: none; white-space: nowrap; padding: 0 calc(var(--dd-u) * 1.5); }
+
+/* Page size: a native <select> with a quiet chevron */
+.dd-pagination__size { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 2); white-space: nowrap; }
+.dd-pagination__select { position: relative; display: inline-flex; align-items: center; }
+.dd-pagination__select select {
+  appearance: none; height: 30px; padding: 0 calc(var(--dd-u) * 6) 0 calc(var(--dd-u) * 2.25);
+  border: 0; border-radius: var(--dd-r-ctl); background: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 4%); color: var(--dd-text);
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-pagination__select select:hover { background: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 8%); }
+.dd-pagination__select select:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
+.dd-pagination__select .dd-icon { position: absolute; right: calc(var(--dd-u) * 1.5); width: 1em; height: 1em; pointer-events: none; color: var(--dd-muted); }
+
+/* Layout helpers: push a group to the far edge */
+.dd-pagination__end { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: inherit; }
+.dd-pagination--spread { justify-content: space-between; }
+
+/* Compact: range + prev/next only */
+.dd-pagination--compact { gap: calc(var(--dd-u) * 1); }
+.dd-pagination--compact .dd-pagination__range { margin-right: calc(var(--dd-u) * 1.5); }
+
+/* Narrow screens: numbered pagers collapse to "Page 3 of 50" (.dd-pagination__status) between the arrows. */
+@media (max-width: 560px) {
+  .dd-pagination__pages > :is(li:has(> .dd-pagination__page), .dd-pagination__gap) { display: none; }
+  .dd-pagination__status { display: inline-flex; }
+}

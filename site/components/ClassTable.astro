@@ -1,0 +1,11 @@
+---
+// The API of a CSS component: its classes, modifiers and attributes.
+interface Props { rows: [string, string][]; head?: [string, string]; }
+const { rows, head = ['Class / attribute', 'What it does'] } = Astro.props;
+---
+<div class="doc-table-wrap">
+  <table class="doc-table">
+    <thead><tr><th>{head[0]}</th><th>{head[1]}</th></tr></thead>
+    <tbody>{rows.map(([k, v]) => <tr><td><code>{k}</code></td><td set:html={v} /></tr>)}</tbody>
+  </table>
+</div>

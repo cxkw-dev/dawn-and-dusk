@@ -1,0 +1,95 @@
+/* Tabs — "Underline". A hairline baseline with an ink marker under the active tab; hover previews the marker in a
+   softer tone. Counts sit in a small mono pill. Modifiers: --sm, --pill (secondary, inside a view), --vertical.
+   The list scrolls sideways when it runs out of room, with soft fades at the edges where supported.
+   Works as real tabs ([data-dd-tabs] + role="tab") or as page navigation (links with aria-current="page"). */
+@property --dd-tabs-fs { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --dd-tabs-fe { syntax: '<length>'; inherits: false; initial-value: 0px; }
+
+.dd-tabs { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 5); min-width: 0; }
+
+.dd-tabs__list {
+  --_gap: calc(var(--dd-u) * 5);
+  --_line: color-mix(in oklab, var(--dd-text) 10%, transparent);
+  position: relative; display: flex; align-items: stretch; gap: var(--_gap); min-width: 0; max-width: calc(100% + 12px);
+  margin: 0 -6px; padding: 0 6px; list-style: none;
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; scroll-padding-inline: 32px;
+  background: linear-gradient(var(--_line), var(--_line)) 50% 100% / calc(100% - 12px) 1px no-repeat;
+}
+.dd-tabs__list::-webkit-scrollbar { display: none; }
+@supports (animation-timeline: scroll()) {
+  .dd-tabs__list {
+    animation: dd-tabs-fade linear both; animation-timeline: scroll(self inline);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--dd-tabs-fs), #000 calc(100% - var(--dd-tabs-fe)), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 var(--dd-tabs-fs), #000 calc(100% - var(--dd-tabs-fe)), transparent);
+  }
+}
+@keyframes dd-tabs-fade {
+  0% { --dd-tabs-fs: 0px; --dd-tabs-fe: 36px; }
+  8% { --dd-tabs-fs: 36px; }
+  92% { --dd-tabs-fe: 36px; }
+  100% { --dd-tabs-fs: 36px; --dd-tabs-fe: 0px; }
+}
+
+.dd-tabs__tab {
+  appearance: none; position: relative; display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.75); flex: none;
+  margin: 0; padding: calc(var(--dd-u) * 2.5) 0; border: 0; background: none; color: var(--dd-muted);
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); font-weight: 500; line-height: 1.2;
+  white-space: nowrap; text-decoration: none; cursor: pointer; transition: color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-tabs__tab::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: transparent;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-tabs__tab > .dd-icon { opacity: .75; }
+.dd-tabs__tab:hover { color: var(--dd-text); }
+.dd-tabs__tab:hover::after { background: var(--dd-border-strong); }
+.dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active) { color: var(--dd-text); }
+.dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active)::after { background: var(--dd-text); }
+.dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active) > .dd-icon { opacity: 1; }
+.dd-tabs__tab:focus-visible { outline: none; }
+.dd-tabs__tab:focus-visible::before { content: ""; position: absolute; inset: 5px -6px; border-radius: var(--dd-r-ctl); box-shadow: 0 0 0 2px var(--dd-ring); }
+.dd-tabs__tab:is(:disabled, [aria-disabled='true']) { opacity: .45; cursor: not-allowed; }
+.dd-tabs__tab:is(:disabled, [aria-disabled='true'])::after { background: transparent; }
+
+.dd-tabs__count {
+  padding: 3px 6px; border-radius: var(--dd-r-pill); background: color-mix(in oklab, var(--dd-text) 9%, transparent);
+  color: var(--dd-muted); font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 400; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active) .dd-tabs__count { color: var(--dd-text); }
+.dd-tabs__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dd-primary); }
+
+.dd-tabs__panel { min-width: 0; border-radius: var(--dd-r-box); }
+.dd-tabs__panel[hidden] { display: none; }
+.dd-tabs__panel:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 4px; }
+
+/* Small — dense toolbars, chart ranges */
+.dd-tabs--sm .dd-tabs__list, .dd-tabs__list.dd-tabs--sm { --_gap: calc(var(--dd-u) * 4); }
+.dd-tabs--sm .dd-tabs__tab { padding-block: calc(var(--dd-u) * 1.75); font-size: var(--dd-fs-xs); gap: calc(var(--dd-u) * 1.25); }
+.dd-tabs--sm { gap: calc(var(--dd-u) * 3); }
+
+/* Secondary · pill — a second row of tabs inside a view, filters, segmented ranges */
+.dd-tabs--pill .dd-tabs__list, .dd-tabs__list.dd-tabs--pill { --_gap: calc(var(--dd-u) * 1); background: none; padding-block: 2px; }
+.dd-tabs--pill .dd-tabs__tab { padding: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 3); border-radius: var(--dd-r-pill); line-height: 1.1;
+  transition: color var(--dd-dur-fast) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease); }
+.dd-tabs--pill .dd-tabs__tab::after { display: none; }
+.dd-tabs--pill .dd-tabs__tab:hover { background: color-mix(in oklab, var(--dd-text) 6%, transparent); }
+.dd-tabs--pill .dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active) { background: color-mix(in oklab, var(--dd-text) 11%, transparent); }
+.dd-tabs--pill .dd-tabs__tab:focus-visible::before { inset: -2px; border-radius: var(--dd-r-pill); }
+.dd-tabs--pill .dd-tabs__count { padding: 2px 5px; }
+
+/* Vertical — settings pages. The list sits beside the panels and wraps above them when space runs out. */
+.dd-tabs--vertical { flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: calc(var(--dd-u) * 4) calc(var(--dd-u) * 8); }
+.dd-tabs--vertical .dd-tabs__list {
+  flex: 1 1 180px; flex-direction: column; gap: 2px; max-width: 240px; margin: 0; padding: 0; overflow: visible;
+  background: none; animation: none; -webkit-mask-image: none; mask-image: none;
+}
+/* Vertical tabs mark the current one with tone, not a stripe. Tinted from the text colour so the step reads on any surface. */
+.dd-tabs--vertical .dd-tabs__tab { justify-content: flex-start; padding: calc(var(--dd-u) * 2) calc(var(--dd-u) * 3); border-radius: var(--dd-r-ctl);
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease); }
+.dd-tabs--vertical .dd-tabs__tab:hover { background: color-mix(in oklab, var(--dd-text) 6%, transparent); }
+.dd-tabs--vertical .dd-tabs__tab:is([aria-selected='true'], [aria-current='page'], .is-active) { background: color-mix(in oklab, var(--dd-text) 10%, transparent); }
+.dd-tabs--vertical .dd-tabs__tab::after { display: none; }
+.dd-tabs--vertical .dd-tabs__tab:focus-visible::before { inset: 0; }
+.dd-tabs--vertical .dd-tabs__count { margin-left: auto; }
+.dd-tabs--vertical > .dd-tabs__panel { flex: 999 1 300px; }

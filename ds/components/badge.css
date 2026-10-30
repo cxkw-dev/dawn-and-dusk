@@ -1,0 +1,67 @@
+/* Badge — "Micro caps · roomy family". Tiny tracked uppercase labels with generous padding, for status and metadata.
+   Styles: soft (default) · solid · outline · dot · ghost. Intents: neutral (default) · accent · ok · warn · bad · info.
+   Sizes: sm (default) · md. Optically centred: Figtree's caps sit exactly in the middle of a line-height:1 box, so the
+   block padding is trimmed by the half-leading (.15em) and the trailing letter-spacing is taken off the end padding. */
+.dd-badge {
+  --_c: color-mix(in oklab, var(--dd-muted) 80%, var(--dd-text));
+  --_soft: color-mix(in oklab, var(--dd-text) 10%, transparent);
+  --_solid: var(--dd-text); --_on: var(--dd-bg);
+  --_py: calc(var(--dd-u) * 1.5); --_px: calc(var(--dd-u) * 2.25); --_ls: .12em;
+  display: inline-flex; align-items: center; justify-content: center; gap: .5em; flex: none;
+  padding: calc(var(--_py) - .15em) calc(var(--_px) - var(--_ls)) calc(var(--_py) - .15em) var(--_px);
+  border: 0; border-radius: calc(var(--dd-r-ctl) * .6);
+  background: var(--_soft); color: var(--_c);
+  font-family: var(--dd-font-body); font-size: calc(var(--dd-fs-xs) * .82); font-weight: 700; line-height: 1;
+  letter-spacing: var(--_ls); text-transform: uppercase; white-space: nowrap; vertical-align: middle; text-decoration: none;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+
+/* Intents. Soft/outline/ghost type is the status colour nudged toward the text colour so 9px caps stay legible. */
+.dd-badge--neutral { --_c: color-mix(in oklab, var(--dd-muted) 80%, var(--dd-text)); --_soft: color-mix(in oklab, var(--dd-text) 10%, transparent); --_solid: var(--dd-text); --_on: var(--dd-bg); }
+.dd-badge--accent { --_k: var(--dd-accent); --_solid: var(--dd-accent); --_on: var(--dd-on-accent); }
+.dd-badge--ok { --_k: var(--dd-ok); --_solid: var(--dd-ok); --_on: var(--dd-bg); }
+.dd-badge--warn { --_k: var(--dd-warn); --_solid: var(--dd-warn); --_on: var(--dd-on-primary); } /* dark ink in both themes */
+.dd-badge--bad { --_k: var(--dd-bad); --_solid: var(--dd-bad); --_on: var(--dd-bg); }
+.dd-badge--info { --_k: var(--dd-info); --_solid: var(--dd-info); --_on: var(--dd-bg); }
+:is(.dd-badge--accent, .dd-badge--ok, .dd-badge--warn, .dd-badge--bad, .dd-badge--info) {
+  --_c: color-mix(in oklab, var(--_k) 82%, var(--dd-text));
+  --_soft: color-mix(in oklab, var(--_k) 18%, transparent);
+}
+
+/* Styles */
+.dd-badge--soft { background: var(--_soft); color: var(--_c); }
+.dd-badge--solid { background: var(--_solid); color: var(--_on); }
+.dd-badge--outline { background: transparent; color: var(--_c); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--_k, var(--dd-muted)) 50%, transparent); }
+.dd-badge--ghost { background: transparent; color: var(--_c); }
+:is(a, button).dd-badge--ghost:hover { background: var(--_soft); }
+.dd-badge--dot { background: color-mix(in oklab, var(--dd-text) 9%, transparent); color: var(--dd-text); }
+.dd-badge--dot::before {
+  content: ""; flex: none; width: .6em; height: .6em; border-radius: 50%; background: var(--_k, var(--dd-faint));
+}
+:is(a, button).dd-badge { appearance: none; cursor: pointer; }
+:is(a, button).dd-badge:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+/* Sizes */
+.dd-badge--md { --_py: calc(var(--dd-u) * 2); --_px: calc(var(--dd-u) * 3); font-size: calc(var(--dd-fs-xs) * .95); }
+
+/* Icon and count */
+.dd-badge > .dd-icon { width: 1.3em; height: 1.3em; margin-block: -.3em; margin-left: -.15em; }
+.dd-badge__count {
+  padding-left: .55em; border-left: 1px solid color-mix(in oklab, currentColor 35%, transparent);
+  font-family: var(--dd-font-mono); font-weight: 500; letter-spacing: 0; font-variant-numeric: tabular-nums;
+}
+.dd-badge:has(> .dd-badge__count:last-child) { padding-right: var(--_px); }
+
+/* Count: a bare number pill — unread counts, nav totals, tab totals. Mono, no caps tracking. */
+.dd-badge--count {
+  --_ls: 0em; min-width: 1.75em; padding: calc(var(--dd-u) * 1 - .15em) .5em; border-radius: var(--dd-r-pill);
+  font-family: var(--dd-font-mono); font-size: calc(var(--dd-fs-xs) * .9); font-weight: 500; font-variant-numeric: tabular-nums;
+}
+/* Corner: pin a count or dot to the top-right of a button or avatar (the host needs position: relative). */
+.dd-badge--corner {
+  position: absolute; top: 0; right: 0; translate: 35% -35%;
+  box-shadow: 0 0 0 2px var(--dd-badge-ring, var(--dd-bg));
+}
+.dd-badge--corner:empty { min-width: 0; width: 9px; height: 9px; padding: 0; border-radius: 50%; }
+/* On a ghost icon button there is no visible edge, so pin to the icon's corner instead of the button's. */
+.dd-btn--ghost.dd-btn--icon > .dd-badge--corner { top: calc(var(--dd-u) * 1.25); right: calc(var(--dd-u) * 1.25); }

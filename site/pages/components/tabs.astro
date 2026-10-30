@@ -1,0 +1,153 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+type Tab = { label: string; icon?: string; count?: string | number; on?: boolean; disabled?: boolean };
+const tab = (t: Tab) =>
+  `<button class="dd-tabs__tab" role="tab" type="button"${t.on ? ' aria-selected="true"' : ''}${t.disabled ? ' disabled' : ''}>${t.icon ? i(t.icon) : ''}<span>${t.label}</span>${t.count !== undefined ? `<span class="dd-tabs__count">${t.count}</span>` : ''}</button>`;
+const list = (label: string, tabs: Tab[], extra = '') =>
+  `<div class="dd-tabs__list" role="tablist" aria-label="${label}"${extra}>
+    ${tabs.map(tab).join('\n    ')}
+  </div>`;
+const panel = (html: string) => `<div class="dd-tabs__panel" role="tabpanel"><p class="dd-small dd-muted">${html}</p></div>`;
+
+const basic = `
+<div class="dd-tabs" data-dd-tabs>
+  ${list('Project', [{ label: 'Overview', on: true }, { label: 'Deploys' }, { label: 'Logs' }, { label: 'Settings' }])}
+  ${panel('auth-gateway is healthy in 3 regions. The last deploy shipped 4 minutes ago from <code>main</code>.')}
+  ${panel('312 deploys, 4 this week. The newest is <code>dpl_8f3a2c</code>.')}
+  ${panel('Streaming logs from fra1, iad1 and sin1.')}
+  ${panel('Build command, environment variables and domains.')}
+</div>`;
+
+const counts = `
+<div class="dd-tabs" data-dd-tabs>
+  ${list('Inbox', [{ label: 'Open', count: 12, on: true }, { label: 'Assigned to me', count: 3 }, { label: 'Resolved', count: 248 }, { label: 'Muted' }])}
+  ${panel('12 open alerts across billing-worker and edge-cache.')}
+  ${panel('3 alerts are assigned to you.')}
+  ${panel('248 resolved in the last 30 days.')}
+  ${panel('Nothing muted.')}
+</div>`;
+
+const icons = `
+<div class="dd-tabs" data-dd-tabs>
+  ${list('Service', [{ label: 'Overview', icon: 'home', on: true }, { label: 'Deploys', icon: 'cloud', count: 32 }, { label: 'Logs', icon: 'terminal' }, { label: 'Metrics', icon: 'chart' }, { label: 'Settings', icon: 'settings' }])}
+  ${panel('Overview of edge-cache.')}
+  ${panel('32 deploys.')}
+  ${panel('Logs.')}
+  ${panel('Hit ratio 94.2% over 24h.')}
+  ${panel('Settings.')}
+</div>`;
+
+const small = `
+<div class="dd-tabs dd-tabs--sm" data-dd-tabs>
+  ${list('Range', [{ label: '1h' }, { label: '24h', on: true }, { label: '7d' }, { label: '30d' }, { label: 'Custom', disabled: true }])}
+  ${panel('Requests in the last hour: 81.4k, p95 128ms.')}
+  ${panel('Requests over the last 24 hours: 1.82M, p95 142ms.')}
+  ${panel('Requests over 7 days: 12.6M, p95 151ms.')}
+  ${panel('Requests over 30 days: 53.9M, p95 149ms.')}
+  ${panel('Pick a range.')}
+</div>`;
+
+const pill = `
+<div class="dd-stack" style="--dd-gap: 18px">
+  <nav class="dd-tabs__list" aria-label="Section">
+    <a class="dd-tabs__tab" href="#" aria-current="page">Deploys</a>
+    <a class="dd-tabs__tab" href="#">Domains</a>
+    <a class="dd-tabs__tab" href="#">Env vars</a>
+  </nav>
+  <div class="dd-tabs dd-tabs--pill" data-dd-tabs>
+    ${list('Filter deploys', [{ label: 'All', count: 312, on: true }, { label: 'Production', count: 41 }, { label: 'Preview', count: 266 }, { label: 'Failed', count: 5 }])}
+    ${panel('Every deploy, newest first.')}
+    ${panel('Production deploys only.')}
+    ${panel('Preview deploys from pull requests.')}
+    ${panel('5 failed builds this month.')}
+  </div>
+</div>`;
+
+const vertical = `
+<div class="dd-tabs dd-tabs--vertical" data-dd-tabs>
+  ${list('Settings', [{ label: 'General', icon: 'settings', on: true }, { label: 'Members', icon: 'users', count: 6 }, { label: 'Notifications', icon: 'bell', count: 3 }, { label: 'Tokens', icon: 'key' }, { label: 'Billing', icon: 'database' }], ' aria-orientation="vertical"')}
+  <div class="dd-tabs__panel" role="tabpanel"><h3 class="dd-h4">General</h3><p class="dd-small dd-muted">Workspace name, default region and the theme new members start in.</p></div>
+  <div class="dd-tabs__panel" role="tabpanel"><h3 class="dd-h4">Members</h3><p class="dd-small dd-muted">6 people can deploy to cxkw.</p></div>
+  <div class="dd-tabs__panel" role="tabpanel"><h3 class="dd-h4">Notifications</h3><p class="dd-small dd-muted">Failed deploys, usage alerts and weekly digests.</p></div>
+  <div class="dd-tabs__panel" role="tabpanel"><h3 class="dd-h4">Tokens</h3><p class="dd-small dd-muted">Personal access tokens for the CLI.</p></div>
+  <div class="dd-tabs__panel" role="tabpanel"><h3 class="dd-h4">Billing</h3><p class="dd-small dd-muted">Hobby plan, renews 1 Dec.</p></div>
+</div>`;
+
+const overflow = `
+<div class="dd-tabs" data-dd-tabs style="max-width: 420px">
+  ${list('Regions', ['fra1', 'iad1', 'sin1', 'syd1', 'gru1', 'hnd1', 'cdg1', 'lhr1', 'sfo1', 'bom1'].map((r, n) => ({ label: r, on: n === 0, count: [41, 38, 22, 9, 6, 17, 12, 30, 25, 4][n] })))}
+  ${['fra1', 'iad1', 'sin1', 'syd1', 'gru1', 'hnd1', 'cdg1', 'lhr1', 'sfo1', 'bom1'].map((r) => panel(`edge-cache in <code>${r}</code>: healthy.`)).join('\n  ')}
+</div>`;
+
+const links = `
+<nav aria-label="Project">
+  <div class="dd-tabs__list">
+    <a class="dd-tabs__tab" href="#" aria-current="page">Overview</a>
+    <a class="dd-tabs__tab" href="#">Deploys <span class="dd-tabs__count">312</span></a>
+    <a class="dd-tabs__tab" href="#">Analytics</a>
+    <a class="dd-tabs__tab" href="#">Settings</a>
+  </div>
+</nav>`;
+---
+<Docs title="Tabs" group="Navigation" lead="Switch between views of the same thing. A hairline baseline with an ink marker under the active tab; hover previews the marker in a softer tone.">
+  <Example title="Underline" description="The default. Click a tab, or focus one and use ← →, Home and End." code={basic} />
+
+  <h2 id="counts">With counts</h2>
+  <p>Counts sit in a small mono pill and turn to ink on the active tab.</p>
+  <Example code={counts} />
+
+  <h2 id="icons">With icons</h2>
+  <Example code={icons} />
+
+  <h2 id="small">Small</h2>
+  <p>For chart ranges and dense toolbars. Disabled tabs stay in place but are skipped by the keyboard.</p>
+  <Example code={small} />
+
+  <h2 id="pill">Secondary · pill</h2>
+  <p>When a view already sits under underline tabs, use pills for the second level — filters, sub-views, ranges.</p>
+  <Example code={pill} />
+
+  <h2 id="vertical">Vertical</h2>
+  <p>For settings. Set <code>aria-orientation="vertical"</code> on the list so ↑ ↓ move between tabs. The list moves above the panel when the space runs out.</p>
+  <Example code={vertical} />
+
+  <h2 id="overflow">Overflow</h2>
+  <p>When the tabs don’t fit, the list scrolls sideways and fades at the edge that has more. The selected tab is scrolled into view as you move.</p>
+  <Example code={overflow} />
+
+  <h2 id="links">As page navigation</h2>
+  <p>For tabs that change the URL, use links with <code>aria-current="page"</code> inside a <code>&lt;nav&gt;</code> — no <code>data-dd-tabs</code>, no tab roles.</p>
+  <Example code={links} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-tabs', 'Wrapper: the list, then the panels.'],
+    ['.dd-tabs__list', 'The row of tabs (<code>role="tablist"</code>). Scrolls sideways when it overflows.'],
+    ['.dd-tabs__tab', 'A tab. Active with <code>aria-selected="true"</code>, <code>aria-current="page"</code> or <code>.is-active</code>.'],
+    ['.dd-tabs__count', 'Mono count pill inside a tab.'],
+    ['.dd-tabs__panel', 'A panel (<code>role="tabpanel"</code>). Hidden with the <code>hidden</code> attribute.'],
+    ['.dd-tabs--sm', 'Smaller tabs.'],
+    ['.dd-tabs--pill', 'Secondary pill tabs, no baseline.'],
+    ['.dd-tabs--vertical', 'List beside the panels; the current tab sits on a deeper tone. Wraps above the panels when narrow.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute / key', 'What it does']} rows={[
+    ['data-dd-tabs', 'Wires the tabs inside: ids, <code>aria-controls</code>, <code>aria-labelledby</code>, roving <code>tabindex</code>. Panels pair with tabs by <code>aria-controls</code> or by order.'],
+    ['← → / ↑ ↓', 'Move to and select the previous / next tab (↑ ↓ with <code>aria-orientation="vertical"</code>). Wraps around.'],
+    ['Home / End', 'First / last tab.'],
+    ['dd:tabchange', 'Event on the wrapper after a change: <code>detail.tab</code>, <code>detail.panel</code>.'],
+    ['dd.tabs.select(tab)', 'Select a tab from script.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use tabs for peers — views of one object, not steps in a flow.', 'Keep labels to one or two words; put numbers in a count.', 'Use links with <code>aria-current</code> when a tab changes the URL.']}
+    dont={['Don’t stack two rows of underline tabs; make the second row pills.', 'Don’t hide primary actions inside a tab panel.', 'Don’t use tabs for a single view.']}
+  />
+</Docs>

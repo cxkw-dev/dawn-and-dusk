@@ -1,0 +1,86 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+
+const states = `
+<div class="dd-row" style="--dd-gap: 20px 30px">
+  <label class="dd-switch"><input class="dd-switch__input" type="checkbox" role="switch" checked> Auto-deploy</label>
+  <label class="dd-switch"><input class="dd-switch__input" type="checkbox" role="switch"> Maintenance mode</label>
+  <label class="dd-switch"><input class="dd-switch__input" type="checkbox" role="switch" checked disabled> Audit log</label>
+  <label class="dd-switch"><input class="dd-switch__input" type="checkbox" role="switch" disabled> Single sign-on</label>
+</div>`;
+
+const sizes = `
+<div class="dd-row" style="--dd-gap: 20px 30px">
+  <label class="dd-switch dd-switch--sm"><input class="dd-switch__input" type="checkbox" role="switch" checked> Small</label>
+  <label class="dd-switch"><input class="dd-switch__input" type="checkbox" role="switch" checked> Medium</label>
+  <label class="dd-switch dd-switch--lg"><input class="dd-switch__input" type="checkbox" role="switch" checked> Large</label>
+  <label class="dd-switch dd-switch--sm"><input class="dd-switch__input" type="checkbox" role="switch" aria-label="Small, off"></label>
+  <label class="dd-switch"><input class="dd-switch__input" type="checkbox" role="switch" aria-label="Medium, off"></label>
+  <label class="dd-switch dd-switch--lg"><input class="dd-switch__input" type="checkbox" role="switch" aria-label="Large, off"></label>
+</div>`;
+
+const described = `
+<div class="dd-stack" style="--dd-gap: 20px; max-width: 460px">
+  <label class="dd-switch">
+    <input class="dd-switch__input" type="checkbox" role="switch" checked>
+    <span class="dd-switch__text"><span class="dd-switch__label">Dusk at sunset</span><span class="dd-switch__desc">Switch themes with your local time.</span></span>
+  </label>
+  <label class="dd-switch">
+    <input class="dd-switch__input" type="checkbox" role="switch">
+    <span class="dd-switch__text"><span class="dd-switch__label">Preview deploys</span><span class="dd-switch__desc">Build every pull request to its own URL.</span></span>
+  </label>
+  <label class="dd-switch">
+    <input class="dd-switch__input" type="checkbox" role="switch" checked disabled>
+    <span class="dd-switch__text"><span class="dd-switch__label">Two-factor sign-in</span><span class="dd-switch__desc">Required by your workspace owner.</span></span>
+  </label>
+</div>`;
+
+const settings = `
+<div class="dd-form__choices dd-form__choices--rows" style="max-width: 520px">
+  <label class="dd-switch dd-switch--end">
+    <input class="dd-switch__input" type="checkbox" role="switch" checked>
+    <span class="dd-switch__text"><span class="dd-switch__label">Auto-deploy main</span><span class="dd-switch__desc">Every push to main ships to production.</span></span>
+  </label>
+  <label class="dd-switch dd-switch--end">
+    <input class="dd-switch__input" type="checkbox" role="switch">
+    <span class="dd-switch__text"><span class="dd-switch__label">Maintenance mode</span><span class="dd-switch__desc">Serve a static page from edge-cache while you work.</span></span>
+  </label>
+  <label class="dd-switch dd-switch--end">
+    <input class="dd-switch__input" type="checkbox" role="switch" checked>
+    <span class="dd-switch__text"><span class="dd-switch__label">Ship logs to log-shipper</span><span class="dd-switch__desc">Keeps 30 days; costs about $4 a month.</span></span>
+  </label>
+</div>`;
+---
+<Docs title="Switch" group="Forms" lead="Turns a setting on or off right away. The classic pill: the track fills with the accent when on and the knob slides across.">
+  <Example title="States" description="On, off, and both disabled. A native checkbox with role=&quot;switch&quot;, so the state is announced as on / off." code={states} />
+
+  <h2 id="sizes">Sizes</h2>
+  <p>Medium is the default. Small for dense tables and filters, large for touch-first settings. Switches without visible text need an <code>aria-label</code>.</p>
+  <Example code={sizes} />
+
+  <h2 id="description">With label and description</h2>
+  <p>The track aligns to the first line of the label.</p>
+  <Example code={described} />
+
+  <h2 id="settings">Settings rows</h2>
+  <p><code>.dd-switch--end</code> puts the control after the text and stretches the row; stack rows in <code>.dd-form__choices--rows</code> for hairlines between them.</p>
+  <Example code={settings} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-switch', 'The <code>&lt;label&gt;</code> wrapper: control + text.'],
+    ['.dd-switch__input', 'The native checkbox with <code>role="switch"</code>; the knob is its <code>::before</code>.'],
+    ['.dd-switch__text · __label · __desc', 'Label stack with a muted description.'],
+    ['.dd-switch--sm / --lg', 'Sizes (32 × 18, 48 × 28). Medium is 40 × 24.'],
+    ['.dd-switch--end', 'Control after the text, full width — for settings lists.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use a switch when the change applies immediately, with no save button.', 'Label the setting, not the state: “Preview deploys”, not “Enable preview deploys”.', 'Explain the consequence in the description when it costs money or affects others.']}
+    dont={['Don’t put switches in a form that needs submitting — use checkboxes.', 'Don’t add “On / Off” text beside the switch.', 'Don’t use a switch for choices between two named options — use a segmented control or radios.']}
+  />
+</Docs>

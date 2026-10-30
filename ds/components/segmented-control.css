@@ -1,0 +1,76 @@
+/* Segmented control — one choice from a few, shown all at once. A tonal track; the chosen segment takes the deeper
+   selected tone and full-strength text. Two flavours share the classes:
+   · buttons — role="radio" + aria-checked inside [data-dd-segmented] (ds/behaviors/segmented-control.js)
+   · radios  — <label class="dd-segmented__item"><input type="radio"> …</label>, no JavaScript at all.
+   A track that runs out of room scrolls sideways, with soft fades at the overflowing edges where supported. */
+@property --dd-seg-fs { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --dd-seg-fe { syntax: '<length>'; inherits: false; initial-value: 0px; }
+.dd-segmented {
+  --_py: 1.9; --_px: 3.5; --_pad: 3px;
+  display: inline-flex; align-items: stretch; gap: 2px; box-sizing: border-box; max-width: 100%; min-inline-size: 0;
+  margin: 0; padding: var(--_pad); border: 0; border-radius: calc(var(--dd-r-ctl) + var(--_pad));
+  background: var(--dd-surface); vertical-align: middle;
+  overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: 1.1;
+}
+.dd-segmented::-webkit-scrollbar { display: none; }
+@supports (animation-timeline: scroll()) {
+  .dd-segmented {
+    animation: dd-segmented-fade linear both; animation-timeline: scroll(self inline);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--dd-seg-fs), #000 calc(100% - var(--dd-seg-fe)), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 var(--dd-seg-fs), #000 calc(100% - var(--dd-seg-fe)), transparent);
+  }
+}
+@keyframes dd-segmented-fade {
+  0% { --dd-seg-fs: 0px; --dd-seg-fe: 30px; }
+  8% { --dd-seg-fs: 30px; }
+  92% { --dd-seg-fe: 30px; }
+  100% { --dd-seg-fs: 30px; --dd-seg-fe: 0px; }
+}
+.dd-segmented > legend { padding: 0; }
+
+.dd-segmented__item {
+  appearance: none; position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none;
+  gap: calc(var(--dd-u) * 1.5); margin: 0; padding: calc(var(--dd-u) * var(--_py)) calc(var(--dd-u) * var(--_px));
+  border: 0; border-radius: var(--dd-r-ctl); background: transparent; color: var(--dd-muted);
+  font: inherit; font-weight: 600; white-space: nowrap; text-decoration: none; cursor: pointer; user-select: none;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-segmented__item > .dd-icon { opacity: .9; }
+.dd-segmented__item:hover { color: var(--dd-text); background: color-mix(in oklab, var(--dd-surface-3) 45%, transparent); }
+.dd-segmented__item:focus-visible, .dd-segmented__item:has(> input:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 0; }
+
+/* Chosen. */
+.dd-segmented__item[aria-checked='true'], .dd-segmented__item.is-selected, .dd-segmented__item:has(> input:checked) {
+  background: var(--dd-surface-3); color: var(--dd-text);
+}
+
+/* Radio flavour: the native input covers the segment, invisible, so clicks, arrows and forms all just work. */
+.dd-segmented__item > input {
+  appearance: none; position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; border-radius: inherit;
+  opacity: 0; cursor: inherit;
+}
+
+/* Count beside a label: “Errors 3”. */
+.dd-segmented__count {
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 400; font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint));
+}
+.dd-segmented__item[aria-checked='true'] .dd-segmented__count, .dd-segmented__item:has(> input:checked) .dd-segmented__count { color: var(--dd-muted); }
+
+/* Disabled segments. */
+.dd-segmented__item:disabled, .dd-segmented__item[aria-disabled='true'], .dd-segmented__item:has(> input:disabled) { opacity: .45; cursor: not-allowed; }
+.dd-segmented__item:disabled:hover, .dd-segmented__item[aria-disabled='true']:hover, .dd-segmented__item:has(> input:disabled):hover { background: transparent; color: var(--dd-muted); }
+
+/* Sizes and shapes. */
+.dd-segmented--sm { --_py: 1.3; --_px: 2.75; --_pad: 2px; font-size: var(--dd-fs-xs); }
+.dd-segmented--sm .dd-segmented__item { gap: var(--dd-u); }
+.dd-segmented--lg { --_py: 2.5; --_px: 5; --_pad: 4px; font-size: var(--dd-fs-base); }
+.dd-segmented__item--icon { padding-inline: calc(var(--dd-u) * var(--_py)); }
+.dd-segmented--block { display: flex; width: 100%; }
+/* Equal shares while there is room; a segment never squeezes below its label (the track scrolls instead). */
+.dd-segmented--block > .dd-segmented__item { flex: 1 1 0; min-width: max-content; }
+/* On a surface container, step the track one tone deeper. */
+.dd-segmented--inset { background: var(--dd-surface-2); }
+/* DM Mono ships 400/500 only — keep mono labels from being faux-bolded. */
+.dd-segmented__item :where(.dd-mono) { font-weight: 500; }

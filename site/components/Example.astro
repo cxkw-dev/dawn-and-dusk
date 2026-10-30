@@ -1,0 +1,36 @@
+---
+// A live example: the markup rendered on a themed stage, a per-example dawn/dusk switch, copy, and the source.
+import { Code } from 'astro:components';
+
+interface Props {
+  code: string;
+  title?: string;
+  description?: string;
+  /** pad (default) · center · flush (no padding) */
+  stage?: 'pad' | 'center' | 'flush';
+  minHeight?: string;
+}
+const { code, title, description, stage = 'pad', minHeight } = Astro.props;
+const html = code.replace(/^\n+|\s+$/g, '');
+---
+<figure class="ex">
+  {(title || description) && (
+    <figcaption class="ex-cap">
+      {title && <h3 class="dd-h5">{title}</h3>}
+      {description && <p class="dd-small dd-muted">{description}</p>}
+    </figcaption>
+  )}
+  <div class="ex-frame">
+    <div class={`ex-stage ex-stage--${stage}`} style={minHeight ? `min-height:${minHeight}` : undefined}>
+      <Fragment set:html={html} />
+    </div>
+    <div class="ex-bar">
+      <button class="ex-btn" type="button" data-ex-theme>☾ View in dusk</button>
+      <button class="ex-btn" type="button" data-ex-code aria-expanded="false">‹/› Code</button>
+      <button class="ex-btn" type="button" data-dd-copy={html}><span class="ex-copy">Copy HTML</span><span class="ex-copied">Copied ✓</span></button>
+    </div>
+    <div class="ex-code" hidden>
+      <Code code={html} lang="html" theme="css-variables" wrap />
+    </div>
+  </div>
+</figure>

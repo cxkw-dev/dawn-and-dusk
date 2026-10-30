@@ -1,0 +1,61 @@
+/* Avatar — a person or project. Initials on a Color set wash (the same recipe as the Soft wash chips: 30% colour over
+   the page, deep text in the same hue), or a photo. Sizes xs · sm · md (default) · lg · xl, round or square.
+   Groups overlap with a ring in the page colour (set --dd-avatar-ring to the surface colour when they sit on one; the
+   initials wash mixes over it too) and end
+   in a "+3" overflow. A .dd-status-dot inside pins to the bottom-right corner. */
+.dd-avatar {
+  --_c: var(--dd-avatar-color, var(--dd-tone-2));
+  --_av: var(--dd-avatar-size, calc(var(--dd-u) * 7.2));
+  position: relative; display: inline-grid; place-items: center; flex: none;
+  width: var(--_av); height: var(--_av); border-radius: 50%;
+  background: color-mix(in oklab, var(--_c) 30%, var(--dd-avatar-ring, var(--dd-bg)));
+  color: color-mix(in oklab, var(--_c) 62%, var(--dd-text));
+  font-family: var(--dd-font-body); font-size: max(8.5px, calc(var(--_av) * .37)); font-weight: 700; line-height: 1;
+  letter-spacing: .02em; text-transform: uppercase; text-decoration: none; vertical-align: middle; user-select: none;
+}
+.dd-avatar > img { display: block; width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+:is(a, button).dd-avatar { appearance: none; border: 0; padding: 0; cursor: pointer; }
+:is(a, button).dd-avatar:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+.dd-avatar--set-1 { --_c: var(--dd-set-1); }
+.dd-avatar--set-2 { --_c: var(--dd-set-2); }
+.dd-avatar--set-3 { --_c: var(--dd-set-3); }
+.dd-avatar--set-4 { --_c: var(--dd-set-4); }
+.dd-avatar--set-5 { --_c: var(--dd-set-5); }
+.dd-avatar--set-6 { --_c: var(--dd-set-6); }
+.dd-avatar--set-7 { --_c: var(--dd-set-7); }
+.dd-avatar--set-8 { --_c: var(--dd-set-8); }
+
+.dd-avatar--xs { --_av: calc(var(--dd-u) * 4); letter-spacing: 0; }
+.dd-avatar--sm { --_av: calc(var(--dd-u) * 5.6); }
+.dd-avatar--md { --_av: calc(var(--dd-u) * 7.2); }
+.dd-avatar--lg { --_av: calc(var(--dd-u) * 9.6); }
+.dd-avatar--xl { --_av: calc(var(--dd-u) * 12.8); }
+.dd-avatar--square { border-radius: var(--dd-r-ctl); }
+.dd-avatar--square:is(.dd-avatar--lg, .dd-avatar--xl) { border-radius: var(--dd-r-box); }
+
+/* Icon avatar (service, bot, team). */
+.dd-avatar > .dd-icon { width: 52%; height: 52%; }
+
+/* "+3": the overflow count at the end of a group. */
+.dd-avatar--more {
+  background: color-mix(in oklab, var(--dd-text) 10%, var(--dd-avatar-ring, var(--dd-bg))); color: var(--dd-muted);
+  font-family: var(--dd-font-mono); font-weight: 500; letter-spacing: 0; text-transform: none;
+}
+
+/* Status dot pinned to the corner, ringed in the page colour. */
+.dd-avatar > .dd-status-dot { position: absolute; right: 0; bottom: 0; --dd-status-size: max(7px, calc(var(--_av) * .26)); }
+.dd-avatar--square > .dd-status-dot { right: -2px; bottom: -2px; }
+.dd-avatar > .dd-status-dot::before { box-shadow: 0 0 0 2px var(--dd-avatar-ring, var(--dd-bg)); }
+
+/* Group: overlapping, later avatars on top, each ringed so the overlap reads. */
+.dd-avatar-group { display: inline-flex; align-items: center; flex-direction: row; vertical-align: middle; }
+.dd-avatar-group > .dd-avatar { box-shadow: 0 0 0 2px var(--dd-avatar-ring, var(--dd-bg)); }
+.dd-avatar-group > .dd-avatar + .dd-avatar { margin-left: calc(var(--_av) * -.15); }
+
+/* Avatar + name + meta, side by side. */
+.dd-avatar-label { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 2.5); min-width: 0; }
+.dd-avatar-label__text { display: flex; flex-direction: column; gap: 1px; min-width: 0; font-size: var(--dd-fs-sm); line-height: 1.3; }
+.dd-avatar-label__text > :first-child { font-weight: 600; color: var(--dd-text); }
+.dd-avatar-label__text > :not(:first-child) { color: var(--dd-muted); font-size: var(--dd-fs-xs); }
+.dd-avatar-label__text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -1,0 +1,50 @@
+---
+import Docs from '../layouts/Docs.astro';
+import Guides from '../components/Guides.astro';
+import { Code } from 'astro:components';
+import skill from '../../skill/dawn-and-dusk/SKILL.md?raw';
+
+const install = `# Claude Code — for every project on this machine
+npx degit cxkw-dev/dawn-and-dusk/skill/dawn-and-dusk ~/.claude/skills/dawn-and-dusk
+
+# Claude Code — just this project (commit it so teammates get it too)
+npx degit cxkw-dev/dawn-and-dusk/skill/dawn-and-dusk .claude/skills/dawn-and-dusk
+
+# No degit? Clone once and copy the folder
+git clone --depth 1 https://github.com/cxkw-dev/dawn-and-dusk.git /tmp/dd && cp -r /tmp/dd/skill/dawn-and-dusk ~/.claude/skills/`;
+
+const agentsMd = `## UI: dawn & dusk design system
+- Load /dawn-and-dusk.css and /dawn-and-dusk.js (from github.com/cxkw-dev/dawn-and-dusk/release).
+- Build with semantic HTML + dd- classes; style only with var(--dd-*) tokens. Never hard-code colours.
+- Tone, not borders: --dd-bg → --dd-surface → --dd-surface-2. Shadows only on floating layers.
+- One .dd-btn--primary per view. Headings: .dd-h1/.dd-h2 (lowercase lockup). Data in .dd-mono.
+- Component catalogue: https://cxkw-dev.github.io/dawn-and-dusk — check dawn and dusk before finishing.`;
+---
+<Docs title="Agent skill" group="Getting started" lead="Hand dawn & dusk to an AI agent. The skill teaches it the tokens, the rules and every component, and ships the CSS, JS and icons it needs.">
+  <h2 id="whats-inside">What’s inside</h2>
+  <div class="doc-cards">
+    <div class="doc-card"><b>SKILL.md</b><span>When to use the system, how to install it into a project, and the ten rules that make it look right.</span></div>
+    <div class="doc-card"><b>references/components.md</b><span>Every component with its classes and behaviours — generated from the source on each build.</span></div>
+    <div class="doc-card"><b>references/tokens.md</b><span>Every token with its dawn and dusk value — generated from <code>ds/tokens.css</code>.</span></div>
+    <div class="doc-card"><b>references/patterns.md</b><span>Page recipes: dashboard, data explorer, settings, landing.</span></div>
+    <div class="doc-card"><b>assets/</b><span><code>dawn-and-dusk.css</code>, <code>dawn-and-dusk.js</code>, <code>tokens.css</code> and <code>icons.svg</code> — ready to copy into any project.</span></div>
+  </div>
+
+  <h2 id="install">Install for Claude</h2>
+  <p>Skills live in a folder named after the skill. Claude Code picks it up automatically and uses it whenever you ask for UI — no prompt needed.</p>
+  <Code code={install} lang="bash" theme="css-variables" wrap />
+  <p>For Claude apps, zip the <code>skill/dawn-and-dusk</code> folder and add it as a custom skill.</p>
+
+  <h2 id="other-agents">Other agents</h2>
+  <p>Agents without skill support (Cursor, Copilot, Codex…) get the same result from a short block in <code>AGENTS.md</code> or the system prompt, plus the release files:</p>
+  <Code code={agentsMd} lang="markdown" theme="css-variables" wrap />
+
+  <h2 id="keeping-in-sync">Keeping it in sync</h2>
+  <p><code>npm run build:ds</code> regenerates the skill’s assets and references from <code>ds/</code>. Edit the system, rebuild, commit — the skill can never describe a component that doesn’t exist.</p>
+
+  <h2 id="skill-md">SKILL.md</h2>
+  <Code code={skill} lang="markdown" theme="css-variables" wrap />
+
+  <h2 id="guidelines">Prompting tips</h2>
+  <Guides do={['Name the page type: “a dawn & dusk dashboard for deploy health”.', 'Ask the agent to check dusk and a phone width before it finishes.', 'Point it at a component page when you want a specific variant.']} dont={['Don’t paste raw hex values into prompts — ask for tokens.', 'Don’t let it add a second CSS framework next to dawn & dusk.']} />
+</Docs>

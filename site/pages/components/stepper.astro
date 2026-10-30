@@ -1,0 +1,155 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+// state: done · current · error · upcoming
+const step = (n, label, desc, state = '') => {
+  const marker = state === 'done' ? i('success') : state === 'error' ? i('error') : n;
+  const cls = state && state !== 'upcoming' ? ` is-${state}` : '';
+  return `
+  <li class="dd-stepper__step${cls}"${state === 'current' ? ' aria-current="step"' : ''}>
+    <span class="dd-stepper__marker">${marker}</span>
+    <span class="dd-stepper__text"><span class="dd-stepper__label">${label}</span>${desc ? `<span class="dd-stepper__desc">${desc}</span>` : ''}</span>
+  </li>`;
+};
+
+const horizontal = `
+<ol class="dd-stepper" aria-label="New project">${[
+  step(1, 'Repository', 'cxkw/insomnia', 'done'),
+  step(2, 'Build settings', 'Node 22 · pnpm', 'done'),
+  step(3, 'Environment', '4 variables', 'current'),
+  step(4, 'Review', ''),
+].join('')}
+</ol>`;
+
+const states = `
+<ol class="dd-stepper" aria-label="Domain setup">${[
+  step(1, 'Add domain', 'cxkw.dev', 'done'),
+  step(2, 'Verify DNS', 'TXT record not found', 'error'),
+  step(3, 'Issue certificate', '', 'upcoming'),
+  step(4, 'Go live', '', 'upcoming'),
+].join('')}
+</ol>`;
+
+const small = `
+<ol class="dd-stepper dd-stepper--sm" aria-label="Checkout">${[
+  step(1, 'Plan', '', 'done'),
+  step(2, 'Billing', '', 'current'),
+  step(3, 'Confirm', ''),
+].join('')}
+</ol>`;
+
+const vertical = `
+<ol class="dd-stepper dd-stepper--vertical" aria-label="Connect billing-worker" style="max-width: 460px">${[
+  step(1, 'Create a Stripe restricted key', 'Read-only access to invoices and customers is enough.', 'done'),
+  step(2, 'Add the key to billing-worker', 'Stored as <span class="dd-mono">STRIPE_KEY</span> in the eu-west-1 vault.', 'done'),
+  step(3, 'Send a test webhook', 'We’ll listen on /hooks/stripe for the next ten minutes.', 'current'),
+  step(4, 'Turn on hourly invoicing', 'Runs at :05 past every hour once the webhook succeeds.'),
+].join('')}
+</ol>`;
+
+const verticalError = `
+<ol class="dd-stepper dd-stepper--vertical" aria-label="Migrate database" style="max-width: 460px">${[
+  step(1, 'Snapshot', 'auth-db · 4.2 GB · 38s', 'done'),
+  step(2, 'Run migrations', '0042_invoice_currency timed out after 120s. Nothing was changed.', 'error'),
+  step(3, 'Swap traffic', 'Waiting for migrations.'),
+].join('')}
+</ol>`;
+
+// state: passed · running · failed · skipped · queued
+const stage = (label, time, state) => {
+  const marker = {
+    passed: i('success'), running: '<span class="dd-stepper__spinner"></span>', failed: i('error'),
+    skipped: i('minus'), queued: i('clock'),
+  }[state];
+  const cls = { passed: ' is-done', running: ' is-current', failed: ' is-error', skipped: ' is-skipped', queued: '' }[state];
+  return `
+  <li class="dd-stepper__step${cls}"${state === 'running' ? ' aria-current="step"' : ''}>
+    <span class="dd-stepper__marker">${marker}</span>
+    <span class="dd-stepper__text"><span class="dd-stepper__label">${label}<span class="dd-visually-hidden"> (${state})</span></span><span class="dd-stepper__desc">${time}</span></span>
+  </li>`;
+};
+
+const pipeline = `
+<div class="dd-stack" style="--dd-gap: 10px">
+  <p class="dd-eyebrow">Deploy #4821 · auth-gateway · a3f9c2e</p>
+  <ol class="dd-stepper dd-stepper--pipeline" aria-label="Deploy pipeline">${[
+    stage('Build', '1m 12s', 'passed'),
+    stage('Test', '2m 03s', 'passed'),
+    stage('Staging', '0m 41s', 'running'),
+    stage('Canary', 'queued', 'queued'),
+    stage('Production', 'queued', 'queued'),
+  ].join('')}
+  </ol>
+</div>`;
+
+const pipelineStates = `
+<div class="dd-stack" style="--dd-gap: 24px">
+  <div class="dd-stack" style="--dd-gap: 10px">
+    <p class="dd-eyebrow">Deploy #4820 · billing-worker · failed</p>
+    <ol class="dd-stepper dd-stepper--pipeline" aria-label="Deploy pipeline">${[
+      stage('Build', '58s', 'passed'),
+      stage('Migrate', '3m 02s', 'failed'),
+      stage('Canary', 'not run', 'queued'),
+      stage('Production', 'not run', 'queued'),
+    ].join('')}
+    </ol>
+  </div>
+  <div class="dd-stack" style="--dd-gap: 10px">
+    <p class="dd-eyebrow">Deploy #4819 · edge-cache · live</p>
+    <ol class="dd-stepper dd-stepper--pipeline" aria-label="Deploy pipeline">${[
+      stage('Build', '1m 40s', 'passed'),
+      stage('Test', '2m 18s', 'passed'),
+      stage('Canary', 'skipped', 'skipped'),
+      stage('Production', '1m 06s', 'passed'),
+    ].join('')}
+    </ol>
+  </div>
+</div>`;
+---
+<Docs title="Stepper" group="Navigation" lead="Shows where someone is in an ordered flow — a setup wizard, a migration, a deploy. Steps are done, current, upcoming or in error; the pipeline flavour shows live stage status.">
+  <Example title="Horizontal" description="Connectors fill the space between steps and turn green behind finished ones. Below about 520px only the current step (and any error) keeps its label." code={horizontal} />
+
+  <h2 id="states">States</h2>
+  <p>Done steps get the success mark, the current one is filled with the accent and carries <code>aria-current="step"</code>, upcoming steps show their number, and an error replaces the number with the error mark and says what went wrong.</p>
+  <Example code={states} />
+
+  <h2 id="small">Small</h2>
+  <p>For tight spots: a dialog header, a checkout summary, the top of a settings panel.</p>
+  <Example code={small} />
+
+  <h2 id="vertical">Vertical</h2>
+  <p>For flows with instructions at each step. Descriptions wrap; the connector runs down from each marker.</p>
+  <Example code={vertical} />
+  <Example code={verticalError} />
+
+  <h2 id="pipeline">Pipeline</h2>
+  <p>The status flavour, for builds and deploys. Each stage is a tonal chip with its status icon and a mono duration; the connector after a stage takes that stage’s colour — solid green when passed, dashed accent while running, red after a failure. Narrow containers stack the stages.</p>
+  <Example code={pipeline} />
+  <Example title="Failed and skipped" description="A failed stage tints its chip; stages after it never ran. A skipped stage fades to a ghost of a chip and its connector dashes." code={pipelineStates} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-stepper', 'An <code>&lt;ol&gt;</code> of steps. Horizontal by default.'],
+    ['.dd-stepper__step', 'One <code>&lt;li&gt;</code>. No state class = upcoming / queued.'],
+    ['.is-done', 'Finished step / passed stage. Put <code>i(\'success\')</code> in the marker.'],
+    ['.is-current', 'The step in progress; also set <code>aria-current="step"</code>. In a pipeline, the running stage (use <code>.dd-stepper__spinner</code> as the marker).'],
+    ['.is-error', 'Failed step or stage. Put <code>i(\'error\')</code> in the marker and say why in <code>__desc</code>.'],
+    ['.is-skipped', 'Pipeline only: a stage that was skipped.'],
+    ['.dd-stepper__marker', 'Circle with the step number or a status icon.'],
+    ['.dd-stepper__text', 'Wraps <code>__label</code> and an optional <code>__desc</code> (durations in a pipeline).'],
+    ['.dd-stepper--vertical', 'Stacked steps with wrapping descriptions.'],
+    ['.dd-stepper--sm', 'Smaller markers and type.'],
+    ['.dd-stepper--pipeline', 'Deploy-style stage chips with status-coloured connectors.'],
+    ['.dd-stepper__spinner', 'Running indicator for a pipeline marker (uses <code>dd-spin</code>).'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Keep labels to a word or two; put detail in the description.', 'Tell people what failed and what to do next, right under the failed step.', 'Use the pipeline for system progress, the wizard for human progress.']}
+    dont={['Don’t use a stepper for fewer than three steps.', 'Don’t let people jump ahead to steps that depend on earlier ones.', 'Don’t colour steps without the icon and label — colour alone isn’t a status.']}
+  />
+</Docs>

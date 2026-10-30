@@ -1,0 +1,127 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const x = (label: string) => `<button class="dd-chip__remove" type="button" aria-label="Remove ${label}">${i('x')}</button>`;
+const TOPICS = ['Design systems', 'Swift', 'Tooling', 'Homelab', 'Writing', 'AI', 'Typography', 'Motion'];
+
+const set = `
+<div class="dd-chip-group">
+  ${TOPICS.map((t, n) => `<span class="dd-chip dd-chip--set-${n + 1}">${t}</span>`).join('\n  ')}
+</div>`;
+
+const dots = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-3)">
+  <div class="dd-chip-group">
+    <span class="dd-chip"><i class="dd-chip__dot" style="--dd-chip-dot: var(--dd-set-3)"></i>dawn-and-dusk</span>
+    <span class="dd-chip"><i class="dd-chip__dot" style="--dd-chip-dot: var(--dd-set-1)"></i>dockey-ui</span>
+    <span class="dd-chip"><i class="dd-chip__dot" style="--dd-chip-dot: var(--dd-set-6)"></i>insomnia</span>
+    <span class="dd-chip"><i class="dd-chip__dot" style="--dd-chip-dot: var(--dd-set-4)"></i>leetnode</span>
+  </div>
+  <div class="dd-chip-group">
+    <span class="dd-chip dd-chip--set-2">${i('code')}TypeScript</span>
+    <span class="dd-chip dd-chip--set-5">${i('database')}Postgres</span>
+    <span class="dd-chip dd-chip--set-7">${i('cloud')}Edge</span>
+    <a class="dd-chip dd-chip--set-8" href="#tag-writing">${i('tag')}<span>writing</span></a>
+  </div>
+</div>`;
+
+const removable = `
+<div class="dd-chip-group">
+  <span class="dd-chip dd-chip--set-1"><span>region: fra1</span>${x('region: fra1')}</span>
+  <span class="dd-chip dd-chip--set-4"><span>status: failed</span>${x('status: failed')}</span>
+  <span class="dd-chip dd-chip--set-6"><span>service: billing-worker</span>${x('service: billing-worker')}</span>
+  <span class="dd-chip"><span>last 24h</span>${x('last 24h')}</span>
+</div>`;
+
+const check = `<span class="dd-chip__check">${i('check')}</span>`;
+const filter = `
+<div class="dd-stack" style="--dd-gap: var(--dd-space-3)">
+  <div class="dd-chip-group" role="group" aria-label="Status">
+    <button class="dd-chip dd-chip--filter" type="button" aria-pressed="true">${check}<span>Healthy</span></button>
+    <button class="dd-chip dd-chip--filter" type="button" aria-pressed="true">${check}<span>Degraded</span></button>
+    <button class="dd-chip dd-chip--filter" type="button" aria-pressed="false">${check}<span>Down</span></button>
+    <button class="dd-chip dd-chip--filter" type="button" aria-pressed="false">${check}<span>Unknown</span></button>
+  </div>
+  <div class="dd-chip-group" role="group" aria-label="Topics">
+    <button class="dd-chip dd-chip--filter dd-chip--set-1" type="button" aria-pressed="true">${check}<span>Design systems</span></button>
+    <button class="dd-chip dd-chip--filter dd-chip--set-3" type="button" aria-pressed="false">${check}<span>Tooling</span></button>
+    <button class="dd-chip dd-chip--filter dd-chip--set-5" type="button" aria-pressed="true">${check}<span>Writing</span></button>
+    <button class="dd-chip dd-chip--filter dd-chip--set-6" type="button" aria-pressed="false">${check}<span>AI</span></button>
+  </div>
+</div>`;
+
+const input = `
+<div class="dd-stack" style="max-width: 460px; --dd-gap: var(--dd-space-2)">
+  <label class="dd-small" for="tags-field" style="font-weight: 600">Tags</label>
+  <div class="dd-chip-input">
+    <span class="dd-chip dd-chip--set-3" data-value="release"><span>release</span>${x('release')}</span>
+    <span class="dd-chip dd-chip--set-6" data-value="breaking"><span>breaking</span>${x('breaking')}</span>
+    <input class="dd-chip-input__field" id="tags-field" placeholder="Add a tag…" autocomplete="off">
+  </div>
+  <p class="dd-caption" style="margin: 0">Enter or comma to add · Backspace to remove the last one</p>
+</div>`;
+
+const people = `
+<div class="dd-chip-group">
+  <span class="dd-chip dd-chip--avatar"><span class="dd-avatar dd-avatar--set-1" aria-hidden="true">AN</span><span>Andy Nguyen</span>${x('Andy Nguyen')}</span>
+  <span class="dd-chip dd-chip--avatar"><span class="dd-avatar dd-avatar--set-5" aria-hidden="true">MK</span><span>Mai Kha</span>${x('Mai Kha')}</span>
+  <span class="dd-chip dd-chip--avatar"><span class="dd-avatar dd-avatar--set-4" aria-hidden="true">JS</span><span>Jonas Sauer</span></span>
+  <span class="dd-chip dd-chip--avatar"><span class="dd-avatar dd-avatar--set-7" aria-hidden="true">${i('bolt')}</span><span>deploy-bot</span></span>
+</div>`;
+---
+<Docs title="Chip" group="Feedback & status" lead="Small, coloured and categorical: topics, tags, filters and people. A soft wash of a Color set hue with deep text in the same hue — eight colours that always look like they belong together.">
+  <Example title="The Color set" description="One chip per Golden hour colour, .dd-chip--set-1 to --set-8. In dusk the set lifts and the wash stays soft." code={set} />
+
+  <h2 id="dot-icon">Dot, icon and link</h2>
+  <p>A neutral chip with a coloured dot names a category without colouring the whole row. Icons lead like they do in buttons. Chips that are links or buttons deepen on hover.</p>
+  <Example code={dots} />
+
+  <h2 id="removable">Removable</h2>
+  <p>A small × at the end removes the chip — applied filters, selected recipients. Focus moves to the next chip, so you can clear a row from the keyboard; Delete and Backspace work on the × too.</p>
+  <Example code={removable} />
+
+  <h2 id="filter">Filter chips</h2>
+  <p>Toggle buttons with <code>aria-pressed</code>. Off is a lighter wash; on deepens it and slides in a check.</p>
+  <Example code={filter} />
+
+  <h2 id="input">Input chips</h2>
+  <p>A field that turns what you type into chips. The colour comes from the text, so a tag keeps its colour wherever it shows up.</p>
+  <Example code={input} />
+
+  <h2 id="avatar">Avatar chips</h2>
+  <p>A person (or a bot) with a tiny avatar. Pill-shaped to echo the avatar; neutral wash so the avatar’s colour leads.</p>
+  <Example code={people} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-chip', 'Soft wash chip. <code>&lt;span&gt;</code>, or <code>&lt;a&gt;</code> / <code>&lt;button&gt;</code> when interactive. Neutral greige by default.'],
+    ['.dd-chip--set-{1…8}', 'Colour from the Color set. Or set <code>--dd-chip</code> to any colour.'],
+    ['.dd-chip__dot', 'Leading colour dot (its own colour via <code>--dd-chip-dot</code>).'],
+    ['> .dd-icon', 'Leading icon.'],
+    ['.dd-chip__remove', '× button. Give it an <code>aria-label</code> naming the chip.'],
+    ['.dd-chip--filter[aria-pressed]', 'Toggle chip. Put a <code>.dd-chip__check</code> with a check icon first.'],
+    ['.dd-chip--avatar', 'Pill chip that starts with a <code>.dd-avatar</code>.'],
+    ['.dd-chip-input / __field', 'Chips plus a text field in one control.'],
+    ['.dd-chip-group', 'A wrapping row of chips.'],
+    ['.is-selected', 'Selected look for chips that aren’t toggle buttons.'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute / event', 'What it does']} rows={[
+    ['.dd-chip__remove', 'Click, Enter, Space, Delete or Backspace removes the chip (a short fade, instant under reduced motion).'],
+    ['dd:chip-remove', 'Cancelable event on the chip before it goes; <code>detail.value</code> is its <code>data-value</code> or text.'],
+    ['button.dd-chip[aria-pressed]', 'Click toggles <code>aria-pressed</code> and fires <code>dd:chip-toggle</code> (<code>detail.pressed</code>).'],
+    ['.dd-chip-input__field', 'Enter or comma adds a chip (no duplicates); Backspace in the empty field removes the last one. The container fires <code>dd:chips-change</code> with <code>detail.values</code>.'],
+    ['dd.chip.create(text) / remove(chip)', 'Make or remove a chip from code.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use the same colour for the same tag everywhere.', 'Write tags in lowercase and filters as “key: value”.', 'Let a long row wrap; never truncate a filter without a tooltip.']}
+    dont={['Don’t use chips for status — that’s a badge.', 'Don’t mix more than four colours in one row of filters.', 'Don’t put a primary action in a chip.']}
+  />
+</Docs>

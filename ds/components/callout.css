@@ -1,0 +1,43 @@
+/* Callout — an aside for docs and long-form writing: note · tip · important · warning (· caution).
+   Quiet on purpose: a neutral surface block that separates by tone; only the icon and the label carry the colour,
+   so a page full of callouts stays calm in dawn and never goes muddy in dusk. Prose inside keeps its rhythm. */
+.dd-callout {
+  --_c: var(--dd-info);
+  display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1.5);
+  margin: 0; padding: calc(var(--dd-u) * 3.5) calc(var(--dd-u) * 4.5) calc(var(--dd-u) * 4);
+  border: 0; border-radius: var(--dd-r-box);
+  background: var(--dd-surface); color: var(--dd-text);
+  font-size: var(--dd-fs-sm); line-height: 1.6;
+}
+.dd-callout--note { --_c: var(--dd-info); }
+.dd-callout--tip { --_c: var(--dd-ok); }
+.dd-callout--important { --_c: var(--dd-accent); }
+.dd-callout--warning { --_c: var(--dd-warn); }
+.dd-callout--caution { --_c: var(--dd-bad); }
+
+.dd-callout__title {
+  display: flex; align-items: center; gap: calc(var(--dd-u) * 2); margin: 0;
+  font-weight: 650; letter-spacing: .005em; line-height: 1.3;
+  color: color-mix(in oklab, var(--_c) 72%, var(--dd-text));
+}
+.dd-callout__title > .dd-icon { color: var(--_c); width: 1.2em; height: 1.2em; }
+
+/* Prose inside: everything after the title lines up with the title text, not the icon. */
+.dd-callout > :not(.dd-callout__title) { margin: 0 0 0 calc(1.2em + var(--dd-u) * 2); text-wrap: pretty; }
+.dd-callout > :is(ul, ol) { padding-left: 1.1em; }
+.dd-callout :where(li + li) { margin-top: 2px; }
+.dd-callout :where(a:not([class])) { color: var(--dd-text); text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: .25em; }
+.dd-callout :where(a:not([class]):hover) { text-decoration-style: solid; }
+.dd-callout :where(:not(pre) > code) {
+  font-family: var(--dd-font-mono); font-size: .88em; padding: .08em .35em; border-radius: 4px;
+  background: color-mix(in oklab, var(--dd-text) 7%, transparent);
+}
+.dd-callout :where(pre) {
+  overflow-x: auto; padding: calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 3); border-radius: var(--dd-r-ctl);
+  background: color-mix(in oklab, var(--dd-text) 5%, transparent); font-family: var(--dd-font-mono); font-size: .92em; line-height: 1.55;
+}
+
+/* Compact: icon + one sentence, no title row. */
+.dd-callout--compact { flex-direction: row; align-items: flex-start; gap: calc(var(--dd-u) * 2.5); padding: calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 3.5); }
+.dd-callout--compact > .dd-icon { flex: none; width: 1.2em; height: 1.2em; margin-block: calc((1lh - 1.2em) / 2); color: var(--_c); }
+.dd-callout.dd-callout--compact > * { margin-left: 0; }

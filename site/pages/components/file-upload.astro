@@ -1,0 +1,115 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const dropzone = `
+<div class="dd-stack" style="--dd-gap: 12px">
+  <label class="dd-dropzone" data-dd-dropzone="#fu-list-1">
+    <input type="file" multiple accept=".png,.jpg,.svg,.pdf,.csv,.json">
+    <span class="dd-dropzone__icon">${i('upload')}</span>
+    <p class="dd-dropzone__title">Drop files here or <span class="dd-dropzone__browse">browse</span></p>
+    <p class="dd-dropzone__meta">PNG, SVG, PDF, CSV or JSON · up to 20 MB each</p>
+  </label>
+  <ul class="dd-file-list" id="fu-list-1" aria-label="Chosen files"></ul>
+</div>`;
+
+const dragover = `
+<label class="dd-dropzone is-dragover">
+  <input type="file">
+  <span class="dd-dropzone__icon">${i('upload')}</span>
+  <p class="dd-dropzone__title">Release to upload</p>
+  <p class="dd-dropzone__meta">3 files · 4.2 MB</p>
+</label>`;
+
+const file = (o: { name: string; kind: string; ext: string; meta: string[]; status: string; statusIcon?: string; state?: string; progress?: number; actions: string }) => `
+  <li class="dd-file${o.state ? ` ${o.state}` : ''}">
+    <span class="dd-file__icon ${o.kind}" data-ext="${o.ext}">${i('file')}</span>
+    <span class="dd-file__body">
+      <span class="dd-file__name">${o.name}</span>
+      <span class="dd-file__meta">${o.meta.map((m) => `<span>${m}</span>`).join('')}<span class="dd-file__status">${o.statusIcon ? i(o.statusIcon) : ''}${o.status}</span></span>${o.progress !== undefined ? `
+      <progress class="dd-file__progress" max="100" value="${o.progress}" aria-label="Upload progress">${o.progress}%</progress>` : ''}
+    </span>
+    <span class="dd-file__actions">${o.actions}</span>
+  </li>`;
+const btn = (icon: string, label: string, attr = '') => `<button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" type="button" aria-label="${label}"${attr}>${i(icon)}</button>`;
+
+const list = `
+<ul class="dd-file-list">${file({ name: 'dockey-ui-hero@2x.png', kind: 'is-image', ext: 'png', meta: ['2.4 MB'], status: 'Uploading 64%', state: 'is-uploading', progress: 64, actions: btn('x', 'Cancel upload', ' data-dd-file-remove') })}${file({ name: 'billing-worker-usage-2026-10.csv', kind: 'is-data', ext: 'csv', meta: ['812 KB'], status: 'Uploaded', statusIcon: 'check', state: 'is-done', actions: btn('trash', 'Remove billing-worker-usage-2026-10.csv', ' data-dd-file-remove') })}${file({ name: 'auth-gateway-runbook.pdf', kind: 'is-doc', ext: 'pdf', meta: ['24.8 MB'], status: 'Too large — 20 MB max', statusIcon: 'alert', state: 'is-error', progress: 100, actions: btn('refresh', 'Retry upload') + btn('x', 'Remove auth-gateway-runbook.pdf', ' data-dd-file-remove') })}${file({ name: 'edge-cache.config.json', kind: 'is-code', ext: 'json', meta: ['3 KB'], status: 'Network lost at 30%', statusIcon: 'alert', state: 'is-error', progress: 30, actions: btn('refresh', 'Retry upload') + btn('x', 'Remove edge-cache.config.json', ' data-dd-file-remove') })}
+</ul>`;
+
+const compact = `
+<div class="dd-field dd-field--above" style="max-width: 520px">
+  <span class="dd-field__label" id="fu-c-label">Avatar</span>
+  <label class="dd-dropzone dd-dropzone--compact" data-dd-dropzone="#fu-list-2" aria-labelledby="fu-c-label">
+    <input type="file" accept="image/*">
+    <span class="dd-dropzone__icon">${i('upload')}</span>
+    <span class="dd-dropzone__text">
+      <span class="dd-dropzone__title">Drop an image or <span class="dd-dropzone__browse">browse</span></span>
+      <span class="dd-dropzone__meta">Square, at least 256 × 256</span>
+    </span>
+  </label>
+  <ul class="dd-file-list" id="fu-list-2" aria-label="Chosen image"></ul>
+</div>`;
+
+const invalid = `
+<div class="dd-field dd-field--above" style="max-width: 520px">
+  <span class="dd-field__label" id="fu-i-label">TLS certificate</span>
+  <label class="dd-dropzone dd-dropzone--compact is-invalid" aria-labelledby="fu-i-label" aria-describedby="fu-i-err">
+    <input type="file" accept=".pem,.crt" aria-invalid="true">
+    <span class="dd-dropzone__icon">${i('shield')}</span>
+    <span class="dd-dropzone__text">
+      <span class="dd-dropzone__title">Drop a .pem or <span class="dd-dropzone__browse">browse</span></span>
+      <span class="dd-dropzone__meta">Certificate and chain in one file</span>
+    </span>
+  </label>
+  <p class="dd-field__error" id="fu-i-err">${i('alert')}A certificate is required for custom domains.</p>
+</div>`;
+---
+<Docs title="File upload" group="Forms" lead="Takes files by drop or by browsing, then shows each one with its size, progress and outcome. The dropzone is a label around a real file input, so click, keyboard and drop all work.">
+  <Example title="Dropzone" description="Click to browse or drop files. Chosen files appear in the list below it with a remove button — try it." code={dropzone} />
+
+  <h2 id="dragover">Drag state</h2>
+  <p>While files hover the zone it gets <code>.is-dragover</code>: an accent tint, accent dashes and a lifted icon.</p>
+  <Example code={dragover} />
+
+  <h2 id="list">File list</h2>
+  <p>One row per file: a type tile (Color set by kind), name, mono meta and an outcome. Uploading rows show a progress bar; errors turn the tile, meta and bar red and offer a retry.</p>
+  <Example code={list} />
+
+  <h2 id="compact">Compact</h2>
+  <p>A one-line zone for single files inside a form. Pair it with a label-above field.</p>
+  <Example code={compact} />
+
+  <h3 id="invalid">Invalid</h3>
+  <Example code={invalid} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-dropzone', 'A <code>&lt;label&gt;</code> around an <code>&lt;input type="file"&gt;</code> (visually hidden, still focusable).'],
+    ['.dd-dropzone__icon · __title · __browse · __meta', 'Icon disc, title with a dotted “browse” link, mono constraints line.'],
+    ['.dd-dropzone--compact · __text', 'One-row zone; wrap the title and meta in <code>__text</code>.'],
+    ['.is-dragover · .is-invalid', 'Drag-hover state (added by the script) and error state.'],
+    ['.dd-file-list', 'List of files (<code>&lt;ul&gt;</code>).'],
+    ['.dd-file', 'One file row. <code>.is-done</code>, <code>.is-error</code>, <code>.is-uploading</code>.'],
+    ['.dd-file__icon', 'Type tile; <code>data-ext</code> adds a badge. Tones: <code>.is-image</code>, <code>.is-doc</code>, <code>.is-data</code>, <code>.is-code</code>.'],
+    ['.dd-file__body · __name · __meta · __status', 'Name (truncates), mono meta items separated by dots, and the outcome.'],
+    ['.dd-file__progress', 'A native <code>&lt;progress&gt;</code>; turns red in an error row.'],
+    ['.dd-file__actions', 'Trailing icon buttons (cancel, retry, remove).'],
+  ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <ClassTable head={['Attribute', 'What it does']} rows={[
+    ['data-dd-dropzone', 'Adds <code>.is-dragover</code> while files hover; dropped files go to the inner input, which fires <code>change</code>.'],
+    ['data-dd-dropzone="#list"', 'Also appends a <code>.dd-file</code> row per chosen file to that list.'],
+    ['data-dd-file-remove', 'On a button in a row: removes the row, moves focus to the next remove button, fires <code>dd-file-remove</code>.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['State the accepted types and size limit before people pick a file.', 'Say why a file failed, in the row, with a way to retry.', 'Keep the dropzone a real file input so keyboard and screen reader users can browse.']}
+    dont={['Don’t auto-upload sensitive files without a confirm step.', 'Don’t clear the list on error — keep the failed rows visible.', 'Don’t use the dropzone’s dashed edge for anything else.']}
+  />
+</Docs>

@@ -1,0 +1,126 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const avatar = (initials: string, set: number, name: string) =>
+  `<span class="dd-timeline__marker dd-timeline__marker--avatar" style="--dd-color: var(--dd-set-${set})" role="img" aria-label="${name}">${initials}</span>`;
+const icon = (name: string, tone: string) =>
+  `<span class="dd-timeline__marker${tone ? ` dd-timeline__marker--${tone}` : ''}">${i(name)}</span>`;
+
+const item = (marker: string, text: string, time: string, dt: string, detail = '') => `
+      <li class="dd-timeline__item">
+        ${marker}
+        <div class="dd-timeline__body">
+          <p class="dd-timeline__text">${text}</p>
+          <time class="dd-timeline__time" datetime="${dt}">${time}</time>${detail ? `
+          <div class="dd-timeline__detail">${detail}</div>` : ''}
+        </div>
+      </li>`;
+
+const group = (day: string, date: string, iso: string, items: string[]) => `
+  <section class="dd-timeline__group">
+    <h3 class="dd-timeline__day">${day} <time class="dd-timeline__date" datetime="${iso}">${date}</time></h3>
+    <ol class="dd-timeline__list">${items.join('')}
+    </ol>
+  </section>`;
+
+const feed = `
+<div class="dd-timeline" style="max-width: 640px">${group('Today', 'Oct 30', '2026-10-30', [
+  item(icon('check', 'ok'), 'Deploy <code>dpl_7Hq2xK9mW4</code> passed health checks in <b>us-east-1</b>', '09:43', '2026-10-30T09:43'),
+  item(avatar('AN', 3, 'Andy'), '<b>Andy</b> deployed <a href="#">dawn-and-dusk</a> to <code>production</code>', '09:41', '2026-10-30T09:41',
+    '<p><span class="dd-mono">a41f9c2</span> fix(table): sticky header in dusk</p><p class="dd-timeline__diff">4 files · <span class="dd-timeline__add">+128</span> <span class="dd-timeline__del">−42</span></p>'),
+  item(icon('danger', 'bad'), '<b>notify-fanout</b> went down in <b>eu-west-2</b>', '09:39', '2026-10-30T09:39',
+    '<p>Health check failed 3 times: <code>connection refused :8080</code></p>'),
+  item(avatar('MK', 6, 'Mira K.'), '<b>Mira K.</b> commented on <a href="#">#214 Data table density</a>', '08:12', '2026-10-30T08:12',
+    '<p>Compact rows feel right for the services list. Can we keep row numbers off by default?</p>'),
+])}${group('Yesterday', 'Oct 29', '2026-10-29', [
+  item(icon('alert', 'warn'), '<b>search-indexer</b> degraded — p95 at <span class="dd-mono">611 ms</span>', '18:20', '2026-10-29T18:20'),
+  item(avatar('RL', 1, 'Ravi L.'), '<b>Ravi L.</b> rotated API key <code>key_live_8f2c41</code>', '16:05', '2026-10-29T16:05'),
+  item(icon('tag', 'info'), 'Released <a href="#">dockey-ui v2.4.0</a>', '11:30', '2026-10-29T11:30'),
+])}${group('Tuesday', 'Oct 28', '2026-10-28', [
+  item(avatar('AN', 3, 'Andy'), '<b>Andy</b> invited <b>mira@cxkw.dev</b> to <a href="#">cxkw.dev</a> as Maintainer', '14:52', '2026-10-28T14:52'),
+  item(icon('box', ''), 'Created project <a href="#">leetnode</a> from template', '10:03', '2026-10-28T10:03'),
+])}
+</div>`;
+
+const simple = `
+<div class="dd-timeline" style="max-width: 420px">
+  <ol class="dd-timeline__list">${[
+  item(icon('check', 'ok'), '<b>Build</b> finished', '09:40', '2026-10-30T09:40'),
+  item(icon('check', 'ok'), '<b>Tests</b> passed — 412 of 412', '09:41', '2026-10-30T09:41'),
+  item(icon('upload', 'accent'), '<b>Deploy</b> to us-east-1 in progress', '09:41', '2026-10-30T09:41'),
+  item(icon('clock', ''), '<b>Verify</b> queued', '—', ''),
+].join('')}
+  </ol>
+</div>`;
+
+const audit = (time: string, iso: string, marker: string, text: string, meta: string) => `
+      <li class="dd-timeline__item">
+        <time class="dd-timeline__time" datetime="${iso}">${time}</time>
+        ${marker}
+        <div class="dd-timeline__body">
+          <p class="dd-timeline__text">${text}</p>
+          <span class="dd-timeline__meta">${meta}</span>
+        </div>
+      </li>`;
+
+const auditLog = `
+<div class="dd-timeline dd-timeline--audit">
+  <section class="dd-timeline__group">
+    <h3 class="dd-timeline__day">Today <time class="dd-timeline__date" datetime="2026-10-30">Oct 30</time></h3>
+    <ol class="dd-timeline__list">${[
+      audit('09:41:07', '2026-10-30T09:41:07Z', avatar('AN', 3, 'Andy'), '<b>andy@cxkw.dev</b> deployed <code>dawn-and-dusk</code> to production', '203.0.113.24'),
+      audit('09:38:52', '2026-10-30T09:38:52Z', icon('bolt', 'info'), '<b>ci-bot</b> triggered build <code>#1284</code> on main', 'github-actions'),
+      audit('09:12:30', '2026-10-30T09:12:30Z', avatar('MK', 6, 'Mira K.'), '<b>mira@cxkw.dev</b> changed role of <b>ravi@cxkw.dev</b> to Admin', '198.51.100.7'),
+      audit('08:55:01', '2026-10-30T08:55:01Z', avatar('RL', 1, 'Ravi L.'), '<b>ravi@cxkw.dev</b> rotated key <code>key_live_8f2c41</code>', '192.0.2.44'),
+      audit('08:20:16', '2026-10-30T08:20:16Z', icon('lock', 'bad'), 'Failed sign-in for <b>andy@cxkw.dev</b> — wrong passkey', '203.0.113.91'),
+    ].join('')}
+    </ol>
+  </section>
+  <section class="dd-timeline__group">
+    <h3 class="dd-timeline__day">Yesterday <time class="dd-timeline__date" datetime="2026-10-29">Oct 29</time></h3>
+    <ol class="dd-timeline__list">${[
+      audit('23:04:44', '2026-10-29T23:04:44Z', icon('settings', ''), '<b>andy@cxkw.dev</b> updated env var <code>EDGE_CACHE_TTL</code> on edge-cache', '203.0.113.24'),
+      audit('17:31:09', '2026-10-29T17:31:09Z', icon('trash', 'warn'), '<b>mira@cxkw.dev</b> deleted 14 preview deployments of <code>insomnia</code>', '198.51.100.7'),
+    ].join('')}
+    </ol>
+  </section>
+</div>`;
+---
+<Docs title="Timeline" group="Data display" lead="An activity feed or audit log, grouped by day. Who did what to which thing, and when — with room for a commit, a diff or a comment underneath.">
+  <Example title="Activity feed" description="Avatars for people, tonal icons for system events. Times are mono; detail sits in an inset block." code={feed} />
+
+  <h2 id="list">Without day groups</h2>
+  <p>Put a <code>__list</code> straight inside <code>.dd-timeline</code> when there is only one day — a deploy’s event history, for example.</p>
+  <Example code={simple} />
+
+  <h2 id="audit">Audit log</h2>
+  <p><code>--audit</code> packs each event onto one line: a mono time column, a small marker, the sentence and the source (IP, client). Rows wrap instead of truncating in narrow containers.</p>
+  <Example code={auditLog} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-timeline', 'Wrapper for day groups. A size container: below 440px the time drops under the sentence.'],
+    ['.dd-timeline__group', 'One day: a <code>__day</code> heading and a <code>__list</code>.'],
+    ['.dd-timeline__day / __date', 'Day heading (“Today”) with a mono date.'],
+    ['.dd-timeline__list / __item', 'The <code>&lt;ol&gt;</code> of events. A faint connector runs between markers.'],
+    ['.dd-timeline__marker', 'Icon in a neutral tonal circle.'],
+    ['.dd-timeline__marker--avatar', 'Initials (or an <code>&lt;img&gt;</code>) on <code>style="--dd-color: var(--dd-set-N)"</code>.'],
+    ['.dd-timeline__marker--ok / --warn / --bad / --info / --accent', 'Tonal icon markers for system events.'],
+    ['.dd-timeline__body / __text', 'The sentence: <code>&lt;b&gt;</code> actor, linked target, <code>&lt;code&gt;</code> refs.'],
+    ['.dd-timeline__time', 'Mono timestamp in a <code>&lt;time datetime&gt;</code>.'],
+    ['.dd-timeline__meta', 'Mono source detail (IP, client) — mostly for audit rows.'],
+    ['.dd-timeline__detail', 'Inset tonal block: commit message, error, quoted comment.'],
+    ['.dd-timeline__diff / __add / __del', 'Diff stats line: <code>+128 −42</code>.'],
+    ['.dd-timeline--audit', 'Compact single-line rows with a time column and hairlines.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Write events as sentences: actor, verb, target.', 'Group by day and show the time of day; put the full timestamp in <code>datetime</code>.', 'Use avatars for people and tonal icons for the system, so the two read apart.']}
+    dont={['Don’t colour the sentence — tone belongs to the marker.', 'Don’t show relative times (“3 min ago”) in an audit log; use exact times.', 'Don’t nest detail blocks or put tables inside them; link out instead.']}
+  />
+</Docs>

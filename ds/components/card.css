@@ -1,0 +1,94 @@
+/* Card — "Lifted": borderless, lifted off the page by tone alone (--dd-surface on --dd-bg), no shadow.
+   Interactive cards step one tone deeper on hover — tone only, no edge. Variants: media · stat · row · compact.
+   Lay several out with .dd-card-grid. */
+.dd-card {
+  --_pad: calc(var(--dd-u) * 5);
+  position: relative; display: flex; flex-direction: column; min-width: 0;
+  background: var(--dd-surface); color: var(--dd-text); border-radius: var(--dd-r-box); overflow: hidden;
+  text-decoration: none;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-card__body { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 2); flex: 1; min-width: 0; padding: var(--_pad); }
+.dd-card__eyebrow {
+  display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 2); margin: 0;
+  font-size: var(--dd-fs-xs); color: var(--dd-muted);
+}
+.dd-card__eyebrow .dd-icon { width: 1.2em; height: 1.2em; }
+.dd-card__title {
+  margin: 0; font-family: var(--dd-font-display); font-weight: var(--dd-h-weight); font-size: var(--dd-fs-xl);
+  letter-spacing: var(--dd-h-tracking); line-height: 1.05; text-transform: var(--dd-h-case); overflow-wrap: anywhere; text-wrap: balance;
+}
+.dd-card__text { margin: 0; font-size: var(--dd-fs-sm); line-height: var(--dd-lh); color: var(--dd-muted); overflow-wrap: anywhere; text-wrap: pretty; }
+.dd-card__foot {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: calc(var(--dd-u) * 2);
+  margin-top: auto; padding-top: calc(var(--dd-u) * 2); font-size: var(--dd-fs-sm);
+}
+.dd-card__meta { font-size: var(--dd-fs-xs); color: var(--dd-muted); font-variant-numeric: tabular-nums; }
+.dd-card__link {
+  display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); color: var(--dd-accent); font-weight: 600;
+  text-decoration: none; cursor: pointer;
+}
+.dd-card__link .dd-icon { transition: transform var(--dd-dur-fast) var(--dd-ease); }
+.dd-card:hover .dd-card__link .dd-icon, .dd-card__link:focus-visible .dd-icon { transform: translateX(3px); }
+.dd-card__link:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; border-radius: 2px; }
+
+/* Media: a tonal panel (or an <img>) above the body. */
+.dd-card__media {
+  display: block; width: 100%; aspect-ratio: 16 / 7; object-fit: cover; flex: none;
+  background: radial-gradient(120% 90% at 18% 110%, var(--dd-tone-2) 0%, transparent 60%), linear-gradient(160deg, var(--dd-tone-1), var(--dd-tone-3));
+}
+.dd-card__media--warm {
+  background: radial-gradient(110% 90% at 85% 115%, color-mix(in oklab, var(--dd-set-3) 70%, transparent) 0%, transparent 60%),
+    linear-gradient(160deg, var(--dd-set-8), var(--dd-tone-1));
+}
+.dd-card--inset-media .dd-card__media { width: auto; margin: calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 2.5) 0; border-radius: var(--dd-r-ctl); }
+
+/* Interactive: the whole card is the target. Use an <a class="dd-card dd-card--link">, or put a
+   .dd-card__stretch link inside so the card stays one tab stop with real inner text. */
+.dd-card--link { cursor: pointer; }
+.dd-card--link:hover, .dd-card--link.is-hover, .dd-card--link:focus-within {
+  background: var(--dd-surface-2);
+}
+.dd-card--link.is-hover .dd-card__link .dd-icon { transform: translateX(3px); }
+.dd-card--link:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-card__stretch { color: inherit; text-decoration: none; }
+.dd-card__stretch::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.dd-card__stretch:focus-visible { outline: none; }
+.dd-card:has(.dd-card__stretch:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+/* Stat: a big display figure, its label and a delta. */
+.dd-card__stat {
+  margin: 0; font-family: var(--dd-font-display); font-weight: var(--dd-h-weight); font-size: var(--dd-fs-3xl);
+  letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums;
+}
+.dd-card__stat small { margin-left: 0.12em; font-size: 0.5em; letter-spacing: 0; color: var(--dd-muted); }
+.dd-card__label { margin: 0; font-size: var(--dd-fs-sm); color: var(--dd-muted); }
+.dd-card__delta {
+  display: inline-flex; align-items: center; gap: 0.3em; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs);
+  font-variant-numeric: tabular-nums; color: var(--dd-muted);
+}
+.dd-card__delta .dd-icon { width: 1.1em; height: 1.1em; }
+.dd-card__delta.is-up { color: var(--dd-ok); }
+.dd-card__delta.is-down { color: var(--dd-bad); }
+.dd-card--stat .dd-card__body { gap: calc(var(--dd-u) * 1.5); }
+.dd-card--stat .dd-card__foot { padding-top: calc(var(--dd-u) * 1); }
+
+/* Horizontal: media beside the body. Wraps to stacked by itself once the card is narrower than ~300px. */
+.dd-card--row { flex-direction: row; flex-wrap: wrap; }
+.dd-card--row .dd-card__media { flex: 1 1 34%; min-width: 88px; min-height: 110px; width: auto; aspect-ratio: auto; }
+.dd-card--row .dd-card__body { --_pad: calc(var(--dd-u) * 4); flex: 1 1 60%; min-width: 190px; gap: calc(var(--dd-u) * 1.5); }
+.dd-card--row.dd-card--inset-media .dd-card__media { margin: calc(var(--dd-u) * 2.5); margin-inline-end: 0; }
+.dd-card--row .dd-card__title { font-size: var(--dd-fs-lg); }
+.dd-card--row .dd-card__text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Compact: tighter padding, smaller title, no body text. */
+.dd-card--compact .dd-card__body { --_pad: calc(var(--dd-u) * 3.5); gap: calc(var(--dd-u) * 1); }
+.dd-card--compact .dd-card__title { font-size: var(--dd-fs-base); line-height: 1.15; }
+.dd-card--compact .dd-card__text { display: none; }
+.dd-card--compact .dd-card__foot { padding-top: calc(var(--dd-u) * 0.5); }
+
+/* Grid of cards. */
+.dd-card-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: calc(var(--dd-u) * 3);
+  align-items: stretch;
+}

@@ -1,0 +1,65 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { base } from '../../lib/tokens';
+
+const specimens: [string, string, string][] = [
+  ['.dd-display', `fs-4xl · ${base['fs-4xl']}`, '<p class="dd-display">build quietly</p>'],
+  ['.dd-h1', `fs-3xl · ${base['fs-3xl']}`, '<h1 class="dd-h1">ship at dusk</h1>'],
+  ['.dd-h2', `fs-2xl · ${base['fs-2xl']}`, '<h2 class="dd-h2">open source</h2>'],
+  ['.dd-h3', `fs-xl · ${base['fs-xl']}`, '<h3 class="dd-h3">the lab</h3>'],
+  ['.dd-h4', `fs-lg · ${base['fs-lg']} · 650`, '<h4 class="dd-h4">Deployment settings</h4>'],
+  ['.dd-h5', `fs-base · ${base['fs-base']} · 650`, '<h5 class="dd-h5">Environment variables</h5>'],
+  ['.dd-lead', `fs-lg · muted`, '<p class="dd-lead">A calmer inbox for busy mornings — triage rebuilt around two moods.</p>'],
+  ['.dd-text', `fs-base · ${base['fs-base']} / ${base['lh']}`, '<p class="dd-text">I build calm software, write about design systems, and keep a small lab of experiments. Good systems disappear; great ones feel like yours.</p>'],
+  ['.dd-small', `fs-sm · ${base['fs-sm']}`, '<p class="dd-small">UI text: labels, table cells, menus, buttons.</p>'],
+  ['.dd-caption', `fs-xs · ${base['fs-xs']}`, '<p class="dd-caption">Updated 2 hours ago · us-east-1</p>'],
+  ['.dd-eyebrow', 'mono · xs · caps', '<p class="dd-eyebrow">Case study · 01</p>'],
+  ['.dd-mono', 'DM Mono', '<code class="dd-mono">svc-0141 · 12,480 req/min · 09:41:07</code>'],
+];
+
+const lockup = `
+<h1 class="dd-h1">build <em>quietly</em>, ship at dusk.</h1>
+<p class="dd-lead" style="margin-top: 12px">Headings use the logo lockup: Outfit 800, lowercase, −0.05em, leading 0.92.</p>`;
+---
+<Docs title="Typography" group="Foundations" lead="Three faces. Outfit for headlines — the logo lockup, heavy and lowercase. Figtree for everything you read. DM Mono for data.">
+  <h2 id="faces">Typefaces</h2>
+  <div class="doc-spec">
+    <div class="doc-spec-row"><span class="dd-mono">--dd-font-display<br/>Outfit 600–900</span><span style="font-family: var(--dd-font-display); font-weight: 800; font-size: 44px; letter-spacing: -0.05em; line-height: 1">dawn &amp; dusk</span></div>
+    <div class="doc-spec-row"><span class="dd-mono">--dd-font-body<br/>Figtree 400–700</span><span style="font-size: 22px">Quiet systems, warm defaults, readable at every size.</span></div>
+    <div class="doc-spec-row"><span class="dd-mono">--dd-font-mono<br/>DM Mono 400–500</span><span class="dd-mono" style="font-size: 18px">svc-0141 · 0O 1lI · 12,480</span></div>
+  </div>
+  <p>Load them once with <code>ds/fonts.css</code> (included in the bundle) or your own <code>&lt;link&gt;</code> to Google Fonts.</p>
+
+  <h2 id="lockup">The lockup</h2>
+  <p>The wordmark sets the voice for every heading: heavy, tight and lowercase. Emphasis inside a heading stays upright — weight already carries the tone.</p>
+  <Example code={lockup} />
+
+  <h2 id="scale">Scale</h2>
+  <p>Major third (×1.25) on a 17px base, line-height 1.55. UI chrome (buttons, inputs, tables, menus) runs one step down at <code>--dd-fs-sm</code>.</p>
+  <div class="doc-spec">
+    {specimens.map(([cls, meta, html]) => (
+      <div class="doc-spec-row"><span class="dd-mono">{cls}<br />{meta}</span><div set:html={html} /></div>
+    ))}
+  </div>
+
+  <h2 id="api">Classes & tokens</h2>
+  <ClassTable rows={[
+    ['.dd-display / .dd-h1 / .dd-h2 / .dd-h3', 'Lockup headings (Outfit 800, lowercase, tight). Use on any element — semantics stay yours.'],
+    ['.dd-h4 / .dd-h5', 'Sentence-case Figtree headings for UI sections, cards and dialogs.'],
+    ['.dd-lead', 'Intro paragraph under a page title.'],
+    ['.dd-text / .dd-small / .dd-caption', 'Body, UI and meta text.'],
+    ['.dd-eyebrow', 'Mono, uppercase label above a title.'],
+    ['.dd-mono / .dd-num', 'Monospace; tabular numerals for aligned figures.'],
+    ['--dd-fs-xs … --dd-fs-4xl', `${base['fs-xs']} · ${base['fs-sm']} · ${base['fs-base']} · ${base['fs-lg']} · ${base['fs-xl']} · ${base['fs-2xl']} · ${base['fs-3xl']} · ${base['fs-4xl']}`],
+    ['--dd-h-weight / -tracking / -leading / -case', 'The lockup settings, if you build your own heading style.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Use one lockup heading per section; let Figtree do the rest.', 'Set numbers in data in mono or with <code>.dd-num</code> so columns align.', 'Keep line length around 60–75 characters for reading.']}
+    dont={['Don’t use the lockup for long headings or UI labels — it is a display voice.', 'Don’t uppercase body text; reserve caps for eyebrows and micro labels.', 'Don’t go below <code>--dd-fs-xs</code> (11px).']}
+  />
+</Docs>

@@ -1,0 +1,84 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const horizontal = `
+<div style="max-width: 520px">
+  <p class="dd-text dd-small">auth-gateway is healthy in both regions.</p>
+  <hr class="dd-divider">
+  <p class="dd-text dd-small dd-muted">Last deploy 4m ago · a3f9c2e</p>
+</div>`;
+
+const vertical = `
+<div class="dd-row" style="--dd-gap: 0">
+  <button class="dd-btn dd-btn--ghost dd-btn--sm">${i('copy')}<span>Copy</span></button>
+  <button class="dd-btn dd-btn--ghost dd-btn--sm">${i('download')}<span>Export</span></button>
+  <hr class="dd-divider dd-divider--vertical" aria-orientation="vertical">
+  <button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" aria-label="Filter">${i('filter')}</button>
+  <button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" aria-label="Sort">${i('sort')}</button>
+  <hr class="dd-divider dd-divider--vertical" aria-orientation="vertical">
+  <span class="dd-small dd-muted dd-mono">1,284 rows</span>
+</div>`;
+
+const label = `
+<div class="dd-stack" style="max-width: 420px">
+  <button class="dd-btn dd-btn--secondary dd-btn--block">${i('key')}<span>Continue with passkey</span></button>
+  <div class="dd-divider dd-divider--label" role="separator">or</div>
+  <button class="dd-btn dd-btn--ghost dd-btn--block">${i('mail')}<span>Email me a link</span></button>
+</div>`;
+
+const start = `
+<div style="max-width: 560px">
+  <p class="dd-text dd-small">#4821 · auth-gateway · live</p>
+  <p class="dd-text dd-small">#4820 · billing-worker · failed</p>
+  <div class="dd-divider dd-divider--label dd-divider--start" role="separator">older deploys</div>
+  <p class="dd-text dd-small dd-muted">#4819 · edge-cache · rolled back</p>
+  <p class="dd-text dd-small dd-muted">#4818 · auth-gateway · live</p>
+</div>`;
+
+const spacing = `
+<div style="max-width: 520px">
+  <p class="dd-text dd-small dd-muted">tight · 10px</p>
+  <hr class="dd-divider dd-divider--tight">
+  <p class="dd-text dd-small dd-muted">default · 20px</p>
+  <hr class="dd-divider">
+  <p class="dd-text dd-small dd-muted">loose · 40px</p>
+  <hr class="dd-divider dd-divider--loose">
+  <p class="dd-text dd-small dd-muted">strong line</p>
+  <hr class="dd-divider dd-divider--strong">
+</div>`;
+---
+<Docs title="Divider" group="Layout" lead="A hairline between things that belong apart. Use it sparingly — in dawn & dusk, space and tone separate most content before a line has to.">
+  <Example title="Horizontal" description="A plain hr. It inherits its spacing from the divider, not the surrounding margins." code={horizontal} />
+
+  <h2 id="vertical">Vertical</h2>
+  <p>Splits groups inside a toolbar or a meta line. It stretches to the height of the row.</p>
+  <Example code={vertical} />
+
+  <h2 id="label">With label</h2>
+  <p>A <code>role="separator"</code> element with a short mono label. Centered for choices (“or”), start-aligned to name the section that follows.</p>
+  <Example code={label} />
+  <Example code={start} />
+
+  <h2 id="spacing">Spacing</h2>
+  <Example code={spacing} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-divider', 'Horizontal hairline (<code>--dd-text</code> at 10%) with 20px space above and below. Use on <code>&lt;hr&gt;</code>.'],
+    ['.dd-divider--vertical', 'Vertical line between inline items; add <code>aria-orientation="vertical"</code>.'],
+    ['.dd-divider--label', 'Labelled divider on a <code>role="separator"</code> element. Centered by default.'],
+    ['.dd-divider--start', 'With <code>--label</code>: text at the start, line after.'],
+    ['.dd-divider--tight / --loose', '10px or 40px of space instead of 20px.'],
+    ['.dd-divider--strong', 'Uses <code>--dd-border-strong</code> for a firmer line.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Reach for space and tone first; add a divider only when two blocks would otherwise read as one.', 'Keep labels to one or two words.']}
+    dont={['Don’t box content with dividers on all sides — use a card.', 'Don’t stack a divider directly under a heading.']}
+  />
+</Docs>

@@ -1,0 +1,96 @@
+/* Command palette — the ⌘K dialog: a large borderless search field, grouped results, kbd hints, one selected row
+   (aria-selected) and an empty state. Floats like a menu (--dd-float-bg)
+   with --dd-shadow-float over a --dd-overlay backdrop.
+   Use <dialog class="dd-command"> with ds/behaviors/command-palette.js, or a <div class="dd-command"> to show it inline. */
+.dd-command {
+  display: flex; flex-direction: column; box-sizing: border-box;
+  --_quiet: color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint));
+  width: min(calc(var(--dd-u) * 128), 100%); max-height: calc(var(--dd-u) * 104);
+  margin: 0; padding: 0; border: 0; border-radius: var(--dd-r-lg); overflow: hidden;
+  background: var(--dd-menu-bg, var(--dd-surface)); color: var(--dd-text); box-shadow: var(--dd-shadow-float);
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: var(--dd-lh-tight); text-align: left;
+}
+dialog.dd-command {
+  position: fixed; inset: 0; width: min(calc(var(--dd-u) * 128), calc(100vw - var(--dd-u) * 4));
+  max-height: min(calc(var(--dd-u) * 104), calc(100dvh - 24vh)); margin: 12vh auto auto;
+}
+dialog.dd-command:not([open]) { display: none; }
+dialog.dd-command[open] { animation: dd-command-in var(--dd-dur) var(--dd-ease); }
+dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-command-fade var(--dd-dur) var(--dd-ease); }
+@keyframes dd-command-in { from { opacity: 0; transform: translateY(-6px) scale(.99); } }
+@keyframes dd-command-fade { from { opacity: 0; } }
+
+/* Search row. */
+.dd-command__search {
+  flex: none; display: flex; align-items: center; gap: calc(var(--dd-u) * 2.5); padding: 0 calc(var(--dd-u) * 4);
+  border-bottom: 1px solid color-mix(in oklab, var(--dd-text) 8%, transparent);
+}
+.dd-command__search > .dd-icon { width: 1.3em; height: 1.3em; color: var(--dd-muted); }
+.dd-command__input {
+  flex: 1 1 auto; min-width: 0; height: calc(var(--dd-u) * 11.5); margin: 0; padding: 0;
+  border: 0; outline: none; background: none; color: var(--dd-text);
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-base); font-weight: 450; text-overflow: ellipsis;
+}
+.dd-command__input::placeholder { color: var(--dd-faint); }
+.dd-command__input::-webkit-search-cancel-button { display: none; }
+
+/* Results. */
+.dd-command__list {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: calc(var(--dd-u) * 1.5); scroll-padding-block: calc(var(--dd-u) * 7) calc(var(--dd-u) * 1.5);
+}
+.dd-command__list[hidden], .dd-command__group[hidden], .dd-command__item[hidden] { display: none; }
+.dd-command__group + .dd-command__group { margin-top: var(--dd-u); }
+.dd-command__label {
+  margin: 0; padding: calc(var(--dd-u) * 2) calc(var(--dd-u) * 2.5) var(--dd-u);
+  font-size: 10.5px; font-weight: 600; letter-spacing: .1em; line-height: 1.3; text-transform: uppercase; color: var(--_quiet);
+}
+.dd-command__item {
+  display: flex; align-items: center; gap: calc(var(--dd-u) * 3); min-height: calc(var(--dd-u) * 9); box-sizing: border-box;
+  padding: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 2.5); border-radius: var(--dd-r-ctl);
+  color: var(--dd-text); font-weight: 500; text-decoration: none; cursor: pointer; user-select: none;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-command__item[aria-selected='true'] { background: var(--dd-menu-hover, var(--dd-surface-2)); }
+.dd-command__item[aria-disabled='true'] { color: var(--dd-faint); cursor: not-allowed; }
+.dd-command__icon { flex: none; color: var(--dd-muted); transition: color var(--dd-dur-fast) var(--dd-ease); }
+.dd-command__item[aria-selected='true'] .dd-command__icon { color: var(--dd-text); }
+.dd-command__body { flex: 1 1 auto; min-width: 0; display: flex; align-items: baseline; gap: calc(var(--dd-u) * 2); overflow: hidden; white-space: nowrap; }
+.dd-command__body > :first-child { overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; }
+.dd-command__meta {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; flex: 0 10 auto;
+  font-size: var(--dd-fs-xs); font-weight: 400; color: var(--dd-muted);
+}
+.dd-command__meta.dd-mono, .dd-command__meta .dd-mono { font-size: calc(var(--dd-fs-xs) * .96); }
+.dd-command__hint { flex: none; display: inline-flex; align-items: center; gap: 3px; margin-left: auto; color: var(--_quiet); font-size: var(--dd-fs-xs); }
+/* ↵ shows only on the selected row. */
+.dd-command__hint > .dd-command__enter { display: none; }
+.dd-command__item[aria-selected='true'] .dd-command__enter { display: inline-grid; }
+.dd-command__item[aria-selected='true'] .dd-command__enter ~ * { display: none; }
+
+/* Empty state. */
+.dd-command__empty {
+  display: flex; flex-direction: column; align-items: center; gap: calc(var(--dd-u) * 1.5);
+  padding: calc(var(--dd-u) * 10) calc(var(--dd-u) * 5); text-align: center; color: var(--dd-muted); text-wrap: balance;
+}
+.dd-command__empty[hidden] { display: none; }
+.dd-command__empty > .dd-icon { width: 30px; height: 30px; margin-bottom: var(--dd-u); color: var(--dd-faint); }
+.dd-command__empty > :is(b, strong) { color: var(--dd-text); font-weight: 600; font-size: var(--dd-fs-base); }
+.dd-command__empty > p { margin: 0; max-width: 40ch; }
+.dd-command__empty :where(code, .dd-mono) { white-space: nowrap; }
+
+/* Footer: kbd hints on a deeper tone. */
+.dd-command__foot {
+  flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 4);
+  padding: calc(var(--dd-u) * 2.25) calc(var(--dd-u) * 4); background: color-mix(in oklab, var(--dd-menu-hover, var(--dd-surface-2)) 70%, var(--dd-menu-bg, var(--dd-surface)));
+  color: var(--dd-muted); font-size: var(--dd-fs-xs);
+}
+.dd-command__foot > * { display: inline-flex; align-items: center; gap: 4px; }
+.dd-command__foot > .dd-command__brand { margin-right: auto; font-family: var(--dd-font-mono); color: var(--dd-faint); }
+
+/* Phones: no keyboard to hint at, so the footer goes; meta detail gives the names the room. */
+@media (max-width: 560px) {
+  dialog.dd-command { margin-top: calc(var(--dd-u) * 2); max-height: calc(100dvh - var(--dd-u) * 4); }
+  .dd-command__meta { display: none; }
+  .dd-command__foot { display: none; }
+}

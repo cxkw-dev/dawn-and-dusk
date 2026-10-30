@@ -1,0 +1,176 @@
+/* Progress — how far along something is, or how full. Linear bars (determinate and indeterminate), meters with
+   thresholds, rings, segmented steps and usage quotas. The unfilled track is a lighter step of the fill colour,
+   so the state reads across the whole bar. Values come from --dd-value (0–100) on the track. */
+
+.dd-progress {
+  --_c: var(--dd-accent);
+  --_h: 6px;
+  display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1.5); min-width: 0;
+  font-size: var(--dd-fs-sm); color: var(--dd-text);
+}
+.dd-progress__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--dd-space-3); min-width: 0; }
+.dd-progress__label { min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
+.dd-progress__value {
+  flex: none; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-variant-numeric: tabular-nums;
+  color: var(--dd-muted); white-space: nowrap;
+}
+.dd-progress__value b { font-weight: 500; color: var(--dd-text); }
+.dd-progress__hint { margin: 0; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+.dd-progress__hint .dd-icon { color: var(--_c, var(--dd-accent)); }
+
+.dd-progress__track {
+  position: relative; display: flex; width: 100%; height: var(--_h, 6px); border-radius: var(--dd-r-pill);
+  background: color-mix(in oklab, var(--_c, var(--dd-accent)) 16%, transparent);
+}
+.dd-progress__fill {
+  width: calc(var(--dd-value, 0) * 1%); max-width: 100%; height: 100%; border-radius: inherit;
+  background: var(--_c, var(--dd-accent));
+  transition: width var(--dd-dur) var(--dd-ease), background-color var(--dd-dur) var(--dd-ease);
+}
+
+/* Indeterminate: the work has no known length. Omit aria-valuenow. */
+.dd-progress__track.is-indeterminate { overflow: hidden; }
+.dd-progress__track.is-indeterminate .dd-progress__fill {
+  position: absolute; inset-block: 0; left: 0; width: 38%;
+  animation: dd-progress-slide 1.5s var(--dd-ease) infinite;
+}
+@keyframes dd-progress-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(265%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dd-progress__track.is-indeterminate .dd-progress__fill { animation: none; width: 100%; transform: none; opacity: .45; }
+}
+
+/* Sizes */
+.dd-progress--sm { --_h: 4px; }
+.dd-progress--lg { --_h: 10px; }
+
+/* Tones — set on .dd-progress, or directly on a track or ring */
+.dd-progress--ok { --_c: var(--dd-ok); }
+.dd-progress--warn { --_c: var(--dd-warn); }
+.dd-progress--bad { --_c: var(--dd-bad); }
+.dd-progress--info { --_c: var(--dd-info); }
+.dd-progress--primary { --_c: var(--dd-primary); }
+
+/* Meter thresholds: a tick that reaches just past the track, and an optional scale of labels under it. */
+.dd-progress__mark {
+  position: absolute; left: calc(var(--at, 0) * 1%); top: -3px; bottom: -3px; width: 2px; margin-left: -1px;
+  border-radius: 1px; background: color-mix(in oklab, var(--dd-text) 42%, transparent);
+}
+.dd-progress__scale {
+  position: relative; height: 1.2em; margin-top: calc(var(--dd-u) * -0.5);
+  font-family: var(--dd-font-mono); font-size: 10px; line-height: 1.2; font-variant-numeric: tabular-nums; color: var(--dd-muted);
+}
+.dd-progress__scale > span { position: absolute; left: calc(var(--at, 0) * 1%); transform: translateX(-50%); white-space: nowrap; }
+.dd-progress__scale > .is-start { left: 0; transform: none; }
+.dd-progress__scale > .is-end { left: auto; right: 0; transform: none; }
+/* Narrow tracks: drop the end label so it never collides with a threshold just before it. */
+.dd-progress__scale { container-type: inline-size; }
+@container (max-width: 360px) { .dd-progress__scale > .is-end { display: none; } }
+
+/* ---------- ring ---------- */
+.dd-progress-ring {
+  --_c: var(--dd-accent);
+  --_size: 56px; --_stroke: 3.2;
+  position: relative; display: inline-grid; place-items: center; flex: none;
+  width: var(--_size); height: var(--_size); color: var(--dd-text);
+}
+.dd-progress-ring > svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.dd-progress-ring circle { fill: none; stroke-width: var(--_stroke); }
+.dd-progress-ring__track { stroke: color-mix(in oklab, var(--_c) 16%, transparent); }
+.dd-progress-ring__fill {
+  stroke: var(--_c); stroke-linecap: round;
+  stroke-dasharray: calc(var(--dd-value, 0) * 1) 100;
+  transition: stroke-dasharray var(--dd-dur) var(--dd-ease), stroke var(--dd-dur) var(--dd-ease);
+}
+.dd-progress-ring__label {
+  position: relative; display: flex; flex-direction: column; align-items: center; line-height: 1.1; text-align: center;
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-variant-numeric: tabular-nums;
+}
+.dd-progress-ring__sub { font-family: var(--dd-font-body); font-size: 10px; color: var(--dd-muted); }
+.dd-progress-ring--sm { --_size: 24px; --_stroke: 4.6; }
+.dd-progress-ring--sm .dd-progress-ring__label { display: none; }
+.dd-progress-ring--lg { --_size: 104px; --_stroke: 2.6; }
+.dd-progress-ring--lg .dd-progress-ring__label {
+  gap: 2px; font-family: var(--dd-font-display); font-size: var(--dd-fs-xl); font-weight: 700; letter-spacing: -0.03em;
+}
+.dd-progress-ring--lg .dd-progress-ring__sub { font-weight: 400; letter-spacing: 0; font-size: var(--dd-fs-xs); }
+.dd-progress-ring--ok { --_c: var(--dd-ok); }
+.dd-progress-ring--warn { --_c: var(--dd-warn); }
+.dd-progress-ring--bad { --_c: var(--dd-bad); }
+.dd-progress-ring--info { --_c: var(--dd-info); }
+.dd-progress-ring--primary { --_c: var(--dd-primary); }
+.dd-progress-ring.is-indeterminate .dd-progress-ring__fill { stroke-dasharray: 28 100; }
+.dd-progress-ring.is-indeterminate > svg { animation: dd-progress-turn 1s linear infinite; }
+@keyframes dd-progress-turn { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+
+/* ---------- segmented steps ---------- */
+.dd-progress-steps {
+  --_c: var(--dd-accent);
+  display: flex; flex-direction: column; gap: calc(var(--dd-u) * 2); min-width: 0; font-size: var(--dd-fs-xs);
+}
+.dd-progress-steps__list { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.dd-progress-steps__step {
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding-top: calc(var(--dd-u) * 2.5);
+  position: relative; color: var(--dd-muted);
+}
+.dd-progress-steps__step::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; border-radius: var(--dd-r-pill);
+  background: color-mix(in oklab, var(--_c) 16%, transparent);
+}
+.dd-progress-steps__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.dd-progress-steps__meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--dd-font-mono); font-size: 10px;
+  font-variant-numeric: tabular-nums; color: var(--dd-muted); }
+.dd-progress-steps__step.is-done { color: var(--dd-text); }
+.dd-progress-steps__step.is-done::before { background: var(--_c); }
+.dd-progress-steps__step.is-current { color: var(--dd-text); }
+.dd-progress-steps__step.is-current .dd-progress-steps__label { font-weight: 650; }
+.dd-progress-steps__step.is-current::before {
+  background: linear-gradient(90deg, var(--_c) 0 40%, color-mix(in oklab, var(--_c) 16%, transparent) 60% 100%);
+  background-size: 250% 100%; background-position: 100% 0;
+  animation: dd-progress-sweep 2.4s var(--dd-ease) infinite alternate;
+}
+@keyframes dd-progress-sweep { to { background-position: 30% 0; } }
+.dd-progress-steps__step.is-failed { color: var(--dd-bad); }
+.dd-progress-steps__step.is-failed::before { background: var(--dd-bad); }
+.dd-progress-steps__step.is-failed .dd-progress-steps__meta { color: var(--dd-bad); }
+.dd-progress-steps__summary { display: flex; justify-content: space-between; gap: var(--dd-space-3); font-size: var(--dd-fs-sm); }
+.dd-progress-steps__summary > :last-child { font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* Compact: segments only, no labels under them */
+.dd-progress-steps--compact .dd-progress-steps__step { padding-top: 4px; }
+.dd-progress-steps--compact .dd-progress-steps__step::before { height: 4px; }
+.dd-progress-steps--compact :is(.dd-progress-steps__label, .dd-progress-steps__meta) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* ---------- usage quota ---------- */
+.dd-progress-quota {
+  display: flex; flex-direction: column; gap: calc(var(--dd-u) * 2); min-width: 0; font-size: var(--dd-fs-sm);
+}
+.dd-progress-quota__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px var(--dd-space-3); }
+.dd-progress-quota__title { font-weight: 600; }
+.dd-progress-quota__amount { font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-variant-numeric: tabular-nums; color: var(--dd-muted); white-space: nowrap; }
+.dd-progress-quota__amount b { font-weight: 500; color: var(--dd-text); }
+.dd-progress-quota__track {
+  display: flex; gap: 2px; height: 8px; overflow: hidden; border-radius: var(--dd-r-pill);
+  background: color-mix(in oklab, var(--dd-text) 8%, transparent);
+}
+.dd-progress-quota__seg {
+  flex: 0 0 auto; width: calc(var(--dd-value, 0) * 1%); min-width: 2px;
+  background: var(--dd-color, var(--dd-accent)); transition: width var(--dd-dur) var(--dd-ease);
+}
+.dd-progress-quota__legend {
+  display: flex; flex-wrap: wrap; gap: calc(var(--dd-u) * 1) var(--dd-space-4); margin: 0; padding: 0; list-style: none;
+  font-size: var(--dd-fs-xs); color: var(--dd-muted);
+}
+.dd-progress-quota__legend li { display: inline-flex; align-items: center; gap: 6px; }
+.dd-progress-quota__legend li::before {
+  content: ''; width: 8px; height: 8px; border-radius: 2px; background: var(--dd-color, var(--dd-accent));
+}
+.dd-progress-quota__legend .is-free::before { background: color-mix(in oklab, var(--dd-text) 12%, transparent); }
+.dd-progress-quota__legend b { font-family: var(--dd-font-mono); font-weight: 400; color: var(--dd-text); font-variant-numeric: tabular-nums; }
+.dd-progress-quota__hint { display: flex; align-items: flex-start; gap: 6px; margin: 0; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+.dd-progress-quota__hint .dd-icon { margin-top: 1px; }
+.dd-progress-quota.is-warn .dd-progress-quota__hint .dd-icon { color: var(--dd-warn); }
+.dd-progress-quota.is-bad .dd-progress-quota__hint .dd-icon { color: var(--dd-bad); }
+.dd-progress-quota.is-warn .dd-progress-quota__amount b,
+.dd-progress-quota.is-bad .dd-progress-quota__amount b { font-weight: 600; }

@@ -1,0 +1,32 @@
+/* Status dot — a small coloured dot for presence and service health: online · idle · error · unknown (· offline).
+   The dot is the element's ::before, so any text inside becomes its label. --live adds a slow pulse for streams that
+   are happening now (deploying, recording, live tail); under reduced motion the pulse is dropped. */
+.dd-status-dot {
+  --_c: var(--dd-faint);
+  --_s: var(--dd-status-size, 8px);
+  position: relative; display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.75); flex: none;
+  color: var(--dd-text); font-size: var(--dd-fs-sm); line-height: 1.3; white-space: nowrap; vertical-align: middle;
+}
+.dd-status-dot::before {
+  content: ""; flex: none; width: var(--_s); height: var(--_s); border-radius: 50%; background: var(--_c);
+}
+.dd-status-dot--online { --_c: var(--dd-ok); }
+.dd-status-dot--idle { --_c: var(--dd-warn); }
+.dd-status-dot--error { --_c: var(--dd-bad); }
+.dd-status-dot--info { --_c: var(--dd-info); }
+.dd-status-dot--offline { --_c: var(--dd-tone-2); }
+/* Unknown: hollow — no signal, not a colour. */
+.dd-status-dot--unknown::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--dd-faint); }
+
+.dd-status-dot--sm { --_s: var(--dd-status-size, 6px); gap: calc(var(--dd-u) * 1.25); font-size: var(--dd-fs-xs); }
+.dd-status-dot--lg { --_s: var(--dd-status-size, 10px); gap: calc(var(--dd-u) * 2); }
+.dd-status-dot--muted { color: var(--dd-muted); }
+
+/* Live: a soft ring expands from the dot and fades. */
+.dd-status-dot--live::after {
+  content: ""; position: absolute; left: 0; top: 50%; width: var(--_s); height: var(--_s); margin-top: calc(var(--_s) / -2);
+  border-radius: 50%; background: var(--_c); pointer-events: none;
+  animation: dd-status-dot-pulse 1.8s cubic-bezier(.2, .6, .35, 1) infinite;
+}
+@keyframes dd-status-dot-pulse { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(3.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .dd-status-dot--live::after { animation: none; opacity: 0; } }

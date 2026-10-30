@@ -1,0 +1,78 @@
+/* Guide cue — an onboarding tip that points at one thing on the page: step count, title, a sentence, Next / dismiss,
+   an arrow toward the target and a beacon pulsing on it. Steps are .dd-guide-cue[popover] elements sharing a
+   data-dd-guide name; behaviors/guide-cue.js walks them. Dawn: an ink card, like the toast. Dusk: a raised surface-3. */
+:root, [data-theme="dawn"] {
+  --dd-cue-bg: var(--dd-text); --dd-cue-fg: var(--dd-bg);
+  --dd-cue-muted: color-mix(in oklab, var(--dd-bg) 70%, var(--dd-text));
+}
+[data-theme="dusk"] { --dd-cue-bg: var(--dd-surface-3); --dd-cue-fg: var(--dd-text); --dd-cue-muted: var(--dd-muted); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --dd-cue-bg: var(--dd-surface-3); --dd-cue-fg: var(--dd-text); --dd-cue-muted: var(--dd-muted); }
+}
+
+.dd-guide-cue {
+  position: fixed; inset: auto; top: 0; left: 0; z-index: var(--dd-z-overlay); margin: 0;
+  width: min(300px, calc(100vw - var(--dd-u) * 4)); box-sizing: border-box;
+  padding: calc(var(--dd-u) * 4) calc(var(--dd-u) * 4) calc(var(--dd-u) * 3.5);
+  border: 0; border-radius: var(--dd-r-box); overflow: visible;
+  background: var(--dd-cue-bg); color: var(--dd-cue-fg); box-shadow: var(--dd-shadow-float);
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: 1.5;
+}
+.dd-guide-cue[popover]:not(:popover-open) { display: none; }
+.dd-guide-cue:popover-open { animation: dd-guide-cue-in var(--dd-dur) var(--dd-ease); }
+.dd-guide-cue:focus { outline: none; }
+.dd-guide-cue:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+.dd-guide-cue__step {
+  display: flex; align-items: center; gap: calc(var(--dd-u) * 2); margin: 0 0 calc(var(--dd-u) * 2);
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 500; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--dd-cue-muted);
+}
+/* Progress pips after the count (optional): <span class="dd-guide-cue__pips"><i class="is-done"></i><i class="is-current"></i><i></i></span> */
+.dd-guide-cue__pips { display: inline-flex; gap: 4px; }
+.dd-guide-cue__pips > i { width: 5px; height: 5px; border-radius: 50%; background: color-mix(in oklab, var(--dd-cue-fg) 22%, transparent); }
+.dd-guide-cue__pips > i:is(.is-done, .is-current) { background: var(--dd-cue-fg); }
+.dd-guide-cue__pips > i.is-current { width: 14px; border-radius: 3px; background: var(--dd-primary); }
+.dd-guide-cue__title { margin: 0 0 calc(var(--dd-u) * 1); font-size: var(--dd-fs-base); font-weight: 650; line-height: 1.3; letter-spacing: -.005em; }
+.dd-guide-cue__text { margin: 0; color: var(--dd-cue-muted); text-wrap: pretty; }
+.dd-guide-cue__text :where(kbd, code) {
+  font-family: var(--dd-font-mono); font-size: .88em; padding: .05em .35em; border-radius: 3px;
+  background: color-mix(in oklab, var(--dd-cue-fg) 14%, transparent); color: var(--dd-cue-fg);
+}
+.dd-guide-cue__actions {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: calc(var(--dd-u) * 2);
+  margin-top: calc(var(--dd-u) * 4);
+}
+.dd-guide-cue__actions > :first-child:not(:only-child) { margin-right: auto; }
+/* Quiet actions inherit the inverted colours. */
+.dd-guide-cue .dd-btn--ghost { color: var(--dd-cue-muted); margin-left: calc(var(--dd-u) * -2); }
+.dd-guide-cue .dd-btn--ghost:hover { color: var(--dd-cue-fg); background: color-mix(in oklab, var(--dd-cue-fg) 12%, transparent); }
+
+.dd-guide-cue__arrow {
+  position: absolute; width: 12px; height: 12px; border-radius: 2px; background: inherit; rotate: 45deg; pointer-events: none;
+  left: var(--dd-arrow-x, 28px); top: 0; translate: -50% -50%;
+}
+.dd-guide-cue[data-placement^="top"] > .dd-guide-cue__arrow { top: 100%; }
+.dd-guide-cue[data-placement^="left"] > .dd-guide-cue__arrow { left: 100%; top: var(--dd-arrow-y, 28px); }
+.dd-guide-cue[data-placement^="right"] > .dd-guide-cue__arrow { left: 0; top: var(--dd-arrow-y, 28px); }
+
+/* Beacon: a pulsing apricot dot on the target (placed by the JS, or inline for mockups). */
+.dd-guide-beacon {
+  position: fixed; z-index: var(--dd-z-overlay); width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%;
+  background: var(--dd-primary); box-shadow: 0 0 0 3px color-mix(in oklab, var(--dd-primary) 28%, transparent);
+  pointer-events: none;
+}
+.dd-guide-beacon::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--dd-primary);
+  animation: dd-guide-cue-beacon 1.6s cubic-bezier(.2, .6, .35, 1) infinite;
+}
+.dd-guide-beacon--static { position: absolute; }
+/* The target being explained gets a soft ring. */
+[data-dd-guide-active] { outline: 2px solid color-mix(in oklab, var(--dd-primary) 70%, transparent); outline-offset: 3px; }
+
+/* Static: show a cue in the flow (docs, mockups). Set data-placement for the arrow side. */
+.dd-guide-cue--static { position: relative; z-index: auto; width: min(300px, 100%); animation: none; }
+
+@keyframes dd-guide-cue-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes dd-guide-cue-beacon { 0% { transform: scale(1); opacity: .6; } 100% { transform: scale(3.4); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .dd-guide-beacon::after { animation: none; opacity: 0; } }

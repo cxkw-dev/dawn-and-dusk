@@ -1,0 +1,45 @@
+/* Button group — attached .dd-btn's that read as one control. Borderless: buttons butt together with a 1px gap,
+   so whatever sits behind the group draws the seam. Toggle buttons use aria-pressed. A split button pairs a main
+   action with a narrow chevron that opens a .dd-menu. */
+.dd-btn-group { display: inline-flex; align-items: stretch; gap: 1px; max-width: 100%; vertical-align: middle; isolation: isolate; }
+.dd-btn-group > .dd-btn { flex: none; }
+.dd-btn-group > .dd-btn:focus-visible { z-index: 1; }
+
+/* Inner corners square off. */
+.dd-btn-group > .dd-btn:not(:first-child) { border-start-start-radius: 0; border-end-start-radius: 0; }
+.dd-btn-group > .dd-btn:not(:last-child) { border-start-end-radius: 0; border-end-end-radius: 0; }
+/* Pressed buttons don't jump inside a group — the seam would break. */
+.dd-btn-group > .dd-btn:active { transform: none; }
+
+/* Toggle buttons: pressed takes the deeper tone (one step past the tonal fill, in dawn and dusk alike); hover on an
+   unpressed button only goes half way, so it never reads as pressed. */
+.dd-btn-group > .dd-btn[aria-pressed='true'] { background: var(--dd-btn-secondary-hover); }
+.dd-btn-group > .dd-btn[aria-pressed='false'] { color: var(--dd-muted); }
+.dd-btn-group > .dd-btn[aria-pressed='false']:hover {
+  color: var(--dd-text); background: color-mix(in oklab, var(--dd-btn-secondary) 50%, var(--dd-btn-secondary-hover));
+}
+.dd-btn-group > .dd-btn--ghost[aria-pressed='true'] { background: var(--dd-btn-secondary); }
+.dd-btn-group > .dd-btn--ghost[aria-pressed='false']:hover { background: color-mix(in oklab, var(--dd-btn-secondary) 55%, transparent); }
+
+/* Vertical stack. */
+.dd-btn-group--vertical { flex-direction: column; }
+.dd-btn-group--vertical > .dd-btn { justify-content: flex-start; }
+.dd-btn-group--vertical > .dd-btn:not(:first-child) { border-radius: 0; }
+.dd-btn-group--vertical > .dd-btn:first-child { border-radius: var(--dd-r-ctl) var(--dd-r-ctl) 0 0; }
+.dd-btn-group--vertical > .dd-btn:last-child { border-radius: 0 0 var(--dd-r-ctl) var(--dd-r-ctl); }
+.dd-btn-group--vertical > .dd-btn:only-child { border-radius: var(--dd-r-ctl); }
+
+/* Full width: buttons share the row equally. */
+.dd-btn-group--block { display: flex; width: 100%; }
+.dd-btn-group--block > .dd-btn { flex: 1 1 0; min-width: 0; }
+
+/* Split button: the chevron half is narrow and its seam is a soft line in the button's own ink. */
+.dd-btn-group--split { gap: 0; }
+.dd-btn-group--split > .dd-btn + .dd-btn { box-shadow: inset 1px 0 0 color-mix(in oklab, currentColor 22%, transparent); }
+.dd-btn-group__caret.dd-btn--icon { padding-inline: calc(var(--dd-u) * var(--_py) * .8); }
+.dd-btn-group__caret > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
+.dd-btn-group__caret[aria-expanded='true'] > .dd-icon { transform: rotate(180deg); }
+/* Open: the caret keeps its own variant's hover tone (menu.css does the same for any open menu trigger). */
+.dd-btn-group__caret[aria-expanded='true'] { background: var(--dd-btn-secondary-hover); }
+.dd-btn-group__caret.dd-btn--primary[aria-expanded='true'] { background: var(--dd-primary-hover); }
+.dd-btn-group__caret.dd-btn--ink[aria-expanded='true'] { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }

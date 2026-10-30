@@ -1,0 +1,139 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const crumbs = (items: string[]) => `<nav class="dd-breadcrumbs dd-breadcrumbs--sm" aria-label="Breadcrumb">
+    <ol class="dd-breadcrumbs__list">
+      ${items.map((t, n) => `<li class="dd-breadcrumbs__item"><a class="dd-breadcrumbs__link"${n === items.length - 1 ? ' aria-current="page"' : ' href="#"'}><span>${t}</span></a></li>`).join('\n      ')}
+    </ol>
+  </nav>`;
+
+const full = `
+<header class="dd-page-header">
+  ${crumbs(['cxkw', 'services', 'auth-gateway'])}
+  <div class="dd-page-header__row">
+    <div class="dd-page-header__titles">
+      <h1 class="dd-page-header__title">auth-gateway</h1>
+    </div>
+    <div class="dd-page-header__actions">
+      <button class="dd-btn dd-btn--ghost" type="button">${i('external')}<span>Visit</span></button>
+      <button class="dd-btn dd-btn--secondary" type="button">${i('refresh')}<span>Redeploy</span></button>
+      <button class="dd-btn dd-btn--primary" type="button">${i('upload')}<span>Promote</span></button>
+    </div>
+  </div>
+  <p class="dd-page-header__desc">Issues and verifies session tokens for every cxkw.dev app. Deployed from <code>main</code> on each merge.</p>
+  <ul class="dd-page-header__meta">
+    <li><span class="dd-page-header__status"></span>Healthy</li>
+    <li>${i('globe')}<b>fra1 · iad1 · sin1</b></li>
+    <li>${i('clock')}Deployed <b>4m ago</b></li>
+    <li>${i('code')}<b>a1c9e07</b></li>
+  </ul>
+  <nav aria-label="Service">
+    <div class="dd-tabs__list">
+      <a class="dd-tabs__tab" href="#" aria-current="page">Overview</a>
+      <a class="dd-tabs__tab" href="#">Deploys <span class="dd-tabs__count">32</span></a>
+      <a class="dd-tabs__tab" href="#">Logs</a>
+      <a class="dd-tabs__tab" href="#">Metrics</a>
+      <a class="dd-tabs__tab" href="#">Env vars <span class="dd-tabs__count">18</span></a>
+      <a class="dd-tabs__tab" href="#">Settings</a>
+    </div>
+  </nav>
+</header>`;
+
+const simple = `
+<header class="dd-page-header">
+  <div class="dd-page-header__row">
+    <div class="dd-page-header__titles">
+      <h1 class="dd-page-header__title">projects</h1>
+      <p class="dd-page-header__desc">Everything you have shipped from cxkw.dev, newest first.</p>
+    </div>
+    <div class="dd-page-header__actions">
+      <button class="dd-btn dd-btn--secondary" type="button">${i('download')}<span>Import</span></button>
+      <button class="dd-btn dd-btn--primary" type="button">${i('plus')}<span>New project</span></button>
+    </div>
+  </div>
+</header>`;
+
+const back = `
+<header class="dd-page-header dd-page-header--sm">
+  <a class="dd-page-header__back" href="#">${i('arrow-left')}<span>All deploys</span></a>
+  <div class="dd-page-header__row">
+    <div class="dd-page-header__titles">
+      <p class="dd-page-header__eyebrow">Deploy · production</p>
+      <h1 class="dd-page-header__title dd-page-header__title--mono">dpl_71be09</h1>
+      <ul class="dd-page-header__meta">
+        <li><span class="dd-page-header__status dd-page-header__status--bad"></span>Failed at <b>build</b></li>
+        <li>${i('server')}billing-worker</li>
+        <li>${i('clock')}<b>2m 14s</b></li>
+      </ul>
+    </div>
+    <div class="dd-page-header__actions">
+      <button class="dd-btn dd-btn--secondary dd-btn--icon" type="button" aria-label="Copy deploy ID">${i('copy')}</button>
+      <button class="dd-btn dd-btn--secondary" type="button">${i('terminal')}<span>Open logs</span></button>
+      <button class="dd-btn dd-btn--primary" type="button">${i('refresh')}<span>Retry</span></button>
+    </div>
+  </div>
+</header>`;
+
+const withMark = `
+<header class="dd-page-header dd-page-header--lg">
+  <div class="dd-page-header__row">
+    <div class="dd-page-header__titles">
+      <h1 class="dd-page-header__title"><span class="dd-page-header__mark">${i('globe')}</span>edge-cache</h1>
+      <p class="dd-page-header__desc">The CDN in front of every static asset. 97.2% hit rate today.</p>
+    </div>
+    <div class="dd-page-header__actions">
+      <button class="dd-btn dd-btn--danger" type="button">${i('trash')}<span>Purge all</span></button>
+    </div>
+  </div>
+  <div class="dd-tabs dd-tabs--pill">
+    <div class="dd-tabs__list">
+      <a class="dd-tabs__tab" href="#" aria-current="page">All regions</a>
+      <a class="dd-tabs__tab" href="#">Europe</a>
+      <a class="dd-tabs__tab" href="#">Americas</a>
+      <a class="dd-tabs__tab" href="#">Asia–Pacific</a>
+    </div>
+  </div>
+</header>`;
+---
+<Docs title="Page header" group="Layout" lead="The top of a view: where you are, what this is, what you can do here, and the views inside it. Title in the heading lockup, actions on the right, tabs underneath.">
+  <Example title="Full" description="Breadcrumbs, title and actions on one row, then the description, meta facts and tabs. Actions wrap under the title when space runs out." code={full} />
+
+  <h2 id="simple">Title and actions</h2>
+  <p>Most index pages only need a title, one line of description and the main action.</p>
+  <Example code={simple} />
+
+  <h2 id="detail">Detail page</h2>
+  <p>For a single object: a back link instead of breadcrumbs, a mono eyebrow, the ID as the title and a status in the meta row. <code>--sm</code> steps the title down.</p>
+  <Example code={back} />
+
+  <h2 id="mark">Large, with a mark</h2>
+  <p>For top-level areas: <code>--lg</code> title with a tonal icon mark, and pill tabs as filters underneath.</p>
+  <Example code={withMark} />
+
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-page-header', 'The <code>&lt;header&gt;</code>. Children stack: breadcrumbs or back link, the row, description and meta, then tabs.'],
+    ['__row', 'Titles on the left, actions on the right; wraps.'],
+    ['__titles', 'Column for eyebrow and title (and a short description). Long descriptions and meta can sit below the row instead.'],
+    ['__eyebrow', 'Mono caps label above the title.'],
+    ['__back', 'A “← All deploys” link in place of breadcrumbs.'],
+    ['__title', 'The heading lockup: Outfit 800, lowercase, tight. Holds an optional <code>__mark</code>.'],
+    ['__title--mono', 'For IDs and hashes: mono, normal case.'],
+    ['__mark', 'A tonal square with an icon, sized to the title.'],
+    ['__desc', 'One or two lines of muted description.'],
+    ['__meta', 'A list of small facts; <code>&lt;b&gt;</code> values are set in mono.'],
+    ['__status (--warn, --bad)', 'Status dot for the meta row.'],
+    ['__actions', 'Buttons. One primary at most.'],
+    ['--sm / --lg', 'Title at 2xl / 4xl. Default is 3xl.'],
+  ]} />
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Name the page what the side nav calls it.', 'Put the most common action last and make it primary.', 'Use tabs underneath for views of this object; use pills for filters.']}
+    dont={['Don’t repeat the title in the first line of the description.', 'Don’t put more than three actions in the header; move the rest to a “more” menu.', 'Don’t use the header for alerts — use a banner above it.']}
+  />
+</Docs>

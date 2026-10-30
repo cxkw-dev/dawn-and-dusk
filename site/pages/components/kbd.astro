@@ -1,0 +1,92 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import ClassTable from '../../components/ClassTable.astro';
+import Guides from '../../components/Guides.astro';
+import { i } from '../../lib/icon';
+
+const k = (s: string, cls = '') => `<kbd class="dd-kbd${cls ? ' ' + cls : ''}">${s}</kbd>`;
+
+const keys = `
+<div class="dd-row">
+  ${k('⌘')} ${k('⇧')} ${k('⌥')} ${k('⌃')} ${k('↵')} ${k('⇥')} ${k('⌫')} ${k('esc')}
+  ${k('↑')} ${k('↓')} ${k('←')} ${k('→')} ${k('K')} ${k('/')} ${k('?')} ${k('Space')}
+</div>`;
+
+const combos = `
+<div class="dd-stack" style="--dd-gap: 15px">
+  <div class="dd-row" style="--dd-gap: 25px">
+    <kbd class="dd-kbd-combo" title="Command K"><kbd class="dd-kbd">⌘</kbd><kbd class="dd-kbd">K</kbd></kbd>
+    <kbd class="dd-kbd-combo" title="Command Shift P"><kbd class="dd-kbd">⌘</kbd><kbd class="dd-kbd">⇧</kbd><kbd class="dd-kbd">P</kbd></kbd>
+    <kbd class="dd-kbd-combo" title="Command Return"><kbd class="dd-kbd">⌘</kbd><kbd class="dd-kbd">↵</kbd></kbd>
+  </div>
+  <div class="dd-row" style="--dd-gap: 25px">
+    <kbd class="dd-kbd-combo"><kbd class="dd-kbd">Ctrl</kbd><span class="dd-kbd-combo__sep">+</span><kbd class="dd-kbd">Shift</kbd><span class="dd-kbd-combo__sep">+</span><kbd class="dd-kbd">L</kbd></kbd>
+    <kbd class="dd-kbd-combo"><kbd class="dd-kbd">G</kbd><span class="dd-kbd-combo__sep">then</span><kbd class="dd-kbd">D</kbd></kbd>
+    <kbd class="dd-kbd-combo"><kbd class="dd-kbd">↑</kbd><kbd class="dd-kbd">↓</kbd><span class="dd-kbd-combo__sep">to move</span></kbd>
+  </div>
+</div>`;
+
+const sizes = `
+<div class="dd-row" style="--dd-gap: 25px">
+  <kbd class="dd-kbd-combo"><kbd class="dd-kbd dd-kbd--sm">⌘</kbd><kbd class="dd-kbd dd-kbd--sm">K</kbd></kbd>
+  <kbd class="dd-kbd-combo"><kbd class="dd-kbd">⌘</kbd><kbd class="dd-kbd">K</kbd></kbd>
+  <kbd class="dd-kbd-combo"><kbd class="dd-kbd dd-kbd--lg">⌘</kbd><kbd class="dd-kbd dd-kbd--lg">K</kbd></kbd>
+  <kbd class="dd-kbd-combo"><kbd class="dd-kbd dd-kbd--quiet">⌘⇧D</kbd></kbd>
+  <kbd class="dd-kbd-combo"><kbd class="dd-kbd dd-kbd--lg is-active">⌘</kbd><kbd class="dd-kbd dd-kbd--lg">K</kbd></kbd>
+</div>`;
+
+const inContext = `
+<div class="dd-stack" style="--dd-gap: 20px">
+  <p class="dd-text dd-small">Press <kbd class="dd-kbd-combo"><kbd class="dd-kbd">⌘</kbd><kbd class="dd-kbd">K</kbd></kbd> anywhere to jump to a project, or <kbd class="dd-kbd">/</kbd> to search the logs of <span class="dd-mono">billing-worker</span>.</p>
+  <div class="dd-row">
+    <button class="dd-btn dd-btn--primary">${i('play')}<span>Deploy</span><kbd class="dd-kbd-combo"><kbd class="dd-kbd dd-kbd--sm">⌘</kbd><kbd class="dd-kbd dd-kbd--sm">↵</kbd></kbd></button>
+    <button class="dd-btn dd-btn--secondary">${i('search')}<span>Search</span><kbd class="dd-kbd dd-kbd--sm">⌘K</kbd></button>
+    <button class="dd-btn dd-btn--ink">${i('terminal')}<span>Console</span><kbd class="dd-kbd dd-kbd--sm">⌃\`</kbd></button>
+    <button class="dd-btn dd-btn--ghost"><span>Cancel</span><kbd class="dd-kbd dd-kbd--sm">esc</kbd></button>
+  </div>
+</div>`;
+
+const list = `
+<div class="dd-surface" style="max-width: 420px; padding: 20px 25px">
+  <p class="dd-eyebrow" style="margin-bottom: 5px">Keyboard shortcuts</p>
+  <dl class="dd-kbd-list">
+    <dt>Open command palette</dt><dd><kbd class="dd-kbd-combo"><kbd class="dd-kbd">⌘</kbd><kbd class="dd-kbd">K</kbd></kbd></dd>
+    <dt>Go to deployments</dt><dd><kbd class="dd-kbd-combo"><kbd class="dd-kbd">G</kbd><span class="dd-kbd-combo__sep">then</span><kbd class="dd-kbd">D</kbd></kbd></dd>
+    <dt>Search logs</dt><dd><kbd class="dd-kbd">/</kbd></dd>
+    <dt>Redeploy auth-gateway</dt><dd><kbd class="dd-kbd-combo"><kbd class="dd-kbd">⌘</kbd><kbd class="dd-kbd">⇧</kbd><kbd class="dd-kbd">R</kbd></kbd></dd>
+    <dt>Toggle dawn / dusk</dt><dd><kbd class="dd-kbd-combo"><kbd class="dd-kbd">⌥</kbd><kbd class="dd-kbd">T</kbd></kbd></dd>
+    <dt>Show this list</dt><dd><kbd class="dd-kbd">?</kbd></dd>
+  </dl>
+</div>`;
+---
+<Docs title="Kbd" group="Actions" lead="Keyboard keys and combos. Tonal keycaps in DM Mono with a soft lower edge, no outline, so they sit quietly on any surface.">
+  <Example title="Keys" description="One key per element. Use the Mac glyphs (⌘ ⇧ ⌥ ⌃ ↵) where your audience is on a Mac, and words (Ctrl, Shift) elsewhere." code={keys} />
+  <h2 id="combos">Combos and sequences</h2>
+  <p>Wrap keys pressed together in <code>.dd-kbd-combo</code>. Glyph combos need no separator; word keys read better with a <code>+</code>. Sequences (press G, release, press D) put <code>then</code> between keys.</p>
+  <Example code={combos} />
+  <h2 id="sizes">Sizes and variants</h2>
+  <p>Small for buttons and dense rows, medium (default) for running text, large for shortcut help and onboarding. <code>--quiet</code> drops the keycap for hints in menus and lists. <code>is-active</code> shows a held key.</p>
+  <Example code={sizes} />
+  <h2 id="in-context">In text and buttons</h2>
+  <p>Keys set at the text’s baseline. Inside a <code>.dd-btn</code> they take the button’s own ink, so they work on primary, ink and tonal fills.</p>
+  <Example code={inContext} />
+  <h2 id="list">Shortcut list</h2>
+  <p>A <code>&lt;dl class="dd-kbd-list"&gt;</code> lines actions up against their keys, with hairline rows.</p>
+  <Example code={list} />
+  <h2 id="api">Classes</h2>
+  <ClassTable rows={[
+    ['.dd-kbd', 'One key. Use it on <code>&lt;kbd&gt;</code>.'],
+    ['.dd-kbd--sm / --lg', 'Sizes. Medium has no modifier.'],
+    ['.dd-kbd--quiet', 'No keycap, faint glyphs only. For hints inside menus and lists.'],
+    ['.dd-kbd.is-active', 'A held key, filled with the accent.'],
+    ['.dd-kbd-combo', 'Groups keys pressed together. Use an outer <code>&lt;kbd&gt;</code>, as HTML recommends for combos.'],
+    ['.dd-kbd-combo__sep', 'A <code>+</code>, <code>then</code> or short note between keys.'],
+    ['.dd-kbd-list', 'A <code>&lt;dl&gt;</code> of shortcuts: <code>&lt;dt&gt;</code> action, <code>&lt;dd&gt;</code> keys.'],
+  ]} />
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides
+    do={['Show the shortcut where the action lives: in its button, menu item or tooltip.', 'Give glyph-only combos a <code>title</code> (“Command K”) so they read aloud and on hover.', 'Match the platform: ⌘ on macOS, Ctrl on Windows and Linux.']}
+    dont={['Don’t put a keycap around whole words in prose; use one key per <code>.dd-kbd</code>.', 'Don’t advertise shortcuts that aren’t wired up yet.', 'Don’t use keys as decoration; they always mean “press this”.']}
+  />
+</Docs>

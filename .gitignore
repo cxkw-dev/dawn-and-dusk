@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+*.log
+
+# stray screenshots
+*.png
+!ds/**/*.png
+!site/**/*.png
+!skill/**/*.png
+!tools/**/*.png

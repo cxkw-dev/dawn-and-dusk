@@ -1,0 +1,52 @@
+/* Logo — the dawn & dusk wordmark. "One line" is the default: Outfit 800 at -0.055em tracking, set in currentColor so it
+   follows dawn / dusk and any block it sits on. The stacked lockup cuts its second line out of the first with a stroke in
+   the colour behind it (--dd-logo-bg). The tile is the "d&" crop for favicons, app icons and the side-nav rail. */
+.dd-logo {
+  --dd-logo-size: 22px;
+  display: inline-block; margin: 0; color: inherit; text-decoration: none;
+  font-family: var(--dd-font-display); font-size: var(--dd-logo-size); font-weight: 800; font-style: normal;
+  letter-spacing: -0.055em; line-height: 1; text-transform: none; white-space: nowrap;
+}
+a.dd-logo { border-radius: var(--dd-r-ctl); }
+a.dd-logo:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 3px; }
+
+.dd-logo--xs { --dd-logo-size: 15px; }
+.dd-logo--sm { --dd-logo-size: 18px; }
+.dd-logo--lg { --dd-logo-size: 32px; }
+.dd-logo--xl { --dd-logo-size: 46px; }
+.dd-logo--2xl { --dd-logo-size: 64px; }
+
+/* Stacked lockup: "dawn" over "& dusk"; line two overlaps line one and is cut out of it. */
+.dd-logo--stack { display: inline-grid; line-height: .78; }
+.dd-logo__line { position: relative; display: block; white-space: nowrap; }
+.dd-logo__line + .dd-logo__line { z-index: 1; -webkit-text-stroke: .04em var(--dd-logo-bg, var(--dd-bg)); paint-order: stroke fill; }
+.dd-logo__amp { display: inline-block; width: .56em; margin-left: -.05em; }
+
+/* Colourways — the mark itself never changes, only what it sits on. */
+.dd-logo--muted { color: var(--dd-muted); }
+.dd-logo--accent { color: var(--dd-accent); }
+.dd-logo-block {
+  --dd-logo-bg: var(--dd-bg);
+  display: inline-flex; align-items: center; justify-content: center; padding: calc(var(--dd-u) * 6) calc(var(--dd-u) * 8);
+  border-radius: var(--dd-r-box); background: var(--dd-bg); color: var(--dd-text);
+}
+.dd-logo-block--surface { --dd-logo-bg: var(--dd-surface); background: var(--dd-surface); }
+.dd-logo-block--ink { --dd-logo-bg: var(--dd-text); background: var(--dd-text); color: var(--dd-bg); }
+.dd-logo-block--primary { --dd-logo-bg: var(--dd-primary); background: var(--dd-primary); color: var(--dd-on-primary); }
+
+/* Favicon / app tile: "d&" in the page colour on an ink square. */
+.dd-logo-tile {
+  --dd-tile: 40px;
+  display: inline-grid; place-items: center; flex: none; width: var(--dd-tile); height: var(--dd-tile);
+  border-radius: max(5px, calc(var(--dd-tile) * .22)); background: var(--dd-text); color: var(--dd-bg); text-decoration: none;
+  font-family: var(--dd-font-display); font-size: calc(var(--dd-tile) * .43); font-weight: 800; letter-spacing: -0.06em;
+  line-height: 1; padding-right: .06em; user-select: none;
+}
+a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-logo-tile--16 { --dd-tile: 16px; border-radius: 4px; font-size: 8.5px; }
+.dd-logo-tile--24 { --dd-tile: 24px; }
+.dd-logo-tile--32 { --dd-tile: 32px; }
+.dd-logo-tile--64 { --dd-tile: 64px; }
+.dd-logo-tile--96 { --dd-tile: 96px; }
+.dd-logo-tile--primary { background: var(--dd-primary); color: var(--dd-on-primary); }
+.dd-logo-tile--paper { background: var(--dd-bg); color: var(--dd-text); }

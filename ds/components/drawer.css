@@ -1,0 +1,117 @@
+/* Drawer — a full-height side panel from the right for details and editing, over the same scrim as a dialog.
+   Native <dialog class="dd-drawer"> opened with showModal() (behaviors/dialog.js). Parts: head (eyebrow + title + meta
+   + close) · body (scrolls) · foot (actions, always in view). Sizes: sm · md (default) · lg; full width under 480px. */
+.dd-drawer {
+  --_w: 480px;
+  --_bg: var(--dd-surface);
+  --_pad: calc(var(--dd-u) * 5);
+  --_line: color-mix(in oklab, var(--dd-text) 10%, transparent);
+  position: fixed; inset: 0 0 0 auto;
+  width: min(var(--_w), 100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh;
+  margin: 0; padding: 0; border: 0; border-radius: var(--dd-r-lg) 0 0 var(--dd-r-lg);
+  background: var(--_bg); color: var(--dd-text); box-shadow: var(--dd-shadow-float);
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: var(--dd-lh);
+  overflow: hidden; overscroll-behavior: contain;
+  container: dd-drawer / inline-size;
+}
+.dd-drawer[open] { display: flex; flex-direction: column; animation: dd-drawer-in var(--dd-dur) var(--dd-ease); }
+.dd-drawer::backdrop { background: var(--dd-overlay); animation: dd-dialog-fade var(--dd-dur) var(--dd-ease); }
+.dd-drawer.is-closing { animation: dd-drawer-out var(--dd-dur) var(--dd-ease) forwards; }
+.dd-drawer.is-closing::backdrop { animation: dd-dialog-fade var(--dd-dur) var(--dd-ease) reverse forwards; }
+.dd-drawer:focus-visible { outline: none; }
+
+/* head */
+.dd-drawer__head { flex: none; display: flex; align-items: flex-start; gap: calc(var(--dd-u) * 3); padding: var(--_pad) var(--_pad) calc(var(--dd-u) * 4); }
+.dd-drawer__titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1.25); }
+.dd-drawer__eyebrow {
+  margin: 0; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1.2;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-muted);
+}
+.dd-drawer__title {
+  margin: 0; font-family: var(--dd-font-display); font-size: var(--dd-fs-xl); font-weight: var(--dd-h-weight);
+  letter-spacing: -0.04em; line-height: 1; text-transform: var(--dd-h-case); overflow-wrap: anywhere;
+}
+.dd-drawer__meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1) calc(var(--dd-u) * 3); margin: 0;
+  font-size: var(--dd-fs-xs); color: var(--dd-muted);
+}
+.dd-drawer__meta > * { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1); }
+.dd-drawer__meta > .is-ok > .dd-icon { color: var(--dd-ok); }
+.dd-drawer__meta > .is-warn > .dd-icon { color: var(--dd-warn); }
+.dd-drawer__meta > .is-bad > .dd-icon { color: var(--dd-bad); }
+.dd-drawer__close {
+  appearance: none; display: inline-grid; place-items: center; flex: none; width: calc(var(--dd-u) * 6.5); height: calc(var(--dd-u) * 6.5);
+  margin: calc(var(--dd-u) * -1) calc(var(--dd-u) * -1.5) 0 auto; padding: 0; border: 0; border-radius: var(--dd-r-ctl);
+  background: none; color: var(--dd-muted); font-size: 17px; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-drawer__close:hover { background: var(--dd-surface-2); color: var(--dd-text); }
+.dd-drawer__close:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+/* body — scrolls; hairlines show at an edge only while content is hidden there */
+.dd-drawer__body {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: calc(var(--dd-u) * 1) var(--_pad) var(--_pad);
+  background:
+    linear-gradient(var(--_bg) 0 0) top / 100% 2px no-repeat local,
+    linear-gradient(var(--_bg) 0 0) bottom / 100% 2px no-repeat local,
+    linear-gradient(var(--_line) 0 0) top / 100% 1px no-repeat scroll,
+    linear-gradient(var(--_line) 0 0) bottom / 100% 1px no-repeat scroll;
+}
+.dd-drawer__body > :first-child { margin-top: 0; }
+.dd-drawer__body > :last-child { margin-bottom: 0; }
+.dd-drawer__body > p, .dd-drawer__section > p { margin: 0 0 0.75em; color: var(--dd-muted); }
+.dd-drawer__section + .dd-drawer__section { margin-top: calc(var(--dd-u) * 6); }
+.dd-drawer__section-title {
+  margin: 0 0 calc(var(--dd-u) * 2); font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-muted);
+}
+
+/* key / value rows */
+.dd-drawer__props { display: grid; grid-template-columns: minmax(90px, 32%) minmax(0, 1fr); margin: 0; }
+.dd-drawer__props > dt, .dd-drawer__props > dd {
+  margin: 0; padding: calc(var(--dd-u) * 2) 0; border-bottom: 1px solid var(--_line); min-width: 0;
+}
+.dd-drawer__props > dt { padding-right: calc(var(--dd-u) * 3); color: var(--dd-muted); }
+.dd-drawer__props > dd { overflow-wrap: anywhere; }
+.dd-drawer__props > :nth-last-child(-n + 2) { border-bottom: 0; }
+
+/* log / code excerpt */
+.dd-drawer__log {
+  margin: 0; padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 3.5); border-radius: var(--dd-r-box);
+  background: var(--dd-surface-2); color: var(--dd-muted); font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs);
+  line-height: 1.75; white-space: pre; overflow-x: auto;
+}
+
+/* editing: wrap head/body/foot in <form method="dialog" class="dd-drawer__form"> — it steps out of the layout.
+   Fields are the system's own: .dd-form__body > .dd-field > .dd-input (form-field.css, text-input.css). */
+.dd-drawer__form { display: contents; }
+
+/* foot — outside the scroller, so the actions never leave the screen */
+.dd-drawer__foot {
+  flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: calc(var(--dd-u) * 2);
+  padding: calc(var(--dd-u) * 3) var(--_pad) var(--_pad);
+}
+/* pushes itself (and anything before it) to the start: a hint, or a destructive action kept apart */
+.dd-drawer__start { margin-right: auto; }
+.dd-drawer__hint { margin-right: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+
+/* sizes */
+.dd-drawer--sm { --_w: 360px; }
+.dd-drawer--sm .dd-drawer__title { font-size: var(--dd-fs-lg); }
+.dd-drawer--lg { --_w: 720px; }
+
+@media (max-width: 480px) {
+  .dd-drawer { width: 100vw; border-radius: 0; }
+}
+/* narrow: tighter padding, the hint drops and the actions share the footer */
+@container dd-drawer (max-width: 400px) {
+  .dd-drawer__head, .dd-drawer__body, .dd-drawer__foot { --_pad: calc(var(--dd-u) * 4); }
+  .dd-drawer__foot > .dd-btn { flex: 1 1 auto; }
+  .dd-drawer__hint { display: none; }
+}
+
+:root:has(.dd-drawer:modal) { overflow: hidden; }
+
+@keyframes dd-drawer-in { from { transform: translateX(100%); } }
+@keyframes dd-drawer-out { to { transform: translateX(100%); } }

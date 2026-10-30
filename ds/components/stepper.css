@@ -1,0 +1,130 @@
+/* Stepper — progress through ordered steps. Wizard steps are done · current · upcoming · error, laid out
+   horizontally (connectors between steps) or --vertical (with descriptions). --pipeline is the status flavour:
+   compact stages for a deploy (passed · running · failed · skipped · queued) with mono durations and connectors
+   coloured by the stage before them. Mark the current step with aria-current="step". */
+.dd-stepper {
+  --_m: 28px;                                  /* marker size */
+  --_line: color-mix(in oklab, var(--dd-text) 12%, transparent);
+  display: flex; list-style: none; margin: 0; padding: 0; min-width: 0; container-type: inline-size;
+  font-size: var(--dd-fs-sm);
+}
+.dd-stepper__step { position: relative; display: flex; align-items: flex-start; gap: calc(var(--dd-u) * 2); flex: 1 1 0; min-width: 0; color: var(--dd-muted); }
+.dd-stepper__step:last-child { flex: 0 0 auto; }
+
+.dd-stepper__marker {
+  display: inline-grid; place-items: center; flex: none; width: var(--_m); height: var(--_m); border-radius: 50%;
+  background: color-mix(in oklab, var(--dd-text) 9%, transparent); color: var(--dd-muted);
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums;
+  transition: background-color var(--dd-dur) var(--dd-ease), color var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur) var(--dd-ease);
+}
+.dd-stepper__marker .dd-icon { width: 100%; height: 100%; }
+.dd-stepper__text { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding-top: calc((var(--_m) - 1.45em) / 2); }
+.dd-stepper__label { font-weight: 500; line-height: 1.45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dd-stepper__desc { font-size: var(--dd-fs-xs); line-height: 1.4; color: var(--dd-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Connector: fills the rest of each step and leads to the next one. */
+.dd-stepper__step:not(:last-child)::after {
+  content: ""; flex: 1 1 calc(var(--dd-u) * 4); min-width: calc(var(--dd-u) * 3); height: 2px; border-radius: 1px;
+  margin: calc(var(--_m) / 2 - 1px) calc(var(--dd-u) * 2) 0 0; background: var(--_line);
+}
+
+/* States */
+.dd-stepper__step.is-done { color: var(--dd-text); }
+.dd-stepper__step.is-done .dd-stepper__marker { background: none; color: var(--dd-ok); }
+.dd-stepper__step.is-done::after { background: color-mix(in oklab, var(--dd-ok) 60%, transparent); }
+.dd-stepper__step.is-current { color: var(--dd-text); }
+.dd-stepper__step.is-current .dd-stepper__label { font-weight: 650; }
+.dd-stepper__step.is-current .dd-stepper__marker {
+  background: var(--dd-accent); color: var(--dd-on-accent); box-shadow: 0 0 0 4px var(--dd-accent-soft);
+}
+.dd-stepper__step.is-error { color: var(--dd-bad); }
+.dd-stepper__step.is-error .dd-stepper__marker { background: none; color: var(--dd-bad); }
+.dd-stepper__step.is-error .dd-stepper__desc { color: color-mix(in oklab, var(--dd-bad) 75%, var(--dd-muted)); }
+
+/* Narrow horizontal steppers keep only the current (and any failed) step's label (others stay readable to screen readers). */
+@container (max-width: 520px) {
+  .dd-stepper:not(.dd-stepper--vertical):not(.dd-stepper--pipeline) .dd-stepper__step:not(.is-current, .is-error) .dd-stepper__text {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .dd-stepper:not(.dd-stepper--vertical):not(.dd-stepper--pipeline) .dd-stepper__step { gap: calc(var(--dd-u) * 1.5); }
+  /* Steps without a label never shrink past marker + connector, so connectors can't run into the next marker. */
+  .dd-stepper:not(.dd-stepper--vertical):not(.dd-stepper--pipeline) .dd-stepper__step:not(.is-current, .is-error) { min-width: min-content; }
+  .dd-stepper:not(.dd-stepper--vertical):not(.dd-stepper--pipeline) .dd-stepper__step:not(:last-child)::after {
+    min-width: calc(var(--dd-u) * 2); margin-right: calc(var(--dd-u) * 1.5);
+  }
+  .dd-stepper:not(.dd-stepper--vertical):not(.dd-stepper--pipeline) .dd-stepper__step:is(.is-current, .is-error) { flex-grow: 3; }
+}
+
+/* Vertical: the connector runs down from each marker; descriptions wrap. */
+.dd-stepper--vertical { flex-direction: column; }
+.dd-stepper--vertical .dd-stepper__step { flex: none; gap: calc(var(--dd-u) * 3); padding-bottom: calc(var(--dd-u) * 5); }
+.dd-stepper--vertical .dd-stepper__step:last-child { padding-bottom: 0; }
+.dd-stepper--vertical .dd-stepper__step:not(:last-child)::after {
+  position: absolute; left: calc(var(--_m) / 2 - 1px); top: calc(var(--_m) + var(--dd-u)); bottom: var(--dd-u);
+  width: 2px; height: auto; min-width: 0; margin: 0;
+}
+.dd-stepper--vertical .dd-stepper__label, .dd-stepper--vertical .dd-stepper__desc { white-space: normal; overflow-wrap: anywhere; }
+.dd-stepper--vertical .dd-stepper__desc { font-size: var(--dd-fs-sm); color: var(--dd-muted); line-height: var(--dd-lh); }
+
+/* Small */
+.dd-stepper--sm { --_m: 22px; font-size: var(--dd-fs-xs); }
+.dd-stepper--sm .dd-stepper__marker { font-size: 10px; }
+.dd-stepper--sm .dd-stepper__step.is-current .dd-stepper__marker { box-shadow: 0 0 0 3px var(--dd-accent-soft); }
+
+/* ---------- Pipeline ---------- */
+.dd-stepper--pipeline {
+  --_m: 18px; --_gap: calc(var(--dd-u) * 5);
+  display: grid; grid-auto-flow: column; grid-auto-columns: max-content; justify-content: start;
+  column-gap: var(--_gap); row-gap: calc(var(--dd-u) * 2); overflow-x: auto; scrollbar-width: thin; padding: 2px;
+}
+.dd-stepper--pipeline .dd-stepper__step {
+  align-items: center; gap: calc(var(--dd-u) * 2); padding: calc(var(--dd-u) * 1.75) calc(var(--dd-u) * 3) calc(var(--dd-u) * 1.75) calc(var(--dd-u) * 2.25);
+  border-radius: var(--dd-r-box); background: var(--dd-surface); color: var(--dd-text);
+}
+.dd-stepper--pipeline .dd-stepper__step::after { content: none; }
+.dd-stepper--pipeline .dd-stepper__marker { background: none; color: var(--dd-faint); box-shadow: none; }
+.dd-stepper--pipeline .dd-stepper__text { padding-top: 0; gap: 0; }
+.dd-stepper--pipeline .dd-stepper__label { font-weight: 600; }
+.dd-stepper--pipeline .dd-stepper__desc { font-family: var(--dd-font-mono); color: var(--dd-muted); font-variant-numeric: tabular-nums; }
+.dd-stepper--pipeline .dd-stepper__step + .dd-stepper__step::before {
+  content: ""; position: absolute; right: 100%; top: 50%; width: var(--_gap); height: 2px; margin-top: -1px; background: var(--_line);
+}
+.dd-stepper__spinner {
+  width: 80%; height: 80%; border-radius: 50%;
+  border: 2px solid color-mix(in oklab, currentColor 28%, transparent); border-top-color: currentColor;
+  animation: dd-spin .8s linear infinite;
+}
+/* passed */
+.dd-stepper--pipeline .is-done .dd-stepper__marker { color: var(--dd-ok); }
+.dd-stepper--pipeline .is-done + .dd-stepper__step::before { background: var(--dd-ok); }
+/* running */
+.dd-stepper--pipeline .is-current { background: color-mix(in oklab, var(--dd-accent) 18%, var(--dd-surface)); }
+.dd-stepper--pipeline .is-current .dd-stepper__label { font-weight: 650; }
+.dd-stepper--pipeline .is-current .dd-stepper__marker { background: none; color: var(--dd-accent); box-shadow: none; }
+.dd-stepper--pipeline .is-current + .dd-stepper__step::before {
+  background: repeating-linear-gradient(90deg, var(--dd-accent) 0 4px, transparent 4px 8px);
+}
+/* failed */
+.dd-stepper--pipeline .is-error { background: color-mix(in oklab, var(--dd-bad) 22%, var(--dd-surface)); }
+.dd-stepper--pipeline .is-error .dd-stepper__label { color: var(--dd-text); }
+.dd-stepper--pipeline .is-error .dd-stepper__desc { color: color-mix(in oklab, var(--dd-bad) 70%, var(--dd-text)); }
+.dd-stepper--pipeline .is-error + .dd-stepper__step::before { background: color-mix(in oklab, var(--dd-bad) 60%, transparent); }
+/* skipped */
+.dd-stepper--pipeline .is-skipped { background: color-mix(in oklab, var(--dd-surface) 45%, transparent); color: var(--dd-muted); }
+.dd-stepper--pipeline .is-skipped .dd-stepper__label { font-weight: 500; }
+.dd-stepper--pipeline .is-skipped + .dd-stepper__step::before {
+  background: repeating-linear-gradient(90deg, var(--_line) 0 4px, transparent 4px 8px);
+}
+/* queued = no state class */
+.dd-stepper--pipeline .dd-stepper__step:not(.is-done, .is-current, .is-error, .is-skipped) { color: var(--dd-muted); }
+.dd-stepper--pipeline .dd-stepper__step:not(.is-done, .is-current, .is-error, .is-skipped) .dd-stepper__label { font-weight: 500; }
+
+/* Narrow pipelines stack: every stage drops into the first column and connectors turn vertical. */
+@container (max-width: 560px) {
+  .dd-stepper--pipeline .dd-stepper__step { grid-column: 1; }
+  .dd-stepper--pipeline .dd-stepper__step + .dd-stepper__step::before {
+    right: auto; top: auto; bottom: 100%; left: calc(var(--dd-u) * 2.25 + var(--_m) / 2 - 1px); width: 2px; height: calc(var(--dd-u) * 2); margin: 0;
+  }
+  .dd-stepper--pipeline .is-current + .dd-stepper__step::before { background: repeating-linear-gradient(180deg, var(--dd-accent) 0 3px, transparent 3px 6px); }
+  .dd-stepper--pipeline .is-skipped + .dd-stepper__step::before { background: repeating-linear-gradient(180deg, var(--_line) 0 3px, transparent 3px 6px); }
+}

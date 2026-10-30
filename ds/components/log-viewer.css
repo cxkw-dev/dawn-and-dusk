@@ -1,0 +1,116 @@
+/* Log viewer — a monospace stream with timestamps, level badges and a service column; a bar to search, filter by
+   level and toggle wrapping (behaviors/log-viewer.js). Columns line up across lines via subgrid. */
+.dd-log-viewer {
+  --_line: color-mix(in oklab, var(--dd-text) 9%, transparent);
+  display: flex; flex-direction: column; min-width: 0; overflow: hidden;
+  background: var(--dd-surface); color: var(--dd-text); border-radius: var(--dd-r-box);
+}
+
+/* bar */
+.dd-log-viewer__bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5);
+  padding: calc(var(--dd-u) * 2); box-shadow: inset 0 -1px 0 var(--_line); font-size: var(--dd-fs-xs);
+}
+.dd-log-viewer__search {
+  display: flex; align-items: center; gap: calc(var(--dd-u) * 1.5); flex: 1 1 200px; min-width: 0; height: 30px;
+  padding: 0 calc(var(--dd-u) * 2.25); border-radius: var(--dd-r-ctl); background: var(--dd-surface-2); color: var(--dd-muted);
+  transition: box-shadow var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-log-viewer__search:focus-within { box-shadow: 0 0 0 2px var(--dd-ring); }
+.dd-log-viewer__search input {
+  flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: none;
+  font-family: var(--dd-font-mono); font-size: 12.5px; color: var(--dd-text);
+}
+.dd-log-viewer__search input::placeholder { color: var(--dd-muted); font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); }
+.dd-log-viewer__search input::-webkit-search-cancel-button { display: none; }
+.dd-log-viewer__levels {
+  display: inline-flex; gap: 2px; max-width: 100%; padding: 2px; overflow-x: auto; scrollbar-width: none;
+  border-radius: var(--dd-r-ctl); background: var(--dd-surface-2);
+}
+.dd-log-viewer__toggle {
+  appearance: none; display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1); height: 26px;
+  padding: 0 calc(var(--dd-u) * 2); border: 0; border-radius: calc(var(--dd-r-ctl) - 1px); background: transparent;
+  font: inherit; font-size: var(--dd-fs-xs); font-weight: 500; color: var(--dd-muted); cursor: pointer; white-space: nowrap;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-log-viewer__toggle:hover { color: var(--dd-text); }
+.dd-log-viewer__toggle:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
+.dd-log-viewer__toggle[aria-pressed='true'] { background: var(--dd-surface); color: var(--dd-text); }
+.dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='false'] { text-decoration: line-through; text-decoration-color: var(--dd-faint); }
+.dd-log-viewer__levels .dd-log-viewer__toggle::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint));
+}
+.dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='false']::before { opacity: .35; }
+.dd-log-viewer__toggle--wrap { height: 30px; background: var(--dd-surface-2); }
+.dd-log-viewer__toggle--wrap[aria-pressed='true'] { background: var(--dd-surface-3); }
+.dd-log-viewer__n { font-family: var(--dd-font-mono); font-size: 10.5px; color: var(--dd-muted); }
+.dd-log-viewer__count { margin-left: auto; font-family: var(--dd-font-mono); font-size: 11px; color: var(--dd-muted); white-space: nowrap; }
+.dd-log-viewer__live { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); font-weight: 600; color: var(--dd-text); white-space: nowrap; }
+.dd-log-viewer__live::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--dd-ok);
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--dd-ok) 55%, transparent); animation: dd-log-viewer-pulse 1.8s var(--dd-ease) infinite;
+}
+@keyframes dd-log-viewer-pulse { 70%, 100% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--dd-ok) 0%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .dd-log-viewer__live::before { animation: none; } }
+
+/* stream */
+.dd-log-viewer__scroll { overflow: auto; max-height: var(--dd-log-viewer-height, 420px); outline: none; }
+.dd-log-viewer__scroll:focus-visible { box-shadow: inset 0 0 0 2px var(--dd-ring); }
+.dd-log-viewer__lines {
+  display: grid; grid-template-columns: max-content max-content max-content max-content;
+  width: max-content; min-width: 100%; margin: 0; padding: calc(var(--dd-u) * 1.5) 0;
+  list-style: none; font-family: var(--dd-font-mono); font-size: 12.5px; line-height: 1.6;
+}
+.dd-log-viewer__line {
+  grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: baseline;
+  column-gap: 0; padding: 1px calc(var(--dd-u) * 3);
+}
+.dd-log-viewer__line > * { padding-right: calc(var(--dd-u) * 2.5); }
+.dd-log-viewer__line:hover { background: var(--dd-surface-2); }
+.dd-log-viewer__line[data-level='error'] { background: color-mix(in oklab, var(--dd-bad) 9%, transparent); }
+.dd-log-viewer__line[data-level='error']:hover { background: color-mix(in oklab, var(--dd-bad) 14%, transparent); }
+.dd-log-viewer__line[hidden] { display: none; }
+.dd-log-viewer__time { color: var(--dd-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dd-log-viewer__level {
+  --_c: var(--dd-muted);
+  justify-self: start; padding: 0 calc(var(--dd-u) * 1.1); margin-right: calc(var(--dd-u) * 2.5);
+  border-radius: 3px; background: color-mix(in oklab, var(--_c) 17%, transparent); color: color-mix(in oklab, var(--_c) 72%, var(--dd-text));
+  font-size: 10px; font-weight: 500; line-height: 17px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;
+}
+.dd-log-viewer__line > .dd-log-viewer__level { padding-right: calc(var(--dd-u) * 1.1); }
+:is(.dd-log-viewer__line[data-level='debug'] .dd-log-viewer__level, .dd-log-viewer__toggle[data-dd-log-viewer-level='debug']) { --_c: var(--dd-muted); }
+:is(.dd-log-viewer__line[data-level='info'] .dd-log-viewer__level, .dd-log-viewer__toggle[data-dd-log-viewer-level='info']) { --_c: var(--dd-info); }
+:is(.dd-log-viewer__line[data-level='warn'] .dd-log-viewer__level, .dd-log-viewer__toggle[data-dd-log-viewer-level='warn']) { --_c: var(--dd-warn); }
+:is(.dd-log-viewer__line[data-level='error'] .dd-log-viewer__level, .dd-log-viewer__toggle[data-dd-log-viewer-level='error']) { --_c: var(--dd-bad); }
+.dd-log-viewer__src { color: var(--dd-muted); white-space: nowrap; }
+.dd-log-viewer__msg { white-space: pre; color: var(--dd-text); }
+.dd-log-viewer__dim { color: var(--dd-muted); }
+.dd-log-viewer__line[data-level='debug'] .dd-log-viewer__msg { color: color-mix(in oklab, var(--dd-text) 70%, var(--dd-muted)); }
+.dd-log-viewer__mark { background: color-mix(in oklab, var(--dd-warn) 38%, transparent); color: inherit; border-radius: 2px; box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-warn) 38%, transparent); }
+
+/* wrapped: the message column takes the remaining width and wraps */
+.dd-log-viewer.is-wrapped .dd-log-viewer__lines { width: auto; grid-template-columns: max-content max-content max-content minmax(0, 1fr); }
+.dd-log-viewer.is-wrapped .dd-log-viewer__msg { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.dd-log-viewer__empty {
+  margin: 0; padding: calc(var(--dd-u) * 8) calc(var(--dd-u) * 4); text-align: center; font-size: var(--dd-fs-sm); color: var(--dd-muted);
+}
+.dd-log-viewer__empty b { display: block; margin-bottom: 2px; color: var(--dd-text); font-weight: 600; }
+.dd-log-viewer__empty[hidden] { display: none; }
+
+/* Narrow: drop the service column so the message keeps its room; the level filter fills its own row; wrapped
+   messages drop under the timestamp and use the full width instead of a sliver of a column. */
+@container dd-log-viewer (max-width: 520px) {
+  .dd-log-viewer__src { display: none; }
+  .dd-log-viewer__lines { grid-template-columns: max-content max-content max-content; }
+  .dd-log-viewer__levels { flex: 1 1 100%; }
+  .dd-log-viewer__levels .dd-log-viewer__toggle { flex: 1 0 auto; justify-content: center; }
+  .dd-log-viewer.is-wrapped .dd-log-viewer__lines { display: block; }
+  .dd-log-viewer.is-wrapped .dd-log-viewer__line:not([hidden]) { display: flex; flex-wrap: wrap; align-items: baseline; padding-block: 3px; }
+  .dd-log-viewer.is-wrapped .dd-log-viewer__msg { flex: 1 0 100%; padding-right: 0; }
+}
+@container dd-log-viewer (max-width: 380px) {
+  .dd-log-viewer__n { display: none; }
+  .dd-log-viewer__levels .dd-log-viewer__toggle { padding-inline: calc(var(--dd-u) * 1.5); }
+}
+.dd-log-viewer { container: dd-log-viewer / inline-size; }

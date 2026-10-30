@@ -1,0 +1,39 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Example from '../../components/Example.astro';
+import Guides from '../../components/Guides.astro';
+import sprite from '../../../ds/icons/icons.svg?raw';
+import { i } from '../../lib/icon';
+
+const names = [...sprite.matchAll(/id="dd-i-([\w-]+)"/g)].map((m) => m[1]);
+const usage = `
+<div class="dd-row" style="--dd-gap: var(--dd-space-4); font-size: 22px">
+  ${i('home')} ${i('chart')} ${i('database')} ${i('bell')} ${i('sparkle')}
+  <span style="color: var(--dd-primary)">${i('heart')}</span>
+  <span style="color: var(--dd-ok)">${i('success')}</span>
+  <span style="color: var(--dd-bad)">${i('alert')}</span>
+</div>`;
+const code = `<!-- once per page: the sprite (release/icons.svg), inline or fetched -->
+<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-bell"/></svg>
+<svg class="dd-icon" role="img" aria-label="Alerts"><use href="#dd-i-bell"/></svg>`;
+---
+<Docs title="Icons" group="Foundations" lead="Solar by 480 Design, Bold Duotone weight — soft, rounded and two-toned. Small UI glyphs (chevrons, check, close) use the linear cut so they stay crisp.">
+  <h2 id="usage">Usage</h2>
+  <p>Icons ship as an SVG sprite (<code>release/icons.svg</code>). Inline it once near the top of <code>&lt;body&gt;</code>, then reference symbols with <code>&lt;use&gt;</code>. Icons inherit <code>currentColor</code> and size to <code>1.15em</code> via <code>.dd-icon</code>.</p>
+  <Example code={usage} description="Duotone icons take their colour from the text; the second tone is the same colour at lower opacity." />
+  <pre class="dd-mono" style="background: var(--dd-surface); padding: 16px 20px; border-radius: var(--dd-r-box); font-size: 13px; overflow:auto">{code}</pre>
+  <p>Need more? The full Solar set (1,200+ icons) is on <a href="https://icon-sets.iconify.design/solar/">Iconify</a>; add names to <code>scripts/fetch-icons.mjs</code> and run it.</p>
+
+  <h2 id="set">The set</h2>
+  <p>Click an icon to copy its <code>&lt;use&gt;</code> snippet.</p>
+  <div class="doc-icons">
+    {names.map((n) => (
+      <button class="doc-icon" type="button" data-dd-copy={`<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-${n}"/></svg>`}>
+        <Fragment set:html={i(n)} /><span>{n}</span>
+      </button>
+    ))}
+  </div>
+
+  <h2 id="guidelines">Guidelines</h2>
+  <Guides do={['Lead labels with icons in buttons and menus.', 'Give icon-only controls an <code>aria-label</code>.', 'Colour icons with status tokens when they carry meaning.']} dont={['Don’t mix in other icon sets.', 'Don’t scale icons past 2× text size inside UI.']} />
+</Docs>

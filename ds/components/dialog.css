@@ -1,0 +1,99 @@
+/* Dialog — "Classic": a centred card on a dim scrim, actions bottom-right. Built on native <dialog> opened with
+   showModal() (behaviors/dialog.js wires [data-dd-dialog-open], close buttons, backdrop clicks and the exit motion).
+   Parts: head (optional icon tile + eyebrow + title + close) · body (scrolls when long) · foot (optional hint + actions).
+   Sizes: sm · md (default) · lg. When the dialog is 360px or narrower the actions split the footer evenly. */
+.dd-dialog {
+  --_w: 460px;
+  --_bg: var(--dd-surface);
+  --_pad: calc(var(--dd-u) * 5);
+  --_line: color-mix(in oklab, var(--dd-text) 10%, transparent);
+  width: min(var(--_w), calc(100vw - var(--dd-u) * 6)); max-width: none;
+  max-height: min(85dvh, 760px);
+  margin: auto; padding: 0; border: 0; border-radius: var(--dd-r-lg);
+  background: var(--_bg); color: var(--dd-text); box-shadow: var(--dd-shadow-float);
+  font-family: var(--dd-font-body); font-size: var(--dd-fs-sm); line-height: var(--dd-lh);
+  overflow: hidden; overscroll-behavior: contain;
+  container: dd-dialog / inline-size;
+}
+.dd-dialog[open] { display: flex; flex-direction: column; animation: dd-dialog-in var(--dd-dur) var(--dd-ease); }
+.dd-dialog::backdrop { background: var(--dd-overlay); animation: dd-dialog-fade var(--dd-dur) var(--dd-ease); }
+.dd-dialog.is-closing { animation: dd-dialog-out var(--dd-dur-fast) var(--dd-ease) forwards; }
+.dd-dialog.is-closing::backdrop { animation: dd-dialog-fade var(--dd-dur-fast) var(--dd-ease) reverse forwards; }
+.dd-dialog:focus-visible { outline: none; }
+
+/* head */
+.dd-dialog__head { flex: none; display: flex; align-items: flex-start; gap: calc(var(--dd-u) * 3); padding: var(--_pad) var(--_pad) 0; }
+.dd-dialog__icon {
+  display: inline-grid; place-items: center; flex: none; width: calc(var(--dd-u) * 8); height: calc(var(--dd-u) * 8);
+  border-radius: var(--dd-r-ctl); background: var(--dd-surface-2); color: var(--dd-text); font-size: 18px;
+}
+.dd-dialog__titles { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: var(--dd-u); min-height: calc(var(--dd-u) * 6); }
+.dd-dialog__icon + .dd-dialog__titles { min-height: calc(var(--dd-u) * 8); }
+.dd-dialog__eyebrow {
+  margin: 0; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1.2;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-muted);
+}
+.dd-dialog__title {
+  margin: 0; font-family: var(--dd-font-display); font-size: var(--dd-fs-lg); font-weight: var(--dd-h-weight);
+  letter-spacing: -0.035em; line-height: 1.1; text-transform: var(--dd-h-case); overflow-wrap: anywhere; text-wrap: balance;
+}
+.dd-dialog__close {
+  appearance: none; display: inline-grid; place-items: center; flex: none; width: calc(var(--dd-u) * 6.5); height: calc(var(--dd-u) * 6.5);
+  margin: calc(var(--dd-u) * -1) calc(var(--dd-u) * -1.5) 0 auto; padding: 0; border: 0; border-radius: var(--dd-r-ctl);
+  background: none; color: var(--dd-muted); font-size: 17px; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-dialog__close:hover { background: var(--dd-surface-2); color: var(--dd-text); }
+.dd-dialog__close:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+
+/* body — scrolls between a fixed head and foot; a hairline appears at an edge only while content is hidden there */
+.dd-dialog__body {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: calc(var(--dd-u) * 3) var(--_pad); color: var(--dd-muted); text-wrap: pretty;
+  background:
+    linear-gradient(var(--_bg) 0 0) top / 100% 2px no-repeat local,
+    linear-gradient(var(--_bg) 0 0) bottom / 100% 2px no-repeat local,
+    linear-gradient(var(--_line) 0 0) top / 100% 1px no-repeat scroll,
+    linear-gradient(var(--_line) 0 0) bottom / 100% 1px no-repeat scroll;
+}
+.dd-dialog__body > :first-child { margin-top: 0; }
+.dd-dialog__body > :last-child { margin-bottom: 0; }
+.dd-dialog__body > :is(p, ul, ol) { margin: 0 0 0.75em; }
+.dd-dialog__body > :is(ul, ol) { padding-left: 1.15em; }
+.dd-dialog__body > :is(ul, ol) > li + li { margin-top: 0.3em; }
+.dd-dialog__body > h3 { margin: 1.25em 0 0.35em; font-size: var(--dd-fs-sm); font-weight: 650; line-height: var(--dd-lh-tight); color: var(--dd-text); }
+.dd-dialog__body strong { font-weight: 600; color: var(--dd-text); }
+
+/* foot */
+.dd-dialog__foot {
+  flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: calc(var(--dd-u) * 2);
+  padding: calc(var(--dd-u) * 1) var(--_pad) var(--_pad);
+}
+.dd-dialog__hint { margin-right: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); }
+
+/* form: wrap head/body/foot in <form method="dialog" class="dd-dialog__form"> — it steps out of the layout.
+   Fields are the system's own: .dd-form__body > .dd-field > .dd-input (form-field.css, text-input.css). */
+.dd-dialog__form { display: contents; }
+
+/* destructive: the icon tile takes a solid bad tint */
+.dd-dialog--danger .dd-dialog__icon { background: color-mix(in oklab, var(--dd-bad) 20%, var(--_bg)); color: var(--dd-bad); }
+
+/* sizes */
+.dd-dialog--sm { --_w: 380px; }
+.dd-dialog--sm .dd-dialog__title { font-size: var(--dd-fs-base); letter-spacing: -0.025em; }
+.dd-dialog--lg { --_w: 680px; }
+.dd-dialog--lg .dd-dialog__title { font-size: var(--dd-fs-xl); }
+
+/* narrow (phones): tighter padding, the hint drops and the actions split the footer evenly */
+@container dd-dialog (max-width: 360px) {
+  .dd-dialog__head, .dd-dialog__body, .dd-dialog__foot { --_pad: calc(var(--dd-u) * 4); }
+  .dd-dialog__hint { display: none; }
+  .dd-dialog__foot > .dd-btn { flex: 1 1 0; }
+}
+
+/* lock the page behind an open modal */
+:root:has(.dd-dialog:modal) { overflow: hidden; }
+
+@keyframes dd-dialog-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+@keyframes dd-dialog-out { to { opacity: 0; transform: translateY(4px) scale(0.985); } }
+@keyframes dd-dialog-fade { from { opacity: 0; } }
