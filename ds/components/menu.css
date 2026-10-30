@@ -82,9 +82,9 @@
    already --dd-surface-3). */
 .dd-btn[data-dd-menu][aria-expanded='true'] { background: var(--_tonal-hover, var(--dd-btn-secondary-hover)); }
 .dd-btn--ghost[data-dd-menu][aria-expanded='true'] { background: var(--dd-wash-strong); }
-.dd-btn--primary[data-dd-menu][aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
+.dd-btn--primary[data-dd-menu][aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 80%, var(--dd-bg))); }
 .dd-btn--ink[data-dd-menu][aria-expanded='true'] { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }
-.dd-btn--danger[data-dd-menu][aria-expanded='true'] { background: light-dark(color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)), color-mix(in oklab, var(--dd-bad) 76%, var(--dd-text))); }
+.dd-btn--danger[data-dd-menu][aria-expanded='true'] { background: light-dark(color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)), color-mix(in oklab, var(--dd-bad) 80%, var(--dd-bg))); }
 .dd-btn--link[data-dd-menu][aria-expanded='true'] { background: none; color: var(--dd-accent); }
 /* Hovering an open trigger still answers, with a wash over its open tone. */
 .dd-btn[data-dd-menu][aria-expanded='true']:not(.dd-btn--link):hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }

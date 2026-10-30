@@ -82,8 +82,8 @@ LOG_LEVEL=info</textarea>
 
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute', 'What it does']} rows={[
-    ['textarea[data-dd-autogrow]', 'Resizes to fit on every input, up to the CSS max-height, then scrolls.'],
-    ['.dd-field__counter', 'Counts the field’s control: <code>n / maxlength</code>, or <code>n / data-dd-counter</code> as a soft limit. <code>.is-near</code> at 90%, <code>.is-over</code> past it.'],
+    ['textarea[data-dd-autogrow]', 'Resizes to fit on every input, up to the CSS max-height, then scrolls. Also refits after its form is reset.'],
+    ['.dd-field__counter', 'Counts the field’s control: <code>n / maxlength</code>, or <code>n / data-dd-counter</code> as a soft limit. <code>.is-near</code> at 90%, <code>.is-over</code> past it. Re-counts when its form is reset.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

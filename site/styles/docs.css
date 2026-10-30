@@ -73,7 +73,7 @@
 }
 .doc-main a:not([class]) { color: var(--dd-text); text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: 0.25em;
   text-decoration-color: color-mix(in oklab, currentColor 55%, transparent); transition: text-decoration-color var(--dd-dur-fast) var(--dd-ease); }
-.doc-main a:not([class]):hover { text-decoration-style: solid; text-decoration-color: currentColor; }
+.doc-main a:not([class]):hover { color: var(--dd-accent); text-decoration-style: solid; text-decoration-color: var(--dd-accent); }
 
 /* examples: one clean frame — the live stage on the page colour, a quiet toolbar and the code beneath, hairline edge */
 .ex { margin: var(--dd-space-6) 0 var(--dd-space-10); }

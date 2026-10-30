@@ -48,7 +48,7 @@ Generated from `ds/tokens.css` by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; 
 | `--dd-ring` | `color-mix(in oklab, var(--dd-accent) 45%, transparent)` | `color-mix(in oklab, var(--dd-accent) 45%, transparent)` |  |
 | `--dd-overlay` | `rgb(31 30 28 / 0.32)` | `rgb(0 0 0 / 0.55)` |  |
 | `--dd-float-bg` | `#faf7f2` | `var(--dd-surface-3)` |  |
-| `--dd-float-hover` | `var(--dd-surface)` | `#3e3a36` |  |
+| `--dd-float-hover` | `var(--dd-surface-2)` | `#3e3a36` |  |
 | `--dd-btn-secondary` | `var(--dd-surface-2)` | `var(--dd-surface-3)` |  |
 | `--dd-btn-secondary-hover` | `var(--dd-surface-3)` | `color-mix(in oklab, var(--dd-text) 19%, var(--dd-bg))` |  |
 | `--dd-shadow-float` | `0 12px 32px -12px rgb(60 45 30 / 0.22), 0 2px 6px rgb(60 …` | `0 18px 40px -14px rgb(0 0 0 / 0.65), 0 2px 6px rgb(0 0 0 …` |  |

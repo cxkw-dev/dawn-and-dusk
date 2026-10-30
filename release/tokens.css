@@ -119,7 +119,7 @@
   --dd-overlay: rgb(31 30 28 / 0.32);
   /* Floating layers (menus, popovers, palettes) sit lighter than the page in dawn, a step up in dusk */
   --dd-float-bg: #faf7f2;
-  --dd-float-hover: var(--dd-surface);
+  --dd-float-hover: var(--dd-surface-2);
   --dd-btn-secondary: var(--dd-surface-2);
   --dd-btn-secondary-hover: var(--dd-surface-3);
   --dd-shadow-float: 0 12px 32px -12px rgb(60 45 30 / 0.22), 0 2px 6px rgb(60 45 30 / 0.06);

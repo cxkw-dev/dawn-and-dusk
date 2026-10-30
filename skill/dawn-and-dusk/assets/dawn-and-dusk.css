@@ -123,7 +123,7 @@
   --dd-overlay: rgb(31 30 28 / 0.32);
   /* Floating layers (menus, popovers, palettes) sit lighter than the page in dawn, a step up in dusk */
   --dd-float-bg: #faf7f2;
-  --dd-float-hover: var(--dd-surface);
+  --dd-float-hover: var(--dd-surface-2);
   --dd-btn-secondary: var(--dd-surface-2);
   --dd-btn-secondary-hover: var(--dd-surface-3);
   --dd-shadow-float: 0 12px 32px -12px rgb(60 45 30 / 0.22), 0 2px 6px rgb(60 45 30 / 0.06);
@@ -913,7 +913,7 @@ a.dd-breadcrumbs__link[href]:active { background: var(--dd-wash-strong); }
 .dd-btn-group__caret[aria-expanded='true'] > .dd-icon { transform: rotate(180deg); }
 /* Open: the caret keeps its own variant's hover tone (menu.css does the same for any open menu trigger). */
 .dd-btn-group__caret[aria-expanded='true'] { background: var(--_tonal-hover, var(--dd-btn-secondary-hover)); }
-.dd-btn-group__caret.dd-btn--primary[aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
+.dd-btn-group__caret.dd-btn--primary[aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 80%, var(--dd-bg))); }
 .dd-btn-group__caret[aria-expanded='true']:hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
 .dd-btn-group__caret.dd-btn--ink[aria-expanded='true'] { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }
 
@@ -941,10 +941,11 @@ a.dd-breadcrumbs__link[href]:active { background: var(--dd-wash-strong); }
 .dd-btn:active { transform: translateY(1px); }
 .dd-btn:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 
-/* Filled hovers: dawn uses the hover tokens; in dusk the apricot / red are already light, so a 12% step toward the
-   text barely shows — dusk takes a fuller step there (light-dark() follows the theme's color-scheme). */
+/* Filled hovers: dawn uses the hover tokens. In dusk the apricot and red are already light, so a step toward the
+   text barely shows; there they deepen toward the page instead, like ink does (light-dark() follows the theme's
+   color-scheme). The rest colours are untouched. */
 .dd-btn--primary { background: var(--dd-primary); color: var(--dd-on-primary); }
-.dd-btn--primary:hover { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
+.dd-btn--primary:hover { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 80%, var(--dd-bg))); }
 .dd-btn--secondary { background: var(--dd-btn-secondary); color: var(--dd-text); }
 .dd-btn--secondary:hover { background: var(--_tonal-hover); }
 .dd-btn--ink { background: var(--dd-text); color: var(--dd-bg); }
@@ -954,7 +955,7 @@ a.dd-breadcrumbs__link[href]:active { background: var(--dd-wash-strong); }
 .dd-btn--ghost { background: transparent; }
 .dd-btn--ghost:hover { background: var(--dd-wash-strong); }
 .dd-btn--danger { background: var(--dd-bad); color: var(--dd-bg); }
-.dd-btn--danger:hover { background: light-dark(color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)), color-mix(in oklab, var(--dd-bad) 76%, var(--dd-text))); }
+.dd-btn--danger:hover { background: light-dark(color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)), color-mix(in oklab, var(--dd-bad) 80%, var(--dd-bg))); }
 .dd-btn--link { padding-inline: 0; background: none; border-radius: 0; }
 .dd-btn--link:hover { background: none; color: var(--dd-accent); }
 .dd-btn--link > span { text-decoration: underline dotted; text-decoration-color: var(--dd-faint); text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
@@ -2246,9 +2247,10 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   background: transparent; color: var(--dd-muted); font: inherit; font-size: var(--dd-fs-sm); text-align: left; white-space: nowrap; cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-date-picker__preset:hover { background: var(--_cal-hover, light-dark(var(--dd-surface-2), var(--dd-wash-strong))); color: var(--dd-text); }
+.dd-date-picker__preset:hover { background: var(--_cal-hover, light-dark(var(--dd-surface-3), var(--dd-wash-strong))); color: var(--dd-text); }
 .dd-date-picker__preset:active { background: color-mix(in oklab, var(--dd-text) 16%, transparent); }
 .dd-date-picker__preset[aria-pressed='true'] { background: color-mix(in oklab, var(--dd-accent) 14%, transparent); color: var(--dd-text); font-weight: 600; }
+.dd-date-picker__preset[aria-pressed='true']:hover { background: color-mix(in oklab, var(--dd-accent) 22%, transparent); }
 .dd-date-picker__preset:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
 .dd-date-picker__main { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 3); min-width: 0; }
 .dd-date-picker__foot {
@@ -2269,10 +2271,10 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 /* ---------- calendar ---------- */
 .dd-calendar {
   --_cell: 36px; --_band: color-mix(in oklab, var(--dd-accent) 15%, transparent);
-  display: inline-flex; flex-direction: column; gap: calc(var(--dd-u) * 2); min-width: 0;
+  display: inline-flex; flex-direction: column; gap: calc(var(--dd-u) * 2); min-width: min-content; /* never squeeze the 7-day grid out of its panel */
   font-size: var(--dd-fs-sm); line-height: 1; color: var(--dd-text);
 }
-.dd-calendar--panel { --_cal-hover: light-dark(var(--dd-surface-2), var(--dd-wash-strong)); padding: calc(var(--dd-u) * 4); border-radius: var(--dd-r-box); background: var(--dd-surface); }
+.dd-calendar--panel { --_cal-hover: light-dark(var(--dd-surface-3), var(--dd-wash-strong)); padding: calc(var(--dd-u) * 4); border-radius: var(--dd-r-box); background: var(--dd-surface); }
 .dd-calendar__head { display: flex; align-items: center; justify-content: space-between; gap: calc(var(--dd-u) * 2); }
 .dd-calendar__title { margin: 0; font-weight: 650; white-space: nowrap; }
 .dd-calendar__title > span { font-weight: 400; color: var(--dd-muted); }
@@ -2280,7 +2282,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   display: inline-grid; place-items: center; width: 30px; height: 30px; margin: 0; padding: 0; border: 0; border-radius: var(--dd-r-ctl);
   background: transparent; color: var(--dd-muted); cursor: pointer; transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-calendar__nav:hover { background: var(--_cal-hover, light-dark(var(--dd-surface-2), var(--dd-wash-strong))); color: var(--dd-text); }
+.dd-calendar__nav:hover { background: var(--_cal-hover, light-dark(var(--dd-surface-3), var(--dd-wash-strong))); color: var(--dd-text); }
 .dd-calendar__nav:active { background: color-mix(in oklab, var(--dd-text) 16%, transparent); }
 .dd-calendar__nav:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
 .dd-calendar__nav > .dd-icon { width: 16px; height: 16px; vertical-align: 0; }
@@ -2296,7 +2298,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   font: inherit; font-variant-numeric: tabular-nums; cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-calendar__day:hover { background: var(--_cal-hover, light-dark(var(--dd-surface-2), var(--dd-wash-strong))); }
+.dd-calendar__day:hover { background: var(--_cal-hover, light-dark(var(--dd-surface-3), var(--dd-wash-strong))); }
 .dd-calendar__day:active { background: color-mix(in oklab, var(--dd-text) 16%, transparent); }
 .dd-calendar__day:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; z-index: 1; }
 .dd-calendar__day.is-outside { color: var(--dd-quiet); }
@@ -2305,7 +2307,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   content: ''; position: absolute; bottom: 5px; left: calc(50% - 2px); width: 4px; height: 4px; border-radius: 50%; background: var(--dd-primary);
 }
 .dd-calendar__day[aria-pressed='true'] { background: var(--dd-accent); color: var(--dd-on-accent); font-weight: 600; }
-.dd-calendar__day[aria-pressed='true']:hover { background: var(--dd-accent-hover); }
+.dd-calendar__day[aria-pressed='true']:hover { background: color-mix(in oklab, var(--dd-accent) 84%, var(--dd-bg)); }
 .dd-calendar__day[aria-pressed='true']::after { background: var(--dd-on-accent); }
 /* The ring would vanish into the accent fill at offset 0; float it clear of the chosen day. */
 .dd-calendar__day[aria-pressed='true']:focus-visible { outline-offset: 2px; }
@@ -3513,9 +3515,9 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
    already --dd-surface-3). */
 .dd-btn[data-dd-menu][aria-expanded='true'] { background: var(--_tonal-hover, var(--dd-btn-secondary-hover)); }
 .dd-btn--ghost[data-dd-menu][aria-expanded='true'] { background: var(--dd-wash-strong); }
-.dd-btn--primary[data-dd-menu][aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 76%, var(--dd-text))); }
+.dd-btn--primary[data-dd-menu][aria-expanded='true'] { background: light-dark(var(--dd-primary-hover), color-mix(in oklab, var(--dd-primary) 80%, var(--dd-bg))); }
 .dd-btn--ink[data-dd-menu][aria-expanded='true'] { background: color-mix(in oklab, var(--dd-text) 86%, var(--dd-bg)); }
-.dd-btn--danger[data-dd-menu][aria-expanded='true'] { background: light-dark(color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)), color-mix(in oklab, var(--dd-bad) 76%, var(--dd-text))); }
+.dd-btn--danger[data-dd-menu][aria-expanded='true'] { background: light-dark(color-mix(in oklab, var(--dd-bad) 86%, var(--dd-text)), color-mix(in oklab, var(--dd-bad) 80%, var(--dd-bg))); }
 .dd-btn--link[data-dd-menu][aria-expanded='true'] { background: none; color: var(--dd-accent); }
 /* Hovering an open trigger still answers, with a wash over its open tone. */
 .dd-btn[data-dd-menu][aria-expanded='true']:not(.dd-btn--link):hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
