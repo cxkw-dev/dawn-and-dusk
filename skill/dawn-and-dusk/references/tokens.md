@@ -15,6 +15,7 @@ Generated from `ds/tokens.css` by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; 
 | `--dd-text` | `#1f1e1c` | `#ece7df` |  |
 | `--dd-muted` | `#6e675e` | `#a59e94` |  |
 | `--dd-faint` | `#a8a299` | `#635e57` |  |
+| `--dd-quiet` | `color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint))` | `color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint))` | secondary labels, hints, kbd: readable, quieter than muted |
 | `--dd-accent` | `#6a5c4e` | `#d9cdbd` |  |
 | `--dd-accent-hover` | `#5d5146` | `#dcd1c2` |  |
 | `--dd-accent-soft` | `#e0d9d0` | `#322e2a` |  |

@@ -77,6 +77,7 @@
   --dd-text: #1f1e1c;
   --dd-muted: #6e675e;
   --dd-faint: #a8a299;
+  --dd-quiet: color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint)); /* secondary labels, hints, kbd: readable, quieter than muted */
   /* Accent — ink/taupe, for links, focus and selected states */
   --dd-accent: #6a5c4e;
   --dd-accent-hover: #5d5146;
@@ -133,6 +134,7 @@
   --dd-text: #ece7df;
   --dd-muted: #a59e94;
   --dd-faint: #635e57;
+  --dd-quiet: color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint)); /* secondary labels, hints, kbd: readable, quieter than muted */
   /* Accent — ink/taupe, for links, focus and selected states */
   --dd-accent: #d9cdbd;
   --dd-accent-hover: #dcd1c2;
@@ -188,6 +190,7 @@
     --dd-text: #ece7df;
     --dd-muted: #a59e94;
     --dd-faint: #635e57;
+    --dd-quiet: color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint)); /* secondary labels, hints, kbd: readable, quieter than muted */
     /* Accent — ink/taupe, for links, focus and selected states */
     --dd-accent: #d9cdbd;
     --dd-accent-hover: #dcd1c2;

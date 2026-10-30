@@ -54,6 +54,8 @@
 /* Stacked legend: one key per row with right-aligned values (donuts, stacked bars). */
 .dd-chart__legend--stack { flex-direction: column; align-items: stretch; gap: calc(var(--dd-u) * 2); font-size: var(--dd-fs-sm); color: var(--dd-text); }
 .dd-chart__legend--stack .dd-chart__key { display: flex; gap: calc(var(--dd-u) * 2); }
+/* Keys never wrap, even under a page-level `li { text-wrap: … }` rule. */
+.dd-chart__legend > .dd-chart__key { white-space: nowrap; }
 
 /* ---------- frame: y-axis · plot · (end labels) / x-axis ---------- */
 .dd-chart__frame {
@@ -268,10 +270,11 @@
 .dd-chart__data td:first-child { font-family: inherit; }
 
 /* ---------- narrow ---------- */
+/* Minor x ticks go first: below ~760px a dozen time labels start to touch. */
+@container (max-width: 760px) { .dd-chart__x > .is-minor { visibility: hidden; } }
 @container (max-width: 460px) {
   .dd-chart__frame:has(> .dd-chart__end) { grid-template-columns: auto minmax(0, 1fr); }
   .dd-chart__end { display: none; }
-  .dd-chart__x > .is-minor { visibility: hidden; }
   .dd-chart__hbar { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; padding-block: 5px; }
   .dd-chart__hbar-label { grid-column: 1 / -1; }
   .dd-chart__hbar-track::before { top: -2px; bottom: -2px; }

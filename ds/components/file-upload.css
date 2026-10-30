@@ -59,10 +59,13 @@
 .dd-file__body { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1); min-width: 0; }
 .dd-file__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 .dd-file__meta {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 0 calc(var(--dd-u) * 1.5);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 calc(var(--dd-u) * 3); overflow: hidden;
   font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-variant-numeric: tabular-nums; color: var(--dd-muted);
 }
-.dd-file__meta > * + *::before { content: '·'; margin-right: calc(var(--dd-u) * 1.5); color: var(--dd-faint); }
+/* Dot separators sit in the gap; the one leading each line falls outside the box and is clipped, so a wrapped
+   line never starts with a dot. */
+.dd-file__meta > * { position: relative; }
+.dd-file__meta > *::before { content: '·'; position: absolute; left: calc(var(--dd-u) * -1.5); transform: translateX(-50%); color: var(--dd-faint); }
 .dd-file__status { display: inline-flex; align-items: center; gap: 4px; }
 .dd-file__status > .dd-icon { width: 13px; height: 13px; vertical-align: 0; }
 .dd-file__actions { display: flex; align-items: center; gap: 2px; }

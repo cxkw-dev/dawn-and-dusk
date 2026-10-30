@@ -83,7 +83,7 @@ const line = `
       ${hits(hours, lines, lineMax, kUnit)}
     </div>
     <div class="dd-chart__end" aria-hidden="true">${lines.map(([s, n, v]) => `<span class="${s}" style="--y:${yOf(v[v.length - 1], lineMax)}">${n} <b>${v[v.length - 1]}K</b></span>`).join('')}</div>
-    <div class="dd-chart__x dd-chart__x--points" aria-hidden="true">${hours.map((h, k) => `<span${k % 2 ? ' class="is-minor"' : ''}>${h}</span>`).join('')}</div>
+    <div class="dd-chart__x dd-chart__x--points" aria-hidden="true">${hours.map((h, k) => `<span${k % 3 ? ' class="is-minor"' : ''}>${h}</span>`).join('')}</div>
   </div>
   ${table(['Hour', ...lines.map(([, n]) => `${n} (K/min)`)], hours.map((h, k) => [h, ...lines.map(([, , v]) => v[k])]))}
 </figure>`;

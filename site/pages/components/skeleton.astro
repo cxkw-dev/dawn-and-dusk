@@ -39,7 +39,7 @@ const card = (w: string) => `<div class="dd-surface dd-skeleton-group" style="pa
     <span class="dd-skeleton dd-skeleton--button"></span>
   </div>`;
 const cards = `
-<div aria-busy="true" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: var(--dd-space-4)">
+<div aria-busy="true" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: var(--dd-space-4)">
   <span class="dd-visually-hidden">Loading projects…</span>
   ${card('70%')}
   ${card('55%')}

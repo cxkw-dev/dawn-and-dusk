@@ -54,7 +54,7 @@
 /* Count beside a label: “Errors 3”. */
 .dd-segmented__count {
   font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 400; font-variant-numeric: tabular-nums;
-  color: color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint));
+  color: var(--dd-quiet);
 }
 .dd-segmented__item[aria-checked='true'] .dd-segmented__count, .dd-segmented__item:has(> input:checked) .dd-segmented__count { color: var(--dd-muted); }
 

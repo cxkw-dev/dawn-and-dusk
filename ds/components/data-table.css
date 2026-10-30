@@ -31,11 +31,11 @@
 .dd-data-table__search > .dd-icon { position: absolute; left: calc(var(--dd-u) * 2.25); color: var(--dd-muted); pointer-events: none; }
 .dd-data-table__search input {
   appearance: none; width: 100%; height: 32px; padding: 0 calc(var(--dd-u) * 2.5) 0 calc(var(--dd-u) * 7.5);
-  border: 0; border-radius: var(--dd-r-ctl); background: var(--dd-surface-2); color: var(--dd-text);
+  border: 0; border-radius: var(--dd-r-ctl); background: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 4%); color: var(--dd-text);
   font: inherit; font-size: var(--dd-fs-sm); transition: background-color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-data-table__search input::placeholder { color: var(--dd-muted); }
-.dd-data-table__search input:hover { background: var(--dd-surface-3); }
+.dd-data-table__search input:hover { background: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 8%); }
 .dd-data-table__search input:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-data-table__search input::-webkit-search-cancel-button {
   -webkit-appearance: none; appearance: none; width: 14px; height: 14px; cursor: pointer; background: var(--dd-muted);
@@ -66,7 +66,7 @@
 .dd-data-table__menu { position: relative; }
 .dd-data-table__menu > summary { list-style: none; }
 .dd-data-table__menu > summary::-webkit-details-marker { display: none; }
-.dd-data-table__menu[open] > summary { background: var(--dd-surface-2); }
+.dd-data-table__menu[open] > summary { background: color-mix(in oklab, var(--dd-text) 8%, transparent); }
 .dd-data-table__menu-panel {
   position: absolute; right: 0; top: calc(100% + 6px); z-index: var(--dd-z-overlay); min-width: 200px;
   display: flex; flex-direction: column; padding: calc(var(--dd-u) * 1.25);
@@ -213,7 +213,7 @@
   border: 0; border-radius: 4px; background: none; color: var(--dd-muted); cursor: pointer; vertical-align: middle;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-data-table__expand:hover { background: var(--dd-surface-2); color: var(--dd-text); }
+.dd-data-table__expand:hover { background: color-mix(in oklab, var(--dd-text) 8%, transparent); color: var(--dd-text); }
 .dd-data-table__expand:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
 .dd-data-table__expand .dd-icon { width: 14px; height: 14px; transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-data-table__expand[aria-expanded="true"] .dd-icon { transform: rotate(90deg); }
@@ -245,7 +245,8 @@
 /* ---------- loading + empty ---------- */
 .dd-data-table__skeleton {
   display: block; width: var(--w, 72%); height: 9px; border-radius: 5px; margin-block: 4px;
-  background: linear-gradient(90deg, var(--dd-surface-2) 0%, color-mix(in oklab, var(--dd-surface-2) 35%, var(--_bg)) 50%, var(--dd-surface-2) 100%);
+  --_sk: color-mix(in oklab, var(--dd-text) 9%, transparent);
+  background: linear-gradient(90deg, var(--_sk) 0%, color-mix(in oklab, var(--dd-text) 3%, transparent) 50%, var(--_sk) 100%);
   background-size: 200% 100%; animation: dd-data-table-shimmer 1.4s linear infinite;
 }
 .dd-data-table .is-num .dd-data-table__skeleton { margin-left: auto; }
@@ -259,7 +260,7 @@
   padding: calc(var(--dd-u) * 10) calc(var(--dd-u) * 5); text-align: center; white-space: normal; color: var(--dd-muted);
 }
 .dd-data-table__empty-icon { display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: calc(var(--dd-u) * 1);
-  border-radius: 50%; background: var(--dd-surface-2); font-size: 18px; }
+  border-radius: 50%; background: color-mix(in oklab, var(--dd-text) 8%, transparent); font-size: 18px; }
 .dd-data-table__empty-title { margin: 0; color: var(--dd-text); font-size: var(--dd-fs-base); font-weight: 650; }
 .dd-data-table__empty p { margin: 0; max-width: 42ch; text-wrap: pretty; }
 .dd-data-table__empty .dd-row { justify-content: center; margin-top: calc(var(--dd-u) * 2); }

@@ -35,7 +35,7 @@
   -webkit-mask-image: linear-gradient(transparent, #000 24px, #000 calc(100% - 48px), transparent);
   mask-image: linear-gradient(transparent, #000 24px, #000 calc(100% - 48px), transparent); }
 .doc-nav-group + .doc-nav-group { margin-top: var(--dd-space-5); }
-.doc-nav-h { margin: 0 0 6px 10px; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-faint); }
+.doc-nav-h { margin: 0 0 6px 10px; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-quiet); }
 .doc-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
 .doc-nav a {
   display: flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: var(--dd-r-ctl); font-size: var(--dd-fs-sm);
@@ -172,7 +172,8 @@
   margin: var(--dd-space-3) 0 var(--dd-space-6); padding: var(--dd-space-4) var(--dd-space-5); border-radius: var(--dd-r-box);
   background: var(--dd-surface) !important; font-size: 13px; line-height: 1.65; overflow-x: auto;
 }
-@media (max-width: 700px) { .doc-table td:first-child { white-space: normal; word-break: break-word; } }
+@media (max-width: 700px) { .doc-table td:first-child { white-space: normal; overflow-wrap: normal; word-break: normal; } }
+@media (max-width: 600px) { .ex-stage--pad, .ex-stage--center { padding: var(--dd-space-4); } }
 
 /* page-to-page: cross-document view transition — chrome and sidebar stay put, content cross-fades */
 @view-transition { navigation: auto; }
@@ -192,7 +193,7 @@ html { scroll-padding-top: 80px; }
   .doc-shell.has-toc { grid-template-columns: 260px minmax(0, 1fr) 220px; }
   .doc-toc:not([hidden]) { display: block; position: sticky; top: 60px; height: calc(100vh - 60px); padding: var(--dd-space-10) var(--dd-space-4) var(--dd-space-10) 0; }
 }
-.doc-toc-h { margin: 0 0 8px; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-faint); }
+.doc-toc-h { margin: 0 0 8px; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-quiet); }
 .doc-toc ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
 .doc-toc a { display: block; padding: 4px 10px; border-radius: var(--dd-r-ctl); font-size: var(--dd-fs-xs); line-height: 1.4; color: var(--dd-muted);
   text-decoration: none; transition: color var(--dd-dur-fast) var(--dd-ease), background var(--dd-dur-fast) var(--dd-ease); }

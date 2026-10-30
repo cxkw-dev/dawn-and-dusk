@@ -35,7 +35,8 @@ Theme: `<html data-theme="dawn">` or `"dusk"`; omit it to follow the OS. Any `[d
 5. **Headings are the logo lockup**: `.dd-display/.dd-h1/.dd-h2/.dd-h3` (Outfit 800, lowercase, tight). Use them for page
    and section titles only; UI titles use `.dd-h4/.dd-h5` (sentence case). Write headings in lowercase on purpose.
 6. **Body is Figtree**; UI chrome runs at `--dd-fs-sm`. **Data is DM Mono**: IDs, timestamps, figures (`.dd-mono`,
-   `.dd-num` for tabular numerals). Right-align numeric table columns.
+   `.dd-num` for tabular numerals). Right-align numeric table columns. Text steps `--dd-text` → `--dd-muted` →
+   `--dd-quiet` (hints, group labels, kbd); `--dd-faint` is for placeholders and decoration, never text people must read.
 7. **Status = meaning, set = category.** `--dd-ok/warn/bad/info` (+`-soft`) for state, always paired with an icon or word.
    `--dd-set-1…8` (honey, amber, apricot, terracotta, rose, wine, ochre, sand) for chips, avatars, tags and chart series,
    used in order.

@@ -10,7 +10,7 @@
   margin-inline: calc(var(--dd-u) * var(--_px) * -1);
   padding-left: calc(var(--dd-u) * var(--_px)); padding-right: calc(var(--dd-u) * (var(--_px) + 6));
 }
-.dd-select > select.dd-input__control:disabled, .dd-select:disabled { cursor: not-allowed; }
+.dd-select > select.dd-input__control:disabled, .dd-select:disabled { cursor: not-allowed; opacity: 1; } /* the box dims it, not the UA */
 .dd-select__chevron {
   position: absolute; top: 0; bottom: 0; right: calc(var(--dd-u) * var(--_px)); display: flex; align-items: center;
   padding: calc(var(--dd-u) * var(--_pt, var(--_py))) 0 calc(var(--dd-u) * var(--_pb, var(--_py)));
@@ -21,7 +21,7 @@
 .dd-select[aria-expanded='true'] > .dd-select__chevron > .dd-icon { transform: rotate(180deg); }
 .dd-select__chevron > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-select .dd-select__placeholder,
-.dd-select > select.dd-input__control:has(> option:checked:disabled) { color: var(--dd-faint); }
+.dd-select > select.dd-input__control:enabled:has(> option:checked:disabled) { color: var(--dd-faint); }
 .dd-select > select.dd-input__control > :is(option, optgroup) { color: var(--dd-text); }
 /* Button trigger: show a leading icon or swatch from the chosen option inline with the value. */
 button.dd-select { appearance: none; font: inherit; font-size: var(--dd-fs-sm); }

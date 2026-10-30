@@ -46,8 +46,9 @@
 /* Interactive: the whole card is the target. Use an <a class="dd-card dd-card--link">, or put a
    .dd-card__stretch link inside so the card stays one tab stop with real inner text. */
 .dd-card--link { cursor: pointer; }
+/* The step is mixed toward ink rather than taken from --dd-surface-2, so it reads as clearly in dusk as in dawn. */
 .dd-card--link:hover, .dd-card--link.is-hover, .dd-card--link:focus-within {
-  background: var(--dd-surface-2);
+  background: color-mix(in oklab, var(--dd-surface), var(--dd-text) 6%);
 }
 .dd-card--link.is-hover .dd-card__link .dd-icon { transform: translateX(3px); }
 .dd-card--link:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }

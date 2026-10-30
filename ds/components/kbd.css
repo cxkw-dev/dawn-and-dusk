@@ -17,7 +17,7 @@
   font-size: var(--dd-fs-sm); border-radius: var(--dd-r-ctl); box-shadow: inset 0 -2px 0 color-mix(in oklab, var(--dd-text) 12%, transparent);
 }
 /* Quiet: no keycap, just the glyphs — for shortcut hints inside menus and lists. */
-.dd-kbd--quiet { min-width: 0; padding: 0; background: none; box-shadow: none; color: color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint)); }
+.dd-kbd--quiet { min-width: 0; padding: 0; background: none; box-shadow: none; color: var(--dd-quiet); }
 /* Pressed: a key being held, e.g. in an interactive shortcut trainer. */
 .dd-kbd.is-active { background: var(--dd-accent); color: var(--dd-on-accent); box-shadow: none; transform: translateY(1px); }
 
@@ -27,7 +27,7 @@
 /* Combo: ⌘ + K. Keys sit close; an optional .dd-kbd-combo__sep holds “+” or “then”. */
 .dd-kbd-combo { display: inline-flex; align-items: center; gap: 3px; vertical-align: 0.08em; white-space: nowrap; }
 .dd-kbd-combo > .dd-kbd { vertical-align: 0; }
-.dd-kbd-combo__sep { font-family: var(--dd-font-kbd); font-size: var(--dd-fs-xs); line-height: 1; color: color-mix(in oklab, var(--dd-muted) 50%, var(--dd-faint)); padding-inline: 1px; }
+.dd-kbd-combo__sep { font-family: var(--dd-font-kbd); font-size: var(--dd-fs-xs); line-height: 1; color: var(--dd-quiet); padding-inline: 1px; }
 
 /* Shortcut list: action on the left, keys on the right, hairline rows. */
 .dd-kbd-list { margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; font-size: var(--dd-fs-sm); }

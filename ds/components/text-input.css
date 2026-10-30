@@ -91,7 +91,7 @@
 
 /* Disabled: a lighter box (still a visible step at dusk) and dimmed but legible text. */
 .dd-input:has(.dd-input__control:disabled), .dd-input:disabled, .dd-input.is-disabled {
-  --_fill: light-dark(color-mix(in oklab, var(--dd-surface-2) 55%, transparent), color-mix(in oklab, var(--dd-surface-2) 80%, transparent));
+  --_fill: light-dark(color-mix(in oklab, var(--dd-surface-2) 55%, transparent), var(--dd-surface-2));
   --_fill-hover: var(--_fill);
   color: color-mix(in oklab, var(--dd-muted) 55%, var(--dd-faint)); cursor: not-allowed;
 }
