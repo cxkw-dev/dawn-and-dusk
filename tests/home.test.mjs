@@ -63,7 +63,7 @@ test('the calls to action open foundations, components and the agent skill', asy
   // A real click on the primary lands on Colors, even though the inert overlay copy is drawn over part of the cover.
   await settle(page);
   await page.click('.home-cover .home-face--base .dd-btn--primary');
-  await page.waitFor(() => location.pathname.endsWith('/foundations/colors'));
+  await page.waitFor(() => location.pathname.replace(/\/$/, '').endsWith('/foundations/colors'));
 });
 
 test('the seam follows a pointer drag and the keyboard', async ({ open, assert }) => {
