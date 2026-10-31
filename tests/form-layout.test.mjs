@@ -218,3 +218,25 @@ test('per-reason messages: missing, type, pattern, range, length; data-dd-error,
   assert.equal(await errorOf(page, '#fx-team'), null);
   assert.equal(await page.active(), '#fx-mail', 'focus on the first problem');
 });
+
+test('pressing Save after breaking a valid field does not shift the button out from under the pointer', async ({ open, assert }) => {
+  const page = await open('components/form-layout');
+  const form = '#fs-form';
+  const email = await page.get((f) => { const c = document.querySelector(`${f} input[type="email"]`); c.id ||= 'fs-email'; return `#${c.id}`; }, form);
+  const submit = `${form} [type="submit"]`;
+  await page.click(submit);                       // a first submit: the form is now "checked", this field is valid
+  await page.focus(email);
+  await page.get((s) => document.querySelector(s).select(), email);
+  await page.type('oncall');                       // now invalid, but not judged until committed (no error yet)
+  const top = () => page.get((s) => document.querySelector(s).getBoundingClientRect().top, submit);
+  const before = await top();
+  const b = await page.get((s) => { const r = document.querySelector(s).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, submit);
+  await page.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: b.x, y: b.y });
+  await page.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: b.x, y: b.y, button: 'left', clickCount: 1 }); // blurs the field → change
+  await page.sleep(100);
+  const during = await top();
+  await page.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: b.x, y: b.y, button: 'left', clickCount: 1 });
+  await page.sleep(150);
+  assert.ok(Math.abs(during - before) < 1, `Save stays put while it is being pressed (moved ${(during - before).toFixed(1)}px)`);
+  assert.equal(await page.attr(email, 'aria-invalid'), 'true', 'the submit then flags the field');
+});

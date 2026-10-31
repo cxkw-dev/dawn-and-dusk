@@ -98,10 +98,21 @@
     if (!('ddValid' in (el.dataset || {})) || !el.validity) return;
     if (el.validity.valid) clear(el); else flag(el);
   });
+  // Pressing Save blurs the field first, and its change event would show the error under the pointer — the layout
+  // shifts before mouseup and the click misses. While a submit button is being pressed, leave it to the submit check.
+  let pressing = null;
+  document.addEventListener('pointerdown', (e) => {
+    const btn = e.target.closest?.('button:not([type]), button[type="submit"], input[type="submit"]');
+    pressing = btn && btn.form && btn.form.matches('[data-dd-validate]') ? btn.form : null;
+  }, true);
+  const release = () => { setTimeout(() => { pressing = null; }); };
+  document.addEventListener('pointerup', release, true);
+  document.addEventListener('pointercancel', release, true);
   document.addEventListener('change', (e) => {
     const el = e.target;
     const form = el.form;
-    if (form && form.matches('[data-dd-validate]') && 'ddChecked' in form.dataset && el.willValidate) check(el);
+    if (!form || form === pressing) return;
+    if (form.matches('[data-dd-validate]') && 'ddChecked' in form.dataset && el.willValidate) check(el);
   });
 
   document.addEventListener('reset', (e) => {
