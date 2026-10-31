@@ -2,12 +2,13 @@
    The limit comes from data-dd-counter="280" (a soft limit: typing past it marks the field invalid) or from the
    control's maxlength (a hard limit). The counter gets .is-near at 90% and .is-over past the limit, and re-counts
    when its form is reset. An error in the same field marked [data-dd-counter-error] shows only while a soft limit
-   is passed. */
+   is passed. Leave a counter alone (a framework renders it) with data-dd-counter="manual" or [data-dd-manual] on an
+   ancestor. */
 (() => {
   const update = (field) => {
     const counter = field.querySelector('.dd-field__counter');
     const control = field.querySelector('input, textarea');
-    if (!counter || !control) return;
+    if (!counter || !control || counter.dataset.ddCounter === 'manual' || counter.closest('[data-dd-manual]')) return;
     const soft = Number(counter.dataset.ddCounter) || 0;
     const max = soft || Number(control.getAttribute('maxlength')) || 0;
     const n = control.value.length;

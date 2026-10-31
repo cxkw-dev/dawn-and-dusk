@@ -1,16 +1,20 @@
 /* Code — blocks with a title bar, language tag and copy button; optional line numbers, highlighted and diff lines.
    Also inline code (.dd-code-inline), a copyable field with reveal (.dd-code-field) and a terminal (.dd-code--terminal).
-   Syntax colours are set-colours pulled toward the text colour so they stay legible in dawn and dusk. */
+   Syntax colours are set-colours pulled toward the text colour so they stay legible in dawn and dusk.
+   Shell tokens (prompt, user, cwd, cmd, sub, flag, arg, var, path, op; output out/ok/warn/err/dim) colour commands in
+   any block. The terminal (terminal.js) can type its commands out (data-dd-terminal-play, with a
+   [data-dd-terminal-replay] button), copy only the commands ([data-dd-terminal-copy], data-dd-terminal-line-copy) and
+   take live input (data-dd-terminal-interactive + <template data-dd-terminal-command="…">). */
 .dd-code {
   --_px: calc(var(--dd-u) * 4);
   --_line: color-mix(in oklab, var(--dd-text) 9%, transparent);
-  --dd-code-keyword: color-mix(in oklab, var(--dd-set-6) 72%, var(--dd-text));
-  --dd-code-string: color-mix(in oklab, var(--dd-ok) 78%, var(--dd-text));
-  --dd-code-number: color-mix(in oklab, var(--dd-set-4) 78%, var(--dd-text));
-  --dd-code-comment: var(--dd-muted);
-  --dd-code-function: color-mix(in oklab, var(--dd-info) 80%, var(--dd-text));
-  --dd-code-property: color-mix(in oklab, var(--dd-set-7) 68%, var(--dd-text));
-  --dd-code-punct: var(--dd-muted);
+  --dd-code-keyword: var(--dd-syntax-keyword);
+  --dd-code-string: var(--dd-syntax-string);
+  --dd-code-number: var(--dd-syntax-number);
+  --dd-code-comment: var(--dd-syntax-comment);
+  --dd-code-function: var(--dd-syntax-function);
+  --dd-code-property: var(--dd-syntax-attr);
+  --dd-code-punct: var(--dd-syntax-punct);
   margin: 0; min-width: 0; overflow: hidden;
   background: var(--dd-surface); color: var(--dd-text); border-radius: var(--dd-r-box);
 }
@@ -88,7 +92,12 @@
 .dd-code :is(.dd-code__n, .token.number, .token.boolean, .token.constant, .hljs-number, .hljs-literal) { color: var(--dd-code-number); }
 .dd-code :is(.dd-code__c, .token.comment, .token.prolog, .hljs-comment, .hljs-quote) { color: var(--dd-code-comment); font-style: italic; }
 .dd-code :is(.dd-code__f, .token.function, .token.class-name, .hljs-title, .hljs-function) { color: var(--dd-code-function); }
-.dd-code :is(.dd-code__p, .token.property, .token.attr-name, .token.tag, .hljs-attr, .hljs-attribute, .hljs-tag, .hljs-name) { color: var(--dd-code-property); }
+.dd-code :is(.dd-code__p, .token.property, .token.attr-name, .hljs-attr, .hljs-attribute) { color: var(--dd-code-property); }
+/* tag names take the tag colour (as in the docs' highlighted code); their attributes stay the property colour */
+.dd-code :is(.dd-code__t, .token.tag, .hljs-tag, .hljs-name) { color: var(--dd-syntax-tag); }
+.dd-code .token.tag :is(.token.attr-name) { color: var(--dd-code-property); }
+.dd-code .token.tag :is(.token.attr-value) { color: var(--dd-code-string); }
+.dd-code .token.tag :is(.token.punctuation) { color: var(--dd-code-punct); }
 .dd-code :is(.token.punctuation, .token.operator, .hljs-punctuation) { color: var(--dd-code-punct); }
 
 /* ---------- inline code ---------- */
@@ -128,25 +137,148 @@
 .dd-code-field__btn[data-copied] { color: var(--dd-ok); }
 .dd-code-field__hint { margin: 0; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
 
+/* ---------- shell tokens ---------- */
+/* Hand-written classes for commands and their output. They read the code palette, so they work in any .dd-code block
+   (dawn and dusk); the terminal below swaps in brighter prompt and status colours for its dark ground. */
+.dd-code {
+  /* pulled a touch toward the text colour so every token holds 4.5:1 on a dawn block too */
+  --dd-code-prompt: color-mix(in oklab, var(--dd-primary) 50%, var(--dd-text));
+  --dd-code-user: color-mix(in oklab, var(--dd-muted) 84%, var(--dd-text));
+  --dd-code-cwd: color-mix(in oklab, var(--dd-code-property) 88%, var(--dd-text));
+  --dd-code-cmd: color-mix(in oklab, var(--dd-code-function) 88%, var(--dd-text));
+  --dd-code-sub: var(--dd-code-keyword);
+  --dd-code-flag: color-mix(in oklab, var(--dd-code-number) 88%, var(--dd-text));
+  --dd-code-arg: var(--dd-text);
+  --dd-code-var: var(--dd-syntax-variable, var(--dd-code-property));
+  --dd-code-path: var(--dd-text);
+  --dd-code-op: var(--dd-code-prompt);
+  --dd-code-out: color-mix(in oklab, var(--dd-muted) 84%, var(--dd-text));
+  --dd-code-dim: color-mix(in oklab, var(--dd-quiet) 80%, var(--dd-text));
+  --dd-code-ok: color-mix(in oklab, var(--dd-ok) 68%, var(--dd-text));
+  --dd-code-warn: color-mix(in oklab, var(--dd-warn) 54%, var(--dd-text));
+  --dd-code-err: color-mix(in oklab, var(--dd-bad) 82%, var(--dd-text));
+}
+.dd-code__prompt { color: var(--dd-code-prompt, var(--dd-primary)); user-select: none; -webkit-user-select: none; }
+.dd-code .dd-code__user { color: var(--dd-code-user); }
+.dd-code .dd-code__cwd { color: var(--dd-code-cwd); font-weight: 500; }
+.dd-code .dd-code__cmd { color: var(--dd-code-cmd); font-weight: 500; }
+.dd-code .dd-code__sub { color: var(--dd-code-sub); }
+.dd-code .dd-code__flag { color: var(--dd-code-flag); }
+.dd-code .dd-code__arg { color: var(--dd-code-arg); }
+.dd-code .dd-code__var { color: var(--dd-code-var); }
+.dd-code .dd-code__path {
+  color: var(--dd-code-path);
+  text-decoration: underline 1px color-mix(in oklab, currentColor 38%, transparent); text-underline-offset: 3px;
+}
+.dd-code .dd-code__op { color: var(--dd-code-op); }
+.dd-code__out { color: var(--dd-code-out, var(--dd-muted)); }
+.dd-code__ok { color: var(--dd-code-ok, var(--dd-ok)); }
+.dd-code__warn { color: var(--dd-code-warn, var(--dd-warn)); }
+.dd-code__err { color: var(--dd-code-err, var(--dd-bad)); }
+.dd-code__dim { color: var(--dd-code-dim, var(--dd-quiet)); }
+
 /* ---------- terminal ---------- */
 /* Always dark: put data-theme="dusk" on the element so it reads dusk tokens in either mode. */
 .dd-code--terminal {
+  --_term: color-mix(in oklab, var(--dd-bg) 74%, black);
   --dd-code-string: var(--dd-ok);
-  background: color-mix(in oklab, var(--dd-bg) 74%, black); color: var(--dd-text);
+  --dd-code-prompt: var(--dd-primary);
+  --dd-code-user: var(--dd-muted);
+  --dd-code-out: var(--dd-muted);
+  --dd-code-dim: var(--dd-quiet);
+  --dd-code-ok: var(--dd-ok);
+  --dd-code-warn: var(--dd-warn);
+  --dd-code-err: var(--dd-bad);
+  /* window dots: three quiet golden-hour tones, not traffic lights */
+  --dd-code-dot-1: var(--dd-set-5);
+  --dd-code-dot-2: var(--dd-set-3);
+  --dd-code-dot-3: var(--dd-set-1);
+  background: var(--_term); color: var(--dd-text);
+  transition: box-shadow var(--dd-dur) var(--dd-ease);
 }
-.dd-code--terminal .dd-code__bar { box-shadow: none; padding-left: calc(var(--dd-u) * 3); }
-.dd-code--terminal .dd-code__title { margin-inline: auto; color: var(--dd-muted); }
+.dd-code--terminal .dd-code__bar {
+  display: grid; grid-template-columns: 1fr minmax(0, auto) 1fr;
+  box-shadow: none; padding-left: calc(var(--dd-u) * 3);
+}
+.dd-code--terminal .dd-code__bar > :first-child { justify-self: start; }
+.dd-code--terminal .dd-code__bar > :last-child:not(:first-child, .dd-code__title) { justify-self: end; }
+.dd-code--terminal .dd-code__title { margin-inline: auto; color: var(--dd-muted); transition: color var(--dd-dur) var(--dd-ease); }
 .dd-code--terminal .dd-code__title + .dd-code__copy { margin-left: 0; }
-.dd-code--terminal .dd-code__copy:hover { background: color-mix(in oklab, var(--dd-text) 10%, transparent); }
+.dd-code--terminal :is(.dd-code__copy, .dd-code__action):hover { background: color-mix(in oklab, var(--dd-text) 10%, transparent); }
 .dd-code__dots { display: inline-flex; gap: 6px; flex: none; }
-.dd-code__dots > i { width: 9px; height: 9px; border-radius: 50%; background: color-mix(in oklab, var(--dd-text) 20%, transparent); }
+.dd-code__dots > i {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: color-mix(in oklab, var(--dd-code-dot-1, var(--dd-text)) 46%, var(--_term, transparent));
+  transition: background-color var(--dd-dur) var(--dd-ease);
+}
+.dd-code__dots > i:nth-child(2) { background: color-mix(in oklab, var(--dd-code-dot-2, var(--dd-text)) 46%, var(--_term, transparent)); }
+.dd-code__dots > i:nth-child(3) { background: color-mix(in oklab, var(--dd-code-dot-3, var(--dd-text)) 46%, var(--_term, transparent)); }
 .dd-code--terminal .dd-code__pre { padding-top: calc(var(--dd-u) * 1); padding-bottom: calc(var(--dd-u) * 4); }
-.dd-code__prompt { color: var(--dd-primary); user-select: none; -webkit-user-select: none; }
-.dd-code__out { color: var(--dd-muted); }
-.dd-code__ok { color: var(--dd-ok); }
-.dd-code__err { color: var(--dd-bad); }
+
+/* bar actions: replay (and any other icon button) next to copy */
+.dd-code__actions { display: inline-flex; align-items: center; gap: 2px; }
+.dd-code__actions > .dd-code__copy { margin-left: 0; }
+.dd-code__action {
+  appearance: none; flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px;
+  border: 0; border-radius: var(--dd-r-ctl); background: transparent; color: var(--dd-muted); cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-code__action:hover { background: var(--dd-wash); color: var(--dd-text); }
+.dd-code__action:active { background: var(--dd-wash-strong); }
+.dd-code__action:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-code__action[hidden] { display: none; }
+
+/* cursor: a block that blinks at rest, holds steady while typing, and turns hollow when a live terminal loses focus */
 .dd-code__cursor {
-  display: inline-block; width: 0.6em; height: 1.15em; vertical-align: -0.2em; background: var(--dd-text);
+  display: inline-block; min-width: 0.6em; height: 1.15em; vertical-align: -0.2em; line-height: 1.15em;
+  background: var(--dd-text); color: var(--_term, var(--dd-surface));
   animation: dd-code-blink 1.1s steps(1) infinite;
 }
+.dd-code__cursor:not(:empty) { vertical-align: baseline; }
+.dd-code--terminal.is-typing .dd-code__cursor { animation: none; }
 @keyframes dd-code-blink { 50% { opacity: 0; } }
+
+/* command lines: the typed part, a copy button per command, lines easing in during playback */
+.dd-code__input { white-space: pre; }
+.dd-code__line:has(> .dd-code__line-copy) { position: relative; padding-right: calc(var(--_px) + 26px); }
+.dd-code__line:has(> .dd-code__line-copy):hover { background: color-mix(in oklab, var(--dd-text) 5%, transparent); }
+.dd-code__line-copy {
+  appearance: none; position: absolute; top: 50%; right: calc(var(--dd-u) * 1.5); translate: 0 -50%;
+  display: inline-grid; place-items: center; width: 22px; height: 22px; padding: 0;
+  border: 0; border-radius: 4px; background: transparent; color: var(--dd-muted); font-size: 12px; cursor: pointer;
+  opacity: 0; user-select: none; -webkit-user-select: none;
+  transition: opacity var(--dd-dur-fast) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-code__line:hover > .dd-code__line-copy, .dd-code__line-copy:focus-visible, .dd-code__line-copy[data-copied] { opacity: 1; }
+.dd-code__line-copy:hover { background: color-mix(in oklab, var(--dd-text) 10%, transparent); color: var(--dd-text); }
+.dd-code__line-copy:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
+.dd-code__line-copy > .dd-icon { grid-area: 1 / 1; }
+.dd-code__line-copy > .dd-icon:last-child { display: none; }
+.dd-code__line-copy[data-copied] { color: var(--dd-code-ok, var(--dd-ok)); }
+.dd-code__line-copy[data-copied] > .dd-icon:first-child { display: none; }
+.dd-code__line-copy[data-copied] > .dd-icon:last-child { display: inline-block; }
+@media (hover: none) { .dd-code__line-copy { opacity: 0.75; } }
+.dd-code__line.is-entering { animation: dd-code-line-in var(--dd-dur) var(--dd-ease) both; }
+@keyframes dd-code-line-in { from { opacity: 0; translate: 0 3px; } }
+
+/* live prompt: an invisible input over the last line; the line mirrors what is typed, with the cursor at the caret */
+.dd-code--terminal[data-dd-terminal-interactive] .dd-code__pre { cursor: text; }
+.dd-code__live { position: relative; }
+.dd-code__field {
+  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0;
+  font: inherit; font-size: 16px; /* 16px keeps iOS from zooming on focus; the field is invisible either way */
+  background: transparent; color: transparent; cursor: text;
+}
+.dd-code__live.is-busy > :not(.dd-code__field) { opacity: 0; }
+.dd-code--terminal:has(.dd-code__field):not(:focus-within) .dd-code__live .dd-code__cursor {
+  background: transparent; color: inherit; animation: none;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 55%, transparent);
+}
+/* focused: a soft inner ring, the title lifts and the dots warm up — the window is "active" */
+.dd-code--terminal:has(.dd-code__field:focus) {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-accent) 42%, transparent);
+}
+.dd-code--terminal:has(.dd-code__field:focus) .dd-code__title { color: var(--dd-text); }
+.dd-code--terminal:has(.dd-code__field:focus) .dd-code__dots > i { background: color-mix(in oklab, var(--dd-code-dot-1) 72%, var(--_term)); }
+.dd-code--terminal:has(.dd-code__field:focus) .dd-code__dots > i:nth-child(2) { background: color-mix(in oklab, var(--dd-code-dot-2) 72%, var(--_term)); }
+.dd-code--terminal:has(.dd-code__field:focus) .dd-code__dots > i:nth-child(3) { background: color-mix(in oklab, var(--dd-code-dot-3) 72%, var(--_term)); }

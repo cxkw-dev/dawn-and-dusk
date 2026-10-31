@@ -7,7 +7,8 @@
      from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes (a still, deeper
      tint under reduced motion) instead of being added twice; Backspace in an empty field removes the last chip.
      The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x).
-   When a chip goes, the chips after it glide into its place (not under reduced motion). */
+   When a chip goes, the chips after it glide into its place (not under reduced motion). 
+   Inside [data-dd-manual] (chips a framework renders from state) the script does nothing; listen for clicks yourself. */
 (() => {
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const valueOf = (chip) => chip.dataset.value || chip.textContent.trim();
@@ -68,6 +69,7 @@
   };
 
   document.addEventListener('click', (e) => {
+    if (e.target.closest?.('[data-dd-manual]')) return;
     const x = e.target.closest('.dd-chip__remove');
     if (x) { e.preventDefault(); remove(x.closest('.dd-chip')); return; }
     const f = e.target.closest('button.dd-chip[aria-pressed]');
@@ -82,6 +84,7 @@
   });
 
   document.addEventListener('keydown', (e) => {
+    if (e.target.closest?.('[data-dd-manual]')) return;
     const x = e.target.closest?.('.dd-chip__remove');
     if (x && (e.key === 'Delete' || e.key === 'Backspace')) { e.preventDefault(); remove(x.closest('.dd-chip')); return; }
     const field = e.target.closest?.('.dd-chip-input__field');

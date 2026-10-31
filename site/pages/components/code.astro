@@ -112,19 +112,142 @@ const field = `
   </div>
 </div>`;
 
+// Shell tokens (hand-written classes; see the syntax reference below).
+const sh = (cls: string) => (t: string) => `<span class="dd-code__${cls}">${t}</span>`;
+const cmd = sh('cmd'), sub = sh('sub'), flag = sh('flag'), arg = sh('arg'), vr = sh('var'), path = sh('path'), op = sh('op');
+const out = sh('out'), ok = sh('ok'), warn = sh('warn'), err = sh('err'), dim = sh('dim');
+const user = sh('user'), cwd = sh('cwd');
+const zsh = (dir = '~/dawn-and-dusk') => `<span class="dd-code__prompt">${user('cxkw@dusk')} ${cwd(dir)} ❯ </span>`;
+const dollar = `<span class="dd-code__prompt">$ </span>`;
+const input = (t: string) => `<span class="dd-code__input">${t}</span>`;
+// One terminal line; `delay` (ms) holds before it appears during playback.
+const tl = (t: string, cls = '', delay = 0) =>
+  `<span class="dd-code__line${cls ? ' dd-code__' + cls : ''}"${delay ? ` data-dd-terminal-delay="${delay}"` : ''}>${t}</span>`;
+const cursor = `<span class="dd-code__cursor"></span>`;
+const dots = `<span class="dd-code__dots" aria-hidden="true"><i></i><i></i><i></i></span>`;
+const copyCmds = `<button class="dd-code__copy" type="button" data-dd-terminal-copy aria-label="Copy commands">${i('copy')}${i('check')}</button>`;
+const replay = `<button class="dd-code__action" type="button" data-dd-terminal-replay aria-label="Replay">${i('refresh')}</button>`;
+
 const terminal = `
-<figure class="dd-code dd-code--terminal" data-theme="dusk">
+<figure class="dd-code dd-code--terminal" data-theme="dusk" data-dd-terminal-line-copy>
   <figcaption class="dd-code__bar">
-    <span class="dd-code__dots" aria-hidden="true"><i></i><i></i><i></i></span>
-    <span class="dd-code__title">~/cxkw/insomnia — zsh</span>
-    <button class="dd-code__copy" type="button" data-dd-copy="npm run deploy -- --region eu-west-2" aria-label="Copy command">${i('copy')}${i('check')}</button>
+    ${dots}
+    <span class="dd-code__title">~/dawn-and-dusk — zsh</span>
+    <span class="dd-code__actions">${copyCmds}</span>
   </figcaption>
-  <pre class="dd-code__pre" tabindex="0"><code><span class="dd-code__prompt">$ </span>npm run deploy -- --region eu-west-2
-<span class="dd-code__out">› building insomnia@2.4.0 (vite)</span>
-<span class="dd-code__out">› 214 modules transformed in 1.82s</span>
-<span class="dd-code__out">› uploading 38 assets to edge-cache</span>
-<span class="dd-code__ok">✓ deployed dpl_7Hq2 to eu-west-2 in 41s</span>
-<span class="dd-code__prompt">$ </span><span class="dd-code__cursor"></span></code></pre>
+  <pre class="dd-code__pre" tabindex="0"><code>${[
+    tl(`${zsh()}${input(`${cmd('npm')} ${sub('test')} ${flag('--')} ${arg('menu')}`)}`),
+    tl(ok('  ✓ menu › opens on click, closes on Esc')),
+    tl(ok('  ✓ menu › arrow keys move through items')),
+    tl(ok('  ✓ menu › typeahead jumps to the match')),
+    tl(ok('  ✓ menu › dusk: the popover reads on the page')),
+    tl('4 passed, 0 failed (3.8s)', 'out'),
+    tl(`${zsh()}${input(`${cmd('npm')} ${sub('run')} ${arg('build')}`)}`),
+    tl('&gt; node scripts/build-ds.mjs &amp;&amp; astro build', 'dim'),
+    tl(`› ${path('release/dawn-and-dusk.css')}  58 components · 212 kB`, 'out'),
+    tl(`› ${path('release/dawn-and-dusk.js')}   34 behaviours · 64 kB`, 'out'),
+    tl(warn('▲ skill/dawn-and-dusk/references/components.md changed — commit it with the release')),
+    tl(ok('✓ 74 pages built in 3.41s')),
+    tl(`${zsh()}${input(`${cmd('npm')} ${sub('run')} ${arg('dev')}`)}`),
+    tl(`${ok('astro')}  v6.1.3 ready in 412 ms`, 'out'),
+    tl(`┃ Local    ${path('http://127.0.0.1:4321/dawn-and-dusk/')}`, 'out'),
+    tl('┃ Network  use --host to expose', 'dim'),
+    tl(`${dim('watching for file changes…')} ${cursor}`),
+  ].join('\n')}</code></pre>
+</figure>`;
+
+const playback = `
+<figure class="dd-code dd-code--terminal" data-theme="dusk" data-dd-terminal-play>
+  <figcaption class="dd-code__bar">
+    ${dots}
+    <span class="dd-code__title">~/cxkw/insomnia — zsh</span>
+    <span class="dd-code__actions">${replay}${copyCmds}</span>
+  </figcaption>
+  <pre class="dd-code__pre" tabindex="0"><code>${[
+    tl(`${dollar}${input(`${cmd('npm')} ${sub('run')} ${arg('deploy')} ${flag('--')} ${flag('--region')} ${arg('eu-west-2')}`)}`),
+    tl('› building insomnia@2.4.0 (vite)', 'out'),
+    tl('› transforming 214 modules…', 'dim', 700),
+    tl('› uploading 38 assets to edge-cache', 'dim', 600),
+    tl('✓ deployed dpl_7Hq2 to eu-west-2 in 41s', 'ok', 900),
+    tl(`${dollar}${input(`${cmd('curl')} ${flag('-sI')} ${path('https://insomnia.cxkw.dev')} ${op('|')} ${cmd('head')} ${flag('-1')}`)}`),
+    tl('HTTP/2 200', 'ok'),
+    tl(`${dollar}${cursor}`),
+  ].join('\n')}</code></pre>
+</figure>`;
+
+const live = `
+<figure class="dd-code dd-code--terminal" data-theme="dusk" data-dd-terminal-interactive style="--dd-code-height: 340px">
+  <figcaption class="dd-code__bar">
+    ${dots}
+    <span class="dd-code__title">dawn &amp; dusk — try it</span>
+    <span class="dd-code__actions">${copyCmds}</span>
+  </figcaption>
+  <pre class="dd-code__pre" tabindex="-1"><code>${[
+    tl('dawn &amp; dusk shell · type help to see what it knows', 'dim'),
+    tl(`${zsh()}${cursor}`),
+  ].join('\n')}</code></pre>
+  <template data-dd-terminal-command="ls" data-dd-terminal-description="list the repo">
+    ${path('ds/')}  ${path('site/')}  ${path('skill/')}  ${path('tests/')}  ${path('scripts/')}  package.json  README.md
+  </template>
+  <template data-dd-terminal-command="git status" data-dd-terminal-description="what changed">
+    On branch main
+    Changes not staged for commit:
+    ${warn('  modified:   ds/components/code.css')}
+    ${warn('  modified:   ds/behaviors/terminal.js')}
+    ${dim('no changes added to commit (use "git add")')}
+  </template>
+  <template data-dd-terminal-command="npm test -- menu" data-dd-terminal-description="run the menu tests">
+    ${ok('  ✓ menu › opens on click, closes on Esc')}
+    ${ok('  ✓ menu › arrow keys move through items')}
+    ${ok('  ✓ menu › typeahead jumps to the match')}
+    <span class="dd-code__line dd-code__out" data-dd-terminal-delay="400">3 passed, 0 failed (2.9s)</span>
+  </template>
+  <template data-dd-terminal-command="npm run build" data-dd-terminal-description="bundle the system and the docs">
+    ${dim('&gt; node scripts/build-ds.mjs &amp;&amp; astro build')}
+    › ${path('release/dawn-and-dusk.css')}  58 components
+    ${warn('▲ components.md changed — commit it with the release')}
+    <span class="dd-code__line dd-code__ok" data-dd-terminal-delay="600">✓ 74 pages built in 3.41s</span>
+  </template>
+  <template data-dd-terminal-command="npm run dev" data-dd-terminal-description="start the docs">
+    ${ok('astro')}  v6.1.3 ready in 412 ms
+    ┃ Local    ${path('http://127.0.0.1:4321/dawn-and-dusk/')}
+  </template>
+  <template data-dd-terminal-command="whoami" data-dd-terminal-description="who's here">
+    cxkw — building dawn &amp; dusk, mostly after dusk
+  </template>
+</figure>`;
+
+// Syntax reference: every shell token, in a plain block so it follows the page theme.
+const W = 30;
+const ref = (html: string, visible: string, cls: string, role: string) =>
+  `<span class="dd-code__line">${html}${' '.repeat(Math.max(2, W - visible.length))}${c(`# .dd-code__${cls}  ${role}`)}</span>`;
+const reference = `
+<figure class="dd-code">
+  <figcaption class="dd-code__bar">
+    <span class="dd-code__title">${i('terminal')}shell tokens</span>
+    <span class="dd-code__lang">sh</span>
+  </figcaption>
+  <pre class="dd-code__pre" tabindex="0"><code>${[
+    `<span class="dd-code__line">${zsh()}${input(`${vr('NODE_ENV=production')} ${cmd('npm')} ${sub('run')} ${arg('build')} ${flag('--')} ${flag('--force')} ${op('|')} ${cmd('tee')} ${path('$HOME/build.log')} ${op('&amp;&amp;')} ${cmd('echo')} ${s('"ship at dusk"')} ${c('# go')}`)}</span>`,
+    `<span class="dd-code__line"></span>`,
+    ref(`<span class="dd-code__prompt">❯ $</span>`, '❯ $', 'prompt', 'prompt symbol'),
+    ref(user('cxkw@dusk'), 'cxkw@dusk', 'user', 'user@host'),
+    ref(cwd('~/dawn-and-dusk'), '~/dawn-and-dusk', 'cwd', 'working directory'),
+    ref(cmd('npm'), 'npm', 'cmd', 'command'),
+    ref(sub('run'), 'run', 'sub', 'subcommand'),
+    ref(`${flag('-v')} ${flag('--force')}`, '-v --force', 'flag', 'flag / option'),
+    ref(arg('menu'), 'menu', 'arg', 'argument'),
+    ref(s('"ship at dusk"'), '"ship at dusk"', 's', 'string'),
+    ref(`${vr('$HOME')} ${vr('NODE_ENV=dev')}`, '$HOME NODE_ENV=dev', 'var', 'variable'),
+    ref(`${path('./dist')} ${path('https://cxkw.dev')}`, './dist https://cxkw.dev', 'path', 'path / URL'),
+    ref(`${op('|')} ${op('&amp;&amp;')} ${op('&gt;')}`, '| && >', 'op', 'pipe / operator'),
+    ref(c('# deploy at dusk'), '# deploy at dusk', 'c', 'comment'),
+    ref(out('214 modules transformed'), '214 modules transformed', 'out', 'output'),
+    ref(ok('✓ 14 passed'), '✓ 14 passed', 'ok', 'success'),
+    ref(warn('▲ 2 pages lack a lead'), '▲ 2 pages lack a lead', 'warn', 'warning'),
+    ref(err('✕ build failed'), '✕ build failed', 'err', 'error'),
+    ref(dim('› transforming…'), '› transforming…', 'dim', 'dimmed / progress'),
+  ].join('\n')}</code></pre>
 </figure>`;
 ---
 <Docs title="Code" group="Data display" lead="Code blocks, inline code, copyable fields and a terminal. Mono throughout, tone instead of borders, and a copy button wherever someone will want the text.">
@@ -150,8 +273,20 @@ const terminal = `
   <Example code={field} description="Try it: press the eye to reveal the key and again to mask it; copy gives you the real key either way." />
 
   <h2 id="terminal">Terminal</h2>
-  <p>Always dark. Set <code>data-theme="dusk"</code> on the block so it reads dusk tokens in either mode. Prompts are not selectable, and the copy button copies just the command (<code>data-dd-copy</code>), never the output.</p>
-  <Example code={terminal} />
+  <p>For commands and what they print. Always dark: set <code>data-theme="dusk"</code> on the block so it reads dusk tokens on a dawn page too. Each command sits in <code>dd-code__input</code> after its prompt; prompts and output are never copied. The title bar carries three quiet dots in golden-hour tones, a centred title and the actions.</p>
+  <Example code={terminal} title="A working session" description="Test, build, dev — the dawn &amp; dusk loop. Copy in the bar takes only the commands, one per line; hover a command for its own copy button (data-dd-terminal-line-copy)." />
+
+  <h3 class="dd-h4">Playback</h3>
+  <p><code>data-dd-terminal-play</code> types the commands out when the terminal scrolls into view: a natural typing rhythm and a steady block cursor, output a beat later, then it rests on a blinking prompt. <code>data-dd-terminal-delay</code> on a line holds it back (a slow upload, a build). Click the terminal to skip to the end; with reduced motion it simply shows the final state.</p>
+  <Example code={playback} description="Try it: press replay in the title bar." />
+
+  <h3 class="dd-h4">Live</h3>
+  <p><code>data-dd-terminal-interactive</code> turns the last prompt into a real input. Enter runs the line against the <code>&lt;template data-dd-terminal-command&gt;</code> script inside the terminal; anything else gets a friendly “command not found”. <code>help</code> and <code>clear</code> are built in. Typed commands are highlighted with the same tokens as hand-written ones — an unknown command turns red as you type it.</p>
+  <Example code={live} title="Try it: type help" description="Click the terminal and type. ↑ / ↓ walk back through history, Tab completes a command (try npm, then Tab), Ctrl+L clears." />
+
+  <h3 class="dd-h4">Shell syntax</h3>
+  <p>Hand-written token classes for commands and output. They read the code palette, so they work in any code block, in dawn and dusk — the terminal swaps in brighter prompt and status colours for its dark ground. Strings and comments reuse <code>dd-code__s</code> and <code>dd-code__c</code>.</p>
+  <Example code={reference} description="Flip the example to dusk: every shell token holds at least 4.5:1 on its block, in both themes and in the terminal." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -160,7 +295,7 @@ const terminal = `
     ['.dd-code__title / __lang', 'File name (mono, with an icon) and a small uppercase language tag.'],
     ['.dd-code__copy', 'Icon button; pair with <code>data-dd-copy-target="#id"</code>. Holds <code>copy</code> + <code>check</code> icons; swaps on <code>[data-copied]</code>.'],
     ['.dd-code__pre', 'Scrolling <code>&lt;pre&gt;</code>. Set <code>--dd-code-height</code> to cap its height.'],
-    ['.dd-code__line', 'One line. Separate lines with literal newlines, not block elements.'],
+    ['.dd-code__line', 'One line. Separate lines with literal newlines, not block elements. In a terminal the script wraps loose lines for you.'],
     ['.is-highlight / .is-add / .is-del', 'Line states: highlighted, added, removed.'],
     ['.dd-code--numbered', 'Line-number gutter (CSS counter, not copied).'],
     ['.dd-code--diff', '+/− gutter for diffs.'],
@@ -168,7 +303,19 @@ const terminal = `
     ['--dd-code-keyword … --dd-code-punct', 'Override the token colours on <code>.dd-code</code>.'],
     ['.dd-code-inline', 'Inline code in running text.'],
     ['.dd-code-field', 'Copyable value: <code>__label</code>, <code>__box</code>, <code>__prefix</code>, <code>__value</code>, <code>__btn</code>, <code>__hint</code>.'],
-    ['.dd-code--terminal', 'Dark terminal; use with <code>data-theme="dusk"</code>. Parts: <code>__dots</code>, <code>__prompt</code>, <code>__out</code>, <code>__ok</code>, <code>__err</code>, <code>__cursor</code>.'],
+    ['.dd-code--terminal', 'Dark terminal; use with <code>data-theme="dusk"</code>. Its bar is a three-column grid: dots, centred title, actions.'],
+    ['.dd-code__dots', 'Three window dots (<code>&lt;i&gt;</code>) in quiet golden-hour tones; they warm up while a live terminal has focus. Retune with <code>--dd-code-dot-1…3</code>.'],
+    ['.dd-code__actions / __action', 'Right-hand group of bar buttons; <code>__action</code> is a 28px icon button (replay) that matches <code>__copy</code>.'],
+    ['.dd-code__prompt', 'The prompt (<code>$ </code>, <code>❯ </code>): apricot, never selected or copied. May hold <code>__user</code> and <code>__cwd</code>.'],
+    ['.dd-code__user / __cwd', 'Prompt parts: user@host (muted) and the working directory (ochre).'],
+    ['.dd-code__input', 'The command after the prompt — what playback types, copy copies and history recalls.'],
+    ['.dd-code__cmd / __sub / __flag / __arg', 'Command name, subcommand, flags and options, arguments.'],
+    ['.dd-code__var / __path / __op', 'Variables (<code>$HOME</code>, <code>NODE_ENV=…</code>), paths and URLs (underlined), pipes and operators (<code>|</code> <code>&amp;&amp;</code> <code>&gt;</code>). Strings and comments use <code>__s</code> and <code>__c</code>.'],
+    ['.dd-code__out / __ok / __warn / __err / __dim', 'Output lines: plain (muted), success, warning, error, dimmed / progress. Put them on the <code>__line</code> or on a span inside it.'],
+    ['.dd-code__cursor', 'Block cursor: blinks at rest, holds steady while typing, turns hollow when a live terminal loses focus.'],
+    ['--dd-code-prompt … --dd-code-dim', 'Shell token colours (<code>-prompt -user -cwd -cmd -sub -flag -arg -var -path -op -out -ok -warn -err -dim</code>); they default to the code palette.'],
+    ['.dd-code__line-copy', 'Made by the script (<code>data-dd-terminal-line-copy</code>): a per-command copy button, shown on hover or focus.'],
+    ['.dd-code__live / __field', 'Made by the script (<code>data-dd-terminal-interactive</code>): the live prompt line and its invisible input.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
@@ -178,12 +325,23 @@ const terminal = `
     ['data-dd-code-secret="…"', 'On the field value: the real secret. The visible text is the masked form.'],
     ['data-dd-code-reveal', 'On a button inside <code>.dd-code-field</code>: toggles masked ↔ secret and <code>aria-pressed</code>. Holds <code>eye</code> + <code>eye-off</code> icons.'],
     ['data-dd-code-reveal-label="Show|Hide"', 'Optional accessible labels for the two states.'],
+    ['data-dd-terminal-copy', 'On a button in a terminal: copies only the commands (each <code>__input</code>), one per line — no prompts, no output. Same <code>[data-copied]</code> feedback.'],
+    ['data-dd-terminal-line-copy', 'On the terminal: adds a copy button to every command line.'],
+    ['data-dd-terminal-play', 'On the terminal: types the commands out when it scrolls into view, output a beat later, then rests. Sets <code>data-dd-terminal-state="playing|done"</code> and fires <code>dd:terminalplayed</code>. A click in the terminal skips to the end. Reduced motion: final state at once.'],
+    ['data-dd-terminal-speed="42"', 'Typing speed in ms per character (with a little human jitter).'],
+    ['data-dd-terminal-delay="600"', 'On a line (also inside a template): wait this long before it appears.'],
+    ['data-dd-terminal-replay', 'On a bar button: plays the terminal again. Hidden with reduced motion.'],
+    ['data-dd-terminal-interactive', 'On the terminal: the last prompt becomes a live input. Fires <code>dd:terminalrun</code> with <code>{ command, known }</code>.'],
+    ['<template data-dd-terminal-command="…">', 'Inside a live terminal: the output for that command (markup, one line per line; plain lines read as muted output). <code>data-dd-terminal-description</code> shows in <code>help</code>.'],
+    ['data-dd-terminal-label', 'Accessible name for the live input (default “Terminal command (type help for a list)”).'],
+    ['dd.terminal(el)', 'Sets up a terminal added later and returns <code>{ play(), finish(), run(command) }</code>; <code>dd.terminal.init(root)</code> sets up every terminal inside <code>root</code>.'],
   ]} />
   <p>Copy and reveal are plain buttons: Tab to focus, Enter or Space to activate. The <code>&lt;pre&gt;</code> takes <code>tabindex="0"</code> so long lines can be scrolled from the keyboard.</p>
+  <p>Live terminal: click anywhere in it (or Tab to it) to focus the prompt. <kbd class="dd-kbd">Enter</kbd> runs the line, <kbd class="dd-kbd">↑</kbd> / <kbd class="dd-kbd">↓</kbd> walk through history (it starts with the commands already on screen), <kbd class="dd-kbd">Tab</kbd> completes a known command or lists the matches — and when there is nothing to complete, Tab moves focus on as usual, so the terminal never traps it. <kbd class="dd-kbd">Ctrl</kbd> <kbd class="dd-kbd">L</kbd> clears, <kbd class="dd-kbd">Ctrl</kbd> <kbd class="dd-kbd">C</kbd> abandons the line. Output is read out through a polite live region; the mirrored line is hidden from screen readers because the input carries the value.</p>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides
-    do={['Name the file in the bar when the snippet belongs somewhere.', 'Highlight the one or two lines the reader should look at.', 'Mask secrets by default and copy the real value.', 'Keep prompts (<code>$</code>) out of the copied text.']}
-    dont={['Don’t wrap code lines in block elements inside <code>&lt;pre&gt;</code> — copy gets blank lines.', 'Don’t use a terminal block for source files; it is for commands and output.', 'Don’t colour whole lines to show syntax — tokens only.']}
+    do={['Name the file in the bar when the snippet belongs somewhere.', 'Highlight the one or two lines the reader should look at.', 'Mask secrets by default and copy the real value.', 'Keep prompts (<code>$</code>) out of the copied text: wrap each command in <code>dd-code__input</code>.', 'Keep playback short — two or three commands with real output — and let it rest on a prompt.', 'Give a live terminal a script for the commands people will try, with a description each for <code>help</code>.']}
+    dont={['Don’t wrap code lines in block elements inside <code>&lt;pre&gt;</code> — copy gets blank lines.', 'Don’t use a terminal block for source files; it is for commands and output.', 'Don’t colour whole lines to show syntax — tokens only. Status colours go on output lines, not commands.', 'Don’t colour the window dots red, yellow and green; they are quiet tones, not buttons.', 'Don’t autoplay more than one terminal per view, or loop it.']}
   />
 </Docs>

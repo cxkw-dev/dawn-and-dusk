@@ -41,8 +41,13 @@ projects that want the tokens without the components. If the project already has
 
 - The inline `<script>` applies a saved theme before the first paint, so dusk users never see a dawn flash.
 - **Icons:** inlining the sprite works everywhere, including a page opened from disk. A site served over http can instead
-  reference the file: `<use href="/icons.svg#dd-i-bell"/>`. All icon names are listed in `references/tokens.md`; pick
-  the closest, never invent one. Icon-only controls need `aria-label`.
+  reference the file: `<use href="/icons.svg#dd-i-bell"/>`. Then also tell the script where the sprite is, because a few
+  behaviours insert icons themselves (toasts, validation errors, chips):
+  `<script>window.dd = Object.assign(window.dd || {}, { iconSprite: '/icons.svg' })</script>`. All icon names are listed in
+  `references/tokens.md`; pick the closest, never invent one. Icon-only controls need `aria-label`.
+- **Fonts** (Outfit, Figtree, DM Mono) load from Google Fonts through an `@import` at the top of `dawn-and-dusk.css`. Offline
+  or under a strict Content-Security-Policy, self-host them and remove that line. The page then falls back to system fonts
+  until they load.
 - **Theme toggle:** any element with `data-dd-theme-toggle` flips dawn ↔ dusk and remembers it.
 - **React, Next.js, Vue, Svelte, Astro, or alongside Tailwind:** read `references/frameworks.md` first. Some behaviours
   must be owned by the framework, and Tailwind's preflight overrides the base styles.
@@ -64,20 +69,23 @@ projects that want the tokens without the components. If the project already has
 5. **Headings are the logo lockup.** `.dd-display/.dd-h1/.dd-h2/.dd-h3` and dialog, drawer and sheet titles are Outfit
    800, lowercase and tight. The CSS lowercases them, but write the copy in lowercase anyway. Titles inside panels
    (cards, form sections, popovers, menus) use `.dd-h4/.dd-h5` in sentence case.
-6. **Body is Figtree**; UI chrome runs at `--dd-fs-sm`. **Data is DM Mono**: IDs, timestamps and figures (`.dd-mono`,
-   `.dd-num`). Right-align numeric columns. Text steps `--dd-text` → `--dd-muted` → `--dd-quiet`; `--dd-faint` is
+6. **Body is Figtree**; UI chrome runs at `--dd-fs-sm`. **Data is DM Mono**: IDs, hashes, timestamps and the figures in
+   tables (`.dd-mono`; `.dd-num` adds tabular digits). Right-align numeric columns. Big display figures (stat values,
+   prices) keep the font their component gives them. Text steps `--dd-text` → `--dd-muted` → `--dd-quiet`; `--dd-faint` is
    decoration only, never text.
 7. **Status = meaning, set = category.** `--dd-ok/warn/bad/info` (+`-soft`) are for state, always with an icon or a word,
    never colour alone. `--dd-set-1…8` (honey, amber, apricot, terracotta, rose, wine, ochre, sand) are for categories:
    chips, tags and chart series, used in order. People (avatars) skip set-3 apricot, because apricot means "do this".
+   Common states: active / healthy → ok, pending / invited / building → info, degraded / expiring → warn,
+   failed / down / overdue → bad, suspended / archived / off → muted.
 8. **Space in 5px units**: `calc(var(--dd-u) * N)` or `--dd-space-N`. Page sections breathe (60–100px); panels and
    tables stay tight.
 9. **Dusk is first-class.** Don't special-case colours per theme; the tokens already switch. In dusk, status blocks are
    solid fills with no border; the components handle it.
 10. **Motion is gentle**: `--dd-dur` / `--dd-dur-fast` with `--dd-ease`. Move a few pixels, fade, never bounce. Respect
     `prefers-reduced-motion`.
-11. **Icons lead their label** (`[icon] New deploy`). The only trailing icon is an arrow on a link or action that moves
-    you forward ("Read the docs →").
+11. **Icons lead their label** (`[icon] New deploy`). Trailing icons are only ones that belong to the control: an arrow on
+    a link or action that moves you forward ("Read the docs →"), a chevron that opens a menu or select, a sort indicator.
 12. **Switch vs checkbox:** a switch applies a setting at once; a checkbox is a choice saved with a form. A form with a
     Save button uses checkboxes.
 13. **Voice:** short lowercase headlines ("ship at dusk"), plain verbs on buttons, sentence-case UI text, no exclamation
@@ -107,7 +115,9 @@ Behaviour is opt-in through `data-dd-*` attributes on the documented markup. The
 Each component file lists its hooks.
 
 Small global API: `dd.toast({ title, description, intent, action })`, `dd.dialog`, `dd.tabs`, `dd.popover`, `dd.chip`,
-`dd.dismiss`, `dd.guide`, `dd.jsonViewer(el, data)`. Components emit bubbling events such as `dd:change`,
+`dd.dismiss`, `dd.guide`, `dd.jsonViewer(el, data)`, `dd.dataTable.refresh(table)`, `dd.terminal(el)`, and the
+`dd.iconSprite` setting. Data tables refresh themselves when you add or remove rows; call `refresh` after editing a
+cell's value in place. Components emit bubbling events such as `dd:change`,
 `dd:tabchange`, `dd:command`, `dd-select`, `dd-date` and `dd:dismiss`; listen for them instead of patching internals.
 
 ## 5. Your own CSS (page glue)
@@ -115,9 +125,12 @@ Small global API: `dd.toast({ title, description, intent, action })`, `dd.dialog
 Compose existing components first. When you need layout between them (page width, grid columns, section rhythm, a
 two-column split), write a small stylesheet:
 - Prefix classes with the project's name (`tidepool-plans`, `app-grid`), never `dd-`.
-- Glue may set `display`, grid/flex, `gap`, `padding`, `margin`, `max-width` and container queries, all from tokens.
+- Glue may set `display`, grid/flex, `gap`, `padding`, `margin`, `max-width` and container queries, all from tokens. It may
+  also size a page's hero heading with a type token and give a full-width page band a surface tone. That is page layout,
+  not component styling.
 - Don't restyle a component from glue (its colour, radius, font or states). If a component looks wrong, you probably
   have its markup wrong; re-check its file.
+- A sticky top bar covers in-page anchor targets: give the targets `scroll-margin-top` (or `html { scroll-padding-top }`).
 - Keep markup semantic: real `<button>`, `<a>`, `<table>`, `<dialog>`, labels tied to inputs.
 
 ## 6. Before you finish

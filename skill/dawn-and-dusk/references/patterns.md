@@ -105,6 +105,9 @@ Reading the skeletons:
 ```
 
 - Rail = sections; panel = the section's pages. `data-dd-nav-section` buttons switch panes; plain rail links navigate.
+- A small app with only a handful of pages and no sections can use the rail alone, with every page a rail link
+  (`aria-current="page"` on the current one, its label in a tooltip), as the Settings pattern does. Or use one rail
+  section whose panel lists the pages. Don't invent a third shape.
   `.is-collapsed` on the nav (+ `aria-expanded="false"` on the chevron) starts it folded; a nav with an `id`
   remembers the reader's choice. The top-bar logo is `__narrow`: it shows only while the nav is off-canvas.
 
@@ -674,7 +677,7 @@ is in `components/<name>.md`.
       <p class="dd-card__eyebrow">[i:bolt]<span>For solo operators</span><span class="dd-badge dd-badge--accent">Popular</span></p>
       <h3 class="dd-card__title" id="plan-pro">pro</h3>
       <p class="dd-card__text">One sentence on who the plan is for.</p>
-      <p class="dd-card__stat"><span data-price>$12</span><small>/mo</small></p>
+      <p class="dd-card__stat"><span data-app-price="pro">$12</span><small>/mo</small></p>   <!-- your own hook; your script swaps it -->
       <p class="dd-card__label">Billed monthly · cancel any time</p>
       <ul class="app-plan-list"><li>[i:check]<span>100 monitors</span></li>…</ul>   <!-- glue: a stack of icon + text rows -->
       <div class="dd-card__foot"><a class="dd-btn dd-btn--primary dd-btn--block" href="#signup">Start with Pro</a></div>
@@ -687,17 +690,22 @@ is in `components/<name>.md`.
 Rules:
 - **The recommended plan carries the only primary button** in the cards; the other plans use `.dd-btn--secondary`. Mark it
   with an accent badge ("Popular"), not a border or a coloured card.
-- Prices are figures: `.dd-card__stat`; units in `<small>`. Changing period swaps the numbers in place (announce the change
-  in a polite live region); keep the card heights stable.
+- Prices are `.dd-card__stat` (the display font, like stat values); units go in `<small>`. Changing the period swaps the
+  numbers in place from your own script (the system has no pricing behaviour). Announce the change in a polite live
+  region (`<p class="dd-visually-hidden" aria-live="polite"></p>`) and keep the card heights stable.
 - Three plans sit in one row once they fit and stack below that — set the columns with glue, never leave 2 + 1.
-- Comparison: a `.dd-table` with one `<tbody>` per feature group and the group name as a row header (`<th scope="rowgroup"
-  colspan="…">`); `[i:check]` / an em dash for yes / no, each with visually hidden text ("Included" / "Not included").
-- FAQ: a `.dd-accordion` of native `<details>`, grouped with `name="faq"` so one opens at a time.
+- Comparison: a `.dd-table` (fine at 15–25 rows when the table is the section's main content) with one `<tbody>` per feature
+  group. Give each group a header row whose cell holds an eyebrow, `<th scope="rowgroup" colspan="4"><span
+  class="dd-eyebrow">Alerts</span></th>`, so it reads apart from the feature names. Use `[i:check]` / an em dash for
+  yes / no, each with visually hidden text ("Included" / "Not included"). On phones the plan columns scroll inside the
+  table. If the feature column must stay put, use the data table's frozen first column instead (`components/data-table.md`).
+- FAQ: a `.dd-accordion` of native `<details>`, grouped with `name="faq"` so one opens at a time. Copy the markup from
+  `components/accordion.md`.
 - A long page may end with a closing call to action that repeats the same primary action (it's a new view).
 
 ## Before you finish
 
-- Check every `dd-` class you wrote against `components.md`; invent nothing. Glue uses your project's prefix.
-- Look at dawn **and** dusk (`<html data-theme="dusk">`) and ~375px wide.
-- Count primary buttons per screen: one. Every status has a word; every figure is mono (right-aligned in tables);
-  every icon-only button has an `aria-label`.
+Use the checklist in SKILL.md §6. For pages, also:
+- Count primary buttons per screenful: one. Every status has a word; table figures are mono and right-aligned; every
+  icon-only button has an `aria-label`.
+- Anchored sections clear the sticky top bar (`scroll-margin-top`).
