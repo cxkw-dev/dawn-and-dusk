@@ -52,7 +52,7 @@ const flagRows = services.map(([id, name, s, label, region, ver, owner, req, err
         ${errCell(err)}
         ${p95Cell(p95)}
         ${cpuCell(cpu)}
-        <td class="is-num is-muted">${at}</td>
+        <td class="is-num is-muted" data-value="2026-10-30T${at}">${at}</td>
         <td class="is-actions"><button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-label="Actions for ${name}" data-dd-menu="dt-row-menu" data-dd-placement="bottom-end" aria-haspopup="menu" aria-expanded="false" aria-controls="dt-row-menu">${i('more')}</button></td>
       </tr>
       <tr class="dd-data-table__detail" id="dt-${id}"${open ? '' : ' hidden'}>
@@ -151,6 +151,8 @@ const flagship = `
     <button class="dd-menu__item" role="menuitem" type="button" data-dd-toast="Opening logs" data-dd-toast-description="The log viewer opens filtered to this service."><span class="dd-menu__body">View logs</span></button>
     <button class="dd-menu__item" role="menuitem" type="button" data-dd-toast="Restart queued" data-dd-toast-description="Instances restart one at a time." data-dd-toast-intent="ok"><span class="dd-menu__body">Restart</span></button>
     <button class="dd-menu__item" role="menuitem" type="button" data-dd-toast="Traffic paused" data-dd-toast-description="The service stops taking new requests." data-dd-toast-intent="warn"><span class="dd-menu__body">Pause traffic</span></button>
+    <hr class="dd-menu__sep">
+    <button class="dd-menu__item dd-menu__item--danger" role="menuitem" type="button" data-dt-remove><span class="dd-menu__body">Remove from fleet</span></button>
   </div>
 </div>`;
 
@@ -264,6 +266,53 @@ const noData = `
     </table>
   </div>
 </div>`;
+
+// Height: a --fill table in a box with a set height; Created sorts by its ISO data-value, not its text.
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const when = (iso) => { const [d, t] = iso.split('T'); const [y, m, day] = d.split('-'); return `${MONTHS[+m - 1]} ${+day}${y === '2026' ? '' : `, ${y}`} · ${t}`; };
+const deploys = [
+  ['dpl_7Hq2xK9m', 'auth-gateway', 'ok', 'Ready', 'iad1', 18.2, '2026-10-30T09:41'],
+  ['dpl_71be09Qa', 'billing-worker', 'bad', 'Failed', 'fra1', 41.0, '2026-10-30T08:12'],
+  ['dpl_8f3a2cLw', 'edge-cache', 'ok', 'Ready', 'hnd1', 9.4, '2026-10-29T22:47'],
+  ['dpl_5c40d1Tz', 'dockey-ui', 'info', 'Building', 'iad1', null, '2026-10-29T17:03'],
+  ['dpl_2e91aaRk', 'search-indexer', 'ok', 'Ready', 'fra1', 63.5, '2026-10-28T11:55'],
+  ['dpl_44c18bPe', 'ai-focus', 'ok', 'Ready', 'iad1', 22.8, '2026-10-21T06:58'],
+  ['dpl_0b7e52Ns', 'notify-fanout', 'bad', 'Failed', 'fra1', 12.1, '2026-10-09T14:20'],
+  ['dpl_6a3f90Cu', 'leetnode', 'ok', 'Ready', 'hnd1', 31.7, '2026-09-30T05:42'],
+  ['dpl_3c71e4Vd', 'insomnia', 'ok', 'Ready', 'iad1', 15.0, '2026-09-04T16:15'],
+  ['dpl_1f88d2Jb', 'image-resizer', 'muted', 'Rolled back', 'fra1', 27.3, '2026-08-17T03:02'],
+  ['dpl_5e2c07Xo', 'ledger-sync', 'ok', 'Ready', 'hnd1', 19.9, '2025-12-31T23:47'],
+];
+const fill = `
+<div style="display: flex; flex-direction: column; height: 340px">
+  <div class="dd-data-table dd-data-table--compact dd-data-table--fill" data-dd-data-table>
+    <div class="dd-data-table__toolbar">
+      <label class="dd-data-table__search">${i('search')}<input type="search" placeholder="Filter deploys…" aria-label="Filter deploys" data-dd-data-table-search></label>
+      <div class="dd-data-table__tools"><span class="dd-data-table__count" data-dd-data-table-count="deploys">${deploys.length} deploys</span></div>
+    </div>
+    <div class="dd-data-table__scroll" tabindex="0" role="region" aria-label="Deploys">
+      <table class="dd-data-table__table">
+        ${head(`
+          <th class="is-frozen">Deploy</th>
+          ${sortTh('Service', 'service')}
+          <th>Status</th>
+          <th>Region</th>
+          ${sortTh('Build', 'build', 'is-num')}
+          ${sortTh('Created', 'created', 'is-num')}`)}
+        <tbody>${deploys.map(([id, name, s, label, region, build, at]) => `
+          <tr>
+            <td class="is-frozen is-mono">${id}</td>
+            <td>${name}</td>
+            <td><span class="dd-data-table__status" data-status="${s}">${label}</span></td>
+            <td class="is-muted">${region}</td>
+            <td class="is-num">${build === null ? dash : `${build.toFixed(1)}<span class="dd-data-table__unit">s</span>`}</td>
+            <td class="is-num is-muted" data-value="${at}">${when(at)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>`;
 ---
 <Docs title="Data table" group="Data display" lead="The dense table for large data sets: search and filter, sort, select in bulk, expand a row for detail, and scroll wide data with the header and first column pinned." wide>
   <Example
@@ -277,7 +326,7 @@ const noData = `
   <ul>
     <li><strong>Toolbar</strong>: search on the left, filter chips, then the row count, column toggle and table-level actions on the right. It wraps on narrow screens; search takes the first line.</li>
     <li><strong>Bulk bar</strong>: appears under the toolbar while rows are selected, in the accent tone, with the count and the actions that apply to the selection.</li>
-    <li><strong>Scroll container</strong>: <code>.dd-data-table__scroll</code> scrolls both ways. The header sticks to its top; the select and first data column stick to its left and cast a soft edge once you scroll. Cap its height with <code>--dd-data-table-height</code> (default <code>70vh</code>).</li>
+    <li><strong>Scroll container</strong>: <code>.dd-data-table__scroll</code> scrolls both ways. The header sticks to its top; the select and first data column stick to its left and cast a soft edge once you scroll. Its height caps at <code>--dd-data-table-height</code> (default <code>70vh</code>); see <a href="#height">Height</a> to drop the cap.</li>
     <li><strong>Footer</strong>: page size and the <a href="pagination">pagination</a> range. Give it <code>data-dd-pagination</code> and the table pages its rows in the browser; leave it off when the server pages.</li>
   </ul>
 
@@ -297,6 +346,15 @@ const noData = `
   <Example code={empty} description="Try it: remove the region chip, then press Clear filters." />
   <p>With no data at all, explain what will appear and give the one action that creates it. <code>--card</code> puts the whole table on <code>--dd-surface</code>.</p>
   <Example code={noData} />
+
+  <h2 id="height">Height</h2>
+  <p>By default the scroll area caps at <code>70vh</code> and scrolls inside the page, so the header stays pinned while the rows scroll. In an app, where the page already scrolls, that is a scroller inside a scroller. Two ways out:</p>
+  <ul>
+    <li><code>style="--dd-data-table-height: none"</code> drops the cap: the table grows with its rows and the page does all the scrolling (wide tables still scroll sideways). The header then scrolls away with the page, so page the rows.</li>
+    <li><code>.dd-data-table--fill</code> takes the height its parent gives it — a flex column, or a box with a set height — and the scroll area gets what the toolbar and footer leave. The table body is the only scroller and the header stays pinned. In an <a href="app-shell">app shell</a>, give the <code>.dd-app-shell__page</code> that holds it <code>height: 100%</code>, so the page fills the content area and the table fills the rest of the page.</li>
+  </ul>
+  <p>Inside <code>.dd-app-shell</code>, whose content area is a plain <code>--dd-bg</code>, the cells drop the page grain so the table reads as the same surface (in dusk the grain would make it a lighter, textured block). The shell does this by setting <code>--dd-data-table-grain: none</code>; set it to <code>var(--dd-grain)</code> on a shell that keeps the grained page behind it.</p>
+  <Example code={fill} description="A --fill table in a 340px box. Created shows a short date but sorts by its ISO data-value, so last year’s deploy goes last; Build reads “18.2 s” as a number." />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -325,17 +383,19 @@ const noData = `
     ['.dd-data-table__footer', 'Footer row for page size and pagination.'],
     ['.dd-data-table--compact · --roomy', 'Density.'],
     ['.dd-data-table--card', 'The whole table on <code>--dd-surface</code>.'],
-    ['--dd-data-table-height', 'Scroll height cap (default <code>70vh</code>).'],
+    ['.dd-data-table--fill', 'Fills the height its parent gives it (a flex column or a box with a set height); the scroll area takes the rest, uncapped, so it is the only scroller.'],
+    ['--dd-data-table-height', 'Scroll height cap (default <code>70vh</code>). <code>none</code>: no cap, the table grows and the page scrolls.'],
     ['--dd-data-table-bg', 'The opaque colour behind sticky cells (default <code>--dd-bg</code>).'],
+    ['--dd-data-table-grain', 'The texture on cells (default the page grain; <code>none</code> inside <code>.dd-app-shell</code> and on <code>--card</code>).'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
   <p>Load <code>dawn-and-dusk.js</code> and add <code>data-dd-data-table</code> to the root. Everything is delegated, so rows added later just work.</p>
   <ClassTable head={['Attribute / element', 'Behaviour']} rows={[
-    ['th[aria-sort] .dd-data-table__sort', 'Click cycles <code>none → ascending → descending → none</code> and sorts the rows (numerically for <code>.is-num</code>; a cell’s <code>data-value</code> wins over its text). Blanks sort last; groups and detail rows stay together.'],
-    ['thead .dd-data-table__check', 'Selects or clears every visible row; shows indeterminate when some are selected.'],
-    ['tbody .dd-data-table__check', 'Selects the row (<code>.is-selected</code>). Shift-click selects a range.'],
-    ['[data-dd-data-table-selected]', 'Receives the selected count. <code>.dd-data-table__bulk</code> is shown while it is above zero.'],
+    ['th[aria-sort] .dd-data-table__sort', 'Click cycles <code>none → ascending → descending → none</code> and sorts the rows by each cell’s <code>data-value</code>, else its text. Two values compare as numbers when both are fully numeric (<code>1,240</code>, <code>0.5%</code>, <code>-3</code>), as times when both are ISO dates (<code>2026-10-30</code>, <code>2026-10-30T09:41</code>), else as text with numbers in order (<code>v2</code> before <code>v10</code>). In an <code>.is-num</code> column, “84 ms” still reads as 84 and a dash counts as blank. Blanks sort last; groups and detail rows stay together.'],
+    ['thead .dd-data-table__check', 'Selects or clears every visible row; shows indeterminate when some are selected. Rows whose box is <code>disabled</code> are skipped and don’t count toward its state.'],
+    ['tbody .dd-data-table__check', 'Selects the row (<code>.is-selected</code>). Shift-click selects a range (skipping disabled boxes). A <code>disabled</code> box is never changed by the table — select all, ranges and Clear leave it as it is.'],
+    ['[data-dd-data-table-selected]', 'Receives the selected count. <code>.dd-data-table__bulk</code> is shown while it is above zero; if it hides with focus inside (a bulk action removed the rows), focus moves to the select-all box.'],
     ['[data-dd-data-table-clear]', 'Clears the selection.'],
     ['.dd-data-table__expand', 'Toggles <code>aria-expanded</code> and the <code>hidden</code> detail row named by <code>aria-controls</code>.'],
     ['[data-dd-data-table-search]', 'Filters rows by their text as you type.'],
@@ -347,9 +407,28 @@ const noData = `
     ['[data-dd-data-table-reset]', 'Clears search and chips, and returns focus to the search.'],
     ['[data-dd-pagination] inside the root', 'Pages the matching rows in the browser (see <a href="pagination">pagination</a>): <code>data-total</code> is kept in step, the page-size select and arrows move through the rows. Filtering goes back to page 1; sorting keeps the page.'],
     ['[data-dd-data-table-column="col"]', 'Checkbox that shows / hides the column whose header has <code>data-col="col"</code>.'],
+    ['Rows added or removed', 'Picked up on their own (count, filters, empty row, pages and selection refresh on the next frame); <code>dd.dataTable.refresh(root)</code> does it by hand.'],
+    ['Focus on removed rows', 'When the row holding focus is removed (a ⋯ menu’s Remove, a bulk action, a framework re-render), focus moves to the first control of the next shown row, else the previous one, else the select-all box, else the scroll region. A row that is only moved keeps its focus. Try it: a row’s ⋯ → Remove from fleet.'],
     ['Keyboard', 'Every control is a native button, checkbox or input, so <kbd>Tab</kbd>, <kbd>Enter</kbd> and <kbd>Space</kbd> work throughout. The scroll region is focusable, so arrow keys scroll it. <kbd>Esc</kbd> closes a column or filter menu and returns focus to its button; a click outside closes it too.'],
     ['Events', '<code>dd:sort</code> <code>{ column, direction, index }</code> after a header sorts; <code>dd:selectionchange</code> <code>{ count, rows }</code> after the selection changes; <code>dd:pagechange</code> (from the pager) <code>{ page, pages, pageSize, total, from, to }</code>. All bubble from the root, so a server-backed table can listen and fetch.'],
   ]} />
+
+  <style is:global>
+    /* Docs only: the docs chrome is an app shell that keeps the grained page, and each stage repaints it. */
+    .ex-stage { --dd-data-table-grain: var(--dd-grain); }
+  </style>
+  <script is:inline>
+    // Docs only: the flagship's row menu can remove its row (the menu knows which row through menu.ddTrigger).
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#dt-row-menu [data-dt-remove]')) return;
+      const row = document.getElementById('dt-row-menu').ddTrigger?.closest('tr');
+      if (!row) return;
+      const name = row.querySelector('[data-col="service"] a')?.textContent;
+      document.getElementById(row.querySelector('.dd-data-table__expand')?.getAttribute('aria-controls'))?.remove();
+      row.remove();
+      window.dd?.toast?.({ title: `${name} removed`, description: 'Focus moved to the next row.' });
+    });
+  </script>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides

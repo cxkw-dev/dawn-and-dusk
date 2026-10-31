@@ -350,3 +350,135 @@ test('375px: taps sort, select and page; nothing overflows the page', async ({ o
   assert.ok(panel.l >= 0 && panel.r <= 375, `region menu fits the screen (${panel.l}–${panel.r})`);
   assert.ok(await page.get(() => document.documentElement.scrollWidth <= innerWidth + 1), 'no sideways page scroll');
 });
+
+test('select all skips disabled rows, and the header’s checked / indeterminate state ignores them', async ({ open, assert }) => {
+  const page = await open('components/data-table');
+  const allState = () => page.get((s) => { const b = document.querySelector(s); return { checked: b.checked, ind: b.indeterminate }; }, ALL);
+  const isChecked = (name) => page.get((s) => document.querySelector(s).checked, check(name));
+  const selected = () => page.text(`${FL} [data-dd-data-table-selected]`);
+  await page.click(`${FL} [data-dd-data-table-clear]`);
+  // Two rows on the first page can't be changed (e.g. the workspace owner).
+  await page.get((r) => ['auth-gateway', 'edge-cache'].forEach((n) => { document.querySelector(`${r} input[aria-label="Select ${n}"]`).disabled = true; }), FL);
+  await page.click(ALL);
+  assert.ok(!(await isChecked('auth-gateway')) && !(await isChecked('edge-cache')), 'disabled boxes stay unchecked');
+  assert.equal(await selected(), '8', 'the eight enabled rows on the page');
+  assert.deepEqual(await allState(), { checked: true, ind: false }, 'every row it can change is selected: fully checked');
+  await page.click(check('billing-worker'));
+  assert.deepEqual(await allState(), { checked: false, ind: true });
+  await page.click(ALL);
+  assert.equal(await selected(), '8');
+  await page.click(ALL);
+  assert.deepEqual(await allState(), { checked: false, ind: false });
+  assert.equal(await selected(), '0');
+  // A range across a disabled row leaves it alone.
+  await page.click(check('billing-worker'));
+  await shiftClick(page, check('ledger-sync'));
+  assert.ok(!(await isChecked('edge-cache')));
+  assert.equal(await selected(), '3', 'billing-worker, search-indexer, ledger-sync');
+  // A disabled row that is checked (locked in) stays checked through select all and Clear, and still counts.
+  await page.click(`${FL} [data-dd-data-table-clear]`);
+  await page.get((s) => { document.querySelector(s).checked = true; dd.dataTable.refresh(s); }, check('auth-gateway'));
+  assert.deepEqual(await allState(), { checked: false, ind: false }, 'a locked-in row does not make the header indeterminate');
+  await page.click(ALL);
+  assert.deepEqual(await allState(), { checked: true, ind: false });
+  assert.equal(await selected(), '9');
+  await page.click(`${FL} [data-dd-data-table-clear]`);
+  assert.ok(await isChecked('auth-gateway'), 'Clear leaves the disabled box as it is');
+  assert.equal(await selected(), '1');
+});
+
+test('sort: numbers only when both are numeric, ISO dates by time, other text in numeric order', async ({ open, assert }) => {
+  const page = await open('components/data-table');
+  const FI = `${ex(6)} .dd-data-table`;
+  const ids = () => page.get((r) => [...document.querySelectorAll(`${r} tbody > tr`)].map((tr) => tr.cells[0].textContent.trim()), FI);
+  const colIdx = (col) => page.get((r, c) => { const th = document.querySelector(`${r} th[data-col="${c}"]`); return [...th.parentElement.cells].indexOf(th); }, FI, col);
+  const values = (col) => page.get((r, i) => [...document.querySelectorAll(`${r} tbody > tr`)].map((tr) => tr.cells[i].dataset.value ?? tr.cells[i].textContent.trim()), FI, col);
+  const setValues = (i, vals) => page.get((r, k, v) => [...document.querySelectorAll(`${r} tbody > tr`)].forEach((tr, n) => { tr.cells[k].dataset.value = v[n]; }), FI, i, vals);
+  const original = await ids();
+
+  // ISO dates in an .is-num column: by time (a number parse would read every one as 2026 or 2025 and tie).
+  const created = await colIdx('created');
+  await page.click(sortBtn('created', FI));
+  const asc = await values(created);
+  assert.deepEqual(asc, [...asc].sort((a, b) => Date.parse(a) - Date.parse(b)), 'oldest first');
+  assert.equal(asc[0], '2025-12-31T23:47');
+  assert.equal(asc.at(-1), '2026-10-30T09:41');
+  await page.click(sortBtn('created', FI));
+  assert.equal((await values(created))[0], '2026-10-30T09:41', 'newest first');
+  await page.click(sortBtn('created', FI));
+  assert.deepEqual(await ids(), original);
+  // Mixed date-only and date-time values still order by time.
+  await setValues(created, ['2026-10-30', '2026-10-29T23:59', '2026-10-30T00:01', '2026-01-02', '2025-12-31T23:59:59', '2026-10-29', '2026-03-04T12:00', '2026-03-04', '2026-10-30T12:00', '2024-02-29', '2026-07-01T08:00']);
+  await page.click(sortBtn('created', FI));
+  assert.deepEqual(await values(created), ['2024-02-29', '2025-12-31T23:59:59', '2026-01-02', '2026-03-04', '2026-03-04T12:00', '2026-07-01T08:00', '2026-10-29', '2026-10-29T23:59', '2026-10-30', '2026-10-30T00:01', '2026-10-30T12:00']);
+
+  // A text column with fully numeric values: by number (signs, decimals, separators, %, a currency sign, exponents).
+  const service = await colIdx('service');
+  await setValues(service, ['10', '-3', '2.5', '0.25', '1,240', '7', '-0.5', '100', '3e2', '$40', '12%']);
+  await page.click(sortBtn('service', FI));
+  assert.deepEqual(await values(service), ['-3', '-0.5', '0.25', '2.5', '7', '10', '12%', '$40', '100', '3e2', '1,240']);
+  // Text with numbers in it: localeCompare with numeric collation ("svc-9" before "svc-10").
+  await page.click(sortBtn('service', FI));
+  await page.click(sortBtn('service', FI));
+  await setValues(service, ['svc-12', 'svc-3', 'svc-110', 'svc-7', 'svc-1', 'SVC-25', 'svc-9', 'svc-40', 'svc-2', 'svc-18', 'svc-5']);
+  await page.click(sortBtn('service', FI));
+  assert.deepEqual(await values(service), ['svc-1', 'svc-2', 'svc-3', 'svc-5', 'svc-7', 'svc-9', 'svc-12', 'svc-18', 'SVC-25', 'svc-40', 'svc-110']);
+
+  // A figure column without data-value: "18.2 s" reads as 18.2; the dash is blank and sorts last both ways.
+  await page.click(sortBtn('build', FI));
+  const builds = await values(await colIdx('build'));
+  assert.deepEqual(builds.slice(0, 3), ['9.4s', '12.1s', '15.0s']);
+  assert.equal(builds.at(-1), '—');
+  await page.click(sortBtn('build', FI));
+  const desc = await values(await colIdx('build'));
+  assert.equal(desc[0], '63.5s');
+  assert.equal(desc.at(-1), '—');
+  // The flagship's Updated column carries ISO data-values too.
+  await page.click(sortBtn('at'));
+  assert.equal((await allNames(page))[0], 'notify-fanout', 'earliest update first');
+});
+
+test('height: --dd-data-table-height: none drops the cap, --fill fills its box (and an app shell page), and the shell drops the grain in dusk', async ({ open, assert }) => {
+  const page = await open('components/data-table', { theme: 'dusk' });
+  const scroller = `${GR} .dd-data-table__scroll`;
+  const box = (s) => page.get((sel) => { const el = document.querySelector(sel); return { h: el.clientHeight, sh: el.scrollHeight, mh: getComputedStyle(el).maxHeight }; }, s);
+  await page.get((r) => document.querySelector(r).style.setProperty('--dd-data-table-height', '160px'), GR);
+  let b = await box(scroller);
+  assert.ok(b.h <= 160 && b.sh > b.h, `capped: scrolls inside (${b.h} / ${b.sh})`);
+  await page.get((r) => document.querySelector(r).style.setProperty('--dd-data-table-height', 'none'), GR);
+  b = await box(scroller);
+  assert.equal(b.mh, 'none');
+  assert.ok(b.sh <= b.h + 1, `none: the table grows with its rows, no inner scroll (${b.h} / ${b.sh})`);
+
+  // --fill in a box with a set height: the scroll area takes the rest and scrolls; the table ends at the box's end.
+  const FI = `${ex(6)} .dd-data-table`;
+  const fill = await page.get((r) => {
+    const root = document.querySelector(r), wrap = root.parentElement, sc = root.querySelector('.dd-data-table__scroll');
+    return { wrapBottom: wrap.getBoundingClientRect().bottom, rootBottom: root.getBoundingClientRect().bottom, scBottom: sc.getBoundingClientRect().bottom, h: sc.clientHeight, sh: sc.scrollHeight, mh: getComputedStyle(sc).maxHeight };
+  }, FI);
+  assert.ok(Math.abs(fill.rootBottom - fill.wrapBottom) <= 1 && Math.abs(fill.scBottom - fill.wrapBottom) <= 1, `fills the 340px box (${fill.scBottom} vs ${fill.wrapBottom})`);
+  assert.ok(fill.sh > fill.h, 'its rows scroll inside');
+  assert.equal(fill.mh, 'none');
+
+  // In an app shell: page height 100% + --fill → the content area doesn't scroll; the table body does. Cells drop the grain.
+  const shell = await page.get((r) => {
+    const host = document.createElement('div');
+    host.id = 'shell-host';
+    host.innerHTML = `<div class="dd-app-shell" style="--dd-app-shell-h: 520px"><div class="dd-app-shell__main"><div class="dd-app-shell__content"><div class="dd-app-shell__page" style="height: 100%"><h1 class="dd-h3">deploys</h1></div></div></div></div>`;
+    document.querySelector('.doc-main').append(host);
+    const t = document.querySelector(r).cloneNode(true);
+    host.querySelector('.dd-app-shell__page').append(t);
+    host.scrollIntoView();
+    const content = host.querySelector('.dd-app-shell__content'), sc = t.querySelector('.dd-data-table__scroll');
+    const cell = t.querySelector('tbody td');
+    return { outer: content.scrollHeight - content.clientHeight, inner: sc.scrollHeight - sc.clientHeight, grain: getComputedStyle(cell).backgroundImage, tableBg: getComputedStyle(cell).backgroundColor, shellBg: getComputedStyle(host.firstElementChild).backgroundColor };
+  }, FI);
+  assert.ok(shell.outer <= 1, `the shell's content area doesn't scroll (${shell.outer}px over)`);
+  assert.ok(shell.inner > 0, 'the table body scrolls instead');
+  assert.equal(shell.grain, 'none', 'no grain on cells in the shell');
+  assert.equal(shell.tableBg, shell.shellBg, 'cells are the shell content’s tone');
+  // Outside the shell the page grain stays; --dd-data-table-grain brings it back inside.
+  assert.match(await page.get((r) => getComputedStyle(document.querySelector(`${r} tbody td`)).backgroundImage, FI), /^url\(/);
+  const back = await page.get(() => { const t = document.querySelector('#shell-host .dd-data-table'); t.style.setProperty('--dd-data-table-grain', 'var(--dd-grain)'); return getComputedStyle(t.querySelector('tbody td')).backgroundImage; });
+  assert.match(back, /^url\(/);
+});

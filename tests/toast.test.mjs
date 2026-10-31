@@ -183,7 +183,7 @@ test('a toast raised while a modal dialog is open shows above its scrim and stay
   await page.sleep(400); // past the entrance
   const hit = await page.get((s) => {
     const t = document.querySelector(s); const r = t.getBoundingClientRect();
-    return { inToast: t.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)), corner: innerWidth - r.right < 40 && innerHeight - r.bottom < 40 };
+    return { inToast: t.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)), corner: document.body.clientWidth - r.right < 40 && innerHeight - r.bottom < 40 };
   }, live);
   assert.deepEqual(hit, { inToast: true, corner: true }, 'on top, in the bottom-right corner');
   await page.click('.dd-toast__action');

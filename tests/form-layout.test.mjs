@@ -22,8 +22,8 @@ test('invalid submit: flags each bad field, focuses the first, hides its hint, n
   assert.equal(await page.attr('#fc-1', 'aria-invalid'), 'true');
   assert.equal(await page.attr('#fc-4', 'aria-invalid'), 'true');
   assert.equal(await page.attr('#fc-5', 'aria-invalid'), null, 'valid fields stay clean');
-  assert.equal(await errorOf(page, '#fc-1'), 'Use lowercase letters, numbers and single dashes.', 'data-dd-error wins');
-  assert.match(await errorOf(page, '#fc-4'), /65535/, 'the browser’s range message');
+  assert.equal(await errorOf(page, '#fc-1'), 'Give the service a name.', 'data-dd-error-missing for an empty field');
+  assert.equal(await errorOf(page, '#fc-4'), 'Ports run from 1 to 65535.', 'data-dd-error-range');
   assert.equal(await page.active(), '#fc-1', 'focus on the first problem');
   assert.ok(!(await page.visible('#fc-1 ~ .dd-field__hint, .dd-field:has(#fc-1) > .dd-field__hint')), 'the hint steps aside');
   assert.equal(await page.get(() => window._submits), 0, 'the page never saw the submit');
@@ -35,8 +35,9 @@ test('errors clear as soon as the value is fixed, without nagging mid-typing', a
   await retype(page, '#fc-1', '');
   await page.click('#fc-form button[type="submit"]');
   assert.equal(await page.attr('#fc-1', 'aria-invalid'), 'true');
+  assert.equal(await errorOf(page, '#fc-1'), 'Give the service a name.');
   await page.type('Image');
-  assert.match(await errorOf(page, '#fc-1'), /lowercase/, 'still wrong: error stays');
+  assert.equal(await errorOf(page, '#fc-1'), 'Use lowercase letters, numbers and single dashes.', 'still wrong: the error stays and now names the new problem');
   await retype(page, '#fc-1', 'image-cdn');
   assert.equal(await page.attr('#fc-1', 'aria-invalid'), null);
   assert.equal(await errorOf(page, '#fc-1'), null);
@@ -142,11 +143,12 @@ test('footers: Save, Continue and Create key confirm; Discard resets the setting
   await page.waitFor(() => ['Changes saved', 'On to the next step', 'Key created'].every((t) => [...document.querySelectorAll('.dd-toast')].some((n) => n.textContent.includes(t))));
   await retype(page, '#st-3', 'Tools.');
   assert.equal(await page.text('.dd-field:has(#st-3) .dd-field__counter'), '6 / 160');
-  await page.click('#st-form .dd-switch__input');
-  assert.equal(await page.get(() => document.querySelector('#st-form .dd-switch__input').checked), false);
+  await page.click('#st-form .dd-checkbox__input');
+  assert.equal(await page.get(() => document.querySelector('#st-form .dd-checkbox__input').checked), false);
   await page.click('#st-form button[type="reset"]');
   await page.waitFor(() => document.querySelector('.dd-field:has(#st-3) .dd-field__counter').textContent === '73 / 160');
-  assert.equal(await page.get(() => document.querySelector('#st-form .dd-switch__input').checked), true);
+  assert.equal(await page.get(() => document.querySelector('#st-form .dd-checkbox__input').checked), true);
+  assert.equal(await page.count('#st-form .dd-switch, #st-form [role="switch"]'), 0, 'a form saved with a button holds checkboxes, not switches');
 });
 
 test('at 375 the grid folds to one column and footer buttons share the width', async ({ open, assert }) => {
@@ -159,4 +161,60 @@ test('at 375 the grid folds to one column and footer buttons share the width', a
   await page.tap('#fc-form button[type="submit"]');
   assert.equal(await page.active(), '#fc-1');
   assert.ok(await page.get(() => document.documentElement.scrollWidth <= innerWidth), 'no sideways scroll');
+});
+
+test('per-reason messages: missing, type, pattern, range, length; data-dd-error, then the browser; setCustomValidity wins', async ({ open, assert }) => {
+  const page = await open('components/form-layout');
+  await page.get(() => {
+    const f = (id, label, attrs) => `<div class="dd-field"><label class="dd-field__label" for="${id}">${label}</label><div class="dd-input"><input class="dd-input__control" id="${id}" ${attrs}></div></div>`;
+    const form = document.createElement('form');
+    form.id = 'fx'; form.className = 'dd-form'; form.noValidate = true; form.setAttribute('data-dd-validate', ''); form.setAttribute('onsubmit', 'return false');
+    form.innerHTML = [
+      f('fx-mail', 'Email', 'type="email" required data-dd-error-missing="Add an email." data-dd-error-type="That isn’t an email address."'),
+      f('fx-slug', 'Slug', 'pattern="[a-z]+" minlength="3" maxlength="12" data-dd-error-pattern="Lowercase letters only." data-dd-error-length="3 to 12 letters." data-dd-error="Fix the slug."'),
+      f('fx-port', 'Port', 'type="number" min="1" max="10" step="1" data-dd-error-range="1 to 10." data-dd-error-type="Digits only."'),
+      f('fx-team', 'Team', 'required data-dd-error="Name the team."'),
+      f('fx-site', 'Site', 'type="url"'),
+    ].join('') + '<button type="submit" id="fx-save">Save</button>';
+    document.querySelector('.doc-main').append(form);
+  });
+  const save = () => page.click('#fx-save');
+  // Empty: missing → its own message; no missing message → data-dd-error. Optional empty fields are fine.
+  await save();
+  assert.equal(await errorOf(page, '#fx-mail'), 'Add an email.');
+  assert.equal(await errorOf(page, '#fx-team'), 'Name the team.', 'falls back to data-dd-error');
+  assert.equal(await page.attr('#fx-slug', 'aria-invalid'), null);
+  // While an error shows, it follows the problem as you type.
+  await retype(page, '#fx-mail', 'ana');
+  assert.equal(await errorOf(page, '#fx-mail'), 'That isn’t an email address.', 'type');
+  await retype(page, '#fx-mail', 'ana@cxkw.dev');
+  assert.equal(await errorOf(page, '#fx-mail'), null);
+  // Pattern before length; then length on its own; data-dd-error is only the fallback.
+  await retype(page, '#fx-slug', 'AB');
+  await retype(page, '#fx-port', '20');
+  await retype(page, '#fx-site', 'not a url');
+  await save();
+  assert.equal(await errorOf(page, '#fx-slug'), 'Lowercase letters only.', 'pattern');
+  await retype(page, '#fx-slug', 'ab');
+  assert.equal(await errorOf(page, '#fx-slug'), '3 to 12 letters.', 'length (minlength)');
+  assert.equal(await errorOf(page, '#fx-port'), '1 to 10.', 'range (max)');
+  await retype(page, '#fx-port', '1.5');
+  assert.equal(await errorOf(page, '#fx-port'), '1 to 10.', 'range covers step');
+  await retype(page, '#fx-port', '1e');
+  assert.equal(await errorOf(page, '#fx-port'), 'Digits only.', 'a number box holding text is a type problem');
+  const browser = await page.get(() => document.getElementById('fx-site').validationMessage);
+  assert.ok(browser.length > 0);
+  assert.equal(await errorOf(page, '#fx-site'), browser, 'nothing set: the browser’s message');
+  // A message from script wins over every attribute, and goes once it is cleared.
+  // (Set from script, so no field commits on the way to Save and moves the button under the pointer.)
+  await page.get(() => {
+    const t = document.getElementById('fx-team'); t.value = 'core'; t.setCustomValidity('That team name is taken.');
+    const m = document.getElementById('fx-mail'); m.value = 'x'; m.setCustomValidity('The server rejected this address.');
+  });
+  await save();
+  assert.equal(await errorOf(page, '#fx-team'), 'That team name is taken.', 'over data-dd-error');
+  assert.equal(await errorOf(page, '#fx-mail'), 'The server rejected this address.', 'over data-dd-error-type');
+  await page.get(() => { const t = document.getElementById('fx-team'); t.setCustomValidity(''); t.dispatchEvent(new Event('input', { bubbles: true })); });
+  assert.equal(await errorOf(page, '#fx-team'), null);
+  assert.equal(await page.active(), '#fx-mail', 'focus on the first problem');
 });

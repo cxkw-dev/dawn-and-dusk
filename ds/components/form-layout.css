@@ -37,7 +37,8 @@
 .dd-form__row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: calc(var(--dd-u) * 3); min-width: 0; }
 .dd-form__row > * { flex: 1 1 12rem; }
 
-/* A stack of choices (checkboxes, switches) with even rhythm; --rows draws hairlines between them. */
+/* A stack of choices with even rhythm (checkboxes in a form that saves; switches only where each applies at once);
+   --rows draws hairlines between them. */
 .dd-form__choices { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 3.5); min-width: 0; }
 .dd-form__choices--rows { gap: 0; }
 .dd-form__choices--rows > * { padding-block: calc(var(--dd-u) * 3.5); }

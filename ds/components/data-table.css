@@ -3,7 +3,12 @@
    expandable and grouped rows, status cells, loading and empty states, and a pagination footer.
    Behaviour (sorting, selection, expand, filtering, column toggle) is in ds/behaviors/data-table.js — opt in with
    [data-dd-data-table] on the root. Sticky cells need an opaque background: set --dd-data-table-bg when the table sits on
-   something other than the page (.dd-data-table--card does this for --dd-surface). */
+   something other than the page (.dd-data-table--card does this for --dd-surface). Inside .dd-app-shell, whose content
+   is a plain --dd-bg, the cells drop the page grain so the table reads as the same surface (the shell sets
+   --dd-data-table-grain: none; set it to var(--dd-grain) to bring the grain back).
+   Height: the scroll area caps at --dd-data-table-height (70vh). Set it to none and the table grows with its rows and the
+   page does the scrolling (the header then scrolls away with the page); .dd-data-table--fill instead fills the height
+   its parent gives it, so the table body is the only scroller and the header stays pinned. */
 .dd-data-table {
   --_bg: var(--dd-data-table-bg, var(--dd-bg));
   --_grain: var(--dd-data-table-grain, var(--dd-grain));
@@ -27,6 +32,10 @@
 /* Dusk: the film grain on the page compresses small tone steps, so hover / selected / expanded take bigger steps
    (hover stays clearly quieter than selected), and the accent tones are mixed from the page rather than
    --dd-accent-soft, which sits barely a step off the grained page. */
+/* The app shell paints its content on a plain --dd-bg (no grain): grained cells would read as a lighter, textured block
+   there in dusk, so a shell turns the grain off for every table inside it. A shell that keeps the grained page behind it
+   sets --dd-data-table-grain: inherit (or var(--dd-grain)) to bring it back, as it does for --dd-card-hover. */
+.dd-app-shell { --dd-data-table-grain: none; }
 [data-theme="dusk"] .dd-data-table {
   --_hover: color-mix(in oklab, var(--dd-text) 7%, var(--_bg));
   --_sel: color-mix(in oklab, var(--dd-accent) 15%, var(--_bg));
@@ -317,6 +326,10 @@
 }
 .dd-data-table--card .dd-data-table__search input, .dd-data-table--card .dd-pagination__select select { background: var(--dd-bg); }
 .dd-data-table--card .dd-data-table__group > :is(th, td) { --_cell: var(--dd-surface-2); }
+/* --fill: take the height the parent gives (a flex column, or a box with a set height); the scroll area gets what the
+   toolbar and footer leave, uncapped. One scroller, header pinned. */
+.dd-data-table--fill { flex: 1 1 0%; min-height: 0; height: 100%; }
+.dd-data-table--fill .dd-data-table__scroll { flex: 1 1 0%; min-height: 0; max-height: none; }
 
 /* narrow: the search takes its own line; tools wrap under it */
 @media (max-width: 640px) {

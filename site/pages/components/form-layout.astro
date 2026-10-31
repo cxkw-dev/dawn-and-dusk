@@ -29,8 +29,8 @@ const fieldset = `
 
 const twoCol = `
 <form class="dd-form" id="fc-form" data-dd-validate novalidate onsubmit="return false">
-  <div class="dd-form__grid">${field('fc-1', 'Service name', input('fc-1', 'value="image-resizer" required pattern="[a-z0-9]+(-[a-z0-9]+)*" data-dd-error="Use lowercase letters, numbers and single dashes."'), `
-      <p class="dd-field__hint">Lowercase and dashes.</p>`)}${field('fc-2', 'Region', select('fc-2', ['eu-central-1 · Frankfurt', 'eu-west-1 · Dublin', 'us-east-1 · N. Virginia']))}${field('fc-3', 'Instance size', select('fc-3', ['Small · 1 vCPU', 'Medium · 2 vCPU', 'Large · 4 vCPU'], 1))}${field('fc-4', 'Port', input('fc-4', 'type="number" class="dd-input__control dd-num" value="8080" required min="1" max="65535"', '', '<span class="dd-input__unit">TCP</span>'))}${field('fc-5', 'Repository', input('fc-5', 'value="github.com/cxkw-dev/image-resizer" required data-dd-error="Add the repository to deploy from."', `<span class="dd-input__unit dd-input__prefix">https://</span>`), '', 'dd-form__span')}${field('fc-6', 'Description', '<div class="dd-input dd-textarea"><textarea class="dd-input__control" id="fc-6" rows="2" placeholder="Resizes and caches images for edge-cache."></textarea></div>', '', 'dd-form__span')}
+  <div class="dd-form__grid">${field('fc-1', 'Service name', input('fc-1', 'value="image-resizer" required pattern="[a-z0-9]+(-[a-z0-9]+)*" data-dd-error-missing="Give the service a name." data-dd-error="Use lowercase letters, numbers and single dashes."'), `
+      <p class="dd-field__hint">Lowercase and dashes.</p>`)}${field('fc-2', 'Region', select('fc-2', ['eu-central-1 · Frankfurt', 'eu-west-1 · Dublin', 'us-east-1 · N. Virginia']))}${field('fc-3', 'Instance size', select('fc-3', ['Small · 1 vCPU', 'Medium · 2 vCPU', 'Large · 4 vCPU'], 1))}${field('fc-4', 'Port', input('fc-4', 'type="number" class="dd-input__control dd-num" value="8080" required min="1" max="65535" data-dd-error-range="Ports run from 1 to 65535."', '', '<span class="dd-input__unit">TCP</span>'))}${field('fc-5', 'Repository', input('fc-5', 'value="github.com/cxkw-dev/image-resizer" required data-dd-error="Add the repository to deploy from."', `<span class="dd-input__unit dd-input__prefix">https://</span>`), '', 'dd-form__span')}${field('fc-6', 'Description', '<div class="dd-input dd-textarea"><textarea class="dd-input__control" id="fc-6" rows="2" placeholder="Resizes and caches images for edge-cache."></textarea></div>', '', 'dd-form__span')}
   </div>
   <div class="dd-form__footer">
     <button class="dd-btn dd-btn--ghost" type="reset">Cancel</button>
@@ -86,9 +86,9 @@ const settings = `
         <label class="dd-radio-card dd-radio-card--row"><input class="dd-radio__input" type="radio" name="st-strategy" checked><span class="dd-radio__text"><span class="dd-radio-card__title">Rolling</span><span class="dd-radio-card__desc">No extra capacity</span></span><span class="dd-radio-card__mark">${i('check')}</span></label>
         <label class="dd-radio-card dd-radio-card--row"><input class="dd-radio__input" type="radio" name="st-strategy"><span class="dd-radio__text"><span class="dd-radio-card__title">Blue / green</span><span class="dd-radio-card__desc">Instant switch-over</span></span><span class="dd-radio-card__mark">${i('check')}</span></label>
       </fieldset>
-      <label class="dd-switch">
-        <input class="dd-switch__input" type="checkbox" role="switch" checked>
-        <span class="dd-switch__text"><span class="dd-switch__label">Preview deploys</span><span class="dd-switch__desc">Build every pull request to its own URL.</span></span>
+      <label class="dd-checkbox">
+        <input class="dd-checkbox__input" type="checkbox" checked>
+        <span class="dd-checkbox__text"><span class="dd-checkbox__label">Preview deploys</span><span class="dd-checkbox__desc">Build every pull request to its own URL.</span></span>
       </label>
     </div>
   </section>
@@ -100,9 +100,9 @@ const settings = `
     </div>
     <div class="dd-form__body">
       <div class="dd-form__choices dd-form__choices--rows">
-        <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch" checked><span class="dd-switch__text"><span class="dd-switch__label">Failed deploys</span><span class="dd-switch__desc">Right away, with the build log.</span></span></label>
-        <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch"><span class="dd-switch__text"><span class="dd-switch__label">Spend alerts</span><span class="dd-switch__desc">When billing passes 80% of the budget.</span></span></label>
-        <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch" checked><span class="dd-switch__text"><span class="dd-switch__label">Weekly digest</span><span class="dd-switch__desc">Sundays: deploys, uptime and spend.</span></span></label>
+        <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" checked><span class="dd-checkbox__text"><span class="dd-checkbox__label">Failed deploys</span><span class="dd-checkbox__desc">Right away, with the build log.</span></span></label>
+        <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox"><span class="dd-checkbox__text"><span class="dd-checkbox__label">Spend alerts</span><span class="dd-checkbox__desc">When billing passes 80% of the budget.</span></span></label>
+        <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" checked><span class="dd-checkbox__text"><span class="dd-checkbox__label">Weekly digest</span><span class="dd-checkbox__desc">Sundays: deploys, uptime and spend.</span></span></label>
       </div>
       <fieldset class="dd-checkbox-group dd-checkbox-group--inline">
         <legend class="dd-checkbox-group__legend">Channels</legend>
@@ -168,7 +168,8 @@ const panels = `
   <Example description="Try it: clear the service name, or set the port above 65535, and press Create service. Errors clear as you fix them; Cancel resets." code={twoCol} />
 
   <h3 id="validation">Validation on submit</h3>
-  <p>Add <code>data-dd-validate novalidate</code> to the form. On submit the browser’s own constraints (<code>required</code>, <code>type</code>, <code>pattern</code>, <code>min</code> / <code>max</code>) are checked and every failing control gets <code>aria-invalid</code> and an error under its box — the control’s <code>data-dd-error</code>, or the browser’s message — while a hint in that spot steps aside. Focus goes to the first problem and the submit stops before your own handler runs. Errors clear the moment the value is fixed; reset clears them all.</p>
+  <p>Add <code>data-dd-validate novalidate</code> to the form. On submit the browser’s own constraints (<code>required</code>, <code>type</code>, <code>pattern</code>, <code>min</code> / <code>max</code>) are checked and every failing control gets <code>aria-invalid</code> and an error under its box while a hint in that spot steps aside. Focus goes to the first problem and the submit stops before your own handler runs. Errors clear the moment the value is fixed, and change with the problem while they show; reset clears them all.</p>
+  <p>The message, first match wins: one you set from script with <code>setCustomValidity()</code> (a server check, a taken name); the control’s message for this problem — <code>data-dd-error-missing</code>, <code>-type</code>, <code>-pattern</code>, <code>-range</code> or <code>-length</code>; its <code>data-dd-error</code> for any problem; the browser’s own message. Above, an empty service name says “Give the service a name.” and a badly formed one falls back to <code>data-dd-error</code>; the port has its own range message, and an empty port gets the browser’s.</p>
 
   <h2 id="footer">Footer</h2>
   <p>Actions sit at the end of the form, primary last. A <code>.dd-form__meta</code> line on the left carries save state. <code>--sticky</code> pins it to the bottom of a long page; <code>--plain</code> drops the hairline. Keep it inside the <code>.dd-form</code>: when the form is 420px or narrower the meta line takes its own row and the buttons share the width evenly.</p>
@@ -183,7 +184,7 @@ const panels = `
   <Example description="Try it: Create key confirms with a toast." code={panels} />
 
   <h2 id="settings">Settings page</h2>
-  <p>A full example. <code>.dd-form--divided</code> draws a hairline between sections; <code>--aside</code> sections put their title and description on the left once the form is 640px wide (a container query, so it works in any column).</p>
+  <p>A full example. <code>.dd-form--divided</code> draws a hairline between sections; <code>--aside</code> sections put their title and description on the left once the form is 640px wide (a container query, so it works in any column). Everything here waits for Save, so the on / off choices are <a href="checkbox">checkboxes</a>: a <a href="switch">switch</a> applies the moment it flips, so it belongs outside a form with a Save button (a preferences list that saves as you go).</p>
   <Example description="Try it: change a few things, then Discard puts them all back (the counter re-counts)." code={settings} />
 
   <h2 id="api">Classes</h2>
@@ -198,14 +199,20 @@ const panels = `
     ['.dd-form__grid · --3', 'Responsive grid: up to two (or three) columns, folding to one.'],
     ['.dd-form__span', 'Grid item that takes the full row.'],
     ['.dd-form__row', 'Simple wrapping row of fields.'],
-    ['.dd-form__choices · --rows', 'Even stack of checkboxes or switches; <code>--rows</code> adds hairlines.'],
+    ['.dd-form__choices · --rows', 'Even stack of checkboxes (or of switches, in a list that applies each change at once); <code>--rows</code> adds hairlines.'],
     ['.dd-form__footer · --sticky · --plain', 'Action row. <code>.dd-form__meta</code> holds status on the left.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['form[data-dd-validate][novalidate]', 'Checks the form’s controls on submit with the browser’s constraints. Invalid ones get <code>aria-invalid="true"</code> and a <code>.dd-field__error</code> linked by <code>aria-describedby</code>; focus moves to the first, and the submit event stops before other listeners. Errors clear on input once valid, re-check on change, and all clear on reset.'],
-    ['data-dd-error="…"', 'On a control: the error to show instead of the browser’s message.'],
+    ['data-dd-error-missing="…"', 'On a control: the error when it is <code>required</code> and empty.'],
+    ['data-dd-error-type="…"', 'The error when the value isn’t of its <code>type</code> (an email, a URL) or a number box holds text.'],
+    ['data-dd-error-pattern="…"', 'The error when the value doesn’t match <code>pattern</code>.'],
+    ['data-dd-error-range="…"', 'The error when a number or date is under <code>min</code>, over <code>max</code> or off its <code>step</code>.'],
+    ['data-dd-error-length="…"', 'The error when the text is shorter than <code>minlength</code> or longer than <code>maxlength</code>.'],
+    ['data-dd-error="…"', 'On a control: the error for any problem without its own message above, instead of the browser’s.'],
+    ['setCustomValidity("…")', 'From script: wins over every attribute. Clear it with <code>setCustomValidity("")</code> once the problem is gone.'],
     ['formnovalidate', 'On a submit button: submit without checking (e.g. “Save draft”).'],
   ]} />
   <script is:inline>
@@ -222,6 +229,6 @@ const panels = `
   <h2 id="guidelines">Guidelines</h2>
   <Guides
     do={['Group related fields under a section title; five to seven fields per section is plenty.', 'Put the primary action last in the footer, and only one.', 'Use two columns only for short, related pairs (city / postcode, region / size).']}
-    dont={['Don’t split one question across columns.', 'Don’t mix tucked and label-above fields in a section.', 'Don’t put Save at the top and the bottom of the same form.']}
+    dont={['Don’t split one question across columns.', 'Don’t mix tucked and label-above fields in a section.', 'Don’t put Save at the top and the bottom of the same form.', 'Don’t put switches in a form with a Save button: a switch applies at once, a checkbox waits for Save.']}
   />
 </Docs>

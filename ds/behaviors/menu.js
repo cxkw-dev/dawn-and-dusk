@@ -3,6 +3,11 @@
    An item inside a menu with [data-dd-menu] opens a submenu to its side. Optional [data-dd-placement] on the trigger:
    bottom-start (default) · bottom-end · top-start · top-end. Menus flip when they would leave the viewport.
    Several triggers may share one menu (a ⋯ button per row): clicking another one moves the open menu to it.
+   Which trigger: the menu fires dd:menuopen and dd:menuclose (they bubble) with detail { trigger } — the button that
+   opened it, or the area for a context menu — and keeps menu.ddTrigger set to that element after it closes, so an
+   item's click handler can read the row it was opened from (moving to another trigger fires close, then open).
+   Global: dd.menu.open(menu, trigger, { focus: 'first' | 'last' | 'none' }), dd.menu.close(menu) (or no argument for every
+   open menu; focus inside it goes back to its trigger), dd.menu.trigger(menu). `menu` is the element, its id or '#id'.
    Keyboard: ↓ / ↑ on the trigger open at the first / last item; in the menu ↑ ↓ Home End move, a letter jumps,
    → opens a submenu, ← closes it, Esc closes and returns focus, Tab closes. Clicking outside closes.
    role=menuitemcheckbox toggles aria-checked; role=menuitemradio checks one per group — both keep the menu open. */
@@ -15,6 +20,7 @@
   let typedAt = 0;
 
   const byId = (v) => (v ? document.getElementById(v.replace(/^#/, '')) : null);
+  const emit = (menu, type, trigger) => menu.dispatchEvent(new CustomEvent(type, { bubbles: true, detail: { trigger } }));
   const menuFor = (trigger) => {
     const v = trigger.getAttribute('data-dd-menu');
     if (v) return byId(v);
@@ -77,6 +83,7 @@
       s.menu.hidden = true;
       s.menu.classList.remove('is-floating');
       s.trigger?.setAttribute('aria-expanded', 'false');
+      emit(s.menu, 'dd:menuclose', s.source);
     }
   }
   function closeAll(refocus) {
@@ -89,13 +96,17 @@
     const parent = trigger?.closest('.dd-menu.is-floating') || null;
     closeAbove(parent);
     const [side0, align] = (trigger?.getAttribute('data-dd-placement') || menu.getAttribute('data-dd-placement') || 'bottom-start').split('-');
-    const s = { menu, trigger: at ? null : trigger, side: parent ? 'right' : side0, align, at, ret: ret || document.activeElement };
+    const s = { menu, trigger: at ? null : trigger, source: trigger || null, side: parent ? 'right' : side0, align, at, ret: ret || document.activeElement };
     if (!menu.getAttribute('role')) menu.setAttribute('role', 'menu');
     if (!menu.hasAttribute('tabindex')) menu.tabIndex = -1;
+    menu.ddTrigger = s.source;
     menu.hidden = false;
     menu.classList.add('is-floating');
     stack.push(s);
     s.trigger?.setAttribute('aria-expanded', 'true');
+    // Before measuring: a listener may relabel or disable items for this trigger's row.
+    emit(menu, 'dd:menuopen', s.source);
+    if (entryOf(menu) !== s) return; // a listener closed it again
     itemsOf(menu).forEach((el) => { el.tabIndex = -1; });
     place(s, true);
     if (focus === 'none') return;
@@ -263,6 +274,28 @@
   };
   window.addEventListener('resize', follow);
   window.addEventListener('scroll', (e) => { if (!e.target?.closest?.('.dd-menu')) follow(); }, true);
+
+  // ---------- from script ----------
+  const resolveMenu = (m) => (typeof m === 'string' ? byId(m) : m) || null;
+  const firstTrigger = (menu) => [...document.querySelectorAll('[data-dd-menu]')].find((t) => menuFor(t) === menu) || null;
+  window.dd = window.dd || {};
+  window.dd.menu = {
+    open(m, trigger, { focus = 'first' } = {}) {
+      const menu = resolveMenu(m);
+      const t = (typeof trigger === 'string' ? document.querySelector(trigger) : trigger) || (menu && firstTrigger(menu));
+      if (!menu || !t) return;
+      open(menu, t, { focus });
+    },
+    close(m) {
+      const s = m == null ? stack[0] : entryOf(resolveMenu(m));
+      if (!s) return; // not open
+      const i = stack.indexOf(s);
+      const hadFocus = stack.slice(i).some((x) => x.menu.contains(document.activeElement));
+      closeAbove(i > 0 ? stack[i - 1].menu : null);
+      if (hadFocus) (s.trigger || s.ret)?.focus?.({ preventScroll: true });
+    },
+    trigger: (m) => resolveMenu(m)?.ddTrigger || null,
+  };
 
   // Fill in ARIA the markup left out.
   const init = () => document.querySelectorAll('[data-dd-menu]').forEach((t) => {

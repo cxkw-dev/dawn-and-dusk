@@ -4,6 +4,11 @@
    - <form method="dialog"> inside closes it on submit (after native validation) with the submitter's value.
    - A click on the backdrop closes it, unless the dialog has data-dd-dialog-backdrop="static". Esc closes (native).
    - Closing plays the exit animation (.is-closing), then calls close(); focus returns to the opener.
+     An opener inside a floating menu (a .dd-menu__item with data-dd-dialog-open) has closed with its menu, so focus goes
+     to the button that opened that menu instead (menu.ddTrigger; for a submenu, the root menu's trigger). If that
+     element is gone by then — removed before the dialog closed, or by a "close" listener (the row the dialog deleted) —
+     focus lands on the nearest focusable where it was: the first control of the next element after it, else the one
+     before, else further up the page.
    - Tab / Shift+Tab wrap inside the open dialog instead of leaving for the browser's own UI.
    - Inside a role="menu" list (sheet actions / choices): ↑ ↓ move between rows, Home / End jump to the ends. Choosing a
      role="menuitemradio" row marks it aria-checked (and unmarks the others); a menuitemcheckbox row flips.
@@ -15,6 +20,40 @@
   const pending = new WeakMap(); // dialog → cancels its in-flight exit animation
   const resolve = (target) => (typeof target === 'string' ? document.querySelector(target) : target);
 
+  // Where focus goes back to. A menu item closes with its menu, so use the menu's trigger (up through submenus).
+  const returnTarget = (el) => {
+    let t = el;
+    for (let k = 0; k < 10; k++) {
+      const menu = t?.closest?.('.dd-menu');
+      if (!menu || !menu.ddTrigger || !(menu.hidden || menu.classList.contains('is-floating'))) break;
+      t = menu.ddTrigger;
+    }
+    return t;
+  };
+  // The element's place in the page (ancestors and their neighbours), to find the nearest focusable if it is removed.
+  const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
+  const canFocus = (el) => el.matches(FOCUSABLE) && !el.closest('[inert], dialog:not([open])') && el.getClientRects().length > 0;
+  const firstIn = (el) => (el.nodeType !== 1 ? null : canFocus(el) ? el : [...el.querySelectorAll(FOCUSABLE)].find(canFocus) || null);
+  const placeOf = (el) => {
+    const path = [];
+    for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) path.push({ node: n, next: n.nextElementSibling, prev: n.previousElementSibling });
+    return path;
+  };
+  const nearest = (path) => {
+    const i = path.findIndex((p) => p.node.isConnected);
+    if (i < 0) return null;
+    if (i === 0) { const f = firstIn(path[0].node); if (f) return f; }
+    for (let k = Math.max(0, i - 1); k < path.length; k++) {
+      // The removed level uses the neighbours it had; the levels still in the page use their live ones.
+      const live = path[k].node.isConnected;
+      const next = live ? path[k].node.nextElementSibling : path[k].next;
+      const prev = live ? path[k].node.previousElementSibling : path[k].prev;
+      for (let n = next; n && n.isConnected; n = n.nextElementSibling) { const f = firstIn(n); if (f) return f; }
+      for (let n = prev; n && n.isConnected; n = n.previousElementSibling) { const f = firstIn(n); if (f) return f; }
+    }
+    return null;
+  };
+
   const open = (dlg, opener) => {
     if (!(dlg instanceof HTMLDialogElement)) return;
     // Reopened while its exit animation plays: cancel the exit and keep it open (and the original opener).
@@ -25,7 +64,8 @@
     pending.get(dlg)?.();
     dlg.classList.remove('is-closing');
     dlg.returnValue = '';
-    openers.set(dlg, opener || document.activeElement);
+    const back = returnTarget(opener || document.activeElement);
+    openers.set(dlg, back ? { el: back, path: placeOf(back) } : null);
     dlg.showModal();
   };
 
@@ -140,7 +180,18 @@
     if (!(dlg instanceof HTMLDialogElement) || !dlg.matches(SEL)) return;
     const back = openers.get(dlg);
     openers.delete(dlg);
-    if (back && back.isConnected && typeof back.focus === 'function') back.focus({ preventScroll: true });
+    if (!back) return;
+    const land = () => {
+      const shown = back.el.isConnected && back.el.getClientRects().length > 0;
+      (shown ? back.el : nearest(back.path))?.focus({ preventScroll: true });
+    };
+    land();
+    // The page's own close listener may remove the element focus just went to (the row this dialog deleted): once it
+    // has run, land on the nearest focusable where that element was.
+    setTimeout(() => {
+      const a = document.activeElement;
+      if (!dlg.open && (!a || a === document.body || !a.isConnected || !a.getClientRects().length)) land();
+    }, 0);
   }, true);
 
   window.dd = window.dd || {};

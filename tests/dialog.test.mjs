@@ -258,3 +258,57 @@ test('phone (375): fills the width less a margin, actions split the footer, work
   await waitClosed(page, 'publish-dialog');
   assert.equal(await returnValue(page, 'publish-dialog'), 'publish');
 });
+
+test('opened from a menu item: focus returns to the menu’s trigger, or to the next row’s when the dialog removed it', async ({ open, assert }) => {
+  const page = await open('components/dialog');
+  const more = (name) => `[data-dd-menu="dlg-member-menu"][aria-label="Actions for ${name}"]`;
+  const REMOVE = '#dlg-member-menu [data-dd-dialog-open="#remove-member-dialog"]';
+  const menuOpen = () => page.get(() => !document.getElementById('dlg-member-menu').hidden);
+  // Pointer: ⋯ → Remove from team… → Keep. The menu item is hidden by then; focus goes to that row's ⋯.
+  await page.click(more('Jun Park'));
+  await page.click(REMOVE);
+  await waitOpen(page, 'remove-member-dialog');
+  assert.ok(!(await menuOpen()), 'the menu closed as the dialog opened');
+  assert.equal(await page.text('#remove-member-title'), 'Remove Jun Park?', 'the dialog names the row the menu was opened from');
+  assert.ok(await focusIs(page, '#remove-member-dialog [autofocus]'), 'focus starts on Keep');
+  await page.press('Escape');
+  await waitClosed(page, 'remove-member-dialog');
+  assert.ok(await focusIs(page, more('Jun Park')), 'Esc: focus back on the ⋯ that opened the menu');
+  // Keyboard: Enter opens the menu, End to Remove, Enter opens the dialog; Remove deletes the row in a close listener.
+  await page.press('Enter');
+  assert.ok(await menuOpen());
+  await page.press('End', 'Enter');
+  await waitOpen(page, 'remove-member-dialog');
+  await page.click('#remove-member-dialog [data-dd-dialog-close="remove"]');
+  await waitClosed(page, 'remove-member-dialog');
+  await page.waitFor(() => !document.querySelector('[data-member="Jun Park"]'));
+  await page.waitFor((s) => document.activeElement === document.querySelector(s), { args: [more('Sam Rivera')] });
+  await page.waitFor(() => [...document.querySelectorAll('.dd-toast__title')].some((t) => t.textContent === 'Jun Park removed'));
+  // The last row: no next one, so focus goes to the one before.
+  await page.click(more('Ines Duarte'));
+  await page.click(REMOVE);
+  await waitOpen(page, 'remove-member-dialog');
+  await page.click('#remove-member-dialog [data-dd-dialog-close="remove"]');
+  await waitClosed(page, 'remove-member-dialog');
+  await page.waitFor((s) => document.activeElement === document.querySelector(s), { args: [more('Sam Rivera')] });
+  // The trigger's row removed while the dialog is still open (by something else): Keep lands on the next row.
+  await page.click(more('Mara Okafor'));
+  await page.click(REMOVE);
+  await waitOpen(page, 'remove-member-dialog');
+  await page.get(() => document.querySelector('[data-member="Mara Okafor"]').remove());
+  await page.click('#remove-member-dialog [data-dd-dialog-close]:not([data-dd-dialog-close="remove"])');
+  await waitClosed(page, 'remove-member-dialog');
+  await page.waitFor((s) => document.activeElement === document.querySelector(s), { args: [more('Sam Rivera')] });
+  assert.equal(await page.count('[data-member]'), 1);
+});
+
+test('a plain opener removed by a close listener hands focus to its neighbour', async ({ open, assert }) => {
+  const page = await open('components/dialog');
+  // Sizes example: remove the "Small" button when its dialog closes; focus goes to "Medium" beside it.
+  await page.get(() => { const d = document.getElementById('size-sm'); d.addEventListener('close', () => document.querySelector('[data-dd-dialog-open="#size-sm"]').remove(), { once: true }); });
+  await page.click(opener('size-sm'));
+  await waitOpen(page, 'size-sm');
+  await page.press('Escape');
+  await waitClosed(page, 'size-sm');
+  await page.waitFor((s) => document.activeElement === document.querySelector(s), { args: [opener('size-md')] });
+});

@@ -165,6 +165,6 @@ test('the full-page demo covers the viewport, then goes away', async ({ open, as
   const page = await open('components/loader');
   await page.click('[data-ldr-fullpage]');
   assert.ok(await page.visible('body > .dd-page-loader--fixed'), 'fixed loader is shown');
-  assert.equal(await page.get(() => { const r = document.querySelector('body > .dd-page-loader--fixed').getBoundingClientRect(); return r.width === innerWidth && r.height === innerHeight; }), true);
+  assert.equal(await page.get(() => { const r = document.querySelector('body > .dd-page-loader--fixed').getBoundingClientRect(); return r.width === document.body.clientWidth && r.height === innerHeight; }), true);
   await page.waitFor(() => !document.querySelector('body > .dd-page-loader--fixed'), { timeout: 4000 });
 });

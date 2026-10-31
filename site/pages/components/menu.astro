@@ -93,7 +93,7 @@ const checkable = `
 const rows = [['auth-gateway', 'a3f9c21', 'deployed 4 min ago · iad1'], ['billing-worker', '7be04d2', 'deployed 1 h ago · fra1'], ['edge-cache', 'c41e9b0', 'deployed yesterday · hnd1']];
 const endAligned = `
 <div class="dd-stack" style="--dd-gap: 5px; max-width: 520px">
-${rows.map(([name, sha, meta]) => `  <div class="dd-surface" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
+${rows.map(([name, sha, meta]) => `  <div class="dd-surface" data-deploy="${name}" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
     <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
       <b style="font-weight: 600">${name}</b>
       <span class="dd-small dd-muted"><span class="dd-mono">${sha}</span> · ${meta}</span>
@@ -102,16 +102,33 @@ ${rows.map(([name, sha, meta]) => `  <div class="dd-surface" style="display: fle
   </div>`).join('\n')}
 </div>
 <div class="dd-menu" id="mn-row" role="menu" aria-label="Deployment actions" hidden>
-  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">View logs</span><kbd class="dd-menu__kbd">L</kbd></button>
+  <div class="dd-menu__header"><span data-row-name>Deployment</span></div>
+  <hr class="dd-menu__sep" style="margin-top: 0">
+  <button class="dd-menu__item" role="menuitem" data-action="Opening logs for"><span class="dd-menu__body">View logs</span><kbd class="dd-menu__kbd">L</kbd></button>
   <button class="dd-menu__item" role="menuitem" data-dd-toast="Deployment URL copied" data-dd-toast-intent="ok"><span class="dd-menu__body">Copy deployment URL</span><kbd class="dd-menu__kbd">⌘C</kbd></button>
   <button class="dd-menu__item" role="menuitem" data-dd-menu="mn-row-promote"><span class="dd-menu__body">Promote to</span>${sub}</button>
   <hr class="dd-menu__sep">
-  <button class="dd-menu__item dd-menu__item--danger" role="menuitem"><span class="dd-menu__body">Roll back</span></button>
+  <button class="dd-menu__item dd-menu__item--danger" role="menuitem" data-action="Rolling back"><span class="dd-menu__body">Roll back</span></button>
 </div>
 <div class="dd-menu" id="mn-row-promote" role="menu" aria-label="Promote to" hidden>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">staging</span></button>
   <button class="dd-menu__item" role="menuitem" data-dd-toast="Promoting to production" data-dd-toast-description="Checks run first; you can cancel for 30 s."><span class="dd-menu__body">production</span></button>
-</div>`;
+</div>
+<script>
+  {
+    // One menu serves every row: the trigger that opened it says which row.
+    const menu = document.getElementById('mn-row');
+    menu.addEventListener('dd:menuopen', (e) => {
+      const row = e.detail.trigger.closest('[data-deploy]');
+      menu.querySelector('[data-row-name]').textContent = row.dataset.deploy;
+    });
+    // menu.ddTrigger names it too, and stays set once the menu closes (for handlers that run after it).
+    menu.addEventListener('click', (e) => {
+      const item = e.target.closest('[data-action]');
+      if (item) dd.toast({ title: \`\${item.dataset.action} \${menu.ddTrigger.closest('[data-deploy]').dataset.deploy}\` });
+    });
+  }
+</script>`;
 
 const context = `
 <div tabindex="0" data-dd-contextmenu="mn-ctx" aria-describedby="mn-ctx-hint" class="dd-surface" style="display: grid; place-content: center; justify-items: center; gap: 5px; min-height: 150px; padding: 20px; text-align: center; outline-offset: 2px">
@@ -139,7 +156,8 @@ const context = `
   <Example code={icons} description="Try it: open the account menu and hover or → on “Theme” for a submenu of radio items." />
   <h2 id="overflow">Overflow menu</h2>
   <p>A “more” button at the end of a row. <code>data-dd-placement="bottom-end"</code> aligns the menu’s right edge with the trigger. Every row’s button can share one menu: open it on one row, then click another row’s ⋯ and the menu moves there.</p>
-  <Example code={endAligned} description="Try it: open a ⋯ menu, then click the next row’s ⋯; “Promote to” has a submenu." />
+  <p>To know which row the menu is for, listen for <code>dd:menuopen</code> on the menu: <code>event.detail.trigger</code> is the button that opened it, so <code>trigger.closest(…)</code> finds the row. The menu also keeps that button as <code>menu.ddTrigger</code> after it closes, which is what an item’s click handler needs: the menu closes as the item runs.</p>
+  <Example code={endAligned} description="Try it: open a ⋯ menu — its header names the row — then click the next row’s ⋯; View logs and Roll back say which deployment they act on; “Promote to” has a submenu." />
   <h2 id="context">Context menu</h2>
   <p><code>data-dd-contextmenu="menu-id"</code> on an area opens the menu at the pointer on right-click. Make the area focusable so keyboard users can open it with Shift F10 or the Menu key.</p>
   <Example code={context} description="Try it: right-click the file, or Tab to it and press Shift F10 or the Menu key." />
@@ -168,6 +186,14 @@ const context = `
     ['data-dd-contextmenu="id"', 'On an area: opens the menu at the pointer on right-click, Shift F10 or the Menu key.'],
     ['role="menuitemcheckbox"', 'Click toggles <code>aria-checked</code>; the menu stays open.'],
     ['role="menuitemradio"', 'Click checks this item and unchecks the others in its <code>role="group"</code>; the menu stays open.'],
+  ]} />
+  <ClassTable head={['Event / API', 'What it does']} rows={[
+    ['dd:menuopen', 'Fired on the menu as it opens, before it is measured (so a listener can relabel or disable items). <code>detail.trigger</code> is the button that opened it — or the area, for a context menu. Bubbles.'],
+    ['dd:menuclose', 'Fired on the menu as it closes, with the same <code>detail.trigger</code>. Moving a shared menu to another row fires <code>dd:menuclose</code> for the old trigger, then <code>dd:menuopen</code> for the new one.'],
+    ['menu.ddTrigger', 'The element that last opened the menu. Still set after it closes, so an item’s click handler can read it.'],
+    ['dd.menu.open(menu, trigger, { focus })', 'Opens <code>menu</code> (the element, its id or <code>"#id"</code>) under <code>trigger</code> (default: the first <code>[data-dd-menu]</code> pointing at it). <code>focus</code>: <code>"first"</code> (default), <code>"last"</code> or <code>"none"</code>.'],
+    ['dd.menu.close(menu)', 'Closes that menu and its submenus; with no argument, every open menu. If focus was inside, it goes back to the trigger. Does nothing when the menu isn’t open.'],
+    ['dd.menu.trigger(menu)', 'Same as <code>menu.ddTrigger</code>.'],
   ]} />
   <ClassTable head={['Key', 'What it does']} rows={[
     ['↓ / ↑ on the trigger', 'Opens the menu with the first / last item focused. Enter and Space open at the first item.'],

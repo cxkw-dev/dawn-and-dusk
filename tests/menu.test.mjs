@@ -280,3 +280,72 @@ test('touch at 375px: tap opens, a slow tap on a submenu item opens it (and keep
   await page.tap('.doc-head h1');
   assert.ok(!(await isOpen('mn-project')(page)), 'tapping outside closes');
 });
+
+test('a shared menu says which trigger opened it: dd:menuopen / dd:menuclose, menu.ddTrigger, dd.menu.open / close', async ({ open, assert }) => {
+  const page = await open('components/menu');
+  const row = (n) => `[data-dd-menu="mn-row"][aria-label^="Actions for ${n}"]`;
+  await page.get(() => {
+    window.__mev = [];
+    for (const t of ['dd:menuopen', 'dd:menuclose']) document.addEventListener(t, (e) => window.__mev.push(`${t.slice(3)} ${e.target.id} ${e.detail.trigger?.getAttribute('aria-label') ?? e.detail.trigger?.tagName ?? '-'}`));
+  });
+  const events = () => page.get(() => window.__mev.splice(0));
+  const trig = () => page.get(() => document.getElementById('mn-row').ddTrigger?.getAttribute('aria-label') ?? null);
+  await page.click(row('auth-gateway'));
+  assert.deepEqual(await events(), ['menuopen mn-row Actions for auth-gateway']);
+  assert.equal(await trig(), 'Actions for auth-gateway');
+  assert.equal(await page.text('#mn-row [data-row-name]'), 'auth-gateway', 'the docs example reads the row from the event');
+  // Moving to another row: close for the old trigger, then open for the new one.
+  await page.focus(row('billing-worker'));
+  await page.press('Enter');
+  assert.deepEqual(await events(), ['menuclose mn-row Actions for auth-gateway', 'menuopen mn-row Actions for billing-worker']);
+  assert.equal(await page.text('#mn-row [data-row-name]'), 'billing-worker');
+  // An item runs, the menu closes, and the trigger is still known.
+  await page.click('#mn-row [data-action="Rolling back"]');
+  assert.ok(!(await isOpen('mn-row')(page)));
+  assert.deepEqual(await events(), ['menuclose mn-row Actions for billing-worker']);
+  assert.equal(await trig(), 'Actions for billing-worker', 'ddTrigger survives the close');
+  await page.waitFor(() => [...document.querySelectorAll('.dd-toast__title')].some((t) => t.textContent === 'Rolling back billing-worker'));
+
+  // From script: open under a given trigger (by id), close by '#id'; focus goes in, then back to the trigger.
+  assert.equal(await page.get(() => [typeof dd.menu.open, typeof dd.menu.close, typeof dd.menu.trigger].join()), 'function,function,function');
+  await page.get(() => dd.menu.open('mn-row', document.querySelector('[aria-label="Actions for edge-cache"]')));
+  assert.ok(await isOpen('mn-row')(page));
+  assert.equal(await page.attr(row('edge-cache'), 'aria-expanded'), 'true');
+  assert.equal(await focused(page), 'View logs');
+  assert.equal(await page.get(() => dd.menu.trigger('#mn-row')?.getAttribute('aria-label')), 'Actions for edge-cache');
+  await page.get(() => dd.menu.close('#mn-row'));
+  assert.ok(!(await isOpen('mn-row')(page)));
+  assert.equal(await page.attr(row('edge-cache'), 'aria-expanded'), 'false');
+  assert.ok(await page.get((s) => document.activeElement === document.querySelector(s), row('edge-cache')), 'focus back on the trigger');
+  assert.deepEqual(await events(), ['menuopen mn-row Actions for edge-cache', 'menuclose mn-row Actions for edge-cache']);
+  // Closing a closed menu is a no-op; with no argument, every open menu (submenu included) closes.
+  await page.get(() => dd.menu.close(document.getElementById('mn-row')));
+  assert.deepEqual(await events(), []);
+  await page.get(() => dd.menu.open(document.getElementById('mn-row'), document.querySelector('[aria-label="Actions for auth-gateway"]'), { focus: 'none' }));
+  assert.equal(await page.get(() => document.getElementById('mn-row').contains(document.activeElement)), false, "focus: 'none' leaves focus alone");
+  await page.focus('#mn-row [data-dd-menu="mn-row-promote"]');
+  await page.press('ArrowRight');
+  assert.ok(await isOpen('mn-row-promote')(page));
+  await events();
+  await page.get(() => dd.menu.close());
+  assert.ok(!(await isOpen('mn-row')(page)) && !(await isOpen('mn-row-promote')(page)), 'both levels closed');
+  const closed = await events();
+  assert.equal(closed.length, 2);
+  assert.match(closed[0], /^menuclose mn-row-promote/);
+  assert.equal(closed[1], 'menuclose mn-row Actions for auth-gateway');
+  // Without a trigger, dd.menu.open anchors to the first trigger pointing at the menu.
+  await page.get(() => dd.menu.open('#mn-project'));
+  assert.ok(await isOpen('mn-project')(page));
+  assert.equal(await page.attr(trigger, 'aria-expanded'), 'true');
+  await page.press('Escape');
+});
+
+test('context menus report their area as the trigger', async ({ open, assert }) => {
+  const page = await open('components/menu');
+  await page.get(() => { window.__ctx = null; document.getElementById('mn-ctx').addEventListener('dd:menuopen', (e) => { window.__ctx = e.detail.trigger.getAttribute('data-dd-contextmenu'); }); });
+  await rightClick(page, '[data-dd-contextmenu="mn-ctx"]');
+  assert.ok(await isOpen('mn-ctx')(page));
+  assert.equal(await page.get(() => window.__ctx), 'mn-ctx');
+  assert.equal(await page.get(() => document.getElementById('mn-ctx').ddTrigger.getAttribute('data-dd-contextmenu')), 'mn-ctx');
+  await page.press('Escape');
+});

@@ -145,6 +145,49 @@ const sizes = `
     <button class="dd-btn dd-btn--primary" type="button" data-dd-dialog-close="rotate">${i('key')}<span>Rotate keys</span></button>
   </footer>
 </dialog>`;
+
+const members = [['Mara Okafor', 'mara@cxkw.dev', 'Admin'], ['Jun Park', 'jun@cxkw.dev', 'Developer'], ['Sam Rivera', 'sam@cxkw.dev', 'Developer'], ['Ines Duarte', 'ines@cxkw.dev', 'Viewer']];
+const fromMenu = `
+<div class="dd-stack" style="--dd-gap: 5px; max-width: 520px">
+${members.map(([name, mail, role]) => `  <div class="dd-surface" data-member="${name}" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
+    <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
+      <b style="font-weight: 600">${name}</b>
+      <span class="dd-small dd-muted"><span class="dd-mono">${mail}</span> · ${role}</span>
+    </span>
+    <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" type="button" data-dd-menu="dlg-member-menu" data-dd-placement="bottom-end" aria-label="Actions for ${name}">${i('more')}</button>
+  </div>`).join('\n')}
+</div>
+<div class="dd-menu" id="dlg-member-menu" role="menu" aria-label="Member actions" hidden>
+  <button class="dd-menu__item" role="menuitem" type="button" data-dd-toast="Invite sent again" data-dd-toast-intent="ok"><span class="dd-menu__body">Resend invite</span></button>
+  <hr class="dd-menu__sep">
+  <button class="dd-menu__item dd-menu__item--danger" role="menuitem" type="button" data-dd-dialog-open="#remove-member-dialog"><span class="dd-menu__body">Remove from team…</span></button>
+</div>
+<dialog class="dd-dialog dd-dialog--sm dd-dialog--danger" id="remove-member-dialog" role="alertdialog" aria-labelledby="remove-member-title" aria-describedby="remove-member-desc">
+  <header class="dd-dialog__head">
+    <span class="dd-dialog__icon">${i('users')}</span>
+    <div class="dd-dialog__titles"><p class="dd-dialog__eyebrow">Team · cxkw</p><h2 class="dd-dialog__title" id="remove-member-title">Remove <span data-member-name>this member</span>?</h2></div>
+  </header>
+  <div class="dd-dialog__body" id="remove-member-desc"><p>They lose access to every cxkw project right away. You can invite them again later.</p></div>
+  <footer class="dd-dialog__foot">
+    <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close autofocus>Keep</button>
+    <button class="dd-btn dd-btn--danger" type="button" data-dd-dialog-close="remove">Remove</button>
+  </footer>
+</dialog>
+<script>
+  {
+    const menu = document.getElementById('dlg-member-menu');
+    const dialog = document.getElementById('remove-member-dialog');
+    const member = () => menu.ddTrigger.closest('[data-member]');
+    // The menu's trigger names the row; the dialog asks about that member.
+    menu.addEventListener('dd:menuopen', () => { dialog.querySelector('[data-member-name]').textContent = member().dataset.member; });
+    dialog.addEventListener('close', () => {
+      if (dialog.returnValue !== 'remove') return; // Keep: focus goes back to the row's ⋯ button
+      const row = member();
+      row.remove(); // focus moves to the next row's ⋯ button
+      dd.toast({ title: \`\${row.dataset.member} removed\`, intent: 'ok' });
+    });
+  }
+</script>`;
 ---
 <Docs title="Dialog" group="Overlays" lead="A modal moment: a centred card on a dim scrim that asks for one decision. Built on the native dialog element, so focus, Esc and the top layer come for free.">
   <p>Every example opens the real dialog; under each trigger is a still of it, so you can compare without clicking.</p>
@@ -166,6 +209,10 @@ const sizes = `
   <p>Small (380px) for one-line confirms, medium (460px) by default, large (680px) when the body needs room. On a phone every size fills the screen width (less a 15px margin), and once the dialog is 360px or narrower the hint drops and the actions split the footer.</p>
   <Example code={sizes} description="Try it: Tab and Shift+Tab — focus cycles inside the dialog and never reaches the page." />
 
+  <h2 id="from-a-menu">From a menu</h2>
+  <p>A menu item can open a dialog: put <code>data-dd-dialog-open</code> on the <code>.dd-menu__item</code>. The menu closes as the dialog opens, so when the dialog closes focus goes to the button that opened the menu, not the hidden item. If that button is gone — the dialog removed its row — focus lands on the nearest control where it was: the next row’s button, else the one before.</p>
+  <Example code={fromMenu} description="Try it: open a member’s ⋯ menu and choose Remove from team…. Keep returns focus to that ⋯ button; Remove deletes the row and focus moves to the next member’s ⋯." />
+
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
     ['dialog.dd-dialog', 'The modal card. Open it with <code>showModal()</code> (or <code>data-dd-dialog-open</code>). The scrim is its <code>::backdrop</code>.'],
@@ -186,7 +233,7 @@ const sizes = `
   <h2 id="behaviour">Behaviour</h2>
   <p>Load <code>dawn-and-dusk.js</code>. The same script drives <a href="drawer">Drawer</a> and <a href="sheet">Sheet</a>.</p>
   <ClassTable head={['Attribute / API', 'What it does']} rows={[
-    ['data-dd-dialog-open="#id"', 'On any element: opens that dialog modally and remembers the element so focus returns to it on close.'],
+    ['data-dd-dialog-open="#id"', 'On any element: opens that dialog modally and remembers the element so focus returns to it on close. On an item of a floating <a href="menu">menu</a>, it remembers the button that opened the menu instead (the item closes with its menu).'],
     ['data-dd-dialog-close', 'On any element inside the dialog: closes it with the exit animation.'],
     ['data-dd-dialog-close="value"', 'Closes and sets <code>dialog.returnValue</code> to <code>value</code>; read it in the native <code>close</code> event.'],
     ['form[method="dialog"]', 'A valid submit closes with the submit button’s <code>value</code>.'],
@@ -197,7 +244,7 @@ const sizes = `
     ['Esc', 'Closes the dialog (animated).'],
     ['Tab / Shift+Tab', 'Moves through the dialog only and wraps from the last control to the first; the page behind is inert while it is open.'],
     ['On open', 'Focus moves to the element with <code>autofocus</code>, else the first focusable control.'],
-    ['On close', 'Focus returns to the opener.'],
+    ['On close', 'Focus returns to the opener (for a menu item, the menu’s trigger). If the opener is gone by then — removed before the dialog closed or by your own <code>close</code> listener — focus goes to the nearest control where it was: the first one in the next element, else the previous one, else further up.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

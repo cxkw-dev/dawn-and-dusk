@@ -34,7 +34,9 @@ test('rises from the bottom as a centred column; Esc slides it away and focus re
   assert.ok(await focusInside(page, 'rollback-sheet'), 'focus moved into the sheet');
   const r = await rect(page, '#rollback-sheet');
   assert.equal(Math.round(r.width), 560, 'a 560px column on wide screens');
-  assert.ok(Math.abs((r.left + r.right) / 2 - 640) < 2, 'centred');
+  // centred in the layout viewport (the page keeps a scrollbar gutter, so measure the body, not the window)
+  const mid = await page.get(() => document.body.clientWidth / 2);
+  assert.ok(Math.abs((r.left + r.right) / 2 - mid) < 2, 'centred');
   await page.press('Escape');
   assert.ok(await page.get(() => document.getElementById('rollback-sheet').classList.contains('is-closing')), 'plays the slide-down');
   await waitClosed(page, 'rollback-sheet');
