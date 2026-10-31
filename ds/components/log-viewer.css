@@ -110,6 +110,7 @@
 /* Narrow: drop the service column so the message keeps its room; the level filter fills its own row; wrapped
    messages drop under the timestamp and use the full width instead of a sliver of a column. */
 @container dd-log-viewer (max-width: 520px) {
+  .dd-log-viewer__toggle-label { display: none; } /* icon-only when narrow */
   .dd-log-viewer__src { display: none; }
   .dd-log-viewer__lines { grid-template-columns: max-content max-content max-content; }
   .dd-log-viewer__levels { flex: 1 1 100%; }
@@ -123,3 +124,6 @@
   .dd-log-viewer__levels .dd-log-viewer__toggle { padding-inline: calc(var(--dd-u) * 1.5); }
 }
 .dd-log-viewer { container: dd-log-viewer / inline-size; }
+
+/* A toggle may carry a visible label after its icon (e.g. Follow); it hides when the viewer is narrow. */
+.dd-log-viewer__toggle-label { white-space: nowrap; }

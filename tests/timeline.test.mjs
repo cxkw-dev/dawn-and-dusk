@@ -74,13 +74,13 @@ test('audit log: one line per event when wide; at 375 the time drops under the s
     const t = li.querySelector('.dd-timeline__time').getBoundingClientRect();
     const p = li.querySelector('.dd-timeline__text');
     const b = p.getBoundingClientRect();
-    return { sameLine: Math.abs(t.top + t.height / 2 - (b.top + b.height / 2)) < 4, below: t.top >= b.bottom - 1, wraps: getComputedStyle(p).whiteSpace !== 'nowrap', clipped: p.scrollWidth > p.clientWidth + 1 };
+    return { sameLine: Math.abs(t.top + t.height / 2 - (b.top + b.height / 2)) < 4, below: t.top >= b.bottom - 1, wraps: getComputedStyle(p).whiteSpace !== 'nowrap', lines: Math.round(p.getBoundingClientRect().height / parseFloat(getComputedStyle(p).lineHeight)), clipped: p.scrollWidth > p.clientWidth + 1 };
   }), audit);
 
   const wide = await open('components/timeline', { width: 1280 });
   const w = await layout(wide);
   assert.equal(w.length, 7);
-  assert.ok(w.every((r) => r.sameLine && !r.wraps && !r.clipped), JSON.stringify(w));
+  assert.ok(w.every((r) => r.sameLine && r.lines === 1 && !r.clipped), JSON.stringify(w)); // wide: one line each, never cut off
 
   const narrow = await open('components/timeline', { width: 375 });
   assert.ok(await narrow.get(() => document.documentElement.scrollWidth <= innerWidth), 'no sideways page scroll');

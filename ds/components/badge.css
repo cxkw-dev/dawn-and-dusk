@@ -24,7 +24,8 @@
 .dd-badge--bad { --_k: var(--dd-bad); --_solid: var(--dd-bad); --_on: var(--dd-bg); }
 .dd-badge--info { --_k: var(--dd-info); --_solid: var(--dd-info); --_on: var(--dd-bg); }
 :is(.dd-badge--accent, .dd-badge--ok, .dd-badge--warn, .dd-badge--bad, .dd-badge--info) {
-  --_c: color-mix(in oklab, var(--_k) 82%, var(--dd-text));
+  /* dawn pulls the hue further toward ink so small text clears 4.5:1 on its soft fill; dusk keeps the brighter hue */
+  --_c: light-dark(color-mix(in oklab, var(--_k) 50%, var(--dd-text)), color-mix(in oklab, var(--_k) 82%, var(--dd-text)));
   --_soft: color-mix(in oklab, var(--_k) 18%, transparent);
 }
 

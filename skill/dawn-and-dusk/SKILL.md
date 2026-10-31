@@ -1,6 +1,6 @@
 ---
 name: dawn-and-dusk
-description: Build UI in the dawn & dusk design system (cxkw.dev) — warm greige neutrals, golden-hour accents, heavy lowercase Outfit headings, light "dawn" and dark "dusk" themes, plain CSS classes (dd-*) plus a small JS layer. Use whenever building, restyling or migrating a web page, app screen, dashboard, admin panel, data table, form, settings page, landing or pricing page, or a single component for cxkw.dev or any project that uses dawn & dusk — in static HTML, React, Next.js, Vue, Svelte or Astro, including moving a Tailwind UI onto it — or when the user mentions "dawn & dusk", "dawn and dusk", "dd- classes", dawn/dusk themes or their design system.
+description: Build UI in the dawn & dusk design system (cxkw.dev) — warm greige neutrals, golden-hour accents, heavy lowercase Outfit headings, light "dawn" and dark "dusk" themes, plain CSS classes (dd-*) plus a small JS layer. Use it only in projects that already use dawn & dusk (they load dawn-and-dusk.css or use dd- classes) or when the user asks for dawn & dusk by name — then use it for any page, app screen, dashboard, admin panel, data table, form, settings, landing or pricing page or single component, in static HTML, React, Next.js, Vue, Svelte or Astro, including moving a Tailwind UI onto it. Never apply it to other projects (e.g. client work with its own design language), even if they need UI.
 ---
 
 # dawn & dusk
@@ -113,6 +113,9 @@ Behaviour is opt-in through `data-dd-*` attributes on the documented markup. The
 (`data-dd-copy`), side-nav fold (`data-dd-nav-toggle`), ⌘K palette (`data-dd-command`), form validation
 (`data-dd-validate`), counters (`data-dd-counter`) and the `data-dd-data-table` sort, select, expand and filter hooks.
 Each component file lists its hooks.
+
+**Loading:** the brand loader `.dd-loader dd-loader--sun` (the ampersand with a sun rising behind it) for a page or a
+panel that waits; `.dd-spinner` for small inline busy states and buttons (`components/loader.md`, `spinner.md`).
 
 Small global API: `dd.toast({ title, description, intent, action })`, `dd.dialog`, `dd.tabs`, `dd.popover`, `dd.chip`,
 `dd.dismiss`, `dd.guide`, `dd.jsonViewer(el, data)`, `dd.dataTable.refresh(table)`, `dd.terminal(el)`,

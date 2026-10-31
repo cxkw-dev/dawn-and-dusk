@@ -91,7 +91,7 @@
 .dd-timeline--audit .dd-timeline__marker { grid-area: m; font-size: 8.5px; }
 .dd-timeline--audit .dd-timeline__marker > .dd-icon { width: 13px; height: 13px; }
 .dd-timeline--audit .dd-timeline__body { grid-area: body; padding-top: 0; flex-wrap: nowrap; }
-.dd-timeline--audit .dd-timeline__text { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dd-text); }
+.dd-timeline--audit .dd-timeline__text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; color: var(--dd-text); } /* wraps; never cut off */
 .dd-timeline--audit .dd-timeline__text :where(b, strong) { font-weight: 600; }
 .dd-timeline.dd-timeline--audit .dd-timeline__day { font-size: var(--dd-fs-xs); }
 

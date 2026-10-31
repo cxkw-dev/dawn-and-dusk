@@ -340,7 +340,7 @@ Markup: `references/components/loader.md`
 
 Log viewer — a monospace stream with timestamps, level badges and a service column; a bar to search, filter by level and toggle wrapping (behaviors/log-viewer.js). Columns line up across lines via subgrid.
 
-Classes: `.dd-log-viewer` `.dd-log-viewer__bar` `.dd-log-viewer__search` `.dd-log-viewer__levels` `.dd-log-viewer__toggle` `.dd-log-viewer__toggle--wrap` `.dd-log-viewer__toggle--follow` `.dd-log-viewer__n` `.dd-log-viewer__count` `.dd-log-viewer__live` `.dd-log-viewer__scroll` `.dd-log-viewer__lines` `.dd-log-viewer__line` `.dd-log-viewer__time` `.dd-log-viewer__level` `.dd-log-viewer__src` `.dd-log-viewer__msg` `.dd-log-viewer__dim` `.dd-log-viewer__mark` `.dd-log-viewer__empty`
+Classes: `.dd-log-viewer` `.dd-log-viewer__bar` `.dd-log-viewer__search` `.dd-log-viewer__levels` `.dd-log-viewer__toggle` `.dd-log-viewer__toggle--wrap` `.dd-log-viewer__toggle--follow` `.dd-log-viewer__n` `.dd-log-viewer__count` `.dd-log-viewer__live` `.dd-log-viewer__scroll` `.dd-log-viewer__lines` `.dd-log-viewer__line` `.dd-log-viewer__time` `.dd-log-viewer__level` `.dd-log-viewer__src` `.dd-log-viewer__msg` `.dd-log-viewer__dim` `.dd-log-viewer__mark` `.dd-log-viewer__empty` `.dd-log-viewer__toggle-label`
 
 Attributes/states: `aria-pressed` `data-dd-log-viewer-level`
 

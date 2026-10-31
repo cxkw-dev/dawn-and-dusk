@@ -50,7 +50,7 @@ const viewer = ({ value = '', on = ['debug', 'info', 'warn', 'error'], wrap = fa
       ${['debug', 'info', 'warn', 'error'].map((l) => levelBtn(l, on.includes(l))).join('\n      ')}
     </div>
     <button class="dd-log-viewer__toggle dd-log-viewer__toggle--wrap" type="button" data-dd-log-viewer-wrap aria-pressed="${wrap}">${i('menu')}Wrap</button>
-    ${live ? `<button class="dd-log-viewer__toggle dd-log-viewer__toggle--follow" type="button" data-dd-log-viewer-follow aria-pressed="true" aria-label="Follow new lines" data-dd-tooltip="Follow new lines">${i('arrow-down')}</button>` : ''}
+    ${live ? `<button class="dd-log-viewer__toggle dd-log-viewer__toggle--follow" type="button" data-dd-log-viewer-follow aria-pressed="true" aria-label="Follow new lines">${i('arrow-down')}<span class="dd-log-viewer__toggle-label">Follow</span></button>` : ''}
     <span class="dd-log-viewer__count" data-dd-log-viewer-count aria-live="polite">${LOGS.length} lines</span>
   </div>
   <div class="dd-log-viewer__scroll" tabindex="0" role="region" aria-label="${label}">

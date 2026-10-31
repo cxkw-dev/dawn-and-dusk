@@ -53,10 +53,10 @@ const variants: [string, string, string][] = [
 
 const sizes = `
 <div class="dd-row" style="--dd-gap: var(--dd-space-8); align-items: flex-end">
-  ${loader('sky', { size: 'sm' })}
-  ${loader('sky')}
-  ${loader('sky', { size: 'lg' })}
-  ${loader('sky', { size: 'xl' })}
+  ${loader('sun', { size: 'sm' })}
+  ${loader('sun')}
+  ${loader('sun', { size: 'lg' })}
+  ${loader('sun', { size: 'xl' })}
 </div>`;
 
 const colours = `
@@ -69,7 +69,7 @@ const colours = `
 
 const page = `
 <div class="dd-page-loader" role="status" style="min-height: 280px">
-  ${loader('ink', { size: 'xl', hidden: true })}
+  ${loader('sun', { size: 'xl', hidden: true })}
   <p class="dd-page-loader__label">Loading dashboard</p>
   <p class="dd-page-loader__meta">cxkw.dev · 3 regions</p>
 </div>`;
@@ -81,7 +81,7 @@ const overlay = `
   <p class="dd-text dd-muted">142 invoices · $18,420.00 · 3 overdue</p>
   <p class="dd-text dd-muted">Last sync 09:41 UTC</p>
   <div class="dd-page-loader dd-page-loader--overlay" role="status">
-    ${loader('horizon', { size: 'lg', hidden: true })}
+    ${loader('sun', { size: 'lg', hidden: true })}
     <p class="dd-page-loader__label">Recalculating totals</p>
   </div>
 </div>`;
@@ -93,7 +93,7 @@ const card = `
       <p class="dd-card__eyebrow">edge-cache · fra1</p>
       <h3 class="dd-card__title">Hit rate</h3>
       <div class="dd-page-loader" role="status" style="min-height: 150px; padding: var(--dd-space-4)">
-        ${loader('firefly', { size: 'lg', hidden: true })}
+        ${loader('sun', { size: 'lg', hidden: true })}
         <p class="dd-page-loader__meta" style="margin: 0">Loading the last 24h…</p>
       </div>
     </div>
@@ -103,7 +103,7 @@ const card = `
       <p class="dd-card__eyebrow">insomnia · deploys</p>
       <h3 class="dd-card__title">Release notes</h3>
       <div class="dd-page-loader" role="status" style="min-height: 150px; padding: var(--dd-space-4)">
-        ${loader('tones', { size: 'lg', hidden: true })}
+        ${loader('sun', { size: 'lg', hidden: true })}
         <p class="dd-page-loader__meta" style="margin: 0">Reading 12 commits…</p>
       </div>
     </div>
@@ -112,8 +112,8 @@ const card = `
 
 const inline = `
 <div class="dd-stack" style="--dd-gap: var(--dd-space-4)">
-  <span class="dd-loading" role="status">${loader('sky', { hidden: true })}Loading deploys…</span>
-  <span class="dd-loading" role="status">${loader('cut', { hidden: true })}<span>Fetching logs from <span class="dd-mono">auth-gateway</span> · iad1</span></span>
+  <span class="dd-loading" role="status">${loader('sun', { hidden: true })}Loading deploys…</span>
+  <span class="dd-loading" role="status">${loader('sun', { hidden: true })}<span>Fetching logs from <span class="dd-mono">auth-gateway</span> · iad1</span></span>
 </div>`;
 
 const fullPage = `<div class="dd-page-loader dd-page-loader--fixed" role="status">
@@ -122,7 +122,7 @@ const fullPage = `<div class="dd-page-loader dd-page-loader--fixed" role="status
   <p class="dd-page-loader__meta">cxkw.dev</p>
 </div>`;
 ---
-<Docs title="Loader" group="Feedback & status" lead="The ampersand from the logo, set moving — the brand’s own way to say “loading”. Ten variants to choose from, each the real Outfit 800 & from the wordmark. Pick one and use it wherever a page or a panel waits.">
+<Docs title="Loader" group="Feedback & status" lead="The ampersand from the logo, set moving — the brand’s own way to say “loading”. The default is #4 Sunrise — a sun rising behind the &, cut out like the logo’s second line — with nine alternatives, each the real Outfit 800 & from the wordmark. Use it wherever a page or a panel waits.">
   <style is:global>
     /* docs only: the numbered picker gallery — every variant in dawn and dusk side by side */
     .ldr-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: var(--dd-space-3); margin: var(--dd-space-6) 0 var(--dd-space-2); }
@@ -138,8 +138,8 @@ const fullPage = `<div class="dd-page-loader dd-page-loader--fixed" role="status
     .ldr-tile__desc { margin: 0; font-size: var(--dd-fs-sm); line-height: 1.45; color: var(--dd-muted); }
   </style>
 
-  <h2 id="variants">Pick a variant</h2>
-  <p>Every variant in dawn (left) and dusk (right), at <code>--lg</code>. They share one outer element and one set of sizes; only the inside differs. Say the number — “#4” — and that becomes the loader.</p>
+  <h2 id="variants">Variants</h2>
+  <p>Every variant in dawn (left) and dusk (right), at <code>--lg</code>. They share one outer element and one set of sizes; only the inside differs. <strong>#4 Sunrise (<code>.dd-loader--sun</code>) is the default</strong>; reach for another only when a product needs a different mood, and use one per product.</p>
   <div class="ldr-gallery">
     {variants.map(([v, name, desc], n) => (
       <figure class="ldr-tile" data-variant={v}>

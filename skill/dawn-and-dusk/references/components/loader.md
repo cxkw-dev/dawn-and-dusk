@@ -1,14 +1,14 @@
 # loader — `loader`
 
-The ampersand from the logo, set moving — the brand’s own way to say “loading”. Ten variants to choose from, each the real Outfit 800 & from the wordmark. Pick one and use it wherever a page or a panel waits.
+The ampersand from the logo, set moving — the brand’s own way to say “loading”. The default is #4 Sunrise — a sun rising behind the &, cut out like the logo’s second line — with nine alternatives, each the real Outfit 800 & from the wordmark. Use it wherever a page or a panel waits.
 
 Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/loader
 
 Every snippet is the exact markup of a working docs example. Icons are `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-NAME"/></svg>` from the sprite.
 
-## Pick a variant
+## Variants
 
-Every variant in dawn (left) and dusk (right), at `--lg`. They share one outer element and one set of sizes; only the inside differs. Say the number — “#4” — and that becomes the loader.
+Every variant in dawn (left) and dusk (right), at `--lg`. They share one outer element and one set of sizes; only the inside differs. #4 Sunrise (`.dd-loader--sun`) is the default; reach for another only when a product needs a different mood, and use one per product.
 
 ## Markup, variant by variant
 
@@ -100,10 +100,10 @@ sm 20 · md 32 (default) · lg 56 · xl 96px tall; the box is 0.925 of the heigh
 
 ```html
 <div class="dd-row" style="--dd-gap: var(--dd-space-8); align-items: flex-end">
-  <span class="dd-loader dd-loader--sky dd-loader--sm" role="status" aria-label="Loading"><span class="dd-loader__glyph" aria-hidden="true"><i></i></span></span>
-  <span class="dd-loader dd-loader--sky" role="status" aria-label="Loading"><span class="dd-loader__glyph" aria-hidden="true"><i></i></span></span>
-  <span class="dd-loader dd-loader--sky dd-loader--lg" role="status" aria-label="Loading"><span class="dd-loader__glyph" aria-hidden="true"><i></i></span></span>
-  <span class="dd-loader dd-loader--sky dd-loader--xl" role="status" aria-label="Loading"><span class="dd-loader__glyph" aria-hidden="true"><i></i></span></span>
+  <span class="dd-loader dd-loader--sun dd-loader--sm" role="status" aria-label="Loading"><span class="dd-loader__sky" aria-hidden="true"><i></i></span><span class="dd-loader__glyph" aria-hidden="true"></span></span>
+  <span class="dd-loader dd-loader--sun" role="status" aria-label="Loading"><span class="dd-loader__sky" aria-hidden="true"><i></i></span><span class="dd-loader__glyph" aria-hidden="true"></span></span>
+  <span class="dd-loader dd-loader--sun dd-loader--lg" role="status" aria-label="Loading"><span class="dd-loader__sky" aria-hidden="true"><i></i></span><span class="dd-loader__glyph" aria-hidden="true"></span></span>
+  <span class="dd-loader dd-loader--sun dd-loader--xl" role="status" aria-label="Loading"><span class="dd-loader__sky" aria-hidden="true"><i></i></span><span class="dd-loader__glyph" aria-hidden="true"></span></span>
 </div>
 ```
 
@@ -126,7 +126,7 @@ Compose with the page loader from Spinner: the loader goes where the spinner wou
 
 ```html
 <div class="dd-page-loader" role="status" style="min-height: 280px">
-  <span class="dd-loader dd-loader--ink dd-loader--xl" aria-hidden="true"><span class="dd-loader__glyph" aria-hidden="true"></span><svg class="dd-loader__b" viewBox="-2 -755 740 800" aria-hidden="true" focusable="false"><path pathLength="1" d="M262 -372C253.5 -369 231.3 -366.3 211 -354C190.7 -341.7 156.2 -321.5 140 -298C123.8 -274.5 114.8 -239.7 114 -213C113.2 -186.3 120.7 -159.8 135 -138C149.3 -116.2 177 -93.7 200 -82C223 -70.3 248.8 -68 273 -68C297.2 -68 321 -70.8 345 -82C369 -93.2 399.2 -120 417 -135C434.8 -150 446.2 -165.8 452 -172"/></svg><svg class="dd-loader__a" viewBox="-2 -755 740 800" aria-hidden="true" focusable="false"><path pathLength="1" d="M520 -505C511.8 -515.7 491 -548.8 471 -569C451 -589.2 423.5 -614 400 -626C376.5 -638 354.7 -642 330 -641C305.3 -640 272.8 -631.5 252 -620C231.2 -608.5 215.3 -589.8 205 -572C194.7 -554.2 190.3 -532.3 190 -513C189.7 -480 205 -440 235 -403L650 55"/></svg></span>
+  <span class="dd-loader dd-loader--sun dd-loader--xl" aria-hidden="true"><span class="dd-loader__sky" aria-hidden="true"><i></i></span><span class="dd-loader__glyph" aria-hidden="true"></span></span>
   <p class="dd-page-loader__label">Loading dashboard</p>
   <p class="dd-page-loader__meta">cxkw.dev · 3 regions</p>
 </div>
@@ -139,7 +139,7 @@ Compose with the page loader from Spinner: the loader goes where the spinner wou
   <p class="dd-text dd-muted">142 invoices · $18,420.00 · 3 overdue</p>
   <p class="dd-text dd-muted">Last sync 09:41 UTC</p>
   <div class="dd-page-loader dd-page-loader--overlay" role="status">
-    <span class="dd-loader dd-loader--horizon dd-loader--lg" aria-hidden="true"><span class="dd-loader__glyph" aria-hidden="true"><i></i></span></span>
+    <span class="dd-loader dd-loader--sun dd-loader--lg" aria-hidden="true"><span class="dd-loader__sky" aria-hidden="true"><i></i></span><span class="dd-loader__glyph" aria-hidden="true"></span></span>
     <p class="dd-page-loader__label">Recalculating totals</p>
   </div>
 </div>
@@ -158,7 +158,7 @@ When one panel waits, load that panel — not the page. Centre the loader in the
       <p class="dd-card__eyebrow">edge-cache · fra1</p>
       <h3 class="dd-card__title">Hit rate</h3>
       <div class="dd-page-loader" role="status" style="min-height: 150px; padding: var(--dd-space-4)">
-        <span class="dd-loader dd-loader--firefly dd-loader--lg" aria-hidden="true"><span class="dd-loader__glyph" aria-hidden="true"></span><svg viewBox="-2 -755 740 800" aria-hidden="true" focusable="false"><path class="dd-loader__tail" pathLength="1" d="M499 0L452.2 -51.7Q442.4 -43.8 430.5 -36Q400 -16 359.5 -2.5Q319 11 272 11Q200 11 146.5 -18Q93 -47 63.5 -96.5Q34 -146 34 -207Q34 -274 68.5 -326.5Q95.5 -367.5 145.4 -396.7Q133.2 -415.3 125.5 -433Q109 -471 109 -516Q109 -570 137 -616.5Q165 -663 214 -692Q263 -721 328 -721Q379 -721 418.5 -706.5Q458 -692 486 -670Q514 -648 528 -625L415 -514Q396 -540 376 -551Q356 -562 332 -562Q306 -562 289 -547Q272 -532 272 -511Q272 -494 280 -479.5Q288 -465 302 -448L702 0Z"/><path class="dd-loader__spark" pathLength="1" d="M499 0L452.2 -51.7Q442.4 -43.8 430.5 -36Q400 -16 359.5 -2.5Q319 11 272 11Q200 11 146.5 -18Q93 -47 63.5 -96.5Q34 -146 34 -207Q34 -274 68.5 -326.5Q95.5 -367.5 145.4 -396.7Q133.2 -415.3 125.5 -433Q109 -471 109 -516Q109 -570 137 -616.5Q165 -663 214 -692Q263 -721 328 -721Q379 -721 418.5 -706.5Q458 -692 486 -670Q514 -648 528 -625L415 -514Q396 -540 376 -551Q356 -562 332 -562Q306 -562 289 -547Q272 -532 272 -511Q272 -494 280 -479.5Q288 -465 302 -448L702 0Z"/></svg></span>
+        <span class="dd-loader dd-loader--sun dd-loader--lg" aria-hidden="true"><span class="dd-loader__sky" aria-hidden="true"><i></i></span><span class="dd-loader__glyph" aria-hidden="true"></span></span>
         <p class="dd-page-loader__meta" style="margin: 0">Loading the last 24h…</p>
       </div>
     </div>
@@ -168,7 +168,7 @@ When one panel waits, load that panel — not the page. Centre the loader in the
       <p class="dd-card__eyebrow">insomnia · deploys</p>
       <h3 class="dd-card__title">Release notes</h3>
       <div class="dd-page-loader" role="status" style="min-height: 150px; padding: var(--dd-space-4)">
-        <span class="dd-loader dd-loader--tones dd-loader--lg" aria-hidden="true"><svg viewBox="-2 -755 740 800" aria-hidden="true" focusable="false"><path class="dd-loader__b" d="M272 11Q200 11 146.5 -18Q93 -47 63.5 -96.5Q34 -146 34 -207Q34 -274 68.5 -326.5Q103 -379 175 -412L248 -296Q221 -286 208 -265.5Q195 -245 195 -220Q195 -200 204.5 -183Q214 -166 232 -156Q250 -146 275 -146Q300 -146 320.5 -157.5Q341 -169 357 -194L477 -76Q461 -56 430.5 -36Q400 -16 359.5 -2.5Q319 11 272 11Z"/><path class="dd-loader__a" d="M499 0L179 -353Q142 -395 125.5 -433Q109 -471 109 -516Q109 -570 137 -616.5Q165 -663 214 -692Q263 -721 328 -721Q379 -721 418.5 -706.5Q458 -692 486 -670Q514 -648 528 -625L415 -514Q396 -540 376 -551Q356 -562 332 -562Q306 -562 289 -547Q272 -532 272 -511Q272 -494 280 -479.5Q288 -465 302 -448L702 0Z"/></svg></span>
+        <span class="dd-loader dd-loader--sun dd-loader--lg" aria-hidden="true"><span class="dd-loader__sky" aria-hidden="true"><i></i></span><span class="dd-loader__glyph" aria-hidden="true"></span></span>
         <p class="dd-page-loader__meta" style="margin: 0">Reading 12 commits…</p>
       </div>
     </div>
@@ -182,8 +182,8 @@ Beside text in a `.dd-loading` row the glyph sizes itself to the type. For loadi
 
 ```html
 <div class="dd-stack" style="--dd-gap: var(--dd-space-4)">
-  <span class="dd-loading" role="status"><span class="dd-loader dd-loader--sky" aria-hidden="true"><span class="dd-loader__glyph" aria-hidden="true"><i></i></span></span>Loading deploys…</span>
-  <span class="dd-loading" role="status"><span class="dd-loader dd-loader--cut" aria-hidden="true"><span class="dd-loader__glyph" aria-hidden="true"><i></i></span></span><span>Fetching logs from <span class="dd-mono">auth-gateway</span> · iad1</span></span>
+  <span class="dd-loading" role="status"><span class="dd-loader dd-loader--sun" aria-hidden="true"><span class="dd-loader__sky" aria-hidden="true"><i></i></span><span class="dd-loader__glyph" aria-hidden="true"></span></span>Loading deploys…</span>
+  <span class="dd-loading" role="status"><span class="dd-loader dd-loader--sun" aria-hidden="true"><span class="dd-loader__sky" aria-hidden="true"><i></i></span><span class="dd-loader__glyph" aria-hidden="true"></span></span><span>Fetching logs from <span class="dd-mono">auth-gateway</span> · iad1</span></span>
 </div>
 ```
 

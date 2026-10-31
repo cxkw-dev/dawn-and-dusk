@@ -13,7 +13,8 @@
     "build": "node scripts/build-ds.mjs && astro build && node scripts/build-skill-examples.mjs",
     "build:ds": "node scripts/build-ds.mjs",
     "preview": "astro preview",
-    "test": "node tests/run.mjs"
+    "test": "node tests/run.mjs",
+    "skill:install": "node scripts/install-skill.mjs"
   },
   "devDependencies": {
     "astro": "^6.1.3"

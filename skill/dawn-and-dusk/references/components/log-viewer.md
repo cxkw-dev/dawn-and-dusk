@@ -22,7 +22,7 @@ Search filters and highlights; level toggles hide noise; Wrap breaks long messag
       <button class="dd-log-viewer__toggle" type="button" data-dd-log-viewer-level="error" aria-pressed="true">Error <span class="dd-log-viewer__n">3</span></button>
     </div>
     <button class="dd-log-viewer__toggle dd-log-viewer__toggle--wrap" type="button" data-dd-log-viewer-wrap aria-pressed="false"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-menu"/></svg>Wrap</button>
-    <button class="dd-log-viewer__toggle dd-log-viewer__toggle--follow" type="button" data-dd-log-viewer-follow aria-pressed="true" aria-label="Follow new lines" data-dd-tooltip="Follow new lines"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-arrow-down"/></svg></button>
+    <button class="dd-log-viewer__toggle dd-log-viewer__toggle--follow" type="button" data-dd-log-viewer-follow aria-pressed="true" aria-label="Follow new lines"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-arrow-down"/></svg><span class="dd-log-viewer__toggle-label">Follow</span></button>
     <span class="dd-log-viewer__count" data-dd-log-viewer-count aria-live="polite">24 lines</span>
   </div>
   <div class="dd-log-viewer__scroll" tabindex="0" role="region" aria-label="auth-gateway deploy logs">
