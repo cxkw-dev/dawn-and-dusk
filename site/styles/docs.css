@@ -240,3 +240,6 @@ details.ex-code { box-shadow: none; }
 .doc-toc a:focus-visible, .ex-code pre:focus-visible { outline-offset: -2px; }
 /* Shiki code blocks are focusable (scrollable); show where focus is. */
 .doc-main pre.astro-code:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: -2px; }
+
+/* Examples nest their own app shells: give them back the default viewport height (custom properties inherit). */
+.doc-app .ex-stage { --dd-app-shell-h: initial; }
