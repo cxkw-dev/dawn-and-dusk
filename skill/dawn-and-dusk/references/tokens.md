@@ -18,6 +18,15 @@ Generated from `ds/tokens.css` by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; 
 | `--dd-quiet` | `color-mix(in oklab, var(--dd-muted) 75%, var(--dd-faint))` | `color-mix(in oklab, var(--dd-muted) 75%, var(--dd-faint))` | secondary labels, hints, kbd: readable, quieter than muted |
 | `--dd-wash` | `color-mix(in oklab, var(--dd-text) 7%, transparent)` | `color-mix(in oklab, var(--dd-text) 7%, transparent)` |  |
 | `--dd-wash-strong` | `color-mix(in oklab, var(--dd-text) 12%, transparent)` | `color-mix(in oklab, var(--dd-text) 12%, transparent)` |  |
+| `--dd-syntax-keyword` | `color-mix(in oklab, var(--dd-set-6) 72%, var(--dd-text))` | `color-mix(in oklab, var(--dd-set-6) 72%, var(--dd-text))` |  |
+| `--dd-syntax-tag` | `var(--dd-syntax-keyword)` | `var(--dd-syntax-keyword)` |  |
+| `--dd-syntax-attr` | `color-mix(in oklab, var(--dd-set-7) 56%, var(--dd-text))` | `color-mix(in oklab, var(--dd-set-7) 68%, var(--dd-text))` |  |
+| `--dd-syntax-string` | `color-mix(in oklab, var(--dd-ok) 64%, var(--dd-text))` | `color-mix(in oklab, var(--dd-ok) 78%, var(--dd-text))` |  |
+| `--dd-syntax-number` | `color-mix(in oklab, var(--dd-set-4) 66%, var(--dd-text))` | `color-mix(in oklab, var(--dd-set-4) 78%, var(--dd-text))` |  |
+| `--dd-syntax-function` | `color-mix(in oklab, var(--dd-info) 70%, var(--dd-text))` | `color-mix(in oklab, var(--dd-info) 80%, var(--dd-text))` |  |
+| `--dd-syntax-variable` | `color-mix(in oklab, var(--dd-set-2) 50%, var(--dd-text))` | `color-mix(in oklab, var(--dd-set-2) 62%, var(--dd-text))` |  |
+| `--dd-syntax-comment` | `var(--dd-muted)` | `var(--dd-muted)` |  |
+| `--dd-syntax-punct` | `var(--dd-muted)` | `var(--dd-muted)` |  |
 | `--dd-accent` | `#6a5c4e` | `#d9cdbd` |  |
 | `--dd-accent-hover` | `#5d5146` | `#dcd1c2` |  |
 | `--dd-accent-soft` | `#e0d9d0` | `#322e2a` |  |

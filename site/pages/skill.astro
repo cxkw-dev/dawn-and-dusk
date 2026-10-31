@@ -2,6 +2,7 @@
 import Docs from '../layouts/Docs.astro';
 import Guides from '../components/Guides.astro';
 import { Code } from 'astro:components';
+import { ddTheme } from '../lib/syntax';
 import skill from '../../skill/dawn-and-dusk/SKILL.md?raw';
 
 const install = `# Claude Code — for every project on this machine
@@ -32,18 +33,18 @@ const agentsMd = `## UI: dawn & dusk design system
 
   <h2 id="install">Install for Claude</h2>
   <p>Skills live in a folder named after the skill. Claude Code picks it up automatically and uses it whenever you ask for UI — no prompt needed.</p>
-  <Code code={install} lang="bash" theme="css-variables" wrap />
+  <Code code={install} lang="bash" theme={ddTheme} wrap />
   <p>For Claude apps, zip the <code>skill/dawn-and-dusk</code> folder and add it as a custom skill.</p>
 
   <h2 id="other-agents">Other agents</h2>
   <p>Agents without skill support (Cursor, Copilot, Codex…) get the same result from a short block in <code>AGENTS.md</code> or the system prompt, plus the release files:</p>
-  <Code code={agentsMd} lang="markdown" theme="css-variables" wrap />
+  <Code code={agentsMd} lang="markdown" theme={ddTheme} wrap />
 
   <h2 id="keeping-in-sync">Keeping it in sync</h2>
   <p><code>npm run build:ds</code> regenerates the skill’s assets and references from <code>ds/</code>. Edit the system, rebuild, commit — the skill can never describe a component that doesn’t exist.</p>
 
   <h2 id="skill-md">SKILL.md</h2>
-  <Code code={skill} lang="markdown" theme="css-variables" wrap />
+  <Code code={skill} lang="markdown" theme={ddTheme} wrap />
 
   <h2 id="guidelines">Prompting tips</h2>
   <Guides do={['Name the page type: “a dawn & dusk dashboard for deploy health”.', 'Ask the agent to check dusk and a phone width before it finishes.', 'Point it at a component page when you want a specific variant.']} dont={['Don’t paste raw hex values into prompts — ask for tokens.', 'Don’t let it add a second CSS framework next to dawn & dusk.']} />

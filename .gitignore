@@ -10,3 +10,6 @@ dist/
 !site/**/*.png
 !skill/**/*.png
 !tools/**/*.png
+
+# skill eval runs
+skill/dawn-and-dusk-workspace/

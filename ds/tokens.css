@@ -82,6 +82,17 @@
      for hover / pressed fills where the element sits on a tone you don't control. */
   --dd-wash: color-mix(in oklab, var(--dd-text) 7%, transparent);
   --dd-wash-strong: color-mix(in oklab, var(--dd-text) 12%, transparent);
+  /* Syntax — code colours from the Golden hour set, pulled toward the text so they read in both themes. Used by
+     .dd-code and the docs' highlighted code; tags/keywords wine, attributes/properties ochre, strings sage. */
+  --dd-syntax-keyword: color-mix(in oklab, var(--dd-set-6) 72%, var(--dd-text));
+  --dd-syntax-tag: var(--dd-syntax-keyword);
+  --dd-syntax-attr: color-mix(in oklab, var(--dd-set-7) 56%, var(--dd-text));
+  --dd-syntax-string: color-mix(in oklab, var(--dd-ok) 64%, var(--dd-text));
+  --dd-syntax-number: color-mix(in oklab, var(--dd-set-4) 66%, var(--dd-text));
+  --dd-syntax-function: color-mix(in oklab, var(--dd-info) 70%, var(--dd-text));
+  --dd-syntax-variable: color-mix(in oklab, var(--dd-set-2) 50%, var(--dd-text));
+  --dd-syntax-comment: var(--dd-muted);
+  --dd-syntax-punct: var(--dd-muted);
   /* Accent — ink/taupe, for links, focus and selected states */
   --dd-accent: #6a5c4e;
   --dd-accent-hover: #5d5146;
@@ -143,6 +154,17 @@
      for hover / pressed fills where the element sits on a tone you don't control. */
   --dd-wash: color-mix(in oklab, var(--dd-text) 7%, transparent);
   --dd-wash-strong: color-mix(in oklab, var(--dd-text) 12%, transparent);
+  /* Syntax — code colours from the Golden hour set, pulled toward the text so they read in both themes. Used by
+     .dd-code and the docs' highlighted code; tags/keywords wine, attributes/properties ochre, strings sage. */
+  --dd-syntax-keyword: color-mix(in oklab, var(--dd-set-6) 72%, var(--dd-text));
+  --dd-syntax-tag: var(--dd-syntax-keyword);
+  --dd-syntax-attr: color-mix(in oklab, var(--dd-set-7) 68%, var(--dd-text));
+  --dd-syntax-string: color-mix(in oklab, var(--dd-ok) 78%, var(--dd-text));
+  --dd-syntax-number: color-mix(in oklab, var(--dd-set-4) 78%, var(--dd-text));
+  --dd-syntax-function: color-mix(in oklab, var(--dd-info) 80%, var(--dd-text));
+  --dd-syntax-variable: color-mix(in oklab, var(--dd-set-2) 62%, var(--dd-text));
+  --dd-syntax-comment: var(--dd-muted);
+  --dd-syntax-punct: var(--dd-muted);
   /* Accent — ink/taupe, for links, focus and selected states */
   --dd-accent: #d9cdbd;
   --dd-accent-hover: #dcd1c2;
@@ -203,6 +225,17 @@
        for hover / pressed fills where the element sits on a tone you don't control. */
     --dd-wash: color-mix(in oklab, var(--dd-text) 7%, transparent);
     --dd-wash-strong: color-mix(in oklab, var(--dd-text) 12%, transparent);
+    /* Syntax — code colours from the Golden hour set, pulled toward the text so they read in both themes. Used by
+       .dd-code and the docs' highlighted code; tags/keywords wine, attributes/properties ochre, strings sage. */
+    --dd-syntax-keyword: color-mix(in oklab, var(--dd-set-6) 72%, var(--dd-text));
+    --dd-syntax-tag: var(--dd-syntax-keyword);
+    --dd-syntax-attr: color-mix(in oklab, var(--dd-set-7) 68%, var(--dd-text));
+    --dd-syntax-string: color-mix(in oklab, var(--dd-ok) 78%, var(--dd-text));
+    --dd-syntax-number: color-mix(in oklab, var(--dd-set-4) 78%, var(--dd-text));
+    --dd-syntax-function: color-mix(in oklab, var(--dd-info) 80%, var(--dd-text));
+    --dd-syntax-variable: color-mix(in oklab, var(--dd-set-2) 62%, var(--dd-text));
+    --dd-syntax-comment: var(--dd-muted);
+    --dd-syntax-punct: var(--dd-muted);
     /* Accent — ink/taupe, for links, focus and selected states */
     --dd-accent: #d9cdbd;
     --dd-accent-hover: #dcd1c2;

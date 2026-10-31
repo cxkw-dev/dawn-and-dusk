@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: pricing-page-static
+expected_outcome: |
+  A static pricing page built only from dawn & dusk assets and dd- components: three plan cards with one primary
+  CTA per view, a working monthly/yearly switch that changes prices, a comparison table, an FAQ accordion, tokens
+  only in any custom CSS, valid icons, and it renders correctly in both dawn and dusk.

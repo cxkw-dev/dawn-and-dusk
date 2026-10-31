@@ -5,6 +5,7 @@ import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
 import { Code } from 'astro:components';
+import { ddTheme } from '../../lib/syntax';
 
 const item = (icon: string, label: string, o: { section?: string; on?: boolean; extra?: string } = {}) =>
   o.section
@@ -237,7 +238,7 @@ const skeleton = `
 
   <h2 id="anatomy">Anatomy</h2>
   <p>The skeleton, without the contents. Wire the top bar’s menu button to the nav’s <code>id</code>; the nav’s collapsed state is remembered under that <code>id</code>.</p>
-  <div class="ex-frame"><details class="ex-code" open><summary>Skeleton</summary><Code code={skeleton.trim()} lang="html" theme="css-variables" wrap /></details></div>
+  <div class="ex-frame"><details class="ex-code" open><summary>Skeleton</summary><Code code={skeleton.trim()} lang="html" theme={ddTheme} wrap /></details></div>
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[

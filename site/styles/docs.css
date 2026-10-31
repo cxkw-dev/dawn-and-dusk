@@ -42,9 +42,21 @@
 /* shell */
 .doc-shell { display: grid; grid-template-columns: 260px minmax(0, 1fr); }
 .doc-side { position: sticky; top: 60px; height: calc(100vh - 60px); padding: var(--dd-space-6) var(--dd-space-3) var(--dd-space-16) var(--dd-space-4);
-  /* soft fade at the top and bottom edges so links slide under instead of being cut */
-  -webkit-mask-image: linear-gradient(transparent, #000 24px, #000 calc(100% - 48px), transparent);
-  mask-image: linear-gradient(transparent, #000 24px, #000 calc(100% - 48px), transparent); }
+  /* soft fade at the bottom edge so links slide out instead of being cut; at the top they slide under the search */
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(#000 calc(100% - 48px), transparent); }
+/* sidebar search: sticks to the top of the sidebar while the list scrolls under it */
+.doc-find { position: sticky; top: calc(var(--dd-space-6) * -1); z-index: 2; margin: calc(var(--dd-space-6) * -1) calc(var(--dd-space-3) * -1) var(--dd-space-3) calc(var(--dd-space-4) * -1);
+  padding: var(--dd-space-6) var(--dd-space-3) var(--dd-space-2) var(--dd-space-4); background: var(--dd-surface); }
+.doc-find::after { content: ""; position: absolute; inset: 100% 0 auto; height: 18px; background: linear-gradient(var(--dd-surface), transparent); pointer-events: none; }
+.doc-find-key { transition: opacity var(--dd-dur-fast) var(--dd-ease); }
+.doc-find .dd-input:focus-within .doc-find-key, .doc-find:has(.dd-input__control:not(:placeholder-shown)) .doc-find-key { opacity: 0; }
+.doc-find .dd-input__control::-webkit-search-cancel-button { display: none; }
+.doc-find-empty { margin: 0 0 var(--dd-space-2) 10px; font-size: var(--dd-fs-xs); color: var(--dd-quiet); min-height: 0; }
+.doc-find-empty:empty { display: none; }
+.doc-find-empty.is-none { color: var(--dd-muted); }
+.doc-nav-group[hidden], .doc-nav li[hidden] { display: none; }
+.doc-nav mark { background: color-mix(in oklab, var(--dd-primary) 30%, transparent); color: inherit; border-radius: 2px; padding: 0 1px; margin: 0 -1px; }
 .doc-nav-group + .doc-nav-group { margin-top: var(--dd-space-5); }
 .doc-nav-h { margin: 0 0 6px 10px; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-quiet); }
 .doc-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
@@ -106,24 +118,7 @@
 .ex-code pre { margin: 0; padding: var(--dd-space-3) var(--dd-space-5) var(--dd-space-4); font-size: 13px; line-height: 1.6; max-height: 480px; overflow: auto;
   scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--dd-text) 22%, transparent) transparent; }
 
-/* Shiki "css-variables" theme mapped to tokens. On the light dawn panel the golden-hour colours are too pale to read
-   (honey and amber sit near 2:1), so dawn mixes some ink into each; dusk uses them as they are. */
-:root, [data-theme='dawn'] { --doc-ink: 38%; }
-[data-theme='dusk'] { --doc-ink: 0%; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme]) { --doc-ink: 0%; } }
-:root, [data-theme] {
-  --astro-code-foreground: var(--dd-text);
-  --astro-code-background: transparent;
-  --astro-code-token-constant: color-mix(in oklab, var(--dd-set-2), var(--dd-text) var(--doc-ink));
-  --astro-code-token-string: color-mix(in oklab, var(--dd-ok), var(--dd-text) var(--doc-ink));
-  --astro-code-token-comment: var(--dd-quiet);
-  --astro-code-token-keyword: color-mix(in oklab, var(--dd-set-4), var(--dd-text) var(--doc-ink));
-  --astro-code-token-parameter: color-mix(in oklab, var(--dd-set-1), var(--dd-text) var(--doc-ink));
-  --astro-code-token-function: color-mix(in oklab, var(--dd-info), var(--dd-text) var(--doc-ink));
-  --astro-code-token-string-expression: color-mix(in oklab, var(--dd-ok), var(--dd-text) var(--doc-ink));
-  --astro-code-token-punctuation: var(--dd-muted);
-  --astro-code-token-link: var(--dd-info);
-}
+/* Highlighted code uses site/lib/syntax.ts, a Shiki theme painted with the system's --dd-syntax-* tokens. */
 .astro-code { font-family: var(--dd-font-mono) !important; background: transparent !important; }
 
 /* tables, guides, swatches */

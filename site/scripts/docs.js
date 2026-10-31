@@ -106,3 +106,58 @@ document.addEventListener('click', (e) => {
     mark(target.id);
   });
 })();
+
+// Sidebar search: filters the nav as you type (titles, sections and other names, e.g. "modal" finds Dialog).
+// "/" focuses it from anywhere, Esc clears, ↓ / ↑ walk the results, Enter opens the first match.
+(() => {
+  const input = document.getElementById('doc-find');
+  const nav = document.getElementById('doc-nav');
+  const status = document.getElementById('doc-find-empty');
+  if (!input || !nav) return;
+  const links = [...nav.querySelectorAll('a[data-find]')];
+  const groups = [...nav.querySelectorAll('.doc-nav-group')];
+  const titles = new Map(links.map((a) => [a, a.querySelector('.doc-nav-t')?.textContent ?? '']));
+  const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+  const shown = () => links.filter((a) => !a.closest('li').hidden);
+  const run = () => {
+    const raw = input.value.trim();
+    const words = raw.toLowerCase().split(/\s+/).filter(Boolean);
+    for (const a of links) {
+      const title = titles.get(a);
+      const tokens = a.dataset.find.split(/[\s&/-]+/);
+      // a word matches anywhere in the title, or at the start of a section name or another name for the page
+      const hit = words.every((w) => title.toLowerCase().includes(w) || tokens.some((t) => t.startsWith(w)));
+      a.closest('li').hidden = !hit;
+      const w = words.find((x) => title.toLowerCase().includes(x));
+      const i = w ? title.toLowerCase().indexOf(w) : -1;
+      a.querySelector('.doc-nav-t').innerHTML = i >= 0 ? `${esc(title.slice(0, i))}<mark>${esc(title.slice(i, i + w.length))}</mark>${esc(title.slice(i + w.length))}` : esc(title);
+    }
+    for (const g of groups) g.hidden = !g.querySelector('li:not([hidden])');
+    const n = shown().length;
+    nav.classList.toggle('is-filtered', words.length > 0);
+    status.classList.toggle('is-none', words.length > 0 && !n);
+    status.textContent = !words.length ? '' : n ? `${n} ${n === 1 ? 'page' : 'pages'}` : `Nothing matches “${raw}”.`;
+  };
+  input.addEventListener('input', run);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { if (input.value) { e.preventDefault(); input.value = ''; run(); } else input.blur(); }
+    else if (e.key === 'ArrowDown') { const v = shown(); if (v.length) { e.preventDefault(); v[0].focus(); } }
+    else if (e.key === 'Enter' && input.value.trim()) { const v = shown(); if (v.length) { e.preventDefault(); v[0].click(); } }
+  });
+  nav.addEventListener('keydown', (e) => {
+    if ((e.key !== 'ArrowDown' && e.key !== 'ArrowUp') || !nav.classList.contains('is-filtered')) return;
+    const v = shown(); const i = v.indexOf(document.activeElement);
+    if (i < 0) return;
+    e.preventDefault();
+    if (e.key === 'ArrowUp' && i === 0) input.focus();
+    else v[Math.max(0, Math.min(v.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)))].focus();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    if (e.target.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]')) return;
+    e.preventDefault();
+    const menu = document.querySelector('.doc-menu');
+    if (menu && getComputedStyle(menu).display !== 'none' && menu.getAttribute('aria-expanded') !== 'true') menu.click();
+    input.focus(); input.select();
+  });
+})();

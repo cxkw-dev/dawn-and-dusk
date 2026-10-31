@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "node scripts/build-ds.mjs && astro dev",
-    "build": "node scripts/build-ds.mjs && astro build",
+    "build": "node scripts/build-ds.mjs && astro build && node scripts/build-skill-examples.mjs",
     "build:ds": "node scripts/build-ds.mjs",
     "preview": "astro preview",
     "test": "node tests/run.mjs"

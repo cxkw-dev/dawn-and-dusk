@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: admin-members-screen
+expected_outcome: |
+  A static admin screen using the dd app shell, side nav, page header with one primary "Invite member" button that
+  opens a dd dialog form via data-dd-* behaviour, and a dd data table with avatars, status (dot + word), row action
+  menus, search, role filter and bulk selection — no invented dd- classes, no hard-coded colours, no console errors.

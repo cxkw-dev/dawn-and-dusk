@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { Code } from 'astro:components';
+import { ddTheme } from '../../lib/syntax';
 import { i } from '../../lib/icon';
 
 const basic = `
@@ -109,7 +110,7 @@ panel.addEventListener('toggle', (e) => console.log(e.newState)); // 'open' | 'c
     ['Tab', 'From the trigger, Tab moves into the open popover.'],
     ['dd.popover.open(el, anchor)', 'Open from code, anchored to any element. Also <code>close(el)</code> and <code>toggle(el, anchor)</code>.'],
   ]} />
-  <Code code={js} lang="js" theme="css-variables" wrap />
+  <Code code={js} lang="js" theme={ddTheme} wrap />
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides

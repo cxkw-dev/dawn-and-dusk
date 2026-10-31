@@ -1,0 +1,11 @@
+# Component index
+
+Copy-ready markup per component (read the one you need):
+
+- **Actions:** [Button](components/button.md) · [Button group](components/button-group.md) · [Link](components/link.md) · [Menu](components/menu.md) · [Segmented control](components/segmented-control.md) · [Command palette](components/command-palette.md) · [Kbd](components/kbd.md)
+- **Forms:** [Form field](components/form-field.md) · [Text input](components/text-input.md) · [Textarea](components/textarea.md) · [Select](components/select.md) · [Combobox](components/combobox.md) · [Checkbox](components/checkbox.md) · [Radio](components/radio.md) · [Switch](components/switch.md) · [Slider](components/slider.md) · [Date picker](components/date-picker.md) · [File upload](components/file-upload.md) · [Form layout](components/form-layout.md)
+- **Data display:** [Table](components/table.md) · [Data table](components/data-table.md) · [Pagination](components/pagination.md) · [Stat](components/stat.md) · [Chart](components/chart.md) · [Progress](components/progress.md) · [Description list](components/description-list.md) · [Code](components/code.md) · [JSON viewer](components/json-viewer.md) · [Log viewer](components/log-viewer.md) · [Timeline](components/timeline.md)
+- **Feedback & status:** [Alert](components/alert.md) · [Banner](components/banner.md) · [Callout](components/callout.md) · [Toast](components/toast.md) · [Tooltip](components/tooltip.md) · [Popover](components/popover.md) · [Badge](components/badge.md) · [Chip](components/chip.md) · [Avatar](components/avatar.md) · [Status dot](components/status-dot.md) · [Empty state](components/empty-state.md) · [Skeleton](components/skeleton.md) · [Spinner](components/spinner.md) · [Loader](components/loader.md) · [Guide cue](components/guide-cue.md)
+- **Navigation:** [Side nav](components/side-nav.md) · [Top bar](components/top-bar.md) · [Tabs](components/tabs.md) · [Breadcrumbs](components/breadcrumbs.md) · [Stepper](components/stepper.md)
+- **Overlays:** [Dialog](components/dialog.md) · [Drawer](components/drawer.md) · [Sheet](components/sheet.md)
+- **Layout:** [App shell](components/app-shell.md) · [Page header](components/page-header.md) · [Card](components/card.md) · [Accordion](components/accordion.md) · [Divider](components/divider.md) · [Logo](components/logo.md)

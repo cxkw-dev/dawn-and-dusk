@@ -1,6 +1,7 @@
 ---
 import Docs from '../layouts/Docs.astro';
 import { Code } from 'astro:components';
+import { ddTheme } from '../lib/syntax';
 import { i } from '../lib/icon';
 
 const components = Object.keys(import.meta.glob('./components/*.astro')).length;
@@ -36,7 +37,7 @@ const panel = `
 
   <h2 id="start">Get started</h2>
   <p>Add one stylesheet and one script, then write HTML with <code>dd-</code> classes. Every value is a token, so dawn and dusk switch together. Files live in <code>release/</code> in the repo.</p>
-  <Code code={install} lang="html" theme="css-variables" wrap />
+  <Code code={install} lang="html" theme={ddTheme} wrap />
 
   <h2 id="contents">What’s here</h2>
   <div class="doc-cards" style="grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr))">

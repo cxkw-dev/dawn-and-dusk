@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { Code } from 'astro:components';
+import { ddTheme } from '../../lib/syntax';
 import { i } from '../../lib/icon';
 
 const x = `<button class="dd-toast__dismiss" type="button" aria-label="Dismiss notification" data-dd-dismiss>${i('x')}</button>`;
@@ -86,7 +87,7 @@ dd.toast.clear();                       // close them all`;
 
   <h2 id="js">JavaScript</h2>
   <p><code>dd.toast()</code> creates the stack on first use (a polite live region labelled “Notifications”), so there is nothing to put in your HTML. Text is set as text, never as HTML. The stack lives in the top layer, so a toast raised while a modal dialog is open shows above its scrim — and its action still works.</p>
-  <Code code={api} lang="js" theme="css-variables" wrap />
+  <Code code={api} lang="js" theme={ddTheme} wrap />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[

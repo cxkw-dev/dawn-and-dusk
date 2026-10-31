@@ -159,3 +159,42 @@ test('pattern pages have no TOC (they are wide)', async ({ open, assert }) => {
   const page = await open('patterns/dashboard', { width: 1440 });
   assert.equal(await page.exists('.doc-toc'), false);
 });
+
+test('sidebar search: "/" focuses it, typing filters with other names, keys walk and open results, Esc clears', async ({ open, assert }) => {
+  const page = await open('components/button');
+  const titles = () => page.get(() => [...document.querySelectorAll('#doc-nav li:not([hidden]) .doc-nav-t')].map((t) => t.textContent));
+  await page.press('/');
+  assert.equal(await page.get(() => document.activeElement.id), 'doc-find', '"/" focuses the search');
+  await page.type('modal');
+  assert.deepEqual(await titles(), ['Dialog'], 'another name finds the page');
+  assert.equal(await page.text('#doc-find-empty'), '1 page');
+  assert.equal(await page.get(() => [...document.querySelectorAll('.doc-nav-group')].filter((g) => !g.hidden).length), 1, 'empty sections hide');
+  await page.press('Escape');
+  assert.equal(await page.get(() => document.getElementById('doc-find').value), '');
+  assert.ok((await titles()).length > 50, 'Esc restores the full list');
+  await page.type('tab');
+  assert.ok((await titles()).includes('Tabs'));
+  assert.equal(await page.get(() => document.querySelector('#doc-nav mark')?.textContent.toLowerCase()), 'tab', 'the match is marked');
+  await page.press('ArrowDown');
+  const first = await page.get(() => document.activeElement.textContent.trim());
+  await page.press('ArrowDown');
+  assert.notEqual(await page.get(() => document.activeElement.textContent.trim()), first, '↓ walks the results');
+  await page.press('ArrowUp', 'ArrowUp');
+  assert.equal(await page.get(() => document.activeElement.id), 'doc-find', '↑ from the first result returns to the field');
+  await page.press('Escape');
+  await page.type('zzz');
+  assert.match(await page.text('#doc-find-empty'), /Nothing matches/);
+  await page.press('Escape');
+  await page.type('date');
+  await page.press('Enter');
+  await page.waitFor(() => location.pathname.endsWith('/components/date-picker'), { timeout: 5000 });
+});
+
+test('sidebar search at 375: "/" opens the drawer and focuses the field', async ({ open, assert }) => {
+  const page = await open('components/button', { width: 375, theme: 'dusk' });
+  await page.press('/');
+  await page.waitFor(() => document.getElementById('doc-side').classList.contains('is-open'));
+  assert.equal(await page.get(() => document.activeElement.id), 'doc-find');
+  await page.type('chip');
+  assert.ok(await page.visible('#doc-nav a[href$="/components/chip"]'));
+});
