@@ -3,6 +3,9 @@
 :where(*, *::before, *::after) { box-sizing: border-box; }
 
 :where(html) {
+  /* Reserve the scrollbar's space so the page never shifts sideways when a dialog, drawer or the off-canvas nav locks
+     scrolling (and when a page grows tall enough to scroll). */
+  scrollbar-gutter: stable;
   /* The page tone and grain live on <html> so they fill the whole viewport, however short the content is. */
   background-color: var(--dd-bg);
   background-image: var(--dd-grain);
@@ -67,14 +70,22 @@
 }
 
 /* ---------- scroll areas ---------- */
-/* .dd-scroll: a thin, tonal scrollbar that stays out of the way until the area is hovered or focused. */
+/* .dd-scroll: a sleek, tonal scrollbar — no track, a thin rounded thumb tinted from the text colour (dark in dusk, ink in
+   dawn) that shows while the area is hovered, focused or scrolling and fades away otherwise. Standard properties for
+   Chrome / Firefox, ::-webkit-scrollbar for Safari. */
 .dd-scroll {
+  --_thumb: color-mix(in oklab, var(--dd-text) 20%, transparent);
+  --_thumb-hover: color-mix(in oklab, var(--dd-text) 34%, transparent);
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
   scrollbar-gutter: stable;
+  transition: scrollbar-color var(--dd-dur) var(--dd-ease);
 }
-.dd-scroll:hover, .dd-scroll:focus-within {
-  scrollbar-color: color-mix(in oklab, var(--dd-text) 22%, transparent) transparent;
-}
+.dd-scroll:hover, .dd-scroll:focus-within { scrollbar-color: var(--_thumb) transparent; }
+.dd-scroll::-webkit-scrollbar { width: 8px; height: 8px; background: transparent; }
+.dd-scroll::-webkit-scrollbar-track, .dd-scroll::-webkit-scrollbar-corner { background: transparent; }
+.dd-scroll::-webkit-scrollbar-thumb { border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; background-color: transparent; }
+.dd-scroll:hover::-webkit-scrollbar-thumb, .dd-scroll:focus-within::-webkit-scrollbar-thumb { background-color: var(--_thumb); }
+.dd-scroll::-webkit-scrollbar-thumb:hover { background-color: var(--_thumb-hover); }
