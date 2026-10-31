@@ -2,35 +2,68 @@
 .doc-skip { position: absolute; left: -999px; top: 8px; z-index: 100; }
 .doc-skip:focus { left: 8px; background: var(--dd-text); color: var(--dd-bg); padding: 6px 10px; border-radius: var(--dd-r-ctl); }
 
-/* top bar */
-.doc-top {
-  position: sticky; top: 0; z-index: var(--dd-z-sticky); display: flex; align-items: center; gap: var(--dd-space-6);
-  height: 60px; padding: 0 var(--dd-space-6);
-  background: color-mix(in oklab, var(--dd-bg) 86%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-  box-shadow: 0 1px 0 color-mix(in oklab, var(--dd-text) 8%, transparent);
+/* ---------- app shell: the docs run on the system's own .dd-app-shell, side nav and top bar ----------
+   Page-scroll mode: the document scrolls (so anchors, scroll-padding, find-in-page, back/forward scroll restoration,
+   view transitions and position: sticky all behave as on any page) while the side nav and the top bar stick.
+   The shell is built to be the viewport and scroll inside, so a few of its layout rules are turned off here:
+   overflow / contain on the shell and overflow on __content would make them scroll containers (sticky would never
+   stick, and contain: layout would pin the off-canvas nav to the shell instead of the viewport), and the shell
+   resets the side nav and top bar to position: relative. Only layout changes; every look is the component's.
+   The shell's own container is off too: its container-query rules reach every top bar inside it (".dd-app-shell
+   .dd-top-bar__nav-btn"), which would strip the menu buttons from the examples on the page. The few steps the docs
+   chrome needs from those rules follow below as media queries (the docs shell is the viewport, so they match). */
+.doc-app.dd-app-shell {
+  container: none; --dd-app-shell-h: auto; min-height: 100dvh; overflow: visible; contain: none;
+  /* The docs page keeps the grained page tone (on <html>), and examples keep each component's own hover steps for it. */
+  background: none; --dd-card-hover: inherit; --dd-accordion-hover: inherit;
 }
-.doc-brand { display: inline-flex; align-items: baseline; gap: 10px; color: var(--dd-text); text-decoration: none; }
-.doc-wordmark { font-family: var(--dd-font-display); font-weight: 800; font-size: 22px; letter-spacing: -0.055em; line-height: 1; }
-.doc-ver { font-size: var(--dd-fs-xs); color: var(--dd-muted); }
-.doc-toplinks { display: flex; gap: var(--dd-space-5); margin-left: auto; font-size: var(--dd-fs-sm); }
-.doc-toplinks a { border-radius: 3px; color: var(--dd-muted); text-decoration: none; transition: color var(--dd-dur-fast) var(--dd-ease); }
-.doc-toplinks a:hover, .doc-toplinks a[aria-current] { color: var(--dd-text); }
-.doc-toplinks a[aria-current] { text-decoration: underline 2px var(--dd-accent); text-underline-offset: 8px; }
-.doc-theme {
-  border: 0; cursor: pointer; padding: 6px 12px; border-radius: var(--dd-r-pill); font-size: var(--dd-fs-sm); line-height: 1;
-  background: var(--dd-wash); color: var(--dd-text); transition: background-color var(--dd-dur-fast) var(--dd-ease);
+.doc-app > .doc-nav { position: sticky; top: 0; height: 100dvh; view-transition-name: doc-nav; }
+.doc-app > .dd-app-shell__main > .doc-bar { position: sticky; top: 0; view-transition-name: doc-bar; }
+.doc-content.dd-app-shell__content { container: doc-content / inline-size; overflow: visible; }
+@media (max-width: 1023px) {
+  .doc-content.dd-app-shell__content { padding: calc(var(--dd-u) * 6) calc(var(--dd-u) * 6) calc(var(--dd-u) * 10); }
 }
-.doc-theme:hover { background: var(--dd-wash-strong); }
-.doc-theme:active { background: color-mix(in oklab, var(--dd-text) 18%, transparent); }
-/* mobile: menu button opens the sidebar as a drawer (≤ 900px) */
-.doc-menu, .doc-scrim { display: none; }
-.doc-menu {
-  place-items: center; width: 36px; height: 36px; margin-left: -8px; padding: 0; border: 0; border-radius: var(--dd-r-ctl); cursor: pointer;
-  background: transparent; color: var(--dd-text); transition: background-color var(--dd-dur-fast) var(--dd-ease);
+@media (max-width: 767px) {
+  .doc-content.dd-app-shell__content { padding: calc(var(--dd-u) * 5) calc(var(--dd-u) * 4) calc(var(--dd-u) * 10); }
 }
-.doc-menu .dd-icon { width: 22px; height: 22px; }
-.doc-menu:hover { background: var(--dd-wash); }
-.doc-menu[aria-expanded='true'] { background: var(--dd-wash-strong); }
+
+/* Wide: the side nav is in view and carries the logo, so the top bar keeps its context and drops the menu button and
+   the narrow-only wordmark, even when the bar itself is under 640px. 900px and down: the side nav's own off-canvas
+   mode (the class is set before paint in the layout) and the top bar's menu button. The shell's own breakpoint is
+   768px; its "> .dd-side-nav" rule outranks --offcanvas, so restore what it overrides. */
+@media (min-width: 901px) {
+  .doc-bar > .dd-top-bar__nav-btn, .doc-bar > .dd-top-bar__narrow { display: none !important; }
+  .doc-bar > .dd-top-bar__context { display: flex; }
+}
+.doc-app > .doc-nav.dd-side-nav--offcanvas { position: fixed; top: 0; height: auto; view-transition-name: none; }
+@media (max-width: 900px) {
+  .doc-bar > .dd-top-bar__nav-btn, .doc-bar > .dd-top-bar__narrow { display: inline-flex !important; }
+}
+/* The page stays put behind the open nav (the shell normally is the viewport, so the component doesn't lock it). */
+:root:has(.doc-nav.is-mobile-open) { overflow: hidden; }
+
+/* side nav panel: the search at its head, then one scrolling list; every section's pane sits in it */
+.doc-nav-panel { display: flex; flex-direction: column; }
+.doc-find { flex: none; width: var(--dd-side-nav-panel); padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 1); }
+.doc-find-key { transition: opacity var(--dd-dur-fast) var(--dd-ease); }
+.doc-find .dd-input:focus-within .doc-find-key, .doc-find:has(.dd-input__control:not(:placeholder-shown)) .doc-find-key { opacity: 0; }
+.doc-find .dd-input__control::-webkit-search-cancel-button { display: none; }
+.doc-find-status { margin: calc(var(--dd-u) * 2) 0 0 10px; font-size: var(--dd-fs-xs); color: var(--dd-quiet); }
+.doc-find-status:empty { display: none; }
+.doc-find-status.is-none { color: var(--dd-muted); }
+.doc-nav-list { flex: 1; min-height: 0; width: var(--dd-side-nav-panel); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.doc-nav-list > .dd-side-nav__pane { width: auto; height: auto; overflow: visible; padding-top: calc(var(--dd-u) * 2); }
+.doc-nav-group:not([hidden]) { display: contents; }
+.doc-nav .dd-side-nav__link[hidden] { display: none; }
+/* While a query is typed every section shows its matches, under its own heading. */
+.doc-nav-list.is-filtered > .dd-side-nav__pane[hidden] { display: flex; }
+.doc-nav-list.is-filtered > .dd-side-nav__pane.is-empty { display: none; }
+.doc-nav-list.is-filtered > .dd-side-nav__pane { padding-bottom: 0; }
+.doc-nav-list.is-filtered > .dd-side-nav__pane:last-child { padding-bottom: calc(var(--dd-u) * 3); }
+.doc-nav mark { background: color-mix(in oklab, var(--dd-primary) 30%, transparent); color: inherit; border-radius: 2px; padding: 0 1px; margin: 0 -1px; }
+
+/* top bar: page context on the left; version, GitHub and the theme on the right */
+.doc-ver { font-size: var(--dd-fs-xs); color: var(--dd-quiet); }
 .doc-theme-dusk { display: none; }
 [data-theme="dusk"] .doc-theme-dawn { display: none; }
 [data-theme="dusk"] .doc-theme-dusk { display: inline; }
@@ -39,37 +72,10 @@
   :root:not([data-theme]) .doc-theme-dusk { display: inline; }
 }
 
-/* shell */
-.doc-shell { display: grid; grid-template-columns: 260px minmax(0, 1fr); }
-.doc-side { position: sticky; top: 60px; height: calc(100vh - 60px); padding: var(--dd-space-6) var(--dd-space-3) var(--dd-space-16) var(--dd-space-4);
-  /* soft fade at the bottom edge so links slide out instead of being cut; at the top they slide under the search */
-  -webkit-mask-image: linear-gradient(#000 calc(100% - 48px), transparent);
-  mask-image: linear-gradient(#000 calc(100% - 48px), transparent); }
-/* sidebar search: sticks to the top of the sidebar while the list scrolls under it */
-.doc-find { position: sticky; top: calc(var(--dd-space-6) * -1); z-index: 2; margin: calc(var(--dd-space-6) * -1) calc(var(--dd-space-3) * -1) var(--dd-space-3) calc(var(--dd-space-4) * -1);
-  padding: var(--dd-space-6) var(--dd-space-3) var(--dd-space-2) var(--dd-space-4); background: var(--dd-surface); }
-.doc-find::after { content: ""; position: absolute; inset: 100% 0 auto; height: 18px; background: linear-gradient(var(--dd-surface), transparent); pointer-events: none; }
-.doc-find-key { transition: opacity var(--dd-dur-fast) var(--dd-ease); }
-.doc-find .dd-input:focus-within .doc-find-key, .doc-find:has(.dd-input__control:not(:placeholder-shown)) .doc-find-key { opacity: 0; }
-.doc-find .dd-input__control::-webkit-search-cancel-button { display: none; }
-.doc-find-empty { margin: 0 0 var(--dd-space-2) 10px; font-size: var(--dd-fs-xs); color: var(--dd-quiet); min-height: 0; }
-.doc-find-empty:empty { display: none; }
-.doc-find-empty.is-none { color: var(--dd-muted); }
-.doc-nav-group[hidden], .doc-nav li[hidden] { display: none; }
-.doc-nav mark { background: color-mix(in oklab, var(--dd-primary) 30%, transparent); color: inherit; border-radius: 2px; padding: 0 1px; margin: 0 -1px; }
-.doc-nav-group + .doc-nav-group { margin-top: var(--dd-space-5); }
-.doc-nav-h { margin: 0 0 6px 10px; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-quiet); }
-.doc-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
-.doc-nav a {
-  display: flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: var(--dd-r-ctl); font-size: var(--dd-fs-sm);
-  color: var(--dd-muted); text-decoration: none; transition: background var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
-}
-.doc-nav a:hover { color: var(--dd-text); background: var(--dd-wash); }
-.doc-nav a[aria-current='page'] { color: var(--dd-text); background: var(--dd-wash-strong); font-weight: 600; }
-.doc-nav-tag { margin-left: auto; font-family: var(--dd-font-mono); font-size: 10px; color: var(--dd-primary); }
-
-.doc-main { min-width: 0; max-width: 920px; padding: var(--dd-space-10) var(--dd-space-10) var(--dd-space-16); }
-.doc-main.is-wide { max-width: 1240px; }
+/* content: the article and its "On this page" column, centred in the shell's content area */
+.doc-body { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: var(--dd-space-10); max-width: 920px; margin-inline: auto; }
+.doc-body.is-wide { max-width: 1240px; }
+.doc-main { min-width: 0; padding-bottom: var(--dd-space-6); }
 .doc-head { display: flex; flex-direction: column; gap: var(--dd-space-3); margin-bottom: var(--dd-space-10); }
 .doc-head .dd-h1 { font-size: var(--dd-fs-4xl); }
 
@@ -144,29 +150,6 @@ a.doc-card:hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wa
 a.doc-card:active { background-image: linear-gradient(var(--dd-wash-strong), var(--dd-wash-strong)); }
 .doc-card b { font-weight: 650; } .doc-card span { font-size: var(--dd-fs-sm); color: var(--dd-muted); }
 
-@media (max-width: 900px) {
-  .doc-top { gap: var(--dd-space-3); padding: 0 var(--dd-space-4); }
-  .doc-shell { grid-template-columns: minmax(0, 1fr); }
-  .doc-main { padding: var(--dd-space-6) var(--dd-space-4) var(--dd-space-12); }
-  .doc-toplinks { display: none; }
-  .doc-theme { margin-left: auto; }
-  .doc-menu { display: inline-grid; }
-  /* the sidebar becomes a drawer under the top bar: a floating layer, so it gets the float shadow and a scrim */
-  .doc-side {
-    position: fixed; top: 60px; left: 0; bottom: 0; z-index: calc(var(--dd-z-sticky) + 1); width: min(300px, 86vw); height: auto;
-    background: var(--dd-surface); box-shadow: var(--dd-shadow-float); visibility: hidden; translate: -100% 0;
-    -webkit-mask-image: none; mask-image: none;
-    transition: translate var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
-  }
-  .doc-side.is-open { visibility: visible; translate: 0 0; transition: translate var(--dd-dur) var(--dd-ease), visibility 0s; }
-  .doc-scrim {
-    display: block; position: fixed; inset: 60px 0 0; z-index: var(--dd-z-sticky); background: var(--dd-overlay);
-    opacity: 0; visibility: hidden; transition: opacity var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
-  }
-  .doc-scrim.is-open { opacity: 1; visibility: visible; transition: opacity var(--dd-dur) var(--dd-ease), visibility 0s; }
-  :root.doc-nav-open { overflow: hidden; }
-}
-
 /* foundations: swatches */
 .doc-swatches { display: flex; flex-direction: column; gap: 2px; margin: var(--dd-space-4) 0 var(--dd-space-8); border-radius: var(--dd-r-box); overflow: hidden; }
 .doc-sw-row { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(200px, 1.6fr); align-items: stretch;
@@ -220,23 +203,24 @@ a.doc-card:active { background-image: linear-gradient(var(--dd-wash-strong), var
 @media (max-width: 700px) { .doc-table td:first-child { white-space: normal; overflow-wrap: normal; word-break: normal; } }
 @media (max-width: 600px) { .ex-stage--pad, .ex-stage--center { padding: var(--dd-space-4); } }
 
-/* page-to-page: cross-document view transition — chrome and sidebar stay put, content cross-fades */
+/* page-to-page: cross-document view transition — the side nav and top bar stay put, content cross-fades */
 @view-transition { navigation: auto; }
-.doc-top { view-transition-name: doc-top; }
-.doc-side { view-transition-name: doc-side; }
-::view-transition-group(doc-top), ::view-transition-group(doc-side) { animation: none; }
+::view-transition-group(doc-nav), ::view-transition-group(doc-bar) { animation: none; }
 ::view-transition-old(root) { animation: 120ms var(--dd-ease) both doc-fade-out; }
 ::view-transition-new(root) { animation: 200ms var(--dd-ease) both doc-fade-in; }
 @keyframes doc-fade-out { to { opacity: 0; } }
 @keyframes doc-fade-in { from { opacity: 0; transform: translateY(6px); } }
 @media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root) { animation: none; } }
 
-/* on this page */
+/* on this page: a column beside the article once the content area has room for both (it depends on the fold too) */
 html { scroll-padding-top: 80px; }
 .doc-toc { display: none; }
-@media (min-width: 1320px) {
-  .doc-shell.has-toc { grid-template-columns: 260px minmax(0, 1fr) 220px; }
-  .doc-toc:not([hidden]) { display: block; position: sticky; top: 60px; height: calc(100vh - 60px); padding: var(--dd-space-10) var(--dd-space-4) var(--dd-space-10) 0; }
+@container doc-content (min-width: 1000px) {
+  .doc-body.has-toc { grid-template-columns: minmax(0, 1fr) 220px; max-width: 1180px; }
+  .doc-toc:not([hidden]) {
+    display: block; position: sticky; top: calc(60px + var(--dd-space-8)); align-self: start;
+    max-height: calc(100dvh - 60px - var(--dd-space-8) * 2); padding: 0 0 var(--dd-space-4);
+  }
 }
 .doc-toc-h { margin: 0 0 8px; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-quiet); }
 .doc-toc ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
@@ -246,9 +230,6 @@ html { scroll-padding-top: 80px; }
 .doc-toc a:hover { color: var(--dd-text); }
 .doc-toc a[aria-current] { color: var(--dd-text); background: var(--dd-surface); }
 
-/* sidebar column on its own tonal surface (full height of the shell, under the sticky aside) */
-.doc-shell { background: linear-gradient(to right, var(--dd-surface) 260px, transparent 260px) no-repeat; }
-@media (max-width: 900px) { .doc-shell { background: none; } }
 /* standalone code panel written as <details class="ex-code"> inside an .ex-frame */
 details.ex-code summary { cursor: pointer; list-style: none; padding: 8px 16px; font-size: var(--dd-fs-xs); color: var(--dd-muted); font-family: var(--dd-font-mono); }
 details.ex-code summary::-webkit-details-marker { display: none; }

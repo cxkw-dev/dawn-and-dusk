@@ -25,34 +25,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Mobile (≤ 900px): the menu button opens the sidebar as a drawer. Esc, the scrim or tabbing away closes it.
-(() => {
-  const btn = document.querySelector('.doc-menu');
-  const side = document.getElementById('doc-side');
-  const scrim = document.querySelector('.doc-scrim');
-  if (!btn || !side) return;
-  const isOpen = () => btn.getAttribute('aria-expanded') === 'true';
-  const set = (open, returnFocus = false) => {
-    btn.setAttribute('aria-expanded', String(open));
-    side.classList.toggle('is-open', open);
-    scrim?.classList.toggle('is-open', open);
-    document.documentElement.classList.toggle('doc-nav-open', open);
-    if (open) {
-      const cur = side.querySelector('[aria-current="page"]') || side.querySelector('a');
-      cur?.scrollIntoView({ block: 'center' });
-      cur?.focus({ preventScroll: true });
-    } else if (returnFocus) btn.focus();
-  };
-  btn.addEventListener('click', () => set(!isOpen()));
-  scrim?.addEventListener('click', () => set(false, true));
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && isOpen()) set(false, true); });
-  side.addEventListener('focusout', (e) => {
-    const to = e.relatedTarget;
-    if (isOpen() && to && !side.contains(to) && to !== btn) set(false);
-  });
-  matchMedia('(max-width: 900px)').addEventListener('change', (e) => { if (!e.matches && isOpen()) set(false); });
-})();
-
 // "On this page": built from the page's h2 sections, highlights the one you're reading.
 (() => {
   const toc = document.querySelector('.doc-toc');
@@ -60,7 +32,7 @@ document.addEventListener('click', (e) => {
   if (!toc || !main) return;
   const slug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const heads = [...main.querySelectorAll(':scope > h2, :scope > section > h2')];
-  if (heads.length < 2) return;
+  if (heads.length < 2) { document.querySelector('.doc-body')?.classList.remove('has-toc'); return; }
   const list = toc.querySelector('ul');
   for (const h of heads) {
     if (!h.id) h.id = slug(h.textContent);
@@ -72,7 +44,7 @@ document.addEventListener('click', (e) => {
     list.append(li);
   }
   toc.hidden = false;
-  document.querySelector('.doc-shell')?.classList.add('has-toc');
+  
   const links = new Map([...list.querySelectorAll('a')].map((a) => [a.hash.slice(1), a]));
   const mark = (id) => links.forEach((a, k) => a.toggleAttribute('aria-current', k === id));
   // Current = the last heading that has scrolled above the top third; at the very bottom, the last one.
@@ -107,45 +79,93 @@ document.addEventListener('click', (e) => {
   });
 })();
 
-// Sidebar search: filters the nav as you type (titles, sections and other names, e.g. "modal" finds Dialog).
-// "/" focuses it from anywhere, Esc clears, ↓ / ↑ walk the results, Enter opens the first match.
+// Side nav (the docs' .dd-side-nav, #doc-nav): the panel's list keeps its scroll position per section, between pages
+// (restored before paint by the layout) and when the rail switches sections.
+const nav = document.getElementById('doc-nav');
+const list = document.getElementById('doc-nav-list');
+const activePane = () => nav?.querySelector('.dd-side-nav__pane:not([hidden])')?.dataset.ddNavPane;
+if (nav && list) {
+  let memo = {};
+  try { memo = JSON.parse(sessionStorage.getItem('dd-docs-nav') || '{}') || {}; } catch { memo = {}; }
+  let shown = activePane();
+  memo[shown] = list.scrollTop;
+  list.addEventListener('scroll', () => { if (!list.classList.contains('is-filtered') && activePane() === shown) memo[shown] = list.scrollTop; }, { passive: true });
+  // side-nav.js switches the pane on the rail click (its listener runs first); bring back where that section was left.
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest?.('#doc-nav [data-dd-nav-section]')) return;
+    const next = activePane();
+    if (next === shown || list.classList.contains('is-filtered')) return;
+    shown = next;
+    list.scrollTop = memo[shown] ?? 0;
+  });
+  list.addEventListener('dd-docs-restore', () => { shown = activePane(); list.scrollTop = memo[shown] ?? 0; });
+  addEventListener('pagehide', () => { try { sessionStorage.setItem('dd-docs-nav', JSON.stringify(memo)); } catch { /* storage unavailable */ } });
+
+  // Off-canvas, two gaps in side-nav.js inside an app shell. (1) A click on the scrim (the nav's ::before) would blur the
+  // focused link on mousedown, so focus could not go back to the menu button: keep it where it is until the click.
+  // (2) The shell's next tab stop after the nav is the top bar's menu button, which side-nav.js's tab-out rule exempts
+  // (it is the opener): tabbing past the last link onto it closes the nav, as tabbing anywhere else out of it does.
+  nav.addEventListener('mousedown', (e) => { if (e.target === nav && nav.classList.contains('is-mobile-open')) e.preventDefault(); });
+  document.addEventListener('focusin', (e) => {
+    const btn = e.target.closest?.('[data-dd-nav-open="#doc-nav"]');
+    if (btn && nav.classList.contains('is-mobile-open') && nav.contains(e.relatedTarget)) btn.click();
+  });
+}
+
+// Search, at the head of the side nav's panel. While a query is typed it searches every section (titles, section
+// names and other names, e.g. "modal" finds Dialog) and shows the matches under each section's heading; clearing it
+// brings back the section the rail is on. "/" focuses it from anywhere (opening the off-canvas nav or unfolding the
+// rail first), Esc clears, ↓ / ↑ walk the results, Enter opens the first match.
 (() => {
   const input = document.getElementById('doc-find');
-  const nav = document.getElementById('doc-nav');
-  const status = document.getElementById('doc-find-empty');
-  if (!input || !nav) return;
-  const links = [...nav.querySelectorAll('a[data-find]')];
-  const groups = [...nav.querySelectorAll('.doc-nav-group')];
-  const titles = new Map(links.map((a) => [a, a.querySelector('.doc-nav-t')?.textContent ?? '']));
+  const status = document.getElementById('doc-find-status');
+  if (!input || !nav || !list) return;
+  const links = [...list.querySelectorAll('a[data-find]')];
+  const groups = [...list.querySelectorAll('.doc-nav-group')];
+  const panes = [...list.querySelectorAll('.dd-side-nav__pane')];
+  const label = (a) => a.querySelector('.dd-side-nav__label');
+  const titles = new Map(links.map((a) => [a, label(a).textContent]));
   const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
-  const shown = () => links.filter((a) => !a.closest('li').hidden);
+  const shown = () => links.filter((a) => a.getClientRects().length > 0);
+  let filtering = false;
   const run = () => {
     const raw = input.value.trim();
     const words = raw.toLowerCase().split(/\s+/).filter(Boolean);
+    const on = words.length > 0;
     for (const a of links) {
       const title = titles.get(a);
       const tokens = a.dataset.find.split(/[\s&/-]+/);
       // a word matches anywhere in the title, or at the start of a section name or another name for the page
-      const hit = words.every((w) => title.toLowerCase().includes(w) || tokens.some((t) => t.startsWith(w)));
-      a.closest('li').hidden = !hit;
-      const w = words.find((x) => title.toLowerCase().includes(x));
+      a.hidden = on && !words.every((w) => title.toLowerCase().includes(w) || tokens.some((t) => t.startsWith(w)));
+      const w = on && words.find((x) => title.toLowerCase().includes(x));
       const i = w ? title.toLowerCase().indexOf(w) : -1;
-      a.querySelector('.doc-nav-t').innerHTML = i >= 0 ? `${esc(title.slice(0, i))}<mark>${esc(title.slice(i, i + w.length))}</mark>${esc(title.slice(i + w.length))}` : esc(title);
+      label(a).innerHTML = i >= 0 ? `${esc(title.slice(0, i))}<mark>${esc(title.slice(i, i + w.length))}</mark>${esc(title.slice(i + w.length))}` : esc(title);
     }
-    for (const g of groups) g.hidden = !g.querySelector('li:not([hidden])');
-    const n = shown().length;
-    nav.classList.toggle('is-filtered', words.length > 0);
-    status.classList.toggle('is-none', words.length > 0 && !n);
-    status.textContent = !words.length ? '' : n ? `${n} ${n === 1 ? 'page' : 'pages'}` : `Nothing matches “${raw}”.`;
+    for (const g of groups) g.hidden = !g.querySelector('a[data-find]:not([hidden])');
+    let total = 0;
+    for (const p of panes) {
+      const n = p.querySelectorAll('a[data-find]:not([hidden])').length;
+      total += n;
+      p.classList.toggle('is-empty', !n);
+      const count = p.querySelector('.dd-side-nav__head .dd-side-nav__count');
+      if (count) count.textContent = on ? String(n) : count.dataset.total;
+    }
+    list.classList.toggle('is-filtered', on);
+    if (on) list.scrollTop = 0;
+    else if (filtering) list.dispatchEvent(new Event('dd-docs-restore'));
+    filtering = on;
+    status.classList.toggle('is-none', on && !total);
+    status.textContent = !on ? '' : total ? `${total} ${total === 1 ? 'page' : 'pages'}` : `Nothing matches “${raw}”.`;
   };
   input.addEventListener('input', run);
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { if (input.value) { e.preventDefault(); input.value = ''; run(); } else input.blur(); }
+    // Esc with a query clears it and stops there, so it doesn't also close the off-canvas nav around the field.
+    if (e.key === 'Escape') { if (input.value) { e.preventDefault(); e.stopPropagation(); input.value = ''; run(); } else input.blur(); }
     else if (e.key === 'ArrowDown') { const v = shown(); if (v.length) { e.preventDefault(); v[0].focus(); } }
     else if (e.key === 'Enter' && input.value.trim()) { const v = shown(); if (v.length) { e.preventDefault(); v[0].click(); } }
   });
-  nav.addEventListener('keydown', (e) => {
-    if ((e.key !== 'ArrowDown' && e.key !== 'ArrowUp') || !nav.classList.contains('is-filtered')) return;
+  list.addEventListener('keydown', (e) => {
+    if ((e.key !== 'ArrowDown' && e.key !== 'ArrowUp') || !list.classList.contains('is-filtered')) return;
     const v = shown(); const i = v.indexOf(document.activeElement);
     if (i < 0) return;
     e.preventDefault();
@@ -156,8 +176,17 @@ document.addEventListener('click', (e) => {
     if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
     if (e.target.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]')) return;
     e.preventDefault();
-    const menu = document.querySelector('.doc-menu');
-    if (menu && getComputedStyle(menu).display !== 'none' && menu.getAttribute('aria-expanded') !== 'true') menu.click();
-    input.focus(); input.select();
+    const focus = () => { input.focus(); input.select(); };
+    if (getComputedStyle(nav).position === 'fixed') {
+      // Off-canvas: open it with the top bar's menu button (side-nav.js then focuses the current page; take it after).
+      if (!nav.classList.contains('is-mobile-open')) {
+        document.querySelector('[data-dd-nav-open="#doc-nav"]')?.click();
+        requestAnimationFrame(() => requestAnimationFrame(focus));
+        return;
+      }
+    } else if (nav.classList.contains('is-collapsed')) {
+      nav.querySelector('[data-dd-nav-toggle]')?.click();
+    }
+    focus();
   });
 })();

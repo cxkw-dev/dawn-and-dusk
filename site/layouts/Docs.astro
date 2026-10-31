@@ -1,8 +1,10 @@
 ---
-// Docs page shell: top bar, auto-built sidebar, page header. Every page uses the design system itself.
+// Docs page shell, built on the system's own app shell: the side nav (icon rail + page panel) runs the full height on
+// the left, the top bar and the page share the rest. Every page uses the design system itself.
 import '../../ds/dawn-and-dusk.css';
 import '../styles/docs.css';
-import Sidebar from '../components/Sidebar.astro';
+import DocsNav from '../components/DocsNav.astro';
+import { i } from '../lib/icon';
 import sprite from '../../ds/icons/icons.svg?raw';
 
 interface Props {
@@ -12,15 +14,33 @@ interface Props {
   wide?: boolean;
 }
 const { title, group, lead, wide = false } = Astro.props;
+type NavGroup = { group: string; order: number; items: { title: string; href: string; tag?: string | number }[] };
+type RailSection = { key: string; label: string; icon: string; title: string; groups: NavGroup[] };
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const here = Astro.url.pathname.replace(/\/$/, '');
-// Top-bar sections: [label, landing page, path prefix that marks it current]
-const sections: [string, string, string][] = [
-  ['Foundations', 'foundations/colors', 'foundations/'],
-  ['Components', 'components/button', 'components/'],
-  ['Patterns', 'patterns/dashboard', 'patterns/'],
-  ['Agent skill', 'skill', 'skill'],
+
+// Rail sections. Each nav group (site/nav/*.mjs) lands in the section its pages live under.
+const groups = Object.values(import.meta.glob('../nav/*.mjs', { eager: true }))
+  .map((m: any) => m.default as NavGroup)
+  .sort((a, b) => a.order - b.order);
+const RAIL = [
+  { key: 'start', label: 'Start', icon: 'home', title: 'get started' },
+  { key: 'foundations', label: 'Foundations', icon: 'layers', title: 'foundations' },
+  { key: 'components', label: 'Components', icon: 'box', title: 'components' },
+  { key: 'patterns', label: 'Patterns', icon: 'grid', title: 'patterns' },
 ];
+const railOf = (g: NavGroup) => {
+  const href = g.items[0]?.href ?? '';
+  return ['foundations', 'components', 'patterns'].find((k) => href.startsWith(`${k}/`)) ?? 'start';
+};
+const sections: RailSection[] = RAIL.map((r) => ({ ...r, groups: groups.filter((g) => railOf(g) === r.key) })).filter((s) => s.groups.length);
+const hrefOf = (href: string) => `${base}/${href}`.replace(/\/$/, '');
+let section: RailSection | undefined;
+let pageTitle = title;
+for (const s of sections) for (const g of s.groups) for (const it of g.items) if (hrefOf(it.href) === here) { section = s; pageTitle = it.title; }
+const active = (section ?? sections[0]).key;
+const sectionHome = section ? hrefOf(section.groups[0].items[0].href) || `${base}/` : null;
+const toc = group !== 'Patterns';
 ---
 <!doctype html>
 <html lang="en">
@@ -46,44 +66,82 @@ const sections: [string, string, string][] = [
   <body>
     <Fragment set:html={sprite} />
     <a class="doc-skip" href="#content">Skip to content</a>
-    <header class="doc-top">
-      <button class="doc-menu" type="button" aria-expanded="false" aria-controls="doc-side" aria-label="Menu"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-menu" /></svg></button>
-      <a class="doc-brand" href={`${base}/`}><span class="doc-wordmark">dawn &amp; dusk</span><span class="doc-ver dd-mono">v0.1</span></a>
-      <nav class="doc-toplinks" aria-label="Sections">
-        {sections.map(([label, href, prefix]) => (
-          <a href={`${base}/${href}`} aria-current={here.startsWith(`${base}/${prefix}`) ? 'true' : undefined}>{label}</a>
-        ))}
-      </nav>
-      <button class="doc-theme" type="button" data-dd-theme-toggle aria-label="Toggle dawn / dusk">
-        <span class="doc-theme-dawn">☀ dawn</span><span class="doc-theme-dusk">☾ dusk</span>
-      </button>
-    </header>
-    <div class="doc-shell">
-      <aside class="doc-side dd-scroll" id="doc-side" aria-label="Documentation"><Sidebar /></aside>
-      <div class="doc-scrim" aria-hidden="true"></div>
+    <div class="dd-app-shell doc-app">
+      <DocsNav sections={sections} active={active} base={base} here={here} />
       <script is:inline>
-        // Keep the sidebar where you left it between pages; make sure the current page is visible.
+        // Before paint: the side nav's own state, so nothing jumps or animates on load.
+        // - 900px and down it is off-canvas (the side nav's --offcanvas mode; the top bar's menu button opens it).
+        // - The fold is remembered by side-nav.js under "dd-side-nav:doc-nav"; apply it now rather than after the scripts.
+        // - The panel keeps its scroll position per section between pages, and the current page is always in view.
         (() => {
-          const side = document.getElementById('doc-side');
-          const saved = Number(sessionStorage.getItem('dd-docs-side') || 'NaN');
-          if (!Number.isNaN(saved)) side.scrollTop = saved;
-          const cur = side.querySelector('[aria-current="page"]');
-          if (cur) {
-            const s = side.getBoundingClientRect(), c = cur.getBoundingClientRect();
-            if (c.top < s.top + 40 || c.bottom > s.bottom - 60) side.scrollTop += c.top - s.top - s.height / 3;
+          const nav = document.getElementById('doc-nav');
+          const list = document.getElementById('doc-nav-list');
+          nav.classList.add('is-restoring');
+          const narrow = matchMedia('(max-width: 900px)');
+          const fit = () => {
+            nav.classList.toggle('dd-side-nav--offcanvas', narrow.matches);
+            if (!narrow.matches && nav.classList.contains('is-mobile-open')) {
+              nav.classList.remove('is-mobile-open');
+              document.querySelectorAll('[data-dd-nav-open="#doc-nav"]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+            }
+          };
+          fit();
+          narrow.addEventListener('change', fit);
+          let folded = null;
+          try { folded = localStorage.getItem('dd-side-nav:doc-nav'); } catch { /* storage unavailable */ }
+          if (folded === 'collapsed') {
+            nav.classList.add('is-collapsed');
+            const t = nav.querySelector('[data-dd-nav-toggle]');
+            t.setAttribute('aria-expanded', 'false'); t.setAttribute('aria-label', 'Expand navigation'); t.setAttribute('data-label', 'Expand');
           }
-          addEventListener('pagehide', () => sessionStorage.setItem('dd-docs-side', String(side.scrollTop)));
+          requestAnimationFrame(() => requestAnimationFrame(() => nav.classList.remove('is-restoring')));
+          const pane = nav.querySelector('.dd-side-nav__pane:not([hidden])');
+          let memo = {};
+          try { memo = JSON.parse(sessionStorage.getItem('dd-docs-nav') || '{}') || {}; } catch { memo = {}; }
+          if (pane && typeof memo[pane.dataset.ddNavPane] === 'number') list.scrollTop = memo[pane.dataset.ddNavPane];
+          const cur = pane && pane.querySelector('[aria-current="page"]');
+          if (cur) {
+            const s = list.getBoundingClientRect(), c = cur.getBoundingClientRect();
+            if (c.top < s.top + 40 || c.bottom > s.bottom - 60) list.scrollTop += c.top - s.top - s.height / 3;
+          }
         })();
       </script>
-      <main id="content" class:list={['doc-main', { 'is-wide': wide }]}>
-        <header class="doc-head">
-          {group && <p class="dd-eyebrow">{group}</p>}
-          <h1 class="dd-h1">{title}</h1>
-          {lead && <p class="dd-lead">{lead}</p>}
+      <div class="dd-app-shell__main">
+        <header class="dd-top-bar doc-bar">
+          <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-nav-open="#doc-nav" aria-controls="doc-nav" aria-expanded="false" aria-label="Open navigation"><Fragment set:html={i('menu')} /></button>
+          <a class="dd-top-bar__brand dd-top-bar__narrow" href={`${base}/`}><span class="dd-logo dd-logo--sm">dawn &amp; dusk</span></a>
+          <div class="dd-top-bar__context">
+            <nav class="dd-breadcrumbs dd-breadcrumbs--sm" aria-label="Breadcrumb">
+              <ol class="dd-breadcrumbs__list">
+                {section && sectionHome && (
+                  <li class="dd-breadcrumbs__item"><a class="dd-breadcrumbs__link" href={sectionHome}><span>{section.label}</span></a></li>
+                )}
+                <li class="dd-breadcrumbs__item"><a class="dd-breadcrumbs__link" aria-current="page"><span>{pageTitle}</span></a></li>
+              </ol>
+            </nav>
+          </div>
+          <div class="dd-top-bar__actions">
+            <span class="doc-ver dd-mono dd-top-bar__wide">v0.1</span>
+            <a class="dd-btn dd-btn--ghost dd-btn--icon" href="https://github.com/cxkw-dev/dawn-and-dusk" aria-label="GitHub"><Fragment set:html={i('code')} /></a>
+            <button class="dd-btn dd-btn--secondary dd-btn--sm doc-theme" type="button" data-dd-theme-toggle aria-label="Toggle dawn / dusk">
+              <svg class="dd-icon doc-theme-dawn" aria-hidden="true"><use href="#dd-i-sun" /></svg><svg class="dd-icon doc-theme-dusk" aria-hidden="true"><use href="#dd-i-moon" /></svg><span class="doc-theme-dawn">dawn</span><span class="doc-theme-dusk">dusk</span>
+            </button>
+          </div>
         </header>
-        <slot />
-      </main>
-      {group !== 'Patterns' && <nav class="doc-toc dd-scroll" aria-label="On this page" hidden><p class="doc-toc-h">On this page</p><ul></ul></nav>}
+        <main id="content" class="dd-app-shell__content doc-content">
+          <div class:list={['doc-body', { 'is-wide': wide, 'has-toc': toc }]}>
+            <article class="doc-main">
+              <header class="doc-head">
+                {group && <p class="dd-eyebrow">{group}</p>}
+                <h1 class="dd-h1">{title}</h1>
+                {lead && <p class="dd-lead">{lead}</p>}
+              </header>
+              <slot />
+            </article>
+            {toc && <nav class="doc-toc dd-scroll" aria-label="On this page" hidden><p class="doc-toc-h">On this page</p><ul></ul></nav>}
+          </div>
+        </main>
+      </div>
     </div>
     <script>
       import '../../ds/dawn-and-dusk.js';
