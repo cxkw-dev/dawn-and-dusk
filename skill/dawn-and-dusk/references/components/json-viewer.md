@@ -156,3 +156,4 @@ Don't:
 - Don’t use it for data people compare across records — that is a table.
 - Don’t render huge payloads unpaged; summarise or page them first.
 - Don’t hide `null` fields; their absence is information.
+

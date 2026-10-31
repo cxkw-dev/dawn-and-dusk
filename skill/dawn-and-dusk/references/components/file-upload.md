@@ -156,3 +156,4 @@ Don't:
 - Don’t auto-upload sensitive files without a confirm step.
 - Don’t clear the list on error — keep the failed rows visible.
 - Don’t use the dropzone’s dashed edge for anything else.
+

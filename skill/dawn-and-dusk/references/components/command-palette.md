@@ -212,3 +212,4 @@ Don't:
 - Don’t put destructive commands in the palette without a confirmation step.
 - Don’t show more than about eight rows per group; let people type.
 - Don’t bind ⌘K to anything else on a page that has a palette.
+

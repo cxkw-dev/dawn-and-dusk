@@ -413,10 +413,6 @@ const fill = `
     ['Events', '<code>dd:sort</code> <code>{ column, direction, index }</code> after a header sorts; <code>dd:selectionchange</code> <code>{ count, rows }</code> after the selection changes; <code>dd:pagechange</code> (from the pager) <code>{ page, pages, pageSize, total, from, to }</code>. All bubble from the root, so a server-backed table can listen and fetch.'],
   ]} />
 
-  <style is:global>
-    /* Docs only: the docs chrome is an app shell that keeps the grained page, and each stage repaints it. */
-    .ex-stage { --dd-data-table-grain: var(--dd-grain); }
-  </style>
   <script is:inline>
     // Docs only: the flagship's row menu can remove its row (the menu knows which row through menu.ddTrigger).
     document.addEventListener('click', (e) => {

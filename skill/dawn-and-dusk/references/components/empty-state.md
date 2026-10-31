@@ -104,3 +104,4 @@ Don't:
 - Don’t add illustrations or mascots.
 - Don’t show an empty state while data is still loading — use a skeleton.
 - Don’t blame the person: “You have no projects” → “Nothing here yet”.
+

@@ -135,3 +135,4 @@ Don't:
 - Don’t add vertical rules or zebra stripes; the hairline is enough.
 - Don’t use it for hundreds of rows. Reach for the data table instead.
 - Don’t put more than one action in the header.
+

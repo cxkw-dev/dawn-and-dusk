@@ -81,11 +81,11 @@ test('rapid toggles stay consistent and leave no transition blocker behind', asy
   const s = await state(page);
   assert.deepEqual(s, { attr: 'dusk', bg: DUSK_BG, pressed: 'true', stored: 'dusk' });
   assert.equal(await page.get(() => [...document.querySelectorAll('style')].filter((el) => el.textContent.includes('transition:none!important')).length), 0);
-  // Every toggle on the page agrees (the landing pattern has its own moon button).
-  await go(page, url('patterns/landing'));
+  // Every toggle on the page agrees (the top bar's examples have their own theme buttons).
+  await go(page, url('components/top-bar'));
   const pressed = await page.get(() => [...document.querySelectorAll('[data-dd-theme-toggle]')].map((b) => b.getAttribute('aria-pressed')));
   assert.ok(pressed.length >= 2 && pressed.every((p) => p === 'true'), `all toggles pressed: ${pressed}`);
-  await page.click('.dd-pattern-landing [data-dd-theme-toggle]');
+  await page.evaluate(() => document.querySelector('.ex-stage [data-dd-theme-toggle]').click());
   assert.equal((await state(page)).attr, 'dawn');
   const after = await page.get(() => [...document.querySelectorAll('[data-dd-theme-toggle]')].map((b) => b.getAttribute('aria-pressed')));
   assert.ok(after.every((p) => p === 'false'), `all toggles released: ${after}`);

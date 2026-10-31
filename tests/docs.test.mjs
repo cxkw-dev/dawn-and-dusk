@@ -33,12 +33,14 @@ test('in dusk the button offers dawn, and a theme toggle inside an example drops
   await page.click('[data-t="ex0"] [data-ex-theme]');
   assert.equal(await stageTheme(page, 0), 'dawn');
   assert.equal(await stageBg(page, 0), '#f4efe7');
-  const land = await open('patterns/landing');
-  await land.click('.ex-frame [data-ex-theme]');
-  assert.equal(await land.attr('.ex-stage', 'data-theme'), 'dusk');
-  await land.click('.dd-pattern-landing [data-dd-theme-toggle]');
-  assert.equal(await land.attr('html', 'data-theme'), 'dusk', 'the inner toggle flips the page');
-  assert.equal(await land.attr('.ex-stage', 'data-theme'), null, 'and the example follows the page again');
+  // An example that holds its own theme toggle (the top bar's site header): flipping the page clears the example's override.
+  const tb = await open('components/top-bar');
+  await tb.get(() => { const f = [...document.querySelectorAll('.ex-frame')].find((x) => x.querySelector('.ex-stage [data-dd-theme-toggle]')); f.id = 'tbf'; });
+  await tb.click('#tbf [data-ex-theme]');
+  assert.equal(await tb.attr('#tbf .ex-stage', 'data-theme'), 'dusk');
+  await tb.evaluate(() => document.querySelector('#tbf .ex-stage [data-dd-theme-toggle]').click());
+  assert.equal(await tb.attr('html', 'data-theme'), 'dusk', 'the inner toggle flips the page');
+  assert.equal(await tb.attr('#tbf .ex-stage', 'data-theme'), null, 'and the example follows the page again');
 });
 
 test('Code shows and hides the source with aria-expanded in sync', async ({ open, assert }) => {
@@ -76,9 +78,9 @@ test('Copy HTML puts exactly the example’s HTML on the clipboard and confirms'
   assert.ok(await page.visible(`${btn} .ex-copy`), 'label returns');
 });
 
-test('placeholder links inside examples don’t jump the page; real in-page links still work', async ({ open, assert }) => {
-  const page = await open('patterns/landing');
-  const link = '.dd-pattern-landing a[aria-label="GitHub"]';
+test('placeholder links inside examples don’t jump the page', async ({ open, assert }) => {
+  const page = await open('components/top-bar');
+  const link = await page.get(() => { const a = [...document.querySelectorAll('.ex-stage a[href="#"]')].filter((x) => x.getBoundingClientRect().width).pop(); a.id = 'ph-link'; return '#ph-link'; }); // the last one, far enough down to scroll
   await page.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), link);
   await page.sleep(100);
   const y = await page.get(() => scrollY);
@@ -86,10 +88,6 @@ test('placeholder links inside examples don’t jump the page; real in-page link
   await page.click(link);
   assert.equal(await page.get(() => scrollY), y);
   assert.equal(await page.get(() => location.hash), '');
-  // The section links inside the example are real anchors and still go somewhere.
-  await page.click('.dd-pattern-landing .dd-top-bar__link[href="#landing-contact"]');
-  await page.waitFor(() => Math.abs(document.getElementById('landing-contact').getBoundingClientRect().top) < 120);
-  assert.equal(await page.get(() => location.hash), '#landing-contact');
 });
 
 test('On this page: built from the h2s, a click scrolls there and marks it, scrolling keeps it current', async ({ open, assert }) => {
@@ -114,17 +112,20 @@ test('On this page: built from the h2s, a click scrolls there and marks it, scro
   assert.equal(await page.count('.doc-toc a[aria-current]'), 1, 'one current item');
 });
 
-test('pattern pages have no TOC (they are wide)', async ({ open, assert }) => {
-  const page = await open('patterns/dashboard', { width: 1440 });
-  assert.equal(await page.exists('.doc-toc'), false);
-});
 
 // ---------- the app shell: side nav (#doc-nav) and top bar (.doc-bar) ----------
 const NAV = '#doc-nav';
 const FOLD_KEY = 'dd-side-nav:doc-nav';
 const MENU = '.doc-bar .dd-top-bar__nav-btn';
 // The Chrome profile is shared by every test: a fold persisted here would leak into the next page, so start and end clean.
-const unfold = (page) => page.get((k) => localStorage.removeItem(k), FOLD_KEY);
+// Start unfolded: clear the remembered fold, and unfold this page too if an earlier test left it folded.
+const unfold = async (page) => {
+  await page.get((k) => localStorage.removeItem(k), FOLD_KEY);
+  if (!(await page.get(() => document.getElementById('doc-nav').classList.contains('is-collapsed')))) return;
+  await page.click('#doc-nav [data-dd-nav-toggle]');
+  await page.waitFor(() => document.querySelector('#doc-nav .dd-side-nav__panel').getBoundingClientRect().width === 224); // fully open, not mid-transition
+  await page.get((k) => localStorage.removeItem(k), FOLD_KEY);
+};
 const shownPane = (page) => page.get(() => [...document.querySelectorAll('#doc-nav [data-dd-nav-pane]')].filter((p) => p.getClientRects().length).map((p) => p.dataset.ddNavPane));
 const railCurrent = (page) => page.get(() => [...document.querySelectorAll('#doc-nav [data-dd-nav-section]')].filter((b) => b.getAttribute('aria-current') === 'true').map((b) => b.dataset.ddNavSection));
 const titles = (page) => page.get(() => [...document.querySelectorAll('#doc-nav-list a[data-find]')].filter((a) => a.getClientRects().length).map((a) => a.textContent.trim()));
@@ -153,7 +154,7 @@ test('side nav: the rail marks the current section, its pane lists the pages, an
   await unfold(page);
   assert.ok(await page.visible(`${NAV} .dd-side-nav__logo.dd-logo-tile`), 'the "d&" tile heads the rail');
   assert.equal(await page.attr(`${NAV} .dd-side-nav__logo`, 'href'), '/dawn-and-dusk/');
-  assert.deepEqual(await page.get(() => [...document.querySelectorAll('#doc-nav [data-dd-nav-section]')].map((b) => b.getAttribute('aria-label'))), ['Start', 'Foundations', 'Components', 'Patterns']);
+  assert.deepEqual(await page.get(() => [...document.querySelectorAll('#doc-nav [data-dd-nav-section]')].map((b) => b.getAttribute('aria-label'))), ['Foundations', 'Components', 'AI']);
   assert.deepEqual(await railCurrent(page), ['components']);
   assert.deepEqual(await shownPane(page), ['components']);
   assert.equal(await page.count(`${NAV} [aria-current="page"]`), 1, 'one current page');
@@ -161,14 +162,15 @@ test('side nav: the rail marks the current section, its pane lists the pages, an
   assert.ok(await page.visible(`${NAV} [aria-current="page"]`), 'the current page is in view in the panel');
   const sections = await page.get(() => [...document.querySelectorAll('#doc-nav [data-dd-nav-pane="components"] .dd-side-nav__section')].map((p) => p.textContent));
   assert.deepEqual(sections, ['Actions', 'Forms', 'Data display', 'Feedback & status', 'Navigation', 'Overlays', 'Layout'], 'components are grouped under micro-caps labels');
-  assert.equal(await page.get(() => document.querySelectorAll('#doc-nav [data-dd-nav-pane="start"] a[data-find]').length), 2, 'start: introduction and the agent skill');
+  assert.equal(await page.get(() => document.querySelectorAll('#doc-nav [data-dd-nav-pane="ai"] a[data-find]').length), 1, 'ai: the agent skill');
+  assert.match(await page.get(() => document.querySelector('#doc-nav [data-dd-nav-pane="foundations"] a[data-find]').getAttribute('href')), /\/dawn-and-dusk$/, 'the introduction opens foundations');
   // Another rail item switches the panel without navigating; the page stays current in its own pane.
   const url = await page.get(() => location.href);
-  await page.click(`${NAV} [data-dd-nav-section="patterns"]`);
-  assert.deepEqual(await shownPane(page), ['patterns']);
-  assert.deepEqual(await railCurrent(page), ['patterns']);
+  await page.click(`${NAV} [data-dd-nav-section="foundations"]`);
+  assert.deepEqual(await shownPane(page), ['foundations']);
+  assert.deepEqual(await railCurrent(page), ['foundations']);
   assert.equal(await page.get(() => location.href), url, 'no navigation');
-  assert.deepEqual(await titles(page), ['Dashboard', 'Data explorer', 'Settings', 'Landing page']);
+  assert.deepEqual(await titles(page), ['Introduction', 'Colors', 'Typography', 'Spacing & layout', 'Radius & depth', 'Motion', 'Icons', 'Brand']);
   await page.click(`${NAV} [data-dd-nav-section="foundations"]`);
   assert.deepEqual(await shownPane(page), ['foundations']);
   // Following a link lands on its page, with its section current.
@@ -198,11 +200,11 @@ test('top bar: section / page breadcrumb, GitHub as a ghost icon button and the 
   await page.click('.doc-bar .doc-theme');
   // Home and pages outside the nav still get a context.
   const home = await open('', { width: 1440 });
-  assert.equal(await home.text('.doc-bar .dd-breadcrumbs'), 'Start Introduction');
-  assert.deepEqual(await railCurrent(home), ['start']);
+  assert.equal(await home.text('.doc-bar .dd-breadcrumbs'), 'Foundations Introduction');
+  assert.deepEqual(await railCurrent(home), ['foundations']);
   const lost = await open('404', { width: 1440 });
   assert.equal(await lost.text('.doc-bar .dd-breadcrumbs'), 'not found');
-  assert.deepEqual(await shownPane(lost), ['start']);
+  assert.deepEqual(await shownPane(lost), ['foundations']);
   assert.equal(await lost.count(`${NAV} [aria-current="page"]`), 0);
 });
 
@@ -218,9 +220,9 @@ test('fold: the chevron folds the panel to the rail, tooltips label the icons, a
   assert.equal(await page.attr(`${NAV} [data-dd-nav-toggle]`, 'aria-expanded'), 'false');
   assert.ok((await mainLeft()) < left - 200, 'the page reflows into the room');
   assert.equal(await page.get((k) => localStorage.getItem(k), FOLD_KEY), 'collapsed');
-  await page.hover(`${NAV} [data-dd-nav-section="patterns"]`);
-  await page.waitFor(() => Number(getComputedStyle(document.querySelector('#doc-nav [data-dd-nav-section="patterns"]'), '::after').opacity) > 0.95);
-  assert.equal(await page.get(() => getComputedStyle(document.querySelector('#doc-nav [data-dd-nav-section="patterns"]'), '::after').content), '"Patterns"', 'the rail shows its tooltip');
+  await page.hover(`${NAV} [data-dd-nav-section="foundations"]`);
+  await page.waitFor(() => Number(getComputedStyle(document.querySelector('#doc-nav [data-dd-nav-section="foundations"]'), '::after').opacity) > 0.95);
+  assert.equal(await page.get(() => getComputedStyle(document.querySelector('#doc-nav [data-dd-nav-section="foundations"]'), '::after').content), '"Foundations"', 'the rail shows its tooltip');
   // Next page: folded already when the parser finishes (before side-nav.js runs), so it never opens and closes.
   await page.send('Page.addScriptToEvaluateOnNewDocument', { source: `document.addEventListener('readystatechange', () => { if (document.readyState !== 'interactive') return; const n = document.getElementById('doc-nav'); window.__atParse = { folded: n.classList.contains('is-collapsed'), restoring: n.classList.contains('is-restoring'), w: n.querySelector('.dd-side-nav__panel').getBoundingClientRect().width }; });` });
   await reload(page);
@@ -267,6 +269,7 @@ for (const width of [375, 860]) {
   test(`off-canvas at ${width}: the top bar's menu button opens the side nav, focus goes to the current page, Esc / scrim / tab-out close it`, async ({ open, assert }) => {
     const page = await open('components/tabs', { width, height: 760 });
     assert.equal(await page.visible(NAV), false, 'out of view');
+    assert.ok(await page.get(() => document.querySelector('.doc-app').matches('.dd-app-shell--page.dd-app-shell--offcanvas-md') && !document.getElementById('doc-nav').classList.contains('dd-side-nav--offcanvas')), 'off-canvas by the shell’s own breakpoint, no script');
     assert.ok(await page.visible(MENU), 'menu button shows');
     assert.ok(await page.visible('.doc-bar .dd-top-bar__brand'), 'the wordmark shows in the bar');
     const settled = () => page.waitFor(() => { const n = document.getElementById('doc-nav'); return n.classList.contains('is-mobile-open') ? Math.abs(n.getBoundingClientRect().left) < 1 : getComputedStyle(n).visibility === 'hidden'; });
@@ -286,7 +289,8 @@ for (const width of [375, 860]) {
     // scrim
     await page.click(MENU);
     await settled();
-    const { x, y } = await page.get(() => ({ x: innerWidth - 12, y: innerHeight - 40 }));
+    // (clear of the right-hand strip html's scrollbar-gutter: stable reserves: that is the scrollbar's, not the scrim's)
+    const { x, y } = await page.get(() => ({ x: innerWidth - 25, y: innerHeight - 40 }));
     await page.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
     await page.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', clickCount: 1 });
     await settled();
@@ -324,7 +328,7 @@ test('the panel keeps its scroll position between pages and per section, and the
   await follow(page, '/components/text-input');
   assert.equal(await list(), 120, 'same place in the list on the next page');
   // Switch to another section and back: each keeps its place.
-  await page.click(`${NAV} [data-dd-nav-section="start"]`);
+  await page.click(`${NAV} [data-dd-nav-section="ai"]`);
   assert.equal(await list(), 0);
   await page.click(`${NAV} [data-dd-nav-section="components"]`);
   assert.equal(await list(), 120, 'back where the section was left');
@@ -404,3 +408,53 @@ test('search at 375: "/" opens the off-canvas nav and focuses the field; Esc cle
   await page.press('Escape');
   assert.equal(await isOpen(page), false, 'the next one closes the nav');
 });
+
+for (const [width, theme] of [[1440, 'dawn'], [375, 'dusk']]) {
+  test(`side nav at ${width} (${theme}): every pane has the same anatomy — title row, micro-caps label, pages — at the same heights`, async ({ open, assert }) => {
+    const page = await open('components/button', { width, height: 900, theme });
+    await unfold(page);
+    if (width < 600) {
+      await page.tap(MENU);
+      await page.waitFor(() => Math.abs(document.getElementById('doc-nav').getBoundingClientRect().left) < 1);
+    }
+    const rows = {};
+    for (const key of ['foundations', 'components', 'ai']) {
+      await page.evaluate((k) => document.querySelector(`#doc-nav [data-dd-nav-section="${k}"]`).click(), key);
+      rows[key] = await page.get((k) => {
+        document.getElementById('doc-nav-list').scrollTop = 0;
+        const pane = document.querySelector(`#doc-nav [data-dd-nav-pane="${k}"]`);
+        const head = pane.querySelector('.dd-side-nav__head');
+        const label = pane.querySelector('.dd-side-nav__section');
+        const link = pane.querySelector('a[data-find]');
+        const plain = pane.querySelector('a[data-find]:not([aria-current])');
+        const kids = [...pane.querySelectorAll(':scope > .doc-nav-group > *')].map((el) => el.className.includes('__section') ? 'label' : 'link');
+        const cs = (el) => getComputedStyle(el);
+        const top = (el) => Math.round(el.getBoundingClientRect().top);
+        return {
+          headH: Math.round(head.getBoundingClientRect().height), labelY: top(label), linkY: top(link), startsWithLabel: kids[0] === 'label',
+          label: [cs(label).fontFamily, cs(label).fontSize, cs(label).textTransform], link: [cs(plain).fontSize, cs(plain).fontWeight],
+          labels: pane.querySelectorAll('.doc-nav-group').length === pane.querySelectorAll('.dd-side-nav__section').length,
+        };
+      }, key);
+    }
+    const [first, ...others] = Object.values(rows);
+    for (const [key, r] of Object.entries(rows)) {
+      assert.ok(r.startsWithLabel, `${key}: the pane opens with a group label`);
+      assert.ok(r.labels, `${key}: every group has a label`);
+      assert.equal(r.headH, first.headH, `${key}: title row height`);
+      assert.equal(r.labelY, first.labelY, `${key}: first label at the same height`);
+      assert.equal(r.linkY, first.linkY, `${key}: first page at the same height`);
+      assert.deepEqual(r.label, first.label, `${key}: label type`);
+      assert.deepEqual(r.link, first.link, `${key}: page type`);
+    }
+    assert.ok(others.length === 2);
+    const labels = await page.get(() => Object.fromEntries([...document.querySelectorAll('#doc-nav [data-dd-nav-pane]')].map((p) => [p.dataset.ddNavPane, [...p.querySelectorAll('.dd-side-nav__section')].map((l) => l.textContent)])));
+    assert.deepEqual(labels.ai, ['Skills']);
+    assert.deepEqual(labels.foundations, ['Overview', 'Colour & type', 'Space & shape', 'Motion & icons', 'Brand']);
+    // Search keeps the anatomy: matches sit under their group's label.
+    await page.focus('#doc-find');
+    await page.type('motion');
+    assert.deepEqual(await page.get(() => [...document.querySelectorAll('#doc-nav [data-dd-nav-pane="foundations"] .doc-nav-group')].filter((g) => !g.hidden).map((g) => [...g.children].filter((c) => c.getClientRects().length).map((c) => c.textContent.trim()))), [['Motion & icons', 'Motion']]);
+    await unfold(page);
+  });
+}

@@ -130,3 +130,4 @@ Don't:
 - Don’t use primary for navigation — use a link.
 - Don’t stack two filled buttons side by side; make one secondary.
 - Don’t disable without saying why nearby.
+

@@ -288,3 +288,4 @@ Don't:
 - Don’t use a calendar for birthdays or dates far in the past — three inputs are faster.
 - Don’t hide today; it is the anchor for every relative choice.
 - Don’t apply a range on the first click.
+

@@ -180,6 +180,76 @@ Try it: Tab and Shift+Tab — focus cycles inside the dialog and never reaches t
 </dialog>
 ```
 
+## From a menu
+
+A menu item can open a dialog: put `data-dd-dialog-open` on the `.dd-menu__item`. The menu closes as the dialog opens, so when the dialog closes focus goes to the button that opened the menu, not the hidden item. If that button is gone — the dialog removed its row — focus lands on the nearest control where it was: the next row’s button, else the one before.
+
+Try it: open a member’s ⋯ menu and choose Remove from team…. Keep returns focus to that ⋯ button; Remove deletes the row and focus moves to the next member’s ⋯.
+
+```html
+<div class="dd-stack" style="--dd-gap: 5px; max-width: 520px">
+  <div class="dd-surface" data-member="Mara Okafor" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
+    <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
+      <b style="font-weight: 600">Mara Okafor</b>
+      <span class="dd-small dd-muted"><span class="dd-mono">mara@cxkw.dev</span> · Admin</span>
+    </span>
+    <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" type="button" data-dd-menu="dlg-member-menu" data-dd-placement="bottom-end" aria-label="Actions for Mara Okafor"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-more"/></svg></button>
+  </div>
+  <div class="dd-surface" data-member="Jun Park" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
+    <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
+      <b style="font-weight: 600">Jun Park</b>
+      <span class="dd-small dd-muted"><span class="dd-mono">jun@cxkw.dev</span> · Developer</span>
+    </span>
+    <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" type="button" data-dd-menu="dlg-member-menu" data-dd-placement="bottom-end" aria-label="Actions for Jun Park"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-more"/></svg></button>
+  </div>
+  <div class="dd-surface" data-member="Sam Rivera" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
+    <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
+      <b style="font-weight: 600">Sam Rivera</b>
+      <span class="dd-small dd-muted"><span class="dd-mono">sam@cxkw.dev</span> · Developer</span>
+    </span>
+    <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" type="button" data-dd-menu="dlg-member-menu" data-dd-placement="bottom-end" aria-label="Actions for Sam Rivera"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-more"/></svg></button>
+  </div>
+  <div class="dd-surface" data-member="Ines Duarte" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
+    <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
+      <b style="font-weight: 600">Ines Duarte</b>
+      <span class="dd-small dd-muted"><span class="dd-mono">ines@cxkw.dev</span> · Viewer</span>
+    </span>
+    <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" type="button" data-dd-menu="dlg-member-menu" data-dd-placement="bottom-end" aria-label="Actions for Ines Duarte"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-more"/></svg></button>
+  </div>
+</div>
+<div class="dd-menu" id="dlg-member-menu" role="menu" aria-label="Member actions" hidden>
+  <button class="dd-menu__item" role="menuitem" type="button" data-dd-toast="Invite sent again" data-dd-toast-intent="ok"><span class="dd-menu__body">Resend invite</span></button>
+  <hr class="dd-menu__sep">
+  <button class="dd-menu__item dd-menu__item--danger" role="menuitem" type="button" data-dd-dialog-open="#remove-member-dialog"><span class="dd-menu__body">Remove from team…</span></button>
+</div>
+<dialog class="dd-dialog dd-dialog--sm dd-dialog--danger" id="remove-member-dialog" role="alertdialog" aria-labelledby="remove-member-title" aria-describedby="remove-member-desc">
+  <header class="dd-dialog__head">
+    <span class="dd-dialog__icon"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-users"/></svg></span>
+    <div class="dd-dialog__titles"><p class="dd-dialog__eyebrow">Team · cxkw</p><h2 class="dd-dialog__title" id="remove-member-title">Remove <span data-member-name>this member</span>?</h2></div>
+  </header>
+  <div class="dd-dialog__body" id="remove-member-desc"><p>They lose access to every cxkw project right away. You can invite them again later.</p></div>
+  <footer class="dd-dialog__foot">
+    <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close autofocus>Keep</button>
+    <button class="dd-btn dd-btn--danger" type="button" data-dd-dialog-close="remove">Remove</button>
+  </footer>
+</dialog>
+<script>
+  {
+    const menu = document.getElementById('dlg-member-menu');
+    const dialog = document.getElementById('remove-member-dialog');
+    const member = () => menu.ddTrigger.closest('[data-member]');
+    // The menu's trigger names the row; the dialog asks about that member.
+    menu.addEventListener('dd:menuopen', () => { dialog.querySelector('[data-member-name]').textContent = member().dataset.member; });
+    dialog.addEventListener('close', () => {
+      if (dialog.returnValue !== 'remove') return; // Keep: focus goes back to the row's ⋯ button
+      const row = member();
+      row.remove(); // focus moves to the next row's ⋯ button
+      dd.toast({ title: `${row.dataset.member} removed`, intent: 'ok' });
+    });
+  }
+</script>
+```
+
 ## Classes
 
 | class / attribute | what it does |
@@ -204,7 +274,7 @@ Load `dawn-and-dusk.js`. The same script drives Drawer and Sheet.
 
 | class / attribute | what it does |
 |---|---|
-| `data-dd-dialog-open="#id"` | On any element: opens that dialog modally and remembers the element so focus returns to it on close. |
+| `data-dd-dialog-open="#id"` | On any element: opens that dialog modally and remembers the element so focus returns to it on close. On an item of a floating menu, it remembers the button that opened the menu instead (the item closes with its menu). |
 | `data-dd-dialog-close` | On any element inside the dialog: closes it with the exit animation. |
 | `data-dd-dialog-close="value"` | Closes and sets `dialog.returnValue` to `value`; read it in the native `close` event. |
 | `form[method="dialog"]` | A valid submit closes with the submit button’s `value`. |
@@ -216,7 +286,7 @@ Load `dawn-and-dusk.js`. The same script drives Drawer and Sheet.
 | `Esc` | Closes the dialog (animated). |
 | `Tab / Shift+Tab` | Moves through the dialog only and wraps from the last control to the first; the page behind is inert while it is open. |
 | `On open` | Focus moves to the element with `autofocus`, else the first focusable control. |
-| `On close` | Focus returns to the opener. |
+| `On close` | Focus returns to the opener (for a menu item, the menu’s trigger). If the opener is gone by then — removed before the dialog closed or by your own `close` listener — focus goes to the nearest control where it was: the first one in the next element, else the previous one, else further up. |
 
 ## Guidelines
 
@@ -230,3 +300,4 @@ Don't:
 - Don’t open a dialog from a dialog; use a step inside it or a drawer.
 - Don’t use a dialog for content people need to compare with the page — use a drawer.
 - Don’t put more than two actions in the footer.
+

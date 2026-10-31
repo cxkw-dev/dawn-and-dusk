@@ -1,11 +1,12 @@
 ---
 // The docs' main navigation, built on the system's own side nav: an icon rail with one item per section and a panel
 // with that section's pages. Sections come from site/nav/*.mjs (one file per group); the layout maps them to the rail.
+// Every pane has the same anatomy: its title and page count, then each group under a micro-caps label, then the pages.
 // The search sits at the head of the panel and, while a query is typed, searches every section at once.
 import { i } from '../lib/icon';
 
-export interface NavItem { title: string; href: string; tag?: string | number }
-export interface NavGroup { group: string; order: number; items: NavItem[] }
+export interface NavItem { title: string; href: string; tag?: string | number; group?: string }
+export interface NavGroup { group: string; order: number; items: NavItem[]; keywords?: string }
 export interface RailSection { key: string; label: string; icon: string; title: string; groups: NavGroup[] }
 
 interface Props { sections: RailSection[]; active: string; base: string; here: string }
@@ -53,19 +54,19 @@ const pages = (s: RailSection) => s.groups.reduce((n, g) => n + g.items.length, 
       </div>
       <p class="doc-find-status" id="doc-find-status" role="status" aria-live="polite"></p>
     </div>
-    <div class="doc-nav-list" id="doc-nav-list">
+    <div class="doc-nav-list dd-scroll" id="doc-nav-list">
       {sections.map((s) => (
         <div class="dd-side-nav__pane" data-dd-nav-pane={s.key} hidden={s.key !== active}>
           <div class="dd-side-nav__head"><span class="dd-side-nav__title">{s.title}</span><span class="dd-side-nav__count" data-total={pages(s)}>{pages(s)}</span></div>
           {s.groups.map((g) => (
             <div class="doc-nav-group">
-              {s.groups.length > 1 && <p class="dd-side-nav__section">{g.group}</p>}
+              <p class="dd-side-nav__section">{g.group}</p>
               {g.items.map((it) => {
                 const href = hrefOf(it);
                 const tag = it.tag == null ? null : String(it.tag);
                 return (
                   <a class="dd-side-nav__link" href={href} aria-current={href === here ? 'page' : undefined}
-                    data-find={`${it.title} ${g.group} ${aka[it.href.split('/').pop() ?? ''] ?? ''}`.toLowerCase()}>
+                    data-find={`${it.title} ${g.keywords ?? g.group} ${aka[it.href.split('/').pop() ?? ''] ?? ''}`.toLowerCase()}>
                     <span class="dd-side-nav__label">{it.title}</span>
                     {tag && (/^\d+$/.test(tag) ? <span class="dd-side-nav__count">{tag}</span> : <span class="dd-side-nav__badge dd-side-nav__badge--new">{tag}</span>)}
                   </a>

@@ -172,3 +172,4 @@ Don't:
 - Don’t pick avatar colours by hand per screen — derive them from the id.
 - Don’t use primary apricot for people; it means “do this”.
 - Don’t rely on the status dot alone to say someone is offline.
+

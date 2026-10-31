@@ -201,7 +201,7 @@ Inside the panel, section headings in mono caps divide the list, native `<detail
 
 ## Mobile · off-canvas
 
-On small screens the whole nav slides in from the left over a scrim, opened by the top bar’s menu button (`data-dd-nav-open`). Esc, the scrim, the chevron or following a link close it. Inside an app shell this happens automatically below 768px; on its own, add `dd-side-nav--offcanvas`. Shown open — try it: tap the scrim to close it, then the menu button to bring it back; press Esc or follow a link.
+On small screens the whole nav slides in from the left over a scrim, opened by the top bar’s menu button (`data-dd-nav-open`). Esc, the scrim, the chevron or following a link close it, and so does tabbing out of it; while it covers the window, the page behind it doesn’t scroll. Inside an app shell this happens automatically below the shell’s breakpoint (768px, or 900 / 1024px); on its own, or to keep it off-canvas at every width (also inside a shell), add `dd-side-nav--offcanvas`. It is fixed to the window — or, as here, to a frame that contains it. Shown open — try it: tap the scrim to close it, then the menu button to bring it back; press Esc or follow a link.
 
 ```html
 <div class="sn-frame sn-frame--phone">
@@ -271,7 +271,7 @@ On small screens the whole nav slides in from the left over a scrim, opened by t
 |---|---|
 | `.dd-side-nav` | The nav. Sticky and `100dvh` tall on its own. Give it an `id` to persist the collapsed state. |
 | `.dd-side-nav--fill` | Fill the parent’s height instead of the viewport (automatic inside `.dd-app-shell`). |
-| `.dd-side-nav--offcanvas` | Always off-canvas; opens with `.is-mobile-open`. |
+| `.dd-side-nav--offcanvas` | Always off-canvas, also inside an app shell (it wins over the shell’s breakpoint); opens with `.is-mobile-open`. |
 | `.is-collapsed` | Panel folded away; only the rail shows. |
 | `__rail` | Level one: `__logo` (a `.dd-logo-tile`), `__item` icon buttons or links, `__spacer`, `__sep`, `__collapse`. |
 | `__item[data-label]` | Tooltip text for a rail icon. Also set `aria-label`. |
@@ -292,7 +292,9 @@ On small screens the whole nav slides in from the left over a scrim, opened by t
 | `data-dd-nav-section="name"` | On a rail item: shows `[data-dd-nav-pane="name"]` and unfolds the panel. Pressing the active item again folds it. |
 | `data-dd-nav-open="#id"` | Opens an off-canvas nav (the top bar’s menu button). Focus moves to the current page link. |
 | `data-dd-nav-close` | Closes the off-canvas nav it sits in. |
-| `Esc · scrim · link · Tab out` | Close the off-canvas nav. After Esc, the scrim or the chevron, focus returns to the menu button; tabbing past its last link closes it and focus carries on into the page. |
+| `Esc · scrim · link · Tab out` | Close the off-canvas nav. After Esc, the scrim (mouse or touch), a link or the chevron, focus returns to the menu button. Tabbing out — past its last link, before its first, or onto the menu button — closes it and focus stays where it went. |
+| `html.dd-side-nav-lock` | Set while an open off-canvas nav covers the window: the page behind doesn’t scroll (the page’s scrollbar gutter stays reserved, so nothing shifts). A nav fixed to a frame (a demo, a frame-mode shell) doesn’t lock the page. |
+| `Resize` | If an open nav stops being off-canvas (the window widens past the breakpoint) it closes and is simply in view. |
 
 ## Guidelines
 
@@ -305,3 +307,4 @@ Don't:
 - Don’t nest more than one level of groups inside the panel.
 - Don’t put primary actions in the nav — they belong in the page header.
 - Don’t colour active items with primary; active is ink on a deeper tone.
+

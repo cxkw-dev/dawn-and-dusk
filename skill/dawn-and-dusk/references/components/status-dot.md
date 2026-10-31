@@ -103,3 +103,4 @@ Don't:
 - Don’t use status dots as bullets or decoration.
 - Don’t use green for “selected” or “new” — it means healthy.
 - Don’t pulse things that aren’t changing.
+

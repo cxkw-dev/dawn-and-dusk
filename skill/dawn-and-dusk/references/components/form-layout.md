@@ -48,7 +48,7 @@ Try it: clear the service name, or set the port above 65535, and press Create se
   <div class="dd-form__grid">
     <div class="dd-field">
       <label class="dd-field__label" for="fc-1">Service name</label>
-      <div class="dd-input"><input class="dd-input__control" id="fc-1" value="image-resizer" required pattern="[a-z0-9]+(-[a-z0-9]+)*" data-dd-error="Use lowercase letters, numbers and single dashes."></div>
+      <div class="dd-input"><input class="dd-input__control" id="fc-1" value="image-resizer" required pattern="[a-z0-9]+(-[a-z0-9]+)*" data-dd-error-missing="Give the service a name." data-dd-error="Use lowercase letters, numbers and single dashes."></div>
       <p class="dd-field__hint">Lowercase and dashes.</p>
     </div>
     <div class="dd-field">
@@ -61,7 +61,7 @@ Try it: clear the service name, or set the port above 65535, and press Create se
     </div>
     <div class="dd-field">
       <label class="dd-field__label" for="fc-4">Port</label>
-      <div class="dd-input"><input class="dd-input__control dd-num" id="fc-4" type="number" value="8080" required min="1" max="65535"><span class="dd-input__unit">TCP</span></div>
+      <div class="dd-input"><input class="dd-input__control dd-num" id="fc-4" type="number" value="8080" required min="1" max="65535" data-dd-error-range="Ports run from 1 to 65535."><span class="dd-input__unit">TCP</span></div>
     </div>
     <div class="dd-field dd-form__span">
       <label class="dd-field__label" for="fc-5">Repository</label>
@@ -79,7 +79,9 @@ Try it: clear the service name, or set the port above 65535, and press Create se
 </form>
 ```
 
-Add `data-dd-validate novalidate` to the form. On submit the browser’s own constraints (`required`, `type`, `pattern`, `min` / `max`) are checked and every failing control gets `aria-invalid` and an error under its box — the control’s `data-dd-error`, or the browser’s message — while a hint in that spot steps aside. Focus goes to the first problem and the submit stops before your own handler runs. Errors clear the moment the value is fixed; reset clears them all.
+Add `data-dd-validate novalidate` to the form. On submit the browser’s own constraints (`required`, `type`, `pattern`, `min` / `max`) are checked and every failing control gets `aria-invalid` and an error under its box while a hint in that spot steps aside. Focus goes to the first problem and the submit stops before your own handler runs. Errors clear the moment the value is fixed, and change with the problem while they show; reset clears them all.
+
+The message, first match wins: one you set from script with `setCustomValidity()` (a server check, a taken name); the control’s message for this problem — `data-dd-error-missing`, `-type`, `-pattern`, `-range` or `-length`; its `data-dd-error` for any problem; the browser’s own message. Above, an empty service name says “Give the service a name.” and a badly formed one falls back to `data-dd-error`; the port has its own range message, and an empty port gets the browser’s.
 
 ## Footer
 
@@ -207,7 +209,7 @@ Try it: Create key confirms with a toast.
 
 ## Settings page
 
-A full example. `.dd-form--divided` draws a hairline between sections; `--aside` sections put their title and description on the left once the form is 640px wide (a container query, so it works in any column).
+A full example. `.dd-form--divided` draws a hairline between sections; `--aside` sections put their title and description on the left once the form is 640px wide (a container query, so it works in any column). Everything here waits for Save, so the on / off choices are checkboxes: a switch applies the moment it flips, so it belongs outside a form with a Save button (a preferences list that saves as you go).
 
 Try it: change a few things, then Discard puts them all back (the counter re-counts).
 
@@ -258,9 +260,9 @@ Try it: change a few things, then Discard puts them all back (the counter re-cou
         <label class="dd-radio-card dd-radio-card--row"><input class="dd-radio__input" type="radio" name="st-strategy" checked><span class="dd-radio__text"><span class="dd-radio-card__title">Rolling</span><span class="dd-radio-card__desc">No extra capacity</span></span><span class="dd-radio-card__mark"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-check"/></svg></span></label>
         <label class="dd-radio-card dd-radio-card--row"><input class="dd-radio__input" type="radio" name="st-strategy"><span class="dd-radio__text"><span class="dd-radio-card__title">Blue / green</span><span class="dd-radio-card__desc">Instant switch-over</span></span><span class="dd-radio-card__mark"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-check"/></svg></span></label>
       </fieldset>
-      <label class="dd-switch">
-        <input class="dd-switch__input" type="checkbox" role="switch" checked>
-        <span class="dd-switch__text"><span class="dd-switch__label">Preview deploys</span><span class="dd-switch__desc">Build every pull request to its own URL.</span></span>
+      <label class="dd-checkbox">
+        <input class="dd-checkbox__input" type="checkbox" checked>
+        <span class="dd-checkbox__text"><span class="dd-checkbox__label">Preview deploys</span><span class="dd-checkbox__desc">Build every pull request to its own URL.</span></span>
       </label>
     </div>
   </section>
@@ -272,9 +274,9 @@ Try it: change a few things, then Discard puts them all back (the counter re-cou
     </div>
     <div class="dd-form__body">
       <div class="dd-form__choices dd-form__choices--rows">
-        <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch" checked><span class="dd-switch__text"><span class="dd-switch__label">Failed deploys</span><span class="dd-switch__desc">Right away, with the build log.</span></span></label>
-        <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch"><span class="dd-switch__text"><span class="dd-switch__label">Spend alerts</span><span class="dd-switch__desc">When billing passes 80% of the budget.</span></span></label>
-        <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch" checked><span class="dd-switch__text"><span class="dd-switch__label">Weekly digest</span><span class="dd-switch__desc">Sundays: deploys, uptime and spend.</span></span></label>
+        <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" checked><span class="dd-checkbox__text"><span class="dd-checkbox__label">Failed deploys</span><span class="dd-checkbox__desc">Right away, with the build log.</span></span></label>
+        <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox"><span class="dd-checkbox__text"><span class="dd-checkbox__label">Spend alerts</span><span class="dd-checkbox__desc">When billing passes 80% of the budget.</span></span></label>
+        <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" checked><span class="dd-checkbox__text"><span class="dd-checkbox__label">Weekly digest</span><span class="dd-checkbox__desc">Sundays: deploys, uptime and spend.</span></span></label>
       </div>
       <fieldset class="dd-checkbox-group dd-checkbox-group--inline">
         <legend class="dd-checkbox-group__legend">Channels</legend>
@@ -307,7 +309,7 @@ Try it: change a few things, then Discard puts them all back (the counter re-cou
 | `.dd-form__grid · --3` | Responsive grid: up to two (or three) columns, folding to one. |
 | `.dd-form__span` | Grid item that takes the full row. |
 | `.dd-form__row` | Simple wrapping row of fields. |
-| `.dd-form__choices · --rows` | Even stack of checkboxes or switches; `--rows` adds hairlines. |
+| `.dd-form__choices · --rows` | Even stack of checkboxes (or of switches, in a list that applies each change at once); `--rows` adds hairlines. |
 | `.dd-form__footer · --sticky · --plain` | Action row. `.dd-form__meta` holds status on the left. |
 
 ## Behaviour
@@ -315,7 +317,13 @@ Try it: change a few things, then Discard puts them all back (the counter re-cou
 | class / attribute | what it does |
 |---|---|
 | `form[data-dd-validate][novalidate]` | Checks the form’s controls on submit with the browser’s constraints. Invalid ones get `aria-invalid="true"` and a `.dd-field__error` linked by `aria-describedby`; focus moves to the first, and the submit event stops before other listeners. Errors clear on input once valid, re-check on change, and all clear on reset. |
-| `data-dd-error="…"` | On a control: the error to show instead of the browser’s message. |
+| `data-dd-error-missing="…"` | On a control: the error when it is `required` and empty. |
+| `data-dd-error-type="…"` | The error when the value isn’t of its `type` (an email, a URL) or a number box holds text. |
+| `data-dd-error-pattern="…"` | The error when the value doesn’t match `pattern`. |
+| `data-dd-error-range="…"` | The error when a number or date is under `min`, over `max` or off its `step`. |
+| `data-dd-error-length="…"` | The error when the text is shorter than `minlength` or longer than `maxlength`. |
+| `data-dd-error="…"` | On a control: the error for any problem without its own message above, instead of the browser’s. |
+| `setCustomValidity("…")` | From script: wins over every attribute. Clear it with `setCustomValidity("")` once the problem is gone. |
 | `formnovalidate` | On a submit button: submit without checking (e.g. “Save draft”). |
 
 ## Guidelines
@@ -329,3 +337,5 @@ Don't:
 - Don’t split one question across columns.
 - Don’t mix tucked and label-above fields in a section.
 - Don’t put Save at the top and the bottom of the same form.
+- Don’t put switches in a form with a Save button: a switch applies at once, a checkbox waits for Save.
+

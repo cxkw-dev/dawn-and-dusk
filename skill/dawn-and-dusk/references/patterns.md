@@ -1,8 +1,7 @@
 # dawn & dusk page patterns
 
-Four whole pages composed **only** from existing components: dashboard, data explorer, settings, landing. Live, with
-copyable HTML: `https://cxkw-dev.github.io/dawn-and-dusk/patterns/<dashboard|data-explorer|settings|landing>`.
-For a component's full markup and variants, read its entry in `components.md` or its docs page.
+Whole pages composed **only** from existing components: dashboard, data explorer, settings, landing, pricing. Use them
+as recipes. For a component's exact markup and variants, read `components/<name>.md`.
 
 Reading the skeletons:
 - `[i:NAME]` = `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-NAME"/></svg>`.
@@ -113,92 +112,144 @@ Reading the skeletons:
 
 ## 1. Dashboard
 
-**Structure** — inside `.dd-app-shell__page`, ordered from most urgent to most detailed:
-1. `.dd-page-header`: breadcrumbs, lockup title, secondary + **primary**, meta with an overall status dot.
-2. `.dd-alert` only while something needs a person (`--bad` incident, `--warn`). Nothing wrong → nothing here.
-3. `.dd-stat-grid`: four KPI tiles — label, value + unit, sparkline, delta + named comparison.
-4. Glue split: `.dd-chart` (line/area + legend) beside activity (`.dd-table-header` + `.dd-timeline`); side by side
-   from ~900px of page width, stacked below.
-5. `.dd-table-header` + `.dd-data-table` of services: search, status chips, count, bulk bar, sorting, selection,
-   status column, ghost row actions.
+
+**Structure** — inside `.dd-app-shell__page`, most urgent first:
+1. `.dd-page-header`: mono eyebrow (the environment), lockup title, a ghost link + the one **primary**, a meta row
+   whose status dot summarises the services (`--bad` if anything is down, `--warn` if only degraded).
+2. `.dd-alert--bad` / `--warn` only while something needs a person. Nothing wrong → nothing here.
+3. `.dd-stat-grid--joined`: four KPI tiles (label, value, sparkline, delta + named comparison).
+4. Glue split: **traffic** (`.dd-table-header` with a `.dd-segmented--sm` range, then a `.dd-chart` line chart by
+   region with a "View as table" `<details>`) beside **activity** (`.dd-table-header` + `.dd-timeline`). Side by side
+   from 760px of page width (2 : 1), stacked below.
+5. **services**: `.dd-table-header` + `.dd-data-table` — search, Region menu, status chips, count, Export, bulk bar,
+   sortable figures, status column, a ghost ⋯ per row opening one shared `.dd-menu`.
+6. Floating layers after the shell (never inside the top bar): the environment `.dd-menu`, the alerts `.dd-menu`, and
+   the ⌘K `<dialog class="dd-command">` the top bar's search opens.
 
 ```html
 <div class="dd-app-shell__page app-dash">
   <header class="dd-page-header">
-    <nav class="dd-breadcrumbs dd-breadcrumbs--sm" aria-label="Breadcrumb"><ol class="dd-breadcrumbs__list">
-      <li class="dd-breadcrumbs__item"><a class="dd-breadcrumbs__link" href="#"><span>cxkw</span></a></li>
-      <li class="dd-breadcrumbs__item"><a class="dd-breadcrumbs__link" aria-current="page"><span>production</span></a></li></ol></nav>
     <div class="dd-page-header__row">
-      <div class="dd-page-header__titles"><h1 class="dd-page-header__title">overview</h1></div>
+      <div class="dd-page-header__titles">
+        <p class="dd-page-header__eyebrow">production</p>
+        <h1 class="dd-page-header__title">overview</h1>
+      </div>
       <div class="dd-page-header__actions">
-        <button class="dd-btn dd-btn--secondary" type="button">[i:download]<span>Export</span></button>
+        <a class="dd-btn dd-btn--ghost" href="https://status.example.com">[i:external]<span>Status page</span></a>
         <button class="dd-btn dd-btn--primary" type="button">[i:upload]<span>New deploy</span></button>
       </div>
     </div>
-    <ul class="dd-page-header__meta"><li><span class="dd-page-header__status dd-page-header__status--warn"></span>2 degraded · 1 down</li><li>[i:clock]Last deploy <b>4m ago</b></li></ul>
+    <ul class="dd-page-header__meta">
+      <li><span class="dd-page-header__status dd-page-header__status--bad"></span>1 down · 2 degraded</li>
+      <li>[i:globe]<b>3 regions</b></li>
+      <li>[i:clock]Last deploy <b>4m ago</b></li>
+    </ul>
   </header>
+
   <div class="dd-alert dd-alert--bad">
     [i:danger]
-    <div class="dd-alert__body"><p class="dd-alert__title">notify-fanout is down in eu-west-2</p><p class="dd-alert__text">Failing since 09:39.</p></div>
-    <div class="dd-alert__actions"><button class="dd-alert__action" type="button">Open incident</button><button class="dd-alert__action dd-alert__action--secondary" type="button">View logs</button></div>
-  </div>
-  <div class="dd-stat-grid">
-    <div class="dd-stat">
-      <p class="dd-stat__label">p95 latency</p>
-      <div class="dd-stat__main">
-        <p class="dd-stat__value">142<span class="dd-stat__unit">ms</span></p>
-        <svg class="dd-stat__spark" viewBox="0 0 100 32" aria-hidden="true">
-          <path class="dd-stat__spark-area" d="M0 28 L9.1 24.2 … L100 5 L100 32 L0 32 Z"/><path class="dd-stat__spark-line" d="M0 28 L9.1 24.2 … L100 5"/>
-          <circle class="dd-stat__spark-dot" cx="100" cy="5" r="3"/>
-        </svg>
-      </div>
-      <div class="dd-stat__foot"><span class="dd-stat__delta dd-stat__delta--bad">[i:arrow-up]<span class="dd-visually-hidden">Up</span>18 ms</span><span class="dd-stat__compare">vs <b>124 ms</b> yesterday</span></div>
+    <div class="dd-alert__body">
+      <p class="dd-alert__title">notify-fanout is down in eu-west-2</p>
+      <p class="dd-alert__text">Health checks have failed since 09:39 with <code>ECONNREFUSED</code>. Deploy emails are queued, not lost.</p>
     </div>
-    …  <!-- 4 tiles: requests / min · p95 · error rate · deploys today -->
+    <div class="dd-alert__actions">
+      <button class="dd-alert__action" type="button">Open incident</button>
+      <button class="dd-alert__action dd-alert__action--secondary" type="button">View logs</button>
+    </div>
   </div>
-  <div class="app-dash-split">
-    <figure class="dd-chart">
-      <figcaption class="dd-chart__head">
-        <div><p class="dd-chart__title">Requests / min</p><p class="dd-chart__sub">Last 12 hours · all regions</p></div>
-        <ul class="dd-chart__legend"><li class="dd-chart__key dd-chart__key--line dd-chart-s1">edge-cache</li><li class="dd-chart__key dd-chart__key--line dd-chart-s2">auth-gateway</li></ul>
-      </figcaption>
-      <div class="dd-chart__frame">
-        <div class="dd-chart__y" aria-hidden="true"><span>50K</span><span>25K</span><span>0</span></div>
-        <div class="dd-chart__plot" style="--dd-chart-ticks:2" role="group" aria-label="Requests per minute, last 12 hours">
-          <svg class="dd-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            <path class="dd-chart__line dd-chart-s1" d="M0 51.8 L9.1 56.4 … L100 17.4"/>
-            <path class="dd-chart__line dd-chart-s2" d="M0 80.4 … L100 75"/>
-          </svg>
-          <span class="dd-chart__marker dd-chart-s1" style="--x:100; --y:17.4"></span>
-          <div class="dd-chart__hits" style="--dd-chart-points:12">…</div>  <!-- per point: .dd-chart__hit > .dd-chart__dot + .dd-chart__tip (see chart docs) -->
-        </div>
-        <div class="dd-chart__x dd-chart__x--points" aria-hidden="true"><span>22:00</span><span class="is-minor">23:00</span>…</div>
+
+  <div class="dd-stat-grid dd-stat-grid--joined app-dash__kpis">
+    <div class="dd-stat">
+      <p class="dd-stat__label">Requests / min</p>
+      <div class="dd-stat__main">
+        <p class="dd-stat__value">115.5K</p>
+        <svg class="dd-stat__spark" viewBox="0 0 100 32" aria-hidden="true"><path class="dd-stat__spark-area" d="M0 … L100 32 L0 32 Z"/><path class="dd-stat__spark-line" d="M0 …"/><circle class="dd-stat__spark-dot" cx="100" cy="5" r="3"/></svg>
       </div>
-    </figure>
-    <section aria-labelledby="activity">
-      <header class="dd-table-header"><h2 class="dd-table-header__title" id="activity">activity</h2><a class="dd-table-header__action" href="/audit">Audit log [i:arrow-right]</a></header>
-      <div class="dd-timeline"><section class="dd-timeline__group">
-        <h3 class="dd-timeline__day">Today <time class="dd-timeline__date" datetime="2026-10-30">Oct 30</time></h3>
-        <ol class="dd-timeline__list">
-          <li class="dd-timeline__item">
-            <span class="dd-timeline__marker dd-timeline__marker--bad">[i:danger]</span>  <!-- people: .dd-timeline__marker--avatar style="--dd-color: var(--dd-set-3)" -->
-            <div class="dd-timeline__body"><p class="dd-timeline__text"><b>notify-fanout</b> went down in <b>eu-west-2</b></p><time class="dd-timeline__time" datetime="2026-10-30T09:39">09:39</time></div>
-          </li>
-          …
-        </ol>
-      </section></div>
+      <div class="dd-stat__foot"><span class="dd-stat__delta dd-stat__delta--ok">[i:arrow-up]<span class="dd-visually-hidden">Up</span>8.2%</span><span class="dd-stat__compare">vs <b>106.7K</b> last week</span></div>
+    </div>
+    …  <!-- p95 latency (142<span class="dd-stat__unit">ms</span>, up = --bad), error rate, deploys today (--flat, [i:minus]) -->
+  </div>
+
+  <div class="app-dash__split">
+    <section aria-labelledby="dash-traffic">
+      <header class="dd-table-header">
+        <h2 class="dd-table-header__title" id="dash-traffic">traffic</h2>
+        <div class="dd-segmented dd-segmented--sm app-dash__range" data-dd-segmented role="radiogroup" aria-label="Time range">
+          <button class="dd-segmented__item" type="button" role="radio" aria-checked="true" data-value="12h">12h</button>
+          <button class="dd-segmented__item" type="button" role="radio" aria-checked="false" tabindex="-1" data-value="24h">24h</button>
+          <button class="dd-segmented__item" type="button" role="radio" aria-checked="false" tabindex="-1" data-value="7d">7d</button>
+        </div>
+      </header>
+      <figure class="dd-chart" data-dd-chart>
+        <figcaption class="dd-chart__head">
+          <div><p class="dd-chart__title">Requests / min by region</p><p class="dd-chart__sub">Last 12 hours · hourly</p></div>
+          <ul class="dd-chart__legend"><li class="dd-chart__key dd-chart__key--line dd-chart-s1">us-east-1</li>…</ul>
+        </figcaption>
+        <div class="dd-chart__frame">
+          <div class="dd-chart__y" aria-hidden="true"><span>80K</span><span>60K</span><span>40K</span><span>20K</span><span>0</span></div>
+          <div class="dd-chart__plot" style="--dd-chart-ticks:4" role="group" aria-label="Requests per minute by region over the last 12 hours">
+            <svg class="dd-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <path class="dd-chart__line dd-chart-s1" d="M0 34.5 L9.1 40.1 …"/>…
+            </svg>
+            <span class="dd-chart__marker dd-chart-s1" style="--x:100; --y:17.6"></span>…
+            <div class="dd-chart__hits" style="--dd-chart-points:12">
+              <div class="dd-chart__hit" style="--x:0" tabindex="0" role="img" aria-label="Thu 22:00: us-east-1 52.4K, eu-west-2 9.8K, ap-south-1 22.1K">
+                <span class="dd-chart__dot dd-chart-s1" style="--y:34.5"></span>…
+                <div class="dd-chart__tip" aria-hidden="true"><p class="dd-chart__tip-title">Thu 22:00</p><p class="dd-chart__tip-row dd-chart-s1">us-east-1<b>52.4K</b></p>…</div>
+              </div>
+              …  <!-- one hit per point; add .is-flip to the last ~40% -->
+            </div>
+          </div>
+          <div class="dd-chart__x dd-chart__x--points" aria-hidden="true"><span>22:00</span><span class="is-minor">23:00</span>…</div>
+        </div>
+        <details class="dd-chart__data"><summary>View as table</summary><div class="dd-chart__data-scroll"><table>…</table></div></details>
+      </figure>
+    </section>
+    <section aria-labelledby="dash-activity">
+      <header class="dd-table-header">
+        <h2 class="dd-table-header__title" id="dash-activity">activity</h2>
+        <a class="dd-table-header__action" href="/audit">Audit log [i:arrow-right]</a>
+      </header>
+      <div class="dd-timeline">
+        <section class="dd-timeline__group">
+          <h3 class="dd-timeline__day">Today <time class="dd-timeline__date" datetime="2026-10-30">Oct 30</time></h3>
+          <ol class="dd-timeline__list">
+            <li class="dd-timeline__item">
+              <span class="dd-timeline__marker dd-timeline__marker--avatar" style="--dd-color: var(--dd-set-1)" role="img" aria-label="Andy">AN</span>
+              <div class="dd-timeline__body"><p class="dd-timeline__text"><b>Andy</b> deployed <a href="#">auth-gateway</a></p><time class="dd-timeline__time" datetime="2026-10-30T09:41">09:41</time></div>
+            </li>
+            <li class="dd-timeline__item">
+              <span class="dd-timeline__marker dd-timeline__marker--bad">[i:danger]</span>
+              <div class="dd-timeline__body"><p class="dd-timeline__text"><b>notify-fanout</b> went down in eu-west-2</p><time class="dd-timeline__time" datetime="2026-10-30T09:39">09:39</time></div>
+            </li>
+            …
+          </ol>
+        </section>
+      </div>
     </section>
   </div>
-  <section aria-labelledby="services">
+
+  <section aria-labelledby="dash-services">
     <header class="dd-table-header">
-      <h2 class="dd-table-header__title" id="services">services</h2><span class="dd-table-header__meta">10 in production</span>
+      <h2 class="dd-table-header__title" id="dash-services">services</h2>
       <a class="dd-table-header__action" href="/services">All services [i:arrow-right]</a>
     </header>
     <div class="dd-data-table" data-dd-data-table>
       <div class="dd-data-table__toolbar">
         <label class="dd-data-table__search">[i:search]<input type="search" placeholder="Filter services…" aria-label="Filter services" data-dd-data-table-search></label>
+        <details class="dd-data-table__menu dd-data-table__menu--start">
+          <summary class="dd-data-table__chip"><span>Region</span> <b data-dd-data-table-filter-label="region">all</b>[i:chevron-down]</summary>
+          <div class="dd-data-table__menu-panel">
+            <p class="dd-data-table__menu-title">Region</p>
+            <label><input class="dd-data-table__check" type="checkbox" data-dd-data-table-filter="region=us-east-1"> us-east-1</label>…
+          </div>
+        </details>
         <button class="dd-data-table__chip" type="button" aria-pressed="false" data-dd-data-table-filter="status=warn"><span class="dd-data-table__chip-dot" style="--_c: var(--dd-warn)"></span>Degraded</button>
-        <div class="dd-data-table__tools"><span class="dd-data-table__count" data-dd-data-table-count="services">10 services</span></div>
+        <button class="dd-data-table__chip" type="button" aria-pressed="false" data-dd-data-table-filter="status=bad"><span class="dd-data-table__chip-dot" style="--_c: var(--dd-bad)"></span>Down</button>
+        <div class="dd-data-table__tools">
+          <span class="dd-data-table__count" data-dd-data-table-count="services">10 services</span>
+          <button class="dd-btn dd-btn--ghost dd-btn--sm" type="button">[i:download]<span>Export</span></button>
+        </div>
       </div>
       <div class="dd-data-table__bulk" role="region" aria-label="Bulk actions" hidden>
         <span class="dd-data-table__bulk-count"><span data-dd-data-table-selected>0</span> selected</span>
@@ -210,8 +261,9 @@ Reading the skeletons:
           <thead><tr>
             <th class="dd-data-table__select"><input class="dd-data-table__check" type="checkbox" aria-label="Select all services"></th>
             <th class="is-frozen" data-col="service" aria-sort="none"><button class="dd-data-table__sort" type="button">Service[i:chevron-down]</button></th>
-            <th data-col="status" aria-sort="none"><button class="dd-data-table__sort" type="button">Status[i:chevron-down]</button></th>
-            <th class="is-num" data-col="p95" aria-sort="none"><button class="dd-data-table__sort" type="button">p95[i:chevron-down]</button></th>
+            <th data-col="status" aria-sort="none">…</th><th data-col="region" aria-sort="none">…</th><th data-col="version">Version</th>
+            <th class="is-num" data-col="req" aria-sort="none"><button class="dd-data-table__sort" type="button">Req / min[i:chevron-down]</button></th>
+            …  <!-- Errors, p95, CPU, Updated: all .is-num -->
             <th class="is-actions"><span class="dd-visually-hidden">Actions</span></th>
           </tr></thead>
           <tbody>
@@ -219,40 +271,89 @@ Reading the skeletons:
               <td class="dd-data-table__select"><input class="dd-data-table__check" type="checkbox" aria-label="Select search-indexer"></td>
               <td class="is-frozen" data-col="service"><a href="#">search-indexer</a></td>
               <td data-col="status" data-value="warn"><span class="dd-data-table__status" data-status="warn">Degraded</span></td>
+              <td data-col="region">us-east-1</td>
+              <td class="is-mono is-muted" data-col="version">v0.9.12</td>
+              <td class="is-num">8,904</td>
+              <td class="is-num is-warn">1.84%</td>
               <td class="is-num is-warn" data-value="611">611<span class="dd-data-table__unit">ms</span></td>
-              <td class="is-actions"><button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-label="Actions for search-indexer" data-dd-menu="row-menu" data-dd-placement="bottom-end" aria-haspopup="menu" aria-controls="row-menu" aria-expanded="false">[i:more]</button></td>
+              …
+              <td class="is-actions"><button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-label="Actions for search-indexer" data-dd-menu="dash-row-menu" data-dd-placement="bottom-end" aria-haspopup="menu" aria-controls="dash-row-menu" aria-expanded="false">[i:more]</button></td>
             </tr>
             …
+            <tr class="dd-data-table__empty-row" hidden><td colspan="11">…</td></tr>   <!-- copy from data-table.md -->
           </tbody>
         </table>
       </div>
-      <div class="dd-menu" id="row-menu" role="menu" aria-label="Service actions" hidden>   <!-- one menu shared by every row -->
-        <button class="dd-menu__item" role="menuitem" type="button" data-action="logs"><svg class="dd-icon dd-menu__icon" aria-hidden="true"><use href="#dd-i-terminal"/></svg><span class="dd-menu__body">View logs</span></button>
-        <button class="dd-menu__item" role="menuitem" type="button" data-action="restart"><svg class="dd-icon dd-menu__icon" aria-hidden="true"><use href="#dd-i-refresh"/></svg><span class="dd-menu__body">Restart</span></button>
+      <div class="dd-menu" id="dash-row-menu" role="menu" aria-label="Service actions" hidden>
+        <button class="dd-menu__item" role="menuitem" type="button"><svg class="dd-icon dd-menu__icon" aria-hidden="true"><use href="#dd-i-terminal"/></svg><span class="dd-menu__body">View logs</span></button>…
       </div>
     </div>
   </section>
 </div>
 ```
+
+The top bar wiring and the layers that sit **after** `</div><!-- .dd-app-shell -->`:
+
+```html
+<!-- in .dd-top-bar -->
+<button class="dd-top-bar__switch" type="button" data-dd-menu="dash-env-menu" aria-haspopup="menu" aria-expanded="false" aria-controls="dash-env-menu"><span>production</span>[i:sort]</button>
+<button class="dd-top-bar__search" type="button" aria-label="Search" data-dd-command="dash-cmd">[i:search]<span>Search or jump to…</span><kbd class="dd-top-bar__kbd">⌘K</kbd></button>
+<button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__icon-btn" type="button" aria-label="Alerts, 3 open" data-dd-menu="dash-alerts-menu" data-dd-placement="bottom-end" aria-haspopup="menu" aria-expanded="false" aria-controls="dash-alerts-menu">[i:bell]<span class="dd-top-bar__dot"></span></button>
+
+<!-- after the shell -->
+<div class="dd-menu" id="dash-env-menu" role="menu" aria-label="Environment" hidden>
+  <div class="dd-menu__group" role="group" aria-labelledby="dash-env-label">
+    <p class="dd-menu__label" id="dash-env-label">Environment</p>
+    <button class="dd-menu__item" role="menuitemradio" type="button" aria-checked="true"><span class="dd-menu__body">production<span class="dd-menu__desc">10 services · 3 regions</span></span><svg class="dd-icon dd-menu__check" aria-hidden="true"><use href="#dd-i-check"/></svg></button>
+    …
+  </div>
+</div>
+<div class="dd-menu" id="dash-alerts-menu" role="menu" aria-label="Open alerts" hidden>
+  <div class="dd-menu__header"><span>3 open alerts</span><span>production · oldest 09:22</span></div>
+  <button class="dd-menu__item" role="menuitem" type="button" data-service="notify-fanout"><svg class="dd-icon dd-menu__icon" aria-hidden="true"><use href="#dd-i-danger"/></svg><span class="dd-menu__body">notify-fanout is down<span class="dd-menu__desc">eu-west-2 · since 09:39</span></span></button>
+  …
+</div>
+<dialog class="dd-command" id="dash-cmd" aria-label="Command palette" data-dd-hotkey>…</dialog>   <!-- groups: Needs attention, Services, Commands; copy from command-palette.md -->
+```
+
 ```css
+html:has(.app-dash) { scrollbar-gutter: auto; }          /* the shell is the viewport; nothing else scrolls */
 .app-dash { container: app-dash / inline-size; }
-.app-dash-split { display: grid; grid-template-columns: minmax(0, 1fr); gap: calc(var(--dd-u) * 8); align-items: start; }
-.app-dash > .dd-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }   /* 4 → 2 → 1, never 3 + 1 */
-@container app-dash (min-width: 720px) { .app-dash > .dd-stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-@container app-dash (max-width: 380px) { .app-dash > .dd-stat-grid { grid-template-columns: minmax(0, 1fr); } }
-@container app-dash (min-width: 900px) { .app-dash-split { grid-template-columns: minmax(0, 5fr) minmax(0, 3fr); gap: calc(var(--dd-u) * 6); } }
+.app-dash__kpis { --dd-stat-min: 40%; }                     /* 2 × 2 … */
+@container app-dash (min-width: 720px) { .app-dash__kpis { --dd-stat-min: 20%; } }            /* … then 4; never 3 + 1 */
+@container app-dash (max-width: 479px) { .app-dash__kpis .dd-stat__spark { display: none; } }  /* phones: figures only */
+.app-dash__split { display: grid; gap: calc(var(--dd-u) * 10); align-items: start; }
+.app-dash__split .dd-chart { --dd-chart-height: 240px; }
+.app-dash__split .dd-table-header { min-height: calc(var(--dd-u) * 6); align-items: center; }  /* both columns start level */
+.app-dash__range { margin-left: auto; }
+@container app-dash (min-width: 760px) {
+  .app-dash__split { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: calc(var(--dd-u) * 8); }
+}
 ```
 
 **Key rules**
-- Primary = the page's job (New deploy); Export is secondary; rows get a ghost `[i:more]` that opens one shared
-  row menu (`data-dd-menu`); remember which row opened it to know what the item acts on.
-- At most four KPIs up top. Colour a delta by whether the change is good for that metric (latency up = `--bad`,
-  errors down = `--ok`), never by its sign, and always name the comparison period.
-- Sparklines have no axes — the chart carries values. Series take `dd-chart-s1…` in order; keep to ≤ 3.
-- Status column + threshold cells in the table; the header's status dot summarises them.
-- Tiles and chart are surfaces; timeline and data table sit on the page. No cards around any of them.
-- Mobile: nav off-canvas; tiles 4 → 2 → 1; chart and activity stack; the table scrolls sideways with Service frozen
-  and the toolbar wrapping (search on the first line).
+- One primary (New deploy) in the header. The alert's actions are its own dotted links; table rows get a ghost ⋯ that
+  opens one shared row menu — remember which row opened it to know what an item acts on. Bulk actions are plain buttons.
+- No breadcrumbs: the top bar's context already says `cxkw / production`. The eyebrow repeats the environment so it
+  survives on phones, where the context steps out.
+- Four KPIs at most, joined into one surface; 2 × 2 then 4, never 3 + 1. Colour a delta by what the change means
+  (latency up = `--bad`), never by its sign; always name the period ("vs 106.7K last week").
+- Make the numbers agree: the KPI's figure, the chart's last point and the table should add up (115.5K = the three
+  regions = the sum of the services' req / min).
+- Chart: ≤ 3 series in `dd-chart-s1…` order, a range control in the section header (apply at once, no Save), and a
+  table view. The chart's last point and the KPI agree.
+- The two split columns start on the same line (both have a `.dd-table-header`) and end close together: size the chart
+  (`--dd-chart-height`) and keep feed items to one line at desktop widths.
+- Status: a dot and a word in the table; `td.is-warn` on the figure past its threshold; never colour a row.
+- Search opens the ⌘K palette (`data-dd-command` + `data-dd-hotkey` on the dialog); the bell lists open alerts as a
+  menu; both jump to a service. Listen for `dd:command` / item clicks — don't re-implement the palette or menus.
+- Put floating menus and the palette after the shell, not inside the top bar (its backdrop-filter would trap
+  `position: fixed`).
+- Mobile: nav off-canvas, KPIs 2 × 2 without sparklines, chart and activity stack, the table scrolls in its own box
+  with Service frozen.
+
+**For the shared app-shell section**: the pane head is the section's name (`monitor`), short enough never to truncate —
+the old `production` + `3 regions` head ellipsised to "producti…". Drop the rail's Inbox bell when the top bar has one.
 
 ## 2. Data explorer (Compass-style)
 
@@ -407,138 +508,221 @@ Reading the skeletons:
 
 ## 3. Settings
 
+
 **Structure:**
-1. App shell; the side nav is just its rail (no panel) with Settings `aria-current="page"` — the page carries its own
-   vertical nav, so there is never a second side nav in the content.
-2. `.dd-page-header`: title + one-line description, no actions (each section owns its own).
-3. `.dd-tabs.dd-tabs--vertical[data-dd-tabs]`: a `role="tablist"` with `aria-orientation="vertical"` of `role="tab"`
-   buttons beside one `.dd-tabs__panel` per topic, each holding a `.dd-form` with its section. Real tabs keep the
-   selected state right and give ↑ ↓ / Home / End. Don't use in-page anchor links with a fixed `aria-current`: the
-   mark never moves. (One URL per section? Then each section is its own page and the server sets
-   `aria-current="page"` on its link.)
-4. **Profile** `<form>`: avatar + compact dropzone, tucked inputs and a select in `.dd-form__grid`, textarea with
-   counter, footer with the page's only primary. **Notifications**: `.dd-switch--end` with descriptions in
-   `.dd-form__choices--rows` (+ a `.dd-checkbox-group--inline` for channels). **API keys**: `.dd-code-field` for the new key, `.dd-table` with a
-   status column and ghost Revoke, secondary Create key. **Danger zone**: `.dd-form__section--panel`, ghost Export,
-   `.dd-btn--danger` → `.dd-dialog--danger`.
+1. App shell; the side nav is just its rail (no panel) with Settings `aria-current="page"`. The page carries its own
+   section nav (vertical tabs), so there is never a second side nav in the content.
+2. Top bar: workspace switch, a `.dd-top-bar__search` "Search settings…" that opens a `dialog.dd-command`
+   (`data-dd-command`, ⌘K via `data-dd-hotkey`) listing the sections and a few actions, and the avatar menu.
+3. `.dd-page-header`: title + one-line description, **no actions** (each section owns its own).
+4. `.dd-tabs.dd-tabs--vertical[data-dd-tabs]`: a `role="tablist"` with `aria-orientation="vertical"`; one
+   `.dd-tabs__panel` per section. Real tabs keep the selected state right and give ↑ ↓ / Home / End. Give the tabs ids
+   so search and deep links can call `dd.tabs.select('#id')`.
+5. **Profile** — the only form: `<form class="dd-form" data-dd-validate novalidate>`: avatar + compact dropzone, tucked
+   fields in `.dd-form__grid` (`required` + `data-dd-error-*` messages), a textarea with a counter, and a footer
+   (`.dd-form__meta` save state, ghost Discard, **the page's only primary: Save profile**).
+6. **Notifications** — switches only (`.dd-switch--end` with descriptions in `.dd-form__choices--rows`), each applying at
+   once. No checkboxes, no footer, no Save. Two sections in a `.dd-form--divided`: what (events) and where (channels).
+7. **API keys** — head with its one action beside it (secondary Create key → a form dialog, `method="dialog"` +
+   `data-dd-validate`), the just-created key in a masked `.dd-code-field` (reveal + copy, "shown once"), then a
+   `.dd-table--compact` of keys: name, last four, scope, last used, status, ghost Revoke.
+8. **Danger zone** — a `.dd-form__section--panel` with the explanation on the left and ghost Export + `.dd-btn--danger`
+   on the right; Delete opens a `.dd-dialog--danger` alertdialog with the safe choice autofocused.
 
 ```html
-<div class="dd-app-shell__page app-settings">
-  <header class="dd-page-header"><div class="dd-page-header__row"><div class="dd-page-header__titles">
-    <h1 class="dd-page-header__title">settings</h1>
-    <p class="dd-page-header__desc">Your profile, how cxkw.dev reaches you, and the keys that act on your behalf.</p>
-  </div></div></header>
-  <div class="dd-tabs dd-tabs--vertical" data-dd-tabs>
-    <div class="dd-tabs__list" role="tablist" aria-label="Settings" aria-orientation="vertical">
-      <button class="dd-tabs__tab" role="tab" type="button" aria-selected="true" aria-controls="profile">[i:user]<span>Profile</span></button>
-      <button class="dd-tabs__tab" role="tab" type="button" aria-controls="notifications">[i:bell]<span>Notifications</span></button>
-      <button class="dd-tabs__tab" role="tab" type="button" aria-controls="keys">[i:key]<span>API keys</span><span class="dd-tabs__count">3</span></button>
-      <button class="dd-tabs__tab" role="tab" type="button" aria-controls="danger">[i:danger]<span>Danger zone</span></button>
+<div class="dd-app-shell">
+  <nav class="dd-side-nav" id="app-nav" aria-label="Main">
+    <div class="dd-side-nav__rail">
+      <a class="dd-side-nav__logo dd-logo-tile" href="/" aria-label="Home">d&amp;</a>
+      <a class="dd-side-nav__item" href="/" data-label="Overview" aria-label="Overview">[i:home]</a>
+      …
+      <span class="dd-side-nav__spacer"></span>
+      <a class="dd-side-nav__item" href="/settings" data-label="Settings" aria-label="Settings" aria-current="page">[i:settings]</a>
     </div>
-    <div class="dd-tabs__panel" role="tabpanel" id="profile"><div class="dd-form">
-      <form class="dd-form__section" aria-labelledby="profile-title">
-        <div class="dd-form__head"><h2 class="dd-form__title" id="profile-title">Profile</h2><p class="dd-form__desc">Shown on deploys and comments.</p></div>
-        <div class="app-avatar">
-          <span class="dd-avatar dd-avatar--xl dd-avatar--set-1" role="img" aria-label="Andy Nguyen">AN</span>
-          <label class="dd-dropzone dd-dropzone--compact" data-dd-dropzone>
-            <input type="file" accept="image/*" aria-label="Upload a new avatar"><span class="dd-dropzone__icon">[i:upload]</span>
-            <span class="dd-dropzone__text"><span class="dd-dropzone__title">Drop a new avatar or <span class="dd-dropzone__browse">browse</span></span><span class="dd-dropzone__meta">Square, ≥ 256 × 256</span></span>
-          </label>
-        </div>
-        <div class="dd-form__grid">
-          <div class="dd-field"><label class="dd-field__label" for="name">Name</label><div class="dd-input"><input class="dd-input__control" id="name" value="Andy Nguyen" required></div></div>
-          <div class="dd-field"><label class="dd-field__label" for="user">Username</label><div class="dd-input"><span class="dd-input__unit dd-input__prefix">cxkw.dev/</span><input class="dd-input__control" id="user" value="andy"></div></div>
-          <div class="dd-field"><label class="dd-field__label" for="tz">Time zone</label><div class="dd-input dd-select"><select class="dd-input__control" id="tz"><option>Europe/Berlin · UTC+1</option></select><span class="dd-select__chevron">[i:chevron-down]</span></div></div>
-          <div class="dd-field dd-form__span">
-            <label class="dd-field__label" for="bio">Bio</label>
-            <div class="dd-input dd-textarea"><textarea class="dd-input__control" id="bio" rows="2" maxlength="160">…</textarea></div>
-            <div class="dd-field__foot"><p class="dd-field__hint">Shown on your public profile.</p><span class="dd-field__counter">80 / 160</span></div>
+  </nav>
+  <div class="dd-app-shell__main">
+    <header class="dd-top-bar">
+      <!-- nav button, narrow logo, context: as in The app shell -->
+      <button class="dd-top-bar__search" type="button" data-dd-command="app-search" aria-label="Search settings">[i:search]<span>Search settings…</span><kbd class="dd-top-bar__kbd">⌘K</kbd></button>
+      <div class="dd-top-bar__actions"><!-- avatar menu --></div>
+    </header>
+    <main class="dd-app-shell__content">
+      <div class="dd-app-shell__page app-settings">
+        <header class="dd-page-header"><div class="dd-page-header__row"><div class="dd-page-header__titles">
+          <h1 class="dd-page-header__title">settings</h1>
+          <p class="dd-page-header__desc">Your profile, how cxkw.dev reaches you, and the keys that act on your behalf.</p>
+        </div></div></header>
+
+        <div class="dd-tabs dd-tabs--vertical" data-dd-tabs>
+          <div class="dd-tabs__list" role="tablist" aria-label="Settings" aria-orientation="vertical">
+            <button class="dd-tabs__tab" id="tab-profile" role="tab" type="button" aria-selected="true" aria-controls="profile">[i:user]<span>Profile</span></button>
+            <button class="dd-tabs__tab" id="tab-notifications" role="tab" type="button" aria-controls="notifications">[i:bell]<span>Notifications</span></button>
+            <button class="dd-tabs__tab" id="tab-keys" role="tab" type="button" aria-controls="keys">[i:key]<span>API keys</span><span class="dd-tabs__count">4</span></button>
+            <button class="dd-tabs__tab" id="tab-danger" role="tab" type="button" aria-controls="danger">[i:danger]<span>Danger zone</span></button>
+          </div>
+
+          <div class="dd-tabs__panel" role="tabpanel" id="profile">
+            <form class="dd-form" data-dd-validate novalidate aria-labelledby="profile-title">
+              <section class="dd-form__section">
+                <div class="dd-form__head"><h2 class="dd-form__title" id="profile-title">Profile</h2><p class="dd-form__desc">Shown on deploys, comments and the audit log.</p></div>
+                <div class="app-settings__avatar">
+                  <span class="dd-avatar dd-avatar--xl dd-avatar--set-1" role="img" aria-label="Andy Nguyen">AN</span>
+                  <label class="dd-dropzone dd-dropzone--compact" data-dd-dropzone>
+                    <input type="file" name="avatar" accept="image/png, image/jpeg" aria-label="Upload a new photo"><span class="dd-dropzone__icon">[i:upload]</span>
+                    <span class="dd-dropzone__text"><span class="dd-dropzone__title">Drop a photo or <span class="dd-dropzone__browse">browse</span></span><span class="dd-dropzone__meta">Square PNG or JPG, 256 px or larger</span></span>
+                  </label>
+                </div>
+                <div class="dd-form__grid">
+                  <div class="dd-field"><label class="dd-field__label" for="name">Name</label><div class="dd-input"><input class="dd-input__control" id="name" name="name" value="Andy Nguyen" required data-dd-error-missing="Add the name people see on your deploys."></div></div>
+                  <div class="dd-field"><label class="dd-field__label" for="user">Username</label><div class="dd-input"><span class="dd-input__unit dd-input__prefix">cxkw.dev/</span><input class="dd-input__control" id="user" name="username" value="andy" required pattern="[a-z0-9](-?[a-z0-9])*" data-dd-error="Use lowercase letters, numbers and single dashes."></div></div>
+                  <div class="dd-field"><label class="dd-field__label" for="email">Email</label><div class="dd-input"><input class="dd-input__control" id="email" name="email" type="email" value="andy@cxkw.dev" required data-dd-error-type="That doesn’t look like an email address."></div><p class="dd-field__hint">Verified · used for sign-in and alerts.</p></div>
+                  <div class="dd-field"><label class="dd-field__label" for="tz">Time zone</label><div class="dd-input dd-select"><select class="dd-input__control" id="tz" name="timezone"><option selected>Europe/Berlin · UTC+1</option>…</select><span class="dd-select__chevron">[i:chevron-down]</span></div></div>
+                  <div class="dd-field dd-form__span">
+                    <label class="dd-field__label" for="bio">Bio <span class="dd-field__opt">optional</span></label>
+                    <div class="dd-input dd-textarea"><textarea class="dd-input__control" id="bio" name="bio" rows="2" maxlength="160">…</textarea></div>
+                    <div class="dd-field__foot"><p class="dd-field__hint">Shown on your public profile.</p><span class="dd-field__counter">80 / 160</span></div>
+                  </div>
+                </div>
+              </section>
+              <div class="dd-form__footer">
+                <span class="dd-form__meta">[i:clock]<span>Last saved Oct 30, 09:41</span></span>
+                <button class="dd-btn dd-btn--ghost" type="reset">Discard</button>
+                <button class="dd-btn dd-btn--primary" type="submit">Save profile</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="dd-tabs__panel" role="tabpanel" id="notifications" hidden>
+            <div class="dd-form dd-form--divided">
+              <section class="dd-form__section" aria-labelledby="notify-title">
+                <div class="dd-form__head"><h2 class="dd-form__title" id="notify-title">Notifications</h2><p class="dd-form__desc">Each switch applies right away.</p></div>
+                <div class="dd-form__choices dd-form__choices--rows">
+                  <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch" name="failed-deploys" checked>
+                    <span class="dd-switch__text"><span class="dd-switch__label">Failed deploys</span><span class="dd-switch__desc">Right away, with the build log attached.</span></span></label>
+                  …
+                </div>
+              </section>
+              <section class="dd-form__section" aria-labelledby="channels-title">
+                <div class="dd-form__head"><h3 class="dd-form__title" id="channels-title">Where they go</h3></div>
+                <div class="dd-form__choices dd-form__choices--rows"><!-- Email · Slack · Browser push, same switch rows --></div>
+              </section>
+            </div>
+          </div>
+
+          <div class="dd-tabs__panel" role="tabpanel" id="keys" hidden>
+            <div class="dd-form"><section class="dd-form__section" aria-labelledby="keys-title">
+              <div class="app-settings__head">
+                <div class="dd-form__head"><h2 class="dd-form__title" id="keys-title">API keys</h2><p class="dd-form__desc">For CI and the dd CLI. Keep keys out of code.</p></div>
+                <button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#key-dialog">[i:plus]<span>Create key</span></button>
+              </div>
+              <div class="dd-code-field">
+                <span class="dd-code-field__label" id="newkey">New key · github-actions</span>
+                <div class="dd-code-field__box" role="group" aria-labelledby="newkey">
+                  <code class="dd-code-field__value" data-dd-code-secret="dd_live_51Hc…3f9a">dd_live_••••••••••••••••••••3f9a</code>
+                  <button class="dd-code-field__btn" type="button" data-dd-code-reveal data-dd-code-reveal-label="Show key|Hide key" aria-pressed="false" aria-label="Show key">[i:eye][i:eye-off]</button>
+                  <button class="dd-code-field__btn" type="button" data-dd-copy="dd_live_51Hc…3f9a" aria-label="Copy key">[i:copy][i:check]</button>
+                </div>
+                <p class="dd-code-field__hint">Copy it now — it won’t be shown again. Expires Jan 28, 2027.</p>
+              </div>
+              <div class="dd-table dd-table--compact" tabindex="0" role="region" aria-labelledby="keys-title"><table>
+                <thead><tr><th scope="col">Name</th><th scope="col">Key</th><th scope="col">Scope</th><th scope="col" class="is-num">Last used</th><th scope="col">Status</th><th scope="col" class="is-shrink"><span class="dd-visually-hidden">Actions</span></th></tr></thead>
+                <tbody>
+                  <tr><td class="is-strong">billing-worker</td><td class="is-mono is-muted">…77e0</td><td class="is-mono">invoices:write</td><td class="is-num is-muted">1 h ago</td>
+                    <td><span class="dd-table__status" data-status="warn">Expires in 5 days</span></td>
+                    <td><button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" aria-label="Revoke billing-worker">Revoke</button></td></tr>
+                  …
+                </tbody>
+              </table></div>
+            </section></div>
+          </div>
+
+          <div class="dd-tabs__panel" role="tabpanel" id="danger" hidden>
+            <div class="dd-form"><section class="dd-form__section" aria-labelledby="danger-title">
+              <div class="dd-form__head"><h2 class="dd-form__title" id="danger-title">Danger zone</h2><p class="dd-form__desc">These can’t be undone. Export first if you might want your data back.</p></div>
+              <div class="dd-form__section dd-form__section--panel"><div class="app-settings__row">
+                <div class="dd-form__head"><h3 class="dd-form__title">Delete account</h3><p class="dd-form__desc">Removes your profile, <b>5 projects</b>, <b>1,284 deploys</b> and every API key.</p></div>
+                <div class="dd-form__footer dd-form__footer--plain">
+                  <button class="dd-btn dd-btn--ghost" type="button">[i:download]<span>Export data</span></button>
+                  <button class="dd-btn dd-btn--danger" type="button" data-dd-dialog-open="#delete-dialog">[i:trash]<span>Delete account</span></button>
+                </div>
+              </div></div>
+            </section></div>
           </div>
         </div>
-        <div class="dd-form__footer">
-          <span class="dd-form__meta">[i:clock]Last saved Oct 30, 09:41</span>
-          <button class="dd-btn dd-btn--ghost" type="reset">Discard</button>
-          <button class="dd-btn dd-btn--primary" type="submit">Save profile</button>
-        </div>
-      </form>
-    </div></div>
-    <div class="dd-tabs__panel" role="tabpanel" id="notifications" hidden><div class="dd-form">
-      <section class="dd-form__section" aria-labelledby="notif-title">
-        <div class="dd-form__head"><h2 class="dd-form__title" id="notif-title">Notifications</h2><p class="dd-form__desc">Changes apply right away.</p></div>
-        <div class="dd-form__choices dd-form__choices--rows">
-          <label class="dd-switch dd-switch--end"><input class="dd-switch__input" type="checkbox" role="switch" checked>
-            <span class="dd-switch__text"><span class="dd-switch__label">Failed deploys</span><span class="dd-switch__desc">Right away, with the build log.</span></span></label>
-          …
-        </div>
-      </section>
-    </div></div>
-    <div class="dd-tabs__panel" role="tabpanel" id="keys" hidden><div class="dd-form">
-      <section class="dd-form__section" aria-labelledby="keys-title">
-        <div class="dd-form__head"><h2 class="dd-form__title" id="keys-title">API keys</h2><p class="dd-form__desc">For CI and the dd CLI.</p></div>
-        <div class="dd-code-field">
-          <span class="dd-code-field__label" id="newkey">New key · github-actions</span>
-          <div class="dd-code-field__box" role="group" aria-labelledby="newkey">
-            <code class="dd-code-field__value" data-dd-code-secret="dd_live_51Hc…3f9a">dd_live_••••••••••••3f9a</code>
-            <button class="dd-code-field__btn" type="button" data-dd-code-reveal data-dd-code-reveal-label="Show key|Hide key" aria-pressed="false" aria-label="Show key">[i:eye][i:eye-off]</button>
-            <button class="dd-code-field__btn" type="button" data-dd-copy="dd_live_51Hc…3f9a" aria-label="Copy key">[i:copy][i:check]</button>
-          </div>
-          <p class="dd-code-field__hint">Copy it now — it won’t be shown again.</p>
-        </div>
-        <div class="dd-table dd-table--compact"><table>
-          <thead><tr><th>Name</th><th>Key</th><th>Status</th><th class="is-num">Last used</th><th class="is-shrink"><span class="dd-visually-hidden">Actions</span></th></tr></thead>
-          <tbody>
-            <tr><td class="is-strong">billing-worker</td><td class="is-mono is-muted">…77e0</td><td><span class="dd-table__status" data-status="warn">Expiring</span></td><td class="is-num is-muted">1 h ago</td>
-              <td><button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" aria-label="Revoke billing-worker">Revoke</button></td></tr>
-            …
-          </tbody>
-        </table></div>
-        <div class="dd-form__footer dd-form__footer--plain"><button class="dd-btn dd-btn--secondary" type="button">[i:plus]<span>Create key</span></button></div>
-      </section>
-    </div></div>
-    <div class="dd-tabs__panel" role="tabpanel" id="danger" hidden><div class="dd-form">
-      <section class="dd-form__section" aria-labelledby="danger-title">
-        <div class="dd-form__head"><h2 class="dd-form__title" id="danger-title">Danger zone</h2><p class="dd-form__desc">These can’t be undone.</p></div>
-        <div class="dd-form__section dd-form__section--panel">
-          <div class="dd-form__head"><h3 class="dd-form__title">Delete account</h3><p class="dd-form__desc">Removes your profile, 5 projects and every API key.</p></div>
-          <div class="dd-form__footer dd-form__footer--plain">
-            <button class="dd-btn dd-btn--ghost" type="button">[i:download]<span>Export data</span></button>
-            <button class="dd-btn dd-btn--danger" type="button" data-dd-dialog-open="#delete-dialog">[i:trash]<span>Delete account</span></button>
-          </div>
-        </div>
-      </section>
-    </div></div>
+      </div>
+    </main>
   </div>
-  <dialog class="dd-dialog dd-dialog--sm dd-dialog--danger" id="delete-dialog" role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-desc">
-    <header class="dd-dialog__head"><span class="dd-dialog__icon">[i:danger]</span>
-      <div class="dd-dialog__titles"><p class="dd-dialog__eyebrow">Danger zone</p><h2 class="dd-dialog__title" id="delete-title">Delete your account?</h2></div></header>
-    <div class="dd-dialog__body" id="delete-desc"><p>This permanently removes <strong>5 projects</strong> and 3 API keys.</p></div>
-    <footer class="dd-dialog__foot">
-      <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close autofocus>Keep my account</button>
-      <button class="dd-btn dd-btn--danger" type="button" data-dd-dialog-close="delete">[i:trash]<span>Delete</span></button>
-    </footer>
-  </dialog>
 </div>
+
+<dialog class="dd-dialog" id="key-dialog" aria-labelledby="key-title">
+  <form class="dd-dialog__form" method="dialog" data-dd-validate novalidate>
+    <header class="dd-dialog__head"><span class="dd-dialog__icon">[i:key]</span>
+      <div class="dd-dialog__titles"><p class="dd-dialog__eyebrow">API keys</p><h2 class="dd-dialog__title" id="key-title">Create a key</h2></div>
+      <button class="dd-dialog__close" type="button" data-dd-dialog-close aria-label="Close">[i:x]</button></header>
+    <div class="dd-dialog__body dd-form__body">
+      <div class="dd-field"><label class="dd-field__label" for="key-name">Name</label><div class="dd-input"><input class="dd-input__control" id="key-name" name="name" placeholder="leetnode-ci" required autofocus></div></div>
+      <div class="dd-form__grid"><!-- Scope and Expires selects --></div>
+    </div>
+    <footer class="dd-dialog__foot">
+      <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close>Cancel</button>
+      <button class="dd-btn dd-btn--primary" type="submit" value="create">[i:key]<span>Create key</span></button>
+    </footer>
+  </form>
+</dialog>
+<dialog class="dd-dialog dd-dialog--sm dd-dialog--danger" id="delete-dialog" role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-desc">
+  <header class="dd-dialog__head"><span class="dd-dialog__icon">[i:danger]</span>
+    <div class="dd-dialog__titles"><p class="dd-dialog__eyebrow">Danger zone</p><h2 class="dd-dialog__title" id="delete-title">Delete your account?</h2></div></header>
+  <div class="dd-dialog__body" id="delete-desc"><p>This permanently removes <strong>5 projects</strong>, <strong>1,284 deploys</strong> and <strong>every API key</strong>. It can’t be undone.</p></div>
+  <footer class="dd-dialog__foot">
+    <button class="dd-btn dd-btn--ghost" type="button" data-dd-dialog-close autofocus>Keep my account</button>
+    <button class="dd-btn dd-btn--danger" type="button" data-dd-dialog-close="delete">[i:trash]<span>Delete</span></button>
+  </footer>
+</dialog>
+<dialog class="dd-command" id="app-search" aria-label="Search settings" data-dd-hotkey>
+  <!-- Command palette markup: groups "Settings" (one row per tab, data-value="tab:tab-keys", data-keywords for the fields
+       inside) and "Actions" (Create an API key…, Change email address, Switch theme with data-dd-theme-toggle). -->
+</dialog>
 ```
 ```css
-.app-settings { container: app-settings / inline-size; }
-.app-avatar { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 4); }
-.app-avatar > .dd-dropzone { flex: 1 1 16rem; }
-@container app-settings (min-width: 640px) { .app-settings .dd-tabs--vertical > .dd-tabs__list { position: sticky; top: 0; } }
+.app-settings { container: app-settings / inline-size; max-width: 66rem; }
+.app-settings .dd-tabs__panel { max-width: 46rem; }
+.app-settings__head, .app-settings__row { display: flex; flex-flow: row wrap; align-items: flex-start; justify-content: space-between; gap: calc(var(--dd-u) * 4) calc(var(--dd-u) * 8); }
+.app-settings__head > .dd-form__head, .app-settings__row > .dd-form__head { flex: 1 1 20rem; }
+.app-settings__row { align-items: center; }
+.app-settings__avatar { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 4); }
+.app-settings__avatar > .dd-dropzone { flex: 1 1 12rem; }
+@container app-settings (min-width: 860px) {
+  .app-settings .dd-tabs--vertical > .dd-tabs__list { position: sticky; top: calc(var(--dd-u) * 6); }
+}
+@container app-settings (max-width: 859px) { /* the panels need the full width: list above, spanning it */
+  .app-settings .dd-tabs--vertical > .dd-tabs__list { max-width: none; }
+  .app-settings .dd-tabs--vertical > .dd-tabs__panel { flex-basis: 100%; max-width: none; }
+}
 ```
 
+The app answers the page in script: `submit` on the profile form (after `data-dd-validate` passes) saves and updates the
+`.dd-form__meta` line ("Unsaved changes" on input, "Saved today, 09:52" after); `change` on a switch saves that one
+setting; the key dialog's `close` event with `returnValue === 'create'` fills the code field and prepends a row;
+`dd:command` from the palette calls `dd.tabs.select('#tab-…')`.
+
 **Key rules**
-- A section gets a footer only if it needs saving; switches and in-place actions (create, revoke) apply at once. So
-  one primary (Save profile); Create key is secondary; Revoke is ghost.
-- One label style per section (tucked `.dd-field` by default). Two columns only for short pairs; long fields take
-  `.dd-form__span`.
-- Switches with consequences get a `.dd-switch__desc`; `--end` lines the controls up in a column.
+- **Switch vs checkbox:** a switch applies at once, a checkbox is saved with a form. So Notifications is all switches
+  with no Save, and the Profile form (which has Save) has no switches. Never mix them in one section.
+- One primary on screen: Save profile, only in the Profile panel. Create key is secondary (its dialog has its own
+  primary), Revoke is ghost per row, Delete is `--danger` behind a dialog.
+- A section gets a footer only if it needs saving. A section with one action puts it beside its head
+  (`app-settings__head`), not in a footer under the content.
+- Section titles are `.dd-form__title` (sentence case). Don't add a lockup `.dd-table-header__title` inside a panel;
+  it out-shouts the panel's own title. Label the table by the panel title (`aria-labelledby`).
+- Validation: `data-dd-validate novalidate` on the form, `required` on what can't be empty, the error text in
+  `data-dd-error-missing` / `-type`. Mark optional fields with `.dd-field__opt`, never required ones with an asterisk.
 - Secrets: masked in `.dd-code-field` with reveal + copy, shown once, with a hint that says so. Key lists show the last
-  four characters (mono) and a status column (Active / Expiring / Revoked).
+  four (mono), the scope, last use and a status (Active / Expires in 5 days / Revoked). Keep the table to six columns
+  so it fits beside the tabs from ~1024px.
 - Destructive = two steps: `.dd-btn--danger` → `.dd-dialog--danger` (`role="alertdialog"`, `autofocus` on the safe
-  choice). The danger zone is a neutral tonal panel — don't tint it red.
-- Fields that can't be empty (name, email) get `required`; mark the optional ones in words, never with an asterisk.
-- Mobile: the vertical tab list moves above the sections, the grid folds to one column, footer buttons stretch under
-  ~420px, the key table scrolls sideways.
+  choice). The danger zone is a neutral tonal panel; don't tint it red.
+- Responsive: tabs beside the panels from 860px of page (sticky), above them and full width below; the profile grid
+  folds to one column; footer buttons share the width under ~420px; the key table scrolls sideways only on phones.
 
 ## 4. Landing page (cxkw.dev)
 

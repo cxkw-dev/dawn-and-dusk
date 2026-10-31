@@ -29,7 +29,6 @@ layer, and it ships an **agent skill** so AI assistants build with it correctly.
 |---|---|
 | **Foundations** | Colour tokens for dawn and dusk; Outfit / Figtree / DM Mono type; a 5px spacing unit; radius; tonal depth; motion; Solar icons |
 | **Components** | <!-- components:count -->Actions, forms, data display, feedback, navigation, overlays and layout, including data-heavy pieces (data table, stats, charts, code / JSON / log viewers, timelines)<!-- /components:count --> |
-| **Patterns** | Whole-page recipes: dashboard, data explorer, settings, landing |
 | **Agent skill** | `skill/dawn-and-dusk/`, a Claude skill with the rules, a generated component and token reference, and the release files |
 | **Release files** | `release/dawn-and-dusk.css`, `release/dawn-and-dusk.js`, `release/tokens.css`, `release/icons.svg` |
 

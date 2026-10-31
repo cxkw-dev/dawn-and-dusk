@@ -81,7 +81,7 @@ A `<details data-dd-autoclose>`: it closes on a click outside, on Esc or after c
 
 ## Narrow
 
-Below 640px of its own width the menu button appears (wire it to the side nav with `data-dd-nav-open="#app-nav"`), the search collapses to an icon, and the context plus anything marked `dd-top-bar__wide` step out. In an app shell the menu button opens the side nav off-canvas.
+Below 640px of its own width the menu button appears (wire it to the side nav with `data-dd-nav-open="#app-nav"`), the search collapses to an icon, and the context plus anything marked `dd-top-bar__wide` step out. In an app shell the shell decides instead: the menu button and `__narrow` show while its side nav is off-canvas, and the context stays while the nav is in view. Only the shell’s own top bar follows it — top bars inside its content, like these examples, keep their own width rules.
 
 ```html
 <div class="tb-phone">
@@ -187,7 +187,7 @@ Narrow. Try it: open the menu button and pick a section with ↓ ↑ and Enter, 
 | `__icon-btn / __dot` | An icon button with an unread dot. |
 | `__user / __avatar / __menu` | Avatar menu: `<details>`, the initials disc, the floating menu. |
 | `__menu-head / __menu-item / __menu-sep` | Menu parts: who you are, items (links or buttons), hairline separators. |
-| `__wide / __narrow` | `__wide` hides an element when the bar is narrow; `__narrow` shows one only then (a compact stand-in, such as an icon-only theme button). |
+| `__wide / __narrow` | `__wide` hides an element when the bar is narrow; `__narrow` shows one only then (a compact stand-in, such as an icon-only theme button). In an app shell, `__narrow` follows the side nav: shown while it is off-canvas. |
 
 ## Behaviour
 
@@ -208,3 +208,4 @@ Don't:
 - Don’t repeat the side nav’s sections as top bar links in an app.
 - Don’t put more than three icon buttons before the avatar.
 - Don’t hide search on mobile — collapse it to an icon.
+

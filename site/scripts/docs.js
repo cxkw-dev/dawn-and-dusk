@@ -100,16 +100,6 @@ if (nav && list) {
   });
   list.addEventListener('dd-docs-restore', () => { shown = activePane(); list.scrollTop = memo[shown] ?? 0; });
   addEventListener('pagehide', () => { try { sessionStorage.setItem('dd-docs-nav', JSON.stringify(memo)); } catch { /* storage unavailable */ } });
-
-  // Off-canvas, two gaps in side-nav.js inside an app shell. (1) A click on the scrim (the nav's ::before) would blur the
-  // focused link on mousedown, so focus could not go back to the menu button: keep it where it is until the click.
-  // (2) The shell's next tab stop after the nav is the top bar's menu button, which side-nav.js's tab-out rule exempts
-  // (it is the opener): tabbing past the last link onto it closes the nav, as tabbing anywhere else out of it does.
-  nav.addEventListener('mousedown', (e) => { if (e.target === nav && nav.classList.contains('is-mobile-open')) e.preventDefault(); });
-  document.addEventListener('focusin', (e) => {
-    const btn = e.target.closest?.('[data-dd-nav-open="#doc-nav"]');
-    if (btn && nav.classList.contains('is-mobile-open') && nav.contains(e.relatedTarget)) btn.click();
-  });
 }
 
 // Search, at the head of the side nav's panel. While a query is typed it searches every section (titles, section

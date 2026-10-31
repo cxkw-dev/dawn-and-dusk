@@ -100,3 +100,4 @@ Don't:
 - Don’t put anything interactive or essential in a tooltip — use a popover.
 - Don’t add tooltips to things that already have a visible label.
 - Don’t use tooltips on disabled buttons to explain why; say it next to them.
+

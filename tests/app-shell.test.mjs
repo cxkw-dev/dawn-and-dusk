@@ -153,3 +153,193 @@ test('phone width (375): both shells go off-canvas and work by touch, in dusk', 
   assert.equal(await page.text(`${shell} .dd-page-header__title`), 'ai-focus');
   await clearNavs(page);
 });
+
+// ---------- page-scroll mode: these docs run on it (.doc-app = dd-app-shell dd-app-shell--page dd-app-shell--offcanvas-md) ----------
+const DOCS = '.doc-app';
+const DOCS_MENU = '.doc-bar .dd-top-bar__nav-btn';
+const docsSettled = (page) => page.waitFor(() => {
+  const n = document.getElementById('doc-nav');
+  return n.classList.contains('is-mobile-open') ? Math.abs(n.getBoundingClientRect().left) < 1 : getComputedStyle(n).visibility === 'hidden';
+});
+const locked = (page) => page.get(() => ({
+  lock: document.documentElement.classList.contains('dd-side-nav-lock'), overflow: getComputedStyle(document.documentElement).overflow,
+}));
+// A real wheel turn at (x, y), then let the scroll land.
+const wheel = async (page, x, y, deltaY = 600) => { await page.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x, y, deltaX: 0, deltaY }); await page.sleep(300); };
+
+test('page-scroll mode (these docs): the document scrolls, the side nav and top bar stick, the content is no scroller', async ({ open, assert }) => {
+  const page = await fresh(open, { width: 1440, height: 900 });
+  assert.ok(await page.get((s) => document.querySelector(s).matches('.dd-app-shell.dd-app-shell--page'), DOCS), 'the docs shell is in page mode');
+  await page.evaluate(() => scrollTo(0, 1400));
+  await page.sleep(100);
+  const r = await page.get((s) => {
+    const shell = document.querySelector(s); const nav = shell.querySelector(':scope > .dd-side-nav'); const bar = shell.querySelector(':scope > .dd-app-shell__main > .dd-top-bar');
+    const content = shell.querySelector(':scope > .dd-app-shell__main > .dd-app-shell__content');
+    const box = (el) => el.getBoundingClientRect();
+    return {
+      y: scrollY, vh: innerHeight, shellH: box(shell).height, navTop: box(nav).top, navH: box(nav).height, barTop: box(bar).top,
+      pos: [getComputedStyle(nav).position, getComputedStyle(bar).position],
+      overflow: [getComputedStyle(shell).overflowY, getComputedStyle(content).overflowY], contain: getComputedStyle(shell).contain,
+    };
+  }, DOCS);
+  assert.equal(r.y, 1400, 'the window scrolls');
+  assert.ok(r.shellH > r.vh * 2, 'the shell grows with its content');
+  assert.deepEqual(r.pos, ['sticky', 'sticky']);
+  assert.equal(r.navTop, 0, 'side nav sticks');
+  assert.equal(r.navH, r.vh, 'at the full window height');
+  assert.equal(r.barTop, 0, 'top bar sticks');
+  assert.deepEqual(r.overflow, ['visible', 'visible'], 'neither the shell nor its content is a scroll container');
+  assert.equal(r.contain, 'none');
+  // The frame-mode demos on the page keep the default: their height, and only their content scrolls.
+  assert.equal(await page.get((s) => document.querySelector(s).getBoundingClientRect().height, shellOf(FULL)), 700);
+  assert.equal(await page.get((s) => getComputedStyle(document.querySelector(`${s} > .dd-app-shell__main > .dd-app-shell__content`)).overflowY, shellOf(FULL)), 'auto');
+});
+
+test('page-scroll mode at 860: the off-canvas nav is fixed to the window wherever the page is, the page behind stays put, and widening drops it', async ({ open, assert }) => {
+  const page = await fresh(open, { width: 860, height: 760 });
+  await page.evaluate(() => scrollTo(0, 1600));
+  await page.sleep(100);
+  const y = await page.get(() => scrollY);
+  // Open from the keyboard. (Chrome's focus() and a pointer click both scroll a sticky element "into view", so focus it
+  // without scrolling: the button is in view.)
+  await page.get((s) => document.querySelector(s).focus({ preventScroll: true }), DOCS_MENU);
+  await page.press('Enter');
+  await docsSettled(page);
+  const r = await page.get(() => {
+    const n = document.getElementById('doc-nav'); const b = n.getBoundingClientRect();
+    return { top: Math.round(b.top), left: Math.round(b.left), h: Math.round(b.height), vh: innerHeight, toWindow: n.offsetParent === null, y: scrollY, focusIn: n.contains(document.activeElement) };
+  });
+  assert.deepEqual([r.top, r.left, r.h], [0, 0, r.vh], 'over the window, full height, scrolled or not');
+  assert.ok(r.toWindow, 'fixed to the window, not to the shell');
+  assert.equal(r.y, y, 'opening does not move the page');
+  assert.ok(r.focusIn, 'focus went in');
+  assert.deepEqual(await locked(page), { lock: true, overflow: 'hidden' }, 'the page is locked');
+  await wheel(page, 835, 400);
+  assert.equal(await page.get(() => scrollY), y, 'a wheel over the scrim does not scroll the page behind');
+
+  await page.press('Escape');
+  await docsSettled(page);
+  assert.deepEqual(await locked(page), { lock: false, overflow: 'visible' }, 'unlocked on close');
+  assert.ok(await page.get((s) => document.activeElement === document.querySelector(s), DOCS_MENU), 'focus back on the menu button');
+  await wheel(page, 835, 400);
+  assert.ok((await page.get(() => scrollY)) > y, 'the page scrolls again');
+
+  // Widening past the breakpoint while it is open: the nav is in view again, no longer "open", and the lock goes.
+  await page.get((s) => document.querySelector(s).focus({ preventScroll: true }), DOCS_MENU);
+  await page.press('Enter');
+  await docsSettled(page);
+  assert.equal((await locked(page)).lock, true);
+  await page.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+  await page.waitFor(() => !document.getElementById('doc-nav').classList.contains('is-mobile-open'));
+  assert.deepEqual(await locked(page), { lock: false, overflow: 'visible' });
+  assert.equal(await page.attr(DOCS_MENU, 'aria-expanded'), 'false');
+  assert.equal(await page.get(() => getComputedStyle(document.getElementById('doc-nav')).position), 'sticky', 'back in the page, sticky');
+});
+
+test('the shell reaches only its own side nav and top bar: shells and bars in its content keep their own state', async ({ open, assert }) => {
+  // 1440: the docs shell is wide (its nav in view), yet the phone demo inside still shows its menu button and logo.
+  const page = await fresh(open, { width: 1440 });
+  const phone = shellOf(PHONE);
+  assert.equal(await page.visible(DOCS_MENU), false, 'the docs bar has no menu button');
+  assert.ok(await page.visible(`${phone} .dd-top-bar__nav-btn`), 'the phone demo keeps its menu button');
+  assert.ok(await page.visible(`${phone} .dd-top-bar__brand.dd-top-bar__narrow`), 'and its logo');
+  assert.equal(await page.visible(`${phone} .dd-top-bar__context`), false, 'and folds its context away');
+
+  // 860: the docs shell is narrow (its nav off-canvas), yet the 800px full demo keeps its nav in view and no menu button.
+  const narrow = await fresh(open, { width: 860 });
+  const full = shellOf(FULL);
+  assert.ok(await narrow.visible(DOCS_MENU), 'the docs’ own menu button shows');
+  assert.ok((await narrow.get((s) => document.querySelector(s).getBoundingClientRect().width, full)) >= 768, 'the demo shell is wide');
+  assert.equal(await narrow.visible(`${full} .dd-top-bar__nav-btn`), false, 'no menu button leaks into the demo');
+  assert.equal(await narrow.visible(`${full} .dd-top-bar__narrow`), false, 'nor the narrow-only logo');
+  assert.ok(await narrow.visible(`${full} .dd-top-bar__context`), 'the demo keeps its context');
+  assert.equal(await narrow.get((s) => getComputedStyle(document.querySelector(s)).position, FULL), 'relative', 'the demo nav stays in its shell’s flow');
+  assert.ok(await narrow.visible(FULL));
+});
+
+test('breakpoints: --offcanvas-md / --offcanvas-lg move the off-canvas width; an explicit dd-side-nav--offcanvas wins at any width', async ({ open, assert }) => {
+  const page = await fresh(open, { width: 1440, height: 900 });
+  const S = shellOf(FULL);
+  // Size the full demo shell and pick its breakpoint class; read back the nav and its top bar.
+  const at = (w, cls) => page.get((s, w, c) => {
+    const sh = document.querySelector(s);
+    sh.style.width = w ? `${w}px` : '';
+    sh.classList.remove('dd-app-shell--offcanvas-md', 'dd-app-shell--offcanvas-lg');
+    if (c) sh.classList.add(`dd-app-shell--offcanvas-${c}`);
+    const shown = (el) => getComputedStyle(el).display !== 'none';
+    const nav = sh.querySelector(':scope > .dd-side-nav');
+    return { w: Math.round(sh.getBoundingClientRect().width), off: getComputedStyle(nav).position === 'fixed', btn: shown(sh.querySelector('.dd-top-bar__nav-btn')), logo: shown(sh.querySelector('.dd-top-bar__narrow')) };
+  }, S, w, cls);
+  for (const [w, cls, off] of [[950, null, false], [950, 'md', false], [950, 'lg', true], [1030, 'lg', false], [850, null, false], [850, 'md', true], [850, 'lg', true], [760, null, true]]) {
+    const r = await at(w, cls);
+    const name = `${cls ? `--offcanvas-${cls}` : 'default'} at ${w}px`;
+    assert.equal(r.w, w);
+    assert.equal(r.off, off, `${name}: ${off ? 'off-canvas' : 'in view'}`);
+    assert.equal(r.btn, off, `${name}: the menu button follows`);
+    assert.equal(r.logo, off, `${name}: the narrow-only logo follows`);
+  }
+  await at(null, null);
+
+  // An explicit --offcanvas nav in a wide shell: off-canvas, the bar keeps its menu button, and it works.
+  await page.get((s) => document.querySelector(s).classList.add('dd-side-nav--offcanvas'), FULL);
+  assert.equal(await page.get((s) => getComputedStyle(document.querySelector(s)).position, FULL), 'fixed', '--offcanvas beats the shell');
+  await page.waitFor((s) => getComputedStyle(document.querySelector(s)).visibility === 'hidden', { args: [FULL] }); // after its exit transition
+  const btn = `${S} [data-dd-nav-open]`;
+  assert.ok(await page.visible(btn), 'menu button shows on a wide shell');
+  assert.ok(await page.visible(`${S} .dd-top-bar__narrow`), 'and the logo');
+  const main = await page.get((s) => [document.querySelector(`${s} > .dd-app-shell__main`).getBoundingClientRect().width, document.querySelector(s).getBoundingClientRect().width], S);
+  assert.ok(Math.abs(main[0] - main[1]) < 1, 'the page takes the full width');
+  await page.click(btn);
+  await settled(page, FULL);
+  assert.ok(await isOpen(page, FULL));
+  assert.ok(await page.get((s) => document.querySelector(s).offsetParent === document.querySelector(s).parentElement, FULL), 'fixed to its frame-mode shell');
+  assert.equal((await locked(page)).lock, false, 'a nav fixed to its frame doesn’t lock the page');
+  await page.press('Escape');
+  assert.ok(!(await isOpen(page, FULL)));
+  assert.ok(await page.get((s) => document.activeElement === document.querySelector(s), btn), 'focus back on the menu button');
+  await page.get((s) => document.querySelector(s).classList.remove('dd-side-nav--offcanvas'), FULL);
+  assert.equal(await page.get((s) => getComputedStyle(document.querySelector(s)).position, FULL), 'relative', 'back in the flow without it');
+  await clearNavs(page);
+});
+
+test('phone frame: a mouse click on the scrim returns focus to the menu button; tabbing out onto the menu button closes it', async ({ open, assert }) => {
+  const page = await fresh(open);
+  const shell = shellOf(PHONE);
+  const btn = `${shell} [data-dd-nav-open]`;
+  const onBtn = () => page.get((s) => document.activeElement === document.querySelector(s), btn);
+  await page.click(btn);
+  await settled(page, PHONE);
+  assert.ok(await page.get((s) => document.querySelector(s).contains(document.activeElement), PHONE), 'focus inside');
+  await tapScrim(page, PHONE);
+  assert.ok(!(await isOpen(page, PHONE)), 'the scrim closes it');
+  assert.ok(await onBtn(), 'focus is back on the menu button, not on <body>');
+
+  // In the shell the nav comes first, so the stop after its last link is the top bar's menu button.
+  await page.click(btn);
+  await settled(page, PHONE);
+  await page.get((s) => [...document.querySelectorAll(`${s} .dd-side-nav__pane:not([hidden]) a[href]`)].pop().focus(), PHONE);
+  await page.press('Tab');
+  assert.ok(!(await isOpen(page, PHONE)), 'tabbing onto the menu button closes it');
+  assert.ok(await onBtn(), 'focus is on the menu button');
+  assert.equal(await page.attr(btn, 'aria-expanded'), 'false');
+  await page.press('Enter');
+  assert.ok(await isOpen(page, PHONE), 'Enter opens it again');
+  assert.equal((await locked(page)).lock, false, 'a nav fixed to its frame doesn’t lock the page');
+  await page.press('Escape');
+  assert.ok(await onBtn());
+  await clearNavs(page);
+});
+
+test('tables follow the shell: no cell grain on a frame-mode shell’s plain page, the page grain in page mode', async ({ open, assert }) => {
+  const grain = (page) => page.get(() => getComputedStyle(document.querySelector('.dd-data-table')).getPropertyValue('--_grain').trim());
+  const page = await open('components/data-table', { theme: 'dusk' });
+  assert.ok(await page.get(() => !document.querySelector('.dd-data-table').closest('.ex-stage .dd-app-shell')), 'the first table sits right in the docs (page mode)');
+  assert.notEqual(await grain(page), 'none', 'page mode keeps the grain');
+  // A frame-mode shell (the default) holding a dense table: the shell has a plain page, so the table drops its grain.
+  const framed = await page.get(() => {
+    const host = document.querySelector('.ex-stage');
+    host.insertAdjacentHTML('beforeend', '<div class="dd-app-shell" style="--dd-app-shell-h: 200px" id="frame-shell"><div class="dd-app-shell__main"><div class="dd-app-shell__content"><div class="dd-data-table" id="framed-table"></div></div></div></div>');
+    return getComputedStyle(document.getElementById('framed-table')).getPropertyValue('--_grain').trim();
+  });
+  assert.equal(framed, 'none', 'the frame-mode shell drops it');
+});

@@ -1,6 +1,7 @@
 ---
-// Docs page shell, built on the system's own app shell: the side nav (icon rail + page panel) runs the full height on
-// the left, the top bar and the page share the rest. Every page uses the design system itself.
+// Docs page shell, built on the system's own app shell in page-scroll mode (the document scrolls; the side nav and the
+// top bar stick): the side nav (icon rail + page panel) runs the full height on the left, the top bar and the page share
+// the rest, and under 900px the nav goes off-canvas. Every page uses the design system itself.
 import '../../ds/dawn-and-dusk.css';
 import '../styles/docs.css';
 import DocsNav from '../components/DocsNav.astro';
@@ -14,25 +15,35 @@ interface Props {
   wide?: boolean;
 }
 const { title, group, lead, wide = false } = Astro.props;
-type NavGroup = { group: string; order: number; items: { title: string; href: string; tag?: string | number }[] };
+type NavItem = { title: string; href: string; tag?: string | number; group?: string };
+type NavGroup = { group: string; order: number; items: NavItem[]; keywords?: string; section?: string };
 type RailSection = { key: string; label: string; icon: string; title: string; groups: NavGroup[] };
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const here = Astro.url.pathname.replace(/\/$/, '');
 
-// Rail sections. Each nav group (site/nav/*.mjs) lands in the section its pages live under.
+// Rail sections. Each nav file (site/nav/*.mjs) is one group, or — when its items name their own `group` — one group per
+// label, in order; either way every pane reads the same: title, micro-caps label, pages. The file's own name stays a
+// search keyword for its pages. Each group lands in the section its pages live under.
 const groups = Object.values(import.meta.glob('../nav/*.mjs', { eager: true }))
   .map((m: any) => m.default as NavGroup)
-  .sort((a, b) => a.order - b.order);
+  .sort((a, b) => a.order - b.order)
+  .flatMap((f) => {
+    const out: NavGroup[] = [];
+    for (const it of f.items) {
+      const name = it.group ?? f.group;
+      let g = out.find((x) => x.group === name);
+      if (!g) out.push((g = { group: name, order: f.order, items: [], keywords: f.group, section: f.section }));
+      g.items.push(it);
+    }
+    return out;
+  });
 const RAIL = [
-  { key: 'start', label: 'Start', icon: 'home', title: 'get started' },
   { key: 'foundations', label: 'Foundations', icon: 'layers', title: 'foundations' },
   { key: 'components', label: 'Components', icon: 'box', title: 'components' },
-  { key: 'patterns', label: 'Patterns', icon: 'grid', title: 'patterns' },
+  { key: 'ai', label: 'AI', icon: 'ai', title: 'ai' },
 ];
-const railOf = (g: NavGroup) => {
-  const href = g.items[0]?.href ?? '';
-  return ['foundations', 'components', 'patterns'].find((k) => href.startsWith(`${k}/`)) ?? 'start';
-};
+// A nav file can name its rail section (`section`); otherwise its pages' paths decide.
+const railOf = (g: NavGroup) => g.section ?? ((g.items[0]?.href ?? '').startsWith('components/') ? 'components' : 'foundations');
 const sections: RailSection[] = RAIL.map((r) => ({ ...r, groups: groups.filter((g) => railOf(g) === r.key) })).filter((s) => s.groups.length);
 const hrefOf = (href: string) => `${base}/${href}`.replace(/\/$/, '');
 let section: RailSection | undefined;
@@ -66,27 +77,17 @@ const toc = group !== 'Patterns';
   <body>
     <Fragment set:html={sprite} />
     <a class="doc-skip" href="#content">Skip to content</a>
-    <div class="dd-app-shell doc-app">
+    <div class="dd-app-shell dd-app-shell--page dd-app-shell--offcanvas-md doc-app">
       <DocsNav sections={sections} active={active} base={base} here={here} />
       <script is:inline>
-        // Before paint: the side nav's own state, so nothing jumps or animates on load.
-        // - 900px and down it is off-canvas (the side nav's --offcanvas mode; the top bar's menu button opens it).
+        // Before paint: the side nav's own state, so nothing jumps or animates on load. (Under 900px the shell puts it
+        // off-canvas by itself: dd-app-shell--offcanvas-md.)
         // - The fold is remembered by side-nav.js under "dd-side-nav:doc-nav"; apply it now rather than after the scripts.
         // - The panel keeps its scroll position per section between pages, and the current page is always in view.
         (() => {
           const nav = document.getElementById('doc-nav');
           const list = document.getElementById('doc-nav-list');
           nav.classList.add('is-restoring');
-          const narrow = matchMedia('(max-width: 900px)');
-          const fit = () => {
-            nav.classList.toggle('dd-side-nav--offcanvas', narrow.matches);
-            if (!narrow.matches && nav.classList.contains('is-mobile-open')) {
-              nav.classList.remove('is-mobile-open');
-              document.querySelectorAll('[data-dd-nav-open="#doc-nav"]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
-            }
-          };
-          fit();
-          narrow.addEventListener('change', fit);
           let folded = null;
           try { folded = localStorage.getItem('dd-side-nav:doc-nav'); } catch { /* storage unavailable */ }
           if (folded === 'collapsed') {

@@ -1,6 +1,7 @@
 /* Top bar — the app header: logo, context, a search trigger, actions and the avatar menu. It sits on the page tone with a
-   hairline underneath. Under 640px of its own width (or in a narrow .dd-app-shell) the menu button appears, the search
-   collapses to an icon, and the context and anything marked __wide hide. */
+   hairline underneath. Under 640px of its own width the menu button appears, the search collapses to an icon, and the
+   context and anything marked __wide hide. As the top bar of a .dd-app-shell, the shell decides the menu button and the
+   __narrow logo instead (shown while its side nav is off-canvas); bars inside the shell's content keep these rules. */
 .dd-top-bar {
   --_line: color-mix(in oklab, var(--dd-text) 8%, transparent);
   container: dd-top-bar / inline-size;
@@ -96,10 +97,9 @@
 .dd-top-bar__menu-item .dd-top-bar__kbd { margin-left: auto; background: transparent; padding: 0; color: var(--dd-quiet); }
 
 /* Narrow: menu button in, search to an icon, extras out. __narrow shows only here (e.g. a logo the side nav carries on desktop). */
-.dd-top-bar__narrow { display: none !important; }
+.dd-top-bar__narrow { display: none; }
 @container dd-top-bar (max-width: 640px) {
-  .dd-top-bar__nav-btn { display: inline-flex; }
-  .dd-top-bar__narrow { display: inline-flex !important; }
+  .dd-top-bar__nav-btn, .dd-top-bar__narrow { display: inline-flex; }
   .dd-top-bar__wide, .dd-top-bar__links, .dd-top-bar__context { display: none; }
   /* The search folds to an icon button that matches the ghost icon buttons beside it. */
   .dd-top-bar__search { flex: none; width: auto; min-width: 0; height: auto; margin-right: calc(var(--dd-u) * -2); padding: calc(var(--dd-u) * 2.5);

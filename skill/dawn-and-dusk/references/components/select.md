@@ -114,7 +114,7 @@ Try it: open Environment and pick with the mouse, or focus Owner and press ↓, 
         <span class="dd-select__chevron"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-chevron-down"/></svg></span>
       </button>
       <ul class="dd-listbox" role="listbox" tabindex="-1" aria-labelledby="sp-label" hidden>
-        <li class="dd-listbox__option" role="option" data-value="andy" aria-selected="false"><span class="dd-listbox__swatch" style="--dd-chip: var(--dd-set-3)"></span><span class="dd-listbox__text"><span class="dd-listbox__label">Andy Nguyen</span></span><span class="dd-listbox__check"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-check"/></svg></span></li>
+        <li class="dd-listbox__option" role="option" data-value="andy" aria-selected="false"><span class="dd-listbox__swatch" style="--dd-chip: var(--dd-set-7)"></span><span class="dd-listbox__text"><span class="dd-listbox__label">Andy Nguyen</span></span><span class="dd-listbox__check"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-check"/></svg></span></li>
         <li class="dd-listbox__option" role="option" data-value="mika" aria-selected="false"><span class="dd-listbox__swatch" style="--dd-chip: var(--dd-set-5)"></span><span class="dd-listbox__text"><span class="dd-listbox__label">Mika Kato</span></span><span class="dd-listbox__check"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-check"/></svg></span></li>
         <li class="dd-listbox__option" role="option" data-value="jules" aria-selected="false"><span class="dd-listbox__swatch" style="--dd-chip: var(--dd-set-1)"></span><span class="dd-listbox__text"><span class="dd-listbox__label">Jules Sato</span></span><span class="dd-listbox__check"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-check"/></svg></span></li>
       </ul>
@@ -302,3 +302,4 @@ Don't:
 - Don’t use a select for two options — use a switch or a radio group.
 - Don’t hide disabled options people expect to see; explain them in the description.
 - Don’t put actions (“Add new…”) inside a select — use a menu.
+

@@ -99,3 +99,4 @@ Don't:
 - Don’t put switches in a form that needs submitting — use checkboxes.
 - Don’t add “On / Off” text beside the switch.
 - Don’t use a switch for choices between two named options — use a segmented control or radios.
+

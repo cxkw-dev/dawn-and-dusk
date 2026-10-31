@@ -155,3 +155,23 @@ test('dusk: the avatar menu floats on its own tone and the narrow theme button i
   assert.notEqual(c.shadow, 'none', 'floating shadow');
   assert.equal(await page.attr(`${nth(4)} .dd-top-bar__narrow[data-dd-theme-toggle]`, 'aria-pressed'), 'true');
 });
+
+test('inside the docs’ app shell, example bars keep their own width rules: the shell reaches only its own top bar', async ({ open, assert }) => {
+  // 860: the docs shell is narrow (its side nav off-canvas), yet the wide example bars show no menu button or __narrow.
+  const page = await open('components/top-bar', { width: 860 });
+  assert.ok(await page.visible('.doc-bar .dd-top-bar__nav-btn'), 'the docs’ own bar shows its menu button');
+  assert.ok(await page.get((s) => document.querySelector(s).getBoundingClientRect().width > 640, nth(1)), 'the app header example is wide');
+  assert.equal(await page.visible(`${nth(1)} .dd-top-bar__nav-btn`), false, 'no menu button in the wide app header');
+  assert.ok(await page.visible(`${nth(1)} .dd-top-bar__context`), 'it keeps its context');
+  assert.equal(await page.visible(`${nth(4)} .dd-top-bar__nav-btn`), false, 'no menu button in the wide site header');
+  assert.equal(await page.visible(`${nth(4)} .dd-top-bar__narrow`), false, 'its narrow-only theme button stays hidden');
+  assert.ok(await page.visible(`${nth(4)} .dd-top-bar__links`));
+  // 1440: the docs shell is wide (its nav in view), yet the narrow examples keep their menu button and __narrow stand-in.
+  const wide = await open('components/top-bar', { width: 1440 });
+  assert.equal(await wide.visible('.doc-bar .dd-top-bar__nav-btn'), false, 'the docs bar drops its menu button');
+  assert.ok(await wide.visible(`${nth(3)} .dd-top-bar__nav-btn`), 'the narrow app header keeps its menu button');
+  assert.equal(await wide.visible(`${nth(3)} .dd-top-bar__context`), false, 'and folds its context away');
+  assert.ok(await wide.visible(`${nth(5)} .dd-top-bar__nav-btn`));
+  assert.ok(await wide.visible(`${nth(5)} .dd-top-bar__narrow`), 'the narrow site header shows its icon-only theme button');
+  assert.equal(await wide.visible(`${nth(5)} .dd-top-bar__wide`), false, 'and hides its __wide items');
+});

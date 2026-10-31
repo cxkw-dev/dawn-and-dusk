@@ -87,6 +87,17 @@
      for hover / pressed fills where the element sits on a tone you don't control. */
   --dd-wash: color-mix(in oklab, var(--dd-text) 7%, transparent);
   --dd-wash-strong: color-mix(in oklab, var(--dd-text) 12%, transparent);
+  /* Syntax — code colours from the Golden hour set, pulled toward the text so they read in both themes. Used by
+     .dd-code and the docs' highlighted code; tags/keywords wine, attributes/properties ochre, strings sage. */
+  --dd-syntax-keyword: color-mix(in oklab, var(--dd-set-6) 72%, var(--dd-text));
+  --dd-syntax-tag: var(--dd-syntax-keyword);
+  --dd-syntax-attr: color-mix(in oklab, var(--dd-set-7) 56%, var(--dd-text));
+  --dd-syntax-string: color-mix(in oklab, var(--dd-ok) 64%, var(--dd-text));
+  --dd-syntax-number: color-mix(in oklab, var(--dd-set-4) 66%, var(--dd-text));
+  --dd-syntax-function: color-mix(in oklab, var(--dd-info) 70%, var(--dd-text));
+  --dd-syntax-variable: color-mix(in oklab, var(--dd-set-2) 50%, var(--dd-text));
+  --dd-syntax-comment: var(--dd-muted);
+  --dd-syntax-punct: var(--dd-muted);
   /* Accent — ink/taupe, for links, focus and selected states */
   --dd-accent: #6a5c4e;
   --dd-accent-hover: #5d5146;
@@ -148,6 +159,17 @@
      for hover / pressed fills where the element sits on a tone you don't control. */
   --dd-wash: color-mix(in oklab, var(--dd-text) 7%, transparent);
   --dd-wash-strong: color-mix(in oklab, var(--dd-text) 12%, transparent);
+  /* Syntax — code colours from the Golden hour set, pulled toward the text so they read in both themes. Used by
+     .dd-code and the docs' highlighted code; tags/keywords wine, attributes/properties ochre, strings sage. */
+  --dd-syntax-keyword: color-mix(in oklab, var(--dd-set-6) 72%, var(--dd-text));
+  --dd-syntax-tag: var(--dd-syntax-keyword);
+  --dd-syntax-attr: color-mix(in oklab, var(--dd-set-7) 68%, var(--dd-text));
+  --dd-syntax-string: color-mix(in oklab, var(--dd-ok) 78%, var(--dd-text));
+  --dd-syntax-number: color-mix(in oklab, var(--dd-set-4) 78%, var(--dd-text));
+  --dd-syntax-function: color-mix(in oklab, var(--dd-info) 80%, var(--dd-text));
+  --dd-syntax-variable: color-mix(in oklab, var(--dd-set-2) 62%, var(--dd-text));
+  --dd-syntax-comment: var(--dd-muted);
+  --dd-syntax-punct: var(--dd-muted);
   /* Accent — ink/taupe, for links, focus and selected states */
   --dd-accent: #d9cdbd;
   --dd-accent-hover: #dcd1c2;
@@ -208,6 +230,17 @@
        for hover / pressed fills where the element sits on a tone you don't control. */
     --dd-wash: color-mix(in oklab, var(--dd-text) 7%, transparent);
     --dd-wash-strong: color-mix(in oklab, var(--dd-text) 12%, transparent);
+    /* Syntax — code colours from the Golden hour set, pulled toward the text so they read in both themes. Used by
+       .dd-code and the docs' highlighted code; tags/keywords wine, attributes/properties ochre, strings sage. */
+    --dd-syntax-keyword: color-mix(in oklab, var(--dd-set-6) 72%, var(--dd-text));
+    --dd-syntax-tag: var(--dd-syntax-keyword);
+    --dd-syntax-attr: color-mix(in oklab, var(--dd-set-7) 68%, var(--dd-text));
+    --dd-syntax-string: color-mix(in oklab, var(--dd-ok) 78%, var(--dd-text));
+    --dd-syntax-number: color-mix(in oklab, var(--dd-set-4) 78%, var(--dd-text));
+    --dd-syntax-function: color-mix(in oklab, var(--dd-info) 80%, var(--dd-text));
+    --dd-syntax-variable: color-mix(in oklab, var(--dd-set-2) 62%, var(--dd-text));
+    --dd-syntax-comment: var(--dd-muted);
+    --dd-syntax-punct: var(--dd-muted);
     /* Accent — ink/taupe, for links, focus and selected states */
     --dd-accent: #d9cdbd;
     --dd-accent-hover: #dcd1c2;
@@ -256,7 +289,10 @@
 :where(*, *::before, *::after) { box-sizing: border-box; }
 
 :where(html) {
+  /* The page tone and grain live on <html> so they fill the whole viewport, however short the content is. */
   background-color: var(--dd-bg);
+  background-image: var(--dd-grain);
+  background-size: var(--dd-grain-size);
   color: var(--dd-text);
   font-family: var(--dd-font-body);
   font-size: var(--dd-fs-base);
@@ -264,13 +300,11 @@
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-:where(body) {
-  margin: 0;
-  background-color: var(--dd-bg);
-  background-image: var(--dd-grain);
-  background-size: var(--dd-grain-size);
-  transition: background-color var(--dd-dur) var(--dd-ease), color var(--dd-dur) var(--dd-ease);
-}
+:where(body) { margin: 0; }
+/* Modal layers (dialogs, drawers, sheets, the off-canvas nav) lock the page scroll. behaviors/scrollbar.js keeps
+   --dd-scrollbar-w up to date, so the page is padded by the scrollbar it loses: nothing shifts sideways, and overlays
+   still reach the window's edge. */
+:where(html):has(dialog:modal), :where(html.dd-side-nav-lock) { overflow: hidden; padding-inline-end: var(--dd-scrollbar-w, 0px); }
 :where(button, input, select, textarea) { font: inherit; color: inherit; }
 :where(img, svg, video) { display: block; max-width: 100%; }
 ::selection { background: var(--dd-text); color: var(--dd-bg); }
@@ -312,7 +346,7 @@
 .dd-icon { display: inline-block; width: 1.15em; height: 1.15em; flex: none; vertical-align: -0.2em; }
 .dd-icon > svg { width: 100%; height: 100%; }
 .dd-visually-hidden {
-  position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 }
 .dd-surface { background: var(--dd-surface); border-radius: var(--dd-r-box); }
 .dd-stack { display: flex; flex-direction: column; gap: var(--dd-gap, var(--dd-space-3)); }
@@ -323,17 +357,25 @@
 }
 
 /* ---------- scroll areas ---------- */
-/* .dd-scroll: a thin, tonal scrollbar that stays out of the way until the area is hovered or focused. */
+/* .dd-scroll: a sleek, tonal scrollbar — no track, a thin rounded thumb tinted from the text colour (dark in dusk, ink in
+   dawn) that shows while the area is hovered, focused or scrolling and fades away otherwise. Standard properties for
+   Chrome / Firefox, ::-webkit-scrollbar for Safari. */
 .dd-scroll {
+  --_thumb: color-mix(in oklab, var(--dd-text) 20%, transparent);
+  --_thumb-hover: color-mix(in oklab, var(--dd-text) 34%, transparent);
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
   scrollbar-gutter: stable;
+  transition: scrollbar-color var(--dd-dur) var(--dd-ease);
 }
-.dd-scroll:hover, .dd-scroll:focus-within {
-  scrollbar-color: color-mix(in oklab, var(--dd-text) 22%, transparent) transparent;
-}
+.dd-scroll:hover, .dd-scroll:focus-within { scrollbar-color: var(--_thumb) transparent; }
+.dd-scroll::-webkit-scrollbar { width: 8px; height: 8px; background: transparent; }
+.dd-scroll::-webkit-scrollbar-track, .dd-scroll::-webkit-scrollbar-corner { background: transparent; }
+.dd-scroll::-webkit-scrollbar-thumb { border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; background-color: transparent; }
+.dd-scroll:hover::-webkit-scrollbar-thumb, .dd-scroll:focus-within::-webkit-scrollbar-thumb { background-color: var(--_thumb); }
+.dd-scroll::-webkit-scrollbar-thumb:hover { background-color: var(--_thumb-hover); }
 
 
 /* ===== components/accordion.css ===== */
@@ -444,7 +486,7 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
 
 
 /* ===== components/alert.css ===== */
-/* Alert — "Soft fill · with action" (pick #20 and its round-4 family). An inline status message: icon, title,
+/* Alert — "Soft fill · with action". An inline status message: icon, title,
    description, text actions on the right and an optional dismiss button ([data-dd-dismiss], see behaviors/dismiss.js).
    Intents: info (default) · ok · warn · bad.
    Dawn: a soft 14% wash of the status colour over the page. Dusk: a SOLID fill of 30% status over the surface and no
@@ -530,22 +572,28 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
 
 
 /* ===== components/app-shell.css ===== */
-/* App shell — the page layout: the side nav runs the full height on the left; the top bar and a scrolling content
-   area share the rest. The shell is the viewport by default (--dd-app-shell-h: 100dvh). Under 768px of shell width the
-   side nav goes off-canvas and the top bar's menu button opens it. */
+/* App shell — the page layout: the side nav runs the full height on the left; the top bar and the content share the rest.
+   Two ways to scroll. By default the shell is the viewport (--dd-app-shell-h: 100dvh, or a height to fit a frame) and
+   only the content area scrolls inside it. With --page the document scrolls: the shell grows with its content while the
+   side nav and the top bar stick to the top of the viewport. The shell is a size container named dd-app-shell: under
+   768px of it (900px with --offcanvas-md, 1024px with --offcanvas-lg) the side nav goes off-canvas and the top bar's
+   menu button opens it; a .dd-side-nav--offcanvas nav stays off-canvas at every width. Its rules reach only its own
+   side nav and top bar (child combinators), never the components in its content. */
 .dd-app-shell {
   container: dd-app-shell / inline-size;
   contain: layout; /* own stacking context; the off-canvas nav is fixed to the shell, which is the viewport in an app */
   position: relative; display: flex; height: var(--dd-app-shell-h, 100dvh); overflow: hidden;
   background-color: var(--dd-bg); color: var(--dd-text);
   /* The shell paints a plain --dd-bg (no grain), so cards already stand clear of the page in dusk: their hover keeps
-     dawn's gentler step here. (On dusk's grain page card.css and accordion.css lift further, so cards never vanish.) */
+     dawn's gentler step here. (On dusk's grain page card.css and accordion.css lift further, so cards never vanish.)
+     Tables drop the grain from their cells, which would read as a lighter, textured block on the plain page. */
   --dd-card-hover: color-mix(in oklab, var(--dd-surface), var(--dd-text) 6%);
   --dd-accordion-hover: var(--dd-surface-2);
+  --dd-data-table-grain: none;
 }
-.dd-app-shell > .dd-side-nav { position: relative; top: auto; height: 100%; }
+.dd-app-shell > .dd-side-nav:where(:not(.dd-side-nav--offcanvas)) { position: relative; top: auto; height: 100%; }
 .dd-app-shell__main { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
-.dd-app-shell__main > .dd-top-bar { position: relative; flex: none; }
+.dd-app-shell > .dd-app-shell__main > .dd-top-bar { position: relative; flex: none; }
 .dd-app-shell__content {
   flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin;
   padding: calc(var(--dd-u) * 8) calc(var(--dd-u) * 10) calc(var(--dd-u) * 12);
@@ -553,19 +601,60 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
 .dd-app-shell__page { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 8); width: 100%; max-width: 1180px; margin-inline: auto; }
 .dd-app-shell__page--narrow { max-width: 760px; }
 
-@container dd-app-shell (max-width: 1023px) {
-  .dd-app-shell__content { padding: calc(var(--dd-u) * 6) calc(var(--dd-u) * 6) calc(var(--dd-u) * 10); }
+/* ---------- page-scroll mode ----------
+   The document scrolls, so anchors, find-in-page, scroll restoration and sticky content behave as on any page. No
+   overflow or containment on the shell (either would stop the side nav and top bar sticking, and containment would pin
+   the off-canvas nav to the shell instead of the viewport). It paints no background of its own: the page tone on <html>
+   (with dusk's grain) shows through, so cards keep their page hover steps and tables their grain. */
+.dd-app-shell--page {
+  height: auto; min-height: 100dvh; overflow: visible; contain: none;
+  background: none; --dd-card-hover: inherit; --dd-accordion-hover: inherit; --dd-data-table-grain: inherit;
 }
+.dd-app-shell--page > .dd-side-nav:where(:not(.dd-side-nav--offcanvas)) { position: sticky; top: 0; height: 100dvh; }
+.dd-app-shell--page > .dd-app-shell__main > .dd-top-bar { position: sticky; top: 0; }
+.dd-app-shell--page > .dd-app-shell__main > .dd-app-shell__content { overflow: visible; }
 
-/* Wide: the side nav is in view and carries the logo, so the top bar drops its menu button and narrow-only logo even
-   when the bar itself is under 640px, and keeps the workspace / project context on the left. */
-@container dd-app-shell (min-width: 768px) {
-  .dd-app-shell .dd-top-bar__nav-btn, .dd-app-shell .dd-top-bar__narrow { display: none !important; }
-  .dd-app-shell .dd-top-bar__context { display: flex; }
+/* ---------- off-canvas ----------
+   A .dd-side-nav--offcanvas nav is off-canvas at every width (side-nav.css), so its top bar keeps the menu button and
+   the narrow-only logo. */
+.dd-app-shell:has(> .dd-side-nav--offcanvas) > .dd-app-shell__main > .dd-top-bar :is(.dd-top-bar__nav-btn, .dd-top-bar__narrow) { display: inline-flex; }
+
+/* Narrow: the side nav leaves the flow and slides in over a scrim (the same rules as .dd-side-nav--offcanvas); the top
+   bar shows its menu button and its narrow-only logo. One block per breakpoint: under 1024px for --offcanvas-lg, under
+   900px for --offcanvas-md too, under 768px for every shell. */
+@container dd-app-shell (width < 1024px) {
+  .dd-app-shell--offcanvas-lg > .dd-side-nav {
+    position: fixed; inset-block: 0; top: 0; left: calc(-1 * (var(--dd-side-nav-rail) + var(--dd-side-nav-panel)) - 48px);
+    z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden; pointer-events: none;
+    transition: left var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
+  }
+  .dd-app-shell--offcanvas-lg > .dd-side-nav::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; background: var(--dd-overlay); opacity: 0; pointer-events: none;
+    transition: opacity var(--dd-dur) var(--dd-ease);
+  }
+  .dd-app-shell--offcanvas-lg > .dd-side-nav .dd-side-nav__panel { width: var(--dd-side-nav-panel); min-width: 0; flex-shrink: 1; visibility: inherit; }
+  .dd-app-shell--offcanvas-lg > .dd-side-nav .dd-side-nav__collapse > .dd-icon { rotate: 0deg; }
+  .dd-app-shell--offcanvas-lg > .dd-side-nav.is-mobile-open { left: 0; visibility: visible; pointer-events: auto; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
+  .dd-app-shell--offcanvas-lg > .dd-side-nav.is-mobile-open::before { opacity: 1; pointer-events: auto; }
+  .dd-app-shell--offcanvas-lg > .dd-app-shell__main > .dd-top-bar :is(.dd-top-bar__nav-btn, .dd-top-bar__narrow) { display: inline-flex; }
 }
-
-/* Narrow: the side nav leaves the flow and slides in over a scrim (same rules as .dd-side-nav--offcanvas). */
-@container dd-app-shell (max-width: 767px) {
+@container dd-app-shell (width < 900px) {
+  .dd-app-shell:where(.dd-app-shell--offcanvas-md, .dd-app-shell--offcanvas-lg) > .dd-side-nav {
+    position: fixed; inset-block: 0; top: 0; left: calc(-1 * (var(--dd-side-nav-rail) + var(--dd-side-nav-panel)) - 48px);
+    z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden; pointer-events: none;
+    transition: left var(--dd-dur) var(--dd-ease), box-shadow var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
+  }
+  .dd-app-shell:where(.dd-app-shell--offcanvas-md, .dd-app-shell--offcanvas-lg) > .dd-side-nav::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; background: var(--dd-overlay); opacity: 0; pointer-events: none;
+    transition: opacity var(--dd-dur) var(--dd-ease);
+  }
+  .dd-app-shell:where(.dd-app-shell--offcanvas-md, .dd-app-shell--offcanvas-lg) > .dd-side-nav .dd-side-nav__panel { width: var(--dd-side-nav-panel); min-width: 0; flex-shrink: 1; visibility: inherit; }
+  .dd-app-shell:where(.dd-app-shell--offcanvas-md, .dd-app-shell--offcanvas-lg) > .dd-side-nav .dd-side-nav__collapse > .dd-icon { rotate: 0deg; }
+  .dd-app-shell:where(.dd-app-shell--offcanvas-md, .dd-app-shell--offcanvas-lg) > .dd-side-nav.is-mobile-open { left: 0; visibility: visible; pointer-events: auto; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
+  .dd-app-shell:where(.dd-app-shell--offcanvas-md, .dd-app-shell--offcanvas-lg) > .dd-side-nav.is-mobile-open::before { opacity: 1; pointer-events: auto; }
+  .dd-app-shell:where(.dd-app-shell--offcanvas-md, .dd-app-shell--offcanvas-lg) > .dd-app-shell__main > .dd-top-bar :is(.dd-top-bar__nav-btn, .dd-top-bar__narrow) { display: inline-flex; }
+}
+@container dd-app-shell (width < 768px) {
   .dd-app-shell > .dd-side-nav {
     position: fixed; inset-block: 0; top: 0; left: calc(-1 * (var(--dd-side-nav-rail) + var(--dd-side-nav-panel)) - 48px);
     z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden; pointer-events: none;
@@ -579,8 +668,29 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
   .dd-app-shell > .dd-side-nav .dd-side-nav__collapse > .dd-icon { rotate: 0deg; }
   .dd-app-shell > .dd-side-nav.is-mobile-open { left: 0; visibility: visible; pointer-events: auto; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
   .dd-app-shell > .dd-side-nav.is-mobile-open::before { opacity: 1; pointer-events: auto; }
-  .dd-app-shell .dd-top-bar__nav-btn { display: inline-flex; }
-  .dd-app-shell .dd-top-bar__narrow { display: inline-flex !important; }
+  .dd-app-shell > .dd-app-shell__main > .dd-top-bar :is(.dd-top-bar__nav-btn, .dd-top-bar__narrow) { display: inline-flex; }
+}
+
+/* Wide: the side nav is in view and carries the logo, so the top bar drops its menu button and narrow-only logo even
+   when the bar itself is under 640px, and keeps the workspace / project context on the left. */
+@container dd-app-shell (width >= 768px) {
+  .dd-app-shell:where(:not(.dd-app-shell--offcanvas-md, .dd-app-shell--offcanvas-lg, :has(> .dd-side-nav--offcanvas))) > .dd-app-shell__main > .dd-top-bar :is(.dd-top-bar__nav-btn, .dd-top-bar__narrow) { display: none; }
+  .dd-app-shell:where(:not(.dd-app-shell--offcanvas-md, .dd-app-shell--offcanvas-lg, :has(> .dd-side-nav--offcanvas))) > .dd-app-shell__main > .dd-top-bar .dd-top-bar__context { display: flex; }
+}
+@container dd-app-shell (width >= 900px) {
+  .dd-app-shell--offcanvas-md:where(:not(.dd-app-shell--offcanvas-lg, :has(> .dd-side-nav--offcanvas))) > .dd-app-shell__main > .dd-top-bar :is(.dd-top-bar__nav-btn, .dd-top-bar__narrow) { display: none; }
+  .dd-app-shell--offcanvas-md:where(:not(.dd-app-shell--offcanvas-lg, :has(> .dd-side-nav--offcanvas))) > .dd-app-shell__main > .dd-top-bar .dd-top-bar__context { display: flex; }
+}
+@container dd-app-shell (width >= 1024px) {
+  .dd-app-shell--offcanvas-lg:where(:not(:has(> .dd-side-nav--offcanvas))) > .dd-app-shell__main > .dd-top-bar :is(.dd-top-bar__nav-btn, .dd-top-bar__narrow) { display: none; }
+  .dd-app-shell--offcanvas-lg:where(:not(:has(> .dd-side-nav--offcanvas))) > .dd-app-shell__main > .dd-top-bar .dd-top-bar__context { display: flex; }
+}
+
+/* The content area tightens with the shell. */
+@container dd-app-shell (width < 1024px) {
+  .dd-app-shell__content { padding: calc(var(--dd-u) * 6) calc(var(--dd-u) * 6) calc(var(--dd-u) * 10); }
+}
+@container dd-app-shell (width < 768px) {
   .dd-app-shell__content { padding: calc(var(--dd-u) * 5) calc(var(--dd-u) * 4) calc(var(--dd-u) * 10); }
   .dd-app-shell__page { gap: calc(var(--dd-u) * 6); }
 }
@@ -1628,17 +1738,21 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 /* ===== components/code.css ===== */
 /* Code — blocks with a title bar, language tag and copy button; optional line numbers, highlighted and diff lines.
    Also inline code (.dd-code-inline), a copyable field with reveal (.dd-code-field) and a terminal (.dd-code--terminal).
-   Syntax colours are set-colours pulled toward the text colour so they stay legible in dawn and dusk. */
+   Syntax colours are set-colours pulled toward the text colour so they stay legible in dawn and dusk.
+   Shell tokens (prompt, user, cwd, cmd, sub, flag, arg, var, path, op; output out/ok/warn/err/dim) colour commands in
+   any block. The terminal (terminal.js) can type its commands out (data-dd-terminal-play, with a
+   [data-dd-terminal-replay] button), copy only the commands ([data-dd-terminal-copy], data-dd-terminal-line-copy) and
+   take live input (data-dd-terminal-interactive + <template data-dd-terminal-command="…">). */
 .dd-code {
   --_px: calc(var(--dd-u) * 4);
   --_line: color-mix(in oklab, var(--dd-text) 9%, transparent);
-  --dd-code-keyword: color-mix(in oklab, var(--dd-set-6) 72%, var(--dd-text));
-  --dd-code-string: color-mix(in oklab, var(--dd-ok) 78%, var(--dd-text));
-  --dd-code-number: color-mix(in oklab, var(--dd-set-4) 78%, var(--dd-text));
-  --dd-code-comment: var(--dd-muted);
-  --dd-code-function: color-mix(in oklab, var(--dd-info) 80%, var(--dd-text));
-  --dd-code-property: color-mix(in oklab, var(--dd-set-7) 68%, var(--dd-text));
-  --dd-code-punct: var(--dd-muted);
+  --dd-code-keyword: var(--dd-syntax-keyword);
+  --dd-code-string: var(--dd-syntax-string);
+  --dd-code-number: var(--dd-syntax-number);
+  --dd-code-comment: var(--dd-syntax-comment);
+  --dd-code-function: var(--dd-syntax-function);
+  --dd-code-property: var(--dd-syntax-attr);
+  --dd-code-punct: var(--dd-syntax-punct);
   margin: 0; min-width: 0; overflow: hidden;
   background: var(--dd-surface); color: var(--dd-text); border-radius: var(--dd-r-box);
 }
@@ -1716,7 +1830,12 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 .dd-code :is(.dd-code__n, .token.number, .token.boolean, .token.constant, .hljs-number, .hljs-literal) { color: var(--dd-code-number); }
 .dd-code :is(.dd-code__c, .token.comment, .token.prolog, .hljs-comment, .hljs-quote) { color: var(--dd-code-comment); font-style: italic; }
 .dd-code :is(.dd-code__f, .token.function, .token.class-name, .hljs-title, .hljs-function) { color: var(--dd-code-function); }
-.dd-code :is(.dd-code__p, .token.property, .token.attr-name, .token.tag, .hljs-attr, .hljs-attribute, .hljs-tag, .hljs-name) { color: var(--dd-code-property); }
+.dd-code :is(.dd-code__p, .token.property, .token.attr-name, .hljs-attr, .hljs-attribute) { color: var(--dd-code-property); }
+/* tag names take the tag colour (as in the docs' highlighted code); their attributes stay the property colour */
+.dd-code :is(.dd-code__t, .token.tag, .hljs-tag, .hljs-name) { color: var(--dd-syntax-tag); }
+.dd-code .token.tag :is(.token.attr-name) { color: var(--dd-code-property); }
+.dd-code .token.tag :is(.token.attr-value) { color: var(--dd-code-string); }
+.dd-code .token.tag :is(.token.punctuation) { color: var(--dd-code-punct); }
 .dd-code :is(.token.punctuation, .token.operator, .hljs-punctuation) { color: var(--dd-code-punct); }
 
 /* ---------- inline code ---------- */
@@ -1756,28 +1875,151 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 .dd-code-field__btn[data-copied] { color: var(--dd-ok); }
 .dd-code-field__hint { margin: 0; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
 
+/* ---------- shell tokens ---------- */
+/* Hand-written classes for commands and their output. They read the code palette, so they work in any .dd-code block
+   (dawn and dusk); the terminal below swaps in brighter prompt and status colours for its dark ground. */
+.dd-code {
+  /* pulled a touch toward the text colour so every token holds 4.5:1 on a dawn block too */
+  --dd-code-prompt: color-mix(in oklab, var(--dd-primary) 50%, var(--dd-text));
+  --dd-code-user: color-mix(in oklab, var(--dd-muted) 84%, var(--dd-text));
+  --dd-code-cwd: color-mix(in oklab, var(--dd-code-property) 88%, var(--dd-text));
+  --dd-code-cmd: color-mix(in oklab, var(--dd-code-function) 88%, var(--dd-text));
+  --dd-code-sub: var(--dd-code-keyword);
+  --dd-code-flag: color-mix(in oklab, var(--dd-code-number) 88%, var(--dd-text));
+  --dd-code-arg: var(--dd-text);
+  --dd-code-var: var(--dd-syntax-variable, var(--dd-code-property));
+  --dd-code-path: var(--dd-text);
+  --dd-code-op: var(--dd-code-prompt);
+  --dd-code-out: color-mix(in oklab, var(--dd-muted) 84%, var(--dd-text));
+  --dd-code-dim: color-mix(in oklab, var(--dd-quiet) 80%, var(--dd-text));
+  --dd-code-ok: color-mix(in oklab, var(--dd-ok) 68%, var(--dd-text));
+  --dd-code-warn: color-mix(in oklab, var(--dd-warn) 54%, var(--dd-text));
+  --dd-code-err: color-mix(in oklab, var(--dd-bad) 82%, var(--dd-text));
+}
+.dd-code__prompt { color: var(--dd-code-prompt, var(--dd-primary)); user-select: none; -webkit-user-select: none; }
+.dd-code .dd-code__user { color: var(--dd-code-user); }
+.dd-code .dd-code__cwd { color: var(--dd-code-cwd); font-weight: 500; }
+.dd-code .dd-code__cmd { color: var(--dd-code-cmd); font-weight: 500; }
+.dd-code .dd-code__sub { color: var(--dd-code-sub); }
+.dd-code .dd-code__flag { color: var(--dd-code-flag); }
+.dd-code .dd-code__arg { color: var(--dd-code-arg); }
+.dd-code .dd-code__var { color: var(--dd-code-var); }
+.dd-code .dd-code__path {
+  color: var(--dd-code-path);
+  text-decoration: underline 1px color-mix(in oklab, currentColor 38%, transparent); text-underline-offset: 3px;
+}
+.dd-code .dd-code__op { color: var(--dd-code-op); }
+.dd-code__out { color: var(--dd-code-out, var(--dd-muted)); }
+.dd-code__ok { color: var(--dd-code-ok, var(--dd-ok)); }
+.dd-code__warn { color: var(--dd-code-warn, var(--dd-warn)); }
+.dd-code__err { color: var(--dd-code-err, var(--dd-bad)); }
+.dd-code__dim { color: var(--dd-code-dim, var(--dd-quiet)); }
+
 /* ---------- terminal ---------- */
 /* Always dark: put data-theme="dusk" on the element so it reads dusk tokens in either mode. */
 .dd-code--terminal {
+  --_term: color-mix(in oklab, var(--dd-bg) 74%, black);
   --dd-code-string: var(--dd-ok);
-  background: color-mix(in oklab, var(--dd-bg) 74%, black); color: var(--dd-text);
+  --dd-code-prompt: var(--dd-primary);
+  --dd-code-user: var(--dd-muted);
+  --dd-code-out: var(--dd-muted);
+  --dd-code-dim: var(--dd-quiet);
+  --dd-code-ok: var(--dd-ok);
+  --dd-code-warn: var(--dd-warn);
+  --dd-code-err: var(--dd-bad);
+  /* window dots: three quiet golden-hour tones, not traffic lights */
+  --dd-code-dot-1: var(--dd-set-5);
+  --dd-code-dot-2: var(--dd-set-3);
+  --dd-code-dot-3: var(--dd-set-1);
+  background: var(--_term); color: var(--dd-text);
+  transition: box-shadow var(--dd-dur) var(--dd-ease);
 }
-.dd-code--terminal .dd-code__bar { box-shadow: none; padding-left: calc(var(--dd-u) * 3); }
-.dd-code--terminal .dd-code__title { margin-inline: auto; color: var(--dd-muted); }
+.dd-code--terminal .dd-code__bar {
+  display: grid; grid-template-columns: 1fr minmax(0, auto) 1fr;
+  box-shadow: none; padding-left: calc(var(--dd-u) * 3);
+}
+.dd-code--terminal .dd-code__bar > :first-child { justify-self: start; }
+.dd-code--terminal .dd-code__bar > :last-child:not(:first-child, .dd-code__title) { justify-self: end; }
+.dd-code--terminal .dd-code__title { margin-inline: auto; color: var(--dd-muted); transition: color var(--dd-dur) var(--dd-ease); }
 .dd-code--terminal .dd-code__title + .dd-code__copy { margin-left: 0; }
-.dd-code--terminal .dd-code__copy:hover { background: color-mix(in oklab, var(--dd-text) 10%, transparent); }
+.dd-code--terminal :is(.dd-code__copy, .dd-code__action):hover { background: color-mix(in oklab, var(--dd-text) 10%, transparent); }
 .dd-code__dots { display: inline-flex; gap: 6px; flex: none; }
-.dd-code__dots > i { width: 9px; height: 9px; border-radius: 50%; background: color-mix(in oklab, var(--dd-text) 20%, transparent); }
+.dd-code__dots > i {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: color-mix(in oklab, var(--dd-code-dot-1, var(--dd-text)) 46%, var(--_term, transparent));
+  transition: background-color var(--dd-dur) var(--dd-ease);
+}
+.dd-code__dots > i:nth-child(2) { background: color-mix(in oklab, var(--dd-code-dot-2, var(--dd-text)) 46%, var(--_term, transparent)); }
+.dd-code__dots > i:nth-child(3) { background: color-mix(in oklab, var(--dd-code-dot-3, var(--dd-text)) 46%, var(--_term, transparent)); }
 .dd-code--terminal .dd-code__pre { padding-top: calc(var(--dd-u) * 1); padding-bottom: calc(var(--dd-u) * 4); }
-.dd-code__prompt { color: var(--dd-primary); user-select: none; -webkit-user-select: none; }
-.dd-code__out { color: var(--dd-muted); }
-.dd-code__ok { color: var(--dd-ok); }
-.dd-code__err { color: var(--dd-bad); }
+
+/* bar actions: replay (and any other icon button) next to copy */
+.dd-code__actions { display: inline-flex; align-items: center; gap: 2px; }
+.dd-code__actions > .dd-code__copy { margin-left: 0; }
+.dd-code__action {
+  appearance: none; flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px;
+  border: 0; border-radius: var(--dd-r-ctl); background: transparent; color: var(--dd-muted); cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-code__action:hover { background: var(--dd-wash); color: var(--dd-text); }
+.dd-code__action:active { background: var(--dd-wash-strong); }
+.dd-code__action:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
+.dd-code__action[hidden] { display: none; }
+
+/* cursor: a block that blinks at rest, holds steady while typing, and turns hollow when a live terminal loses focus */
 .dd-code__cursor {
-  display: inline-block; width: 0.6em; height: 1.15em; vertical-align: -0.2em; background: var(--dd-text);
+  display: inline-block; min-width: 0.6em; height: 1.15em; vertical-align: -0.2em; line-height: 1.15em;
+  background: var(--dd-text); color: var(--_term, var(--dd-surface));
   animation: dd-code-blink 1.1s steps(1) infinite;
 }
+.dd-code__cursor:not(:empty) { vertical-align: baseline; }
+.dd-code--terminal.is-typing .dd-code__cursor { animation: none; }
 @keyframes dd-code-blink { 50% { opacity: 0; } }
+
+/* command lines: the typed part, a copy button per command, lines easing in during playback */
+.dd-code__input { white-space: pre; }
+.dd-code__line:has(> .dd-code__line-copy) { position: relative; padding-right: calc(var(--_px) + 26px); }
+.dd-code__line:has(> .dd-code__line-copy):hover { background: color-mix(in oklab, var(--dd-text) 5%, transparent); }
+.dd-code__line-copy {
+  appearance: none; position: absolute; top: 50%; right: calc(var(--dd-u) * 1.5); translate: 0 -50%;
+  display: inline-grid; place-items: center; width: 22px; height: 22px; padding: 0;
+  border: 0; border-radius: 4px; background: transparent; color: var(--dd-muted); font-size: 12px; cursor: pointer;
+  opacity: 0; user-select: none; -webkit-user-select: none;
+  transition: opacity var(--dd-dur-fast) var(--dd-ease), background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-code__line:hover > .dd-code__line-copy, .dd-code__line-copy:focus-visible, .dd-code__line-copy[data-copied] { opacity: 1; }
+.dd-code__line-copy:hover { background: color-mix(in oklab, var(--dd-text) 10%, transparent); color: var(--dd-text); }
+.dd-code__line-copy:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
+.dd-code__line-copy > .dd-icon { grid-area: 1 / 1; }
+.dd-code__line-copy > .dd-icon:last-child { display: none; }
+.dd-code__line-copy[data-copied] { color: var(--dd-code-ok, var(--dd-ok)); }
+.dd-code__line-copy[data-copied] > .dd-icon:first-child { display: none; }
+.dd-code__line-copy[data-copied] > .dd-icon:last-child { display: inline-block; }
+@media (hover: none) { .dd-code__line-copy { opacity: 0.75; } }
+.dd-code__line.is-entering { animation: dd-code-line-in var(--dd-dur) var(--dd-ease) both; }
+@keyframes dd-code-line-in { from { opacity: 0; translate: 0 3px; } }
+
+/* live prompt: an invisible input over the last line; the line mirrors what is typed, with the cursor at the caret */
+.dd-code--terminal[data-dd-terminal-interactive] .dd-code__pre { cursor: text; }
+.dd-code__live { position: relative; }
+.dd-code__field {
+  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0;
+  font: inherit; font-size: 16px; /* 16px keeps iOS from zooming on focus; the field is invisible either way */
+  background: transparent; color: transparent; cursor: text;
+}
+.dd-code__live.is-busy > :not(.dd-code__field) { opacity: 0; }
+.dd-code--terminal:has(.dd-code__field):not(:focus-within) .dd-code__live .dd-code__cursor {
+  background: transparent; color: inherit; animation: none;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 55%, transparent);
+}
+/* focused: a soft inner ring, the title lifts and the dots warm up — the window is "active" */
+.dd-code--terminal:has(.dd-code__field:focus) {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-accent) 42%, transparent);
+}
+.dd-code--terminal:has(.dd-code__field:focus) .dd-code__title { color: var(--dd-text); }
+.dd-code--terminal:has(.dd-code__field:focus) .dd-code__dots > i { background: color-mix(in oklab, var(--dd-code-dot-1) 72%, var(--_term)); }
+.dd-code--terminal:has(.dd-code__field:focus) .dd-code__dots > i:nth-child(2) { background: color-mix(in oklab, var(--dd-code-dot-2) 72%, var(--_term)); }
+.dd-code--terminal:has(.dd-code__field:focus) .dd-code__dots > i:nth-child(3) { background: color-mix(in oklab, var(--dd-code-dot-3) 72%, var(--_term)); }
 
 
 /* ===== components/combobox.css ===== */
@@ -1939,7 +2181,12 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
    expandable and grouped rows, status cells, loading and empty states, and a pagination footer.
    Behaviour (sorting, selection, expand, filtering, column toggle) is in ds/behaviors/data-table.js — opt in with
    [data-dd-data-table] on the root. Sticky cells need an opaque background: set --dd-data-table-bg when the table sits on
-   something other than the page (.dd-data-table--card does this for --dd-surface). */
+   something other than the page (.dd-data-table--card does this for --dd-surface). Inside .dd-app-shell, whose content
+   is a plain --dd-bg, the cells drop the page grain so the table reads as the same surface (the shell sets
+   --dd-data-table-grain: none; set it to var(--dd-grain) to bring the grain back).
+   Height: the scroll area caps at --dd-data-table-height (70vh). Set it to none and the table grows with its rows and the
+   page does the scrolling (the header then scrolls away with the page); .dd-data-table--fill instead fills the height
+   its parent gives it, so the table body is the only scroller and the header stays pinned. */
 .dd-data-table {
   --_bg: var(--dd-data-table-bg, var(--dd-bg));
   --_grain: var(--dd-data-table-grain, var(--dd-grain));
@@ -2253,6 +2500,10 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 }
 .dd-data-table--card .dd-data-table__search input, .dd-data-table--card .dd-pagination__select select { background: var(--dd-bg); }
 .dd-data-table--card .dd-data-table__group > :is(th, td) { --_cell: var(--dd-surface-2); }
+/* --fill: take the height the parent gives (a flex column, or a box with a set height); the scroll area gets what the
+   toolbar and footer leave, uncapped. One scroller, header pinned. */
+.dd-data-table--fill { flex: 1 1 0%; min-height: 0; height: 100%; }
+.dd-data-table--fill .dd-data-table__scroll { flex: 1 1 0%; min-height: 0; max-height: none; }
 
 /* narrow: the search takes its own line; tools wrap under it */
 @media (max-width: 640px) {
@@ -2877,7 +3128,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 
 /* ===== components/form-field.css ===== */
 /* Form field — the wrapper around one control: label, hint, error and counter.
-   Default is the "Tucked label" pick: a micro label sits inside the tonal, borderless box and the value sits under it.
+   Default is the tucked label: a micro label sits inside the tonal, borderless box and the value sits under it.
    .dd-field--above moves the label over the box. The box itself is .dd-input (text-input.css) or one of its kin
    (textarea, select, combobox, date picker), placed directly inside the field or one wrapper deep. */
 .dd-field {
@@ -2970,7 +3221,8 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-form__row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: calc(var(--dd-u) * 3); min-width: 0; }
 .dd-form__row > * { flex: 1 1 12rem; }
 
-/* A stack of choices (checkboxes, switches) with even rhythm; --rows draws hairlines between them. */
+/* A stack of choices with even rhythm (checkboxes in a form that saves; switches only where each applies at once);
+   --rows draws hairlines between them. */
 .dd-form__choices { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 3.5); min-width: 0; }
 .dd-form__choices--rows { gap: 0; }
 .dd-form__choices--rows > * { padding-block: calc(var(--dd-u) * 3.5); }
@@ -4516,7 +4768,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 /* Side nav — "Icon rail · two-level" (blended). An icon column for sections, toned a step from the page, plus a column
    with that section's pages. Hairlines divide the columns; the chevron at the foot of the rail folds the page column away.
    Spans the full viewport height (sticky) on its own, or fills its parent with --fill / inside .dd-app-shell.
-   Below the app-shell breakpoint (or with --offcanvas) it slides in from the left over a scrim. */
+   Below the app shell's breakpoint (or always, with --offcanvas) it slides in from the left over a scrim. */
 .dd-side-nav {
   --dd-side-nav-rail: 60px;
   --dd-side-nav-panel: 224px;
@@ -4582,8 +4834,22 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 }
 .dd-side-nav__pane {
   display: flex; flex-direction: column; gap: 1px; width: var(--dd-side-nav-panel); height: 100%; overflow-y: auto;
-  padding: calc(var(--dd-u) * 4) calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 3); scrollbar-width: thin;
+  padding: calc(var(--dd-u) * 4) calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 3);
 }
+/* A pane scrolls with the system's sleek scrollbar (the .dd-scroll treatment in base.css): no track, a thin rounded thumb
+   tinted from the text colour that shows only while the pane is hovered or focused. */
+.dd-side-nav__pane {
+  --_thumb: color-mix(in oklab, var(--dd-text) 20%, transparent);
+  --_thumb-hover: color-mix(in oklab, var(--dd-text) 34%, transparent);
+  overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: transparent transparent; scrollbar-gutter: stable;
+  transition: scrollbar-color var(--dd-dur) var(--dd-ease);
+}
+.dd-side-nav__pane:is(:hover, :focus-within) { scrollbar-color: var(--_thumb) transparent; }
+.dd-side-nav__pane::-webkit-scrollbar { width: 8px; height: 8px; background: transparent; }
+.dd-side-nav__pane::-webkit-scrollbar-track, .dd-side-nav__pane::-webkit-scrollbar-corner { background: transparent; }
+.dd-side-nav__pane::-webkit-scrollbar-thumb { border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; background-color: transparent; }
+.dd-side-nav__pane:is(:hover, :focus-within)::-webkit-scrollbar-thumb { background-color: var(--_thumb); }
+.dd-side-nav__pane::-webkit-scrollbar-thumb:hover { background-color: var(--_thumb-hover); }
 .dd-side-nav__pane[hidden] { display: none; }
 .dd-side-nav__head {
   display: flex; align-items: baseline; justify-content: space-between; gap: calc(var(--dd-u) * 2);
@@ -4595,8 +4861,9 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 }
 .dd-side-nav__section {
   margin: 0; padding: calc(var(--dd-u) * 3.5) 10px calc(var(--dd-u) * 1.5);
-  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 500; letter-spacing: 0.08em; line-height: 1;
-  text-transform: uppercase; color: var(--dd-muted); white-space: nowrap;
+  font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); font-weight: 600; letter-spacing: 0.08em; line-height: 1;
+  /* full text colour, heavier than the page links, so each group reads as a heading over its pages */
+  text-transform: uppercase; color: var(--dd-text); white-space: nowrap;
 }
 
 .dd-side-nav__link {
@@ -4654,7 +4921,9 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-side-nav__meter > i { display: block; height: 100%; border-radius: inherit; background: var(--dd-accent); }
 
 /* ---------- mobile: off-canvas over a scrim ----------
-   Forced with --offcanvas; automatic inside a narrow .dd-app-shell (see app-shell.css). The scrim is the nav's own ::before. */
+   Forced with --offcanvas (at every width, also inside an app shell); automatic inside a narrow .dd-app-shell (see
+   app-shell.css). The scrim is the nav's own ::before. It is fixed to the viewport, or to the nearest ancestor that
+   contains fixed boxes (a frame-mode app shell, a demo frame). */
 .dd-side-nav--offcanvas {
   position: fixed; inset-block: 0; top: 0; left: calc(-1 * (var(--dd-side-nav-rail) + var(--dd-side-nav-panel)) - 48px);
   z-index: var(--dd-z-overlay); height: auto; max-width: calc(100% - 40px); visibility: hidden;
@@ -4669,6 +4938,10 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-side-nav--offcanvas .dd-side-nav__collapse > .dd-icon { rotate: 0deg; }
 .dd-side-nav--offcanvas.is-mobile-open { left: 0; visibility: visible; pointer-events: auto; box-shadow: var(--dd-shadow-float); transition-delay: 0s; }
 .dd-side-nav--offcanvas.is-mobile-open::before { opacity: 1; pointer-events: auto; }
+
+/* While an open off-canvas nav covers the viewport, the page behind it stays put: side-nav.js sets .dd-side-nav-lock on
+   <html>. (base.css reserves the scrollbar gutter on <html>, so nothing shifts sideways as the scrollbar goes.) */
+:root.dd-side-nav-lock { overflow: hidden; }
 
 /* Restoring a persisted state on load: no animation. */
 .dd-side-nav.is-restoring, .dd-side-nav.is-restoring * { transition: none !important; }
@@ -5208,7 +5481,9 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
   --_line: color-mix(in oklab, var(--dd-text) 9%, transparent);
   --_px: calc(var(--dd-u) * 4);
   --_py: calc(var(--dd-u) * 2.5);
-  max-width: 100%; overflow-x: auto; border-radius: var(--dd-r-box); background: var(--dd-surface);
+  /* position: relative keeps absolutely positioned children (e.g. .dd-visually-hidden header text) inside the scroller,
+     so they can't widen the page on narrow screens */
+  position: relative; max-width: 100%; overflow-x: auto; border-radius: var(--dd-r-box); background: var(--dd-surface);
   font-size: var(--dd-fs-sm); color: var(--dd-text);
   scrollbar-width: thin; scrollbar-color: var(--dd-surface-3) transparent;
 }
@@ -5828,8 +6103,9 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 
 /* ===== components/top-bar.css ===== */
 /* Top bar — the app header: logo, context, a search trigger, actions and the avatar menu. It sits on the page tone with a
-   hairline underneath. Under 640px of its own width (or in a narrow .dd-app-shell) the menu button appears, the search
-   collapses to an icon, and the context and anything marked __wide hide. */
+   hairline underneath. Under 640px of its own width the menu button appears, the search collapses to an icon, and the
+   context and anything marked __wide hide. As the top bar of a .dd-app-shell, the shell decides the menu button and the
+   __narrow logo instead (shown while its side nav is off-canvas); bars inside the shell's content keep these rules. */
 .dd-top-bar {
   --_line: color-mix(in oklab, var(--dd-text) 8%, transparent);
   container: dd-top-bar / inline-size;
@@ -5925,10 +6201,9 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-top-bar__menu-item .dd-top-bar__kbd { margin-left: auto; background: transparent; padding: 0; color: var(--dd-quiet); }
 
 /* Narrow: menu button in, search to an icon, extras out. __narrow shows only here (e.g. a logo the side nav carries on desktop). */
-.dd-top-bar__narrow { display: none !important; }
+.dd-top-bar__narrow { display: none; }
 @container dd-top-bar (max-width: 640px) {
-  .dd-top-bar__nav-btn { display: inline-flex; }
-  .dd-top-bar__narrow { display: inline-flex !important; }
+  .dd-top-bar__nav-btn, .dd-top-bar__narrow { display: inline-flex; }
   .dd-top-bar__wide, .dd-top-bar__links, .dd-top-bar__context { display: none; }
   /* The search folds to an icon button that matches the ghost icon buttons beside it. */
   .dd-top-bar__search { flex: none; width: auto; min-width: 0; height: auto; margin-right: calc(var(--dd-u) * -2); padding: calc(var(--dd-u) * 2.5);

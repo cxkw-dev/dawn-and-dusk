@@ -155,3 +155,4 @@ Don't:
 - Don’t make badges clickable unless they filter; use a chip.
 - Don’t rely on colour alone — the word carries the meaning.
 - Don’t use badges for categories and tags; chips in the Color set do that.
+

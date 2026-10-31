@@ -1,6 +1,6 @@
 # app shell — `app-shell`
 
-The page layout for apps: the side nav runs the full height on the left, the top bar and a scrolling content area share the rest. Fold the nav and the page reflows; on phones the nav slides in over the page.
+The page layout for apps: the side nav runs the full height on the left, the top bar and the content share the rest. Either the content scrolls inside a viewport-high shell, or the whole page scrolls under a sticky nav and bar. Fold the nav and the page reflows; on phones the nav slides in over the page.
 
 Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/app-shell
 
@@ -8,7 +8,7 @@ Every snippet is the exact markup of a working docs example. Icons are `<svg cla
 
 ### Full shell
 
-Side nav, top bar, page header and content. Try it: the chevron at the foot of the rail folds the panel and the page reflows; the services and projects icons switch it; a service link becomes the page. Shown 700px tall — in an app the shell is the viewport (100dvh) and only the content scrolls.
+Side nav, top bar, page header and content. Try it: the chevron at the foot of the rail folds the panel and the page reflows; the services and projects icons switch it; a service link becomes the page. Shown 700px tall — in an app the shell is the viewport (100dvh) and only the content scrolls; for a page that scrolls as a whole, see Page scroll.
 
 ```html
 <div class="dd-app-shell" style="--dd-app-shell-h: 700px">
@@ -163,7 +163,7 @@ Side nav, top bar, page header and content. Try it: the chevron at the foot of t
 
 ## On a phone
 
-Under 768px of shell width the side nav leaves the flow. The top bar shows its menu button and the logo (`dd-top-bar__narrow`); the button opens the nav over a scrim. Esc, the scrim or a link closes it. Try it: open the menu and pick a service.
+Under 768px of shell width (or the breakpoint you pick) the side nav leaves the flow. The top bar shows its menu button and the logo (`dd-top-bar__narrow`); the button opens the nav over a scrim. Esc, the scrim, a link or tabbing out of it closes it, and focus goes back to the menu button. Try it: open the menu and pick a service.
 
 ```html
 <div class="as-phone">
@@ -317,6 +317,48 @@ Under 768px of shell width the side nav leaves the flow. The top bar shows its m
 </div></div>
 ```
 
+## Page scroll
+
+By default the shell is the viewport and only its content area scrolls; the chrome never moves. Add `dd-app-shell--page` and the document scrolls instead: the shell grows with its content, the side nav and the top bar stick to the top of the window, and the off-canvas nav is fixed to the window. Anchors, find-in-page, the back button’s scroll position and `position: sticky` inside the content then behave as on any page — good for docs, settings and long reads.
+
+This page is the live example. These docs run on `dd-app-shell dd-app-shell--page dd-app-shell--offcanvas-md`. Try it: scroll, and the side nav and the top bar stay. Narrow the window under 900px and open the menu: the nav slides in over the page, and the page behind it stays put until Esc, the scrim, a link or tabbing out closes it.
+
+```html
+&#x3C;html>
+  &#x3C;body>
+    &#x3C;div class="dd-app-shell dd-app-shell--page dd-app-shell--offcanvas-md">
+      &#x3C;nav class="dd-side-nav" id="doc-nav" aria-label="Documentation">
+        &#x3C;div class="dd-side-nav__rail">…&#x3C;/div>
+        &#x3C;div class="dd-side-nav__panel" id="doc-nav-panel">…&#x3C;/div>
+      &#x3C;/nav>
+      &#x3C;div class="dd-app-shell__main">
+        &#x3C;header class="dd-top-bar">
+          &#x3C;button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-nav-open="#doc-nav" aria-controls="doc-nav" aria-expanded="false" aria-label="Open navigation">…&#x3C;/button>
+          &#x3C;a class="dd-top-bar__brand dd-top-bar__narrow" href="/">…&#x3C;/a>
+          …
+        &#x3C;/header>
+        &#x3C;main class="dd-app-shell__content">…&#x3C;/main>
+      &#x3C;/div>
+    &#x3C;/div>
+  &#x3C;/body>
+&#x3C;/html>
+```
+
+In page mode the shell paints no background of its own, so the page tone on `<html>` (with dusk’s grain) shows through, and cards keep their page hover. Give the document a `scroll-padding-top` a little taller than the top bar (these docs use 80px) so anchors land below it.
+
+## Breakpoints
+
+The shell is a size container named `dd-app-shell`: its side nav goes off-canvas when the shell is narrower than its breakpoint, whatever the window does. A custom property can’t drive a container query, so pick the width with a class.
+
+| class / attribute | what it does |
+|---|---|
+| `.dd-app-shell` | Under 768px of shell width (the default). |
+| `.dd-app-shell--offcanvas-md` | Under 900px. Tablets in portrait get the slide-in nav; these docs use it. |
+| `.dd-app-shell--offcanvas-lg` | Under 1024px, for pages that need the room, such as wide data tables. |
+| `.dd-side-nav--offcanvas` | On the nav: off-canvas at every width, also inside a shell. The top bar keeps its menu button. |
+
+Your own rules can follow the same widths with `@container dd-app-shell (width < 900px) { … }` — these docs drop the nav’s view-transition name that way while it is off-canvas. The shell’s rules reach only its own side nav and top bar, so components in its content (examples, previews, a nested shell) keep theirs.
+
 ## Anatomy
 
 The skeleton, without the contents. Wire the top bar’s menu button to the nav’s `id`; the nav’s collapsed state is remembered under that `id`.
@@ -346,19 +388,21 @@ The skeleton, without the contents. Wire the top bar’s menu button to the nav�
 
 | class / attribute | what it does |
 |---|---|
-| `.dd-app-shell` | Flex row at `--dd-app-shell-h` (default `100dvh`) on a plain `--dd-bg`. A size container: below 768px the side nav goes off-canvas. Because the page has no grain here, cards inside keep dawn’s gentler hover lift in both themes. |
-| `.dd-app-shell > .dd-side-nav` | Fills the height; no extra class needed. See Side nav. |
+| `.dd-app-shell` | Flex row at `--dd-app-shell-h` (default `100dvh`) on a plain `--dd-bg`; only `__content` scrolls. A size container named `dd-app-shell`: below 768px the side nav goes off-canvas. Because the page has no grain here, cards inside keep dawn’s gentler hover lift in both themes. |
+| `.dd-app-shell--page` | Page-scroll mode: the document scrolls, the shell is at least `100dvh` and grows with its content; the side nav and top bar stick, the off-canvas nav is fixed to the window. No background of its own. |
+| `--offcanvas-md / --offcanvas-lg` | Move the off-canvas breakpoint to 900px / 1024px of shell width. See Breakpoints. |
+| `.dd-app-shell > .dd-side-nav` | Fills the height (sticks, in page mode); no extra class needed. Add `dd-side-nav--offcanvas` to keep it off-canvas at every width. See Side nav. |
 | `__main` | The column beside the nav: top bar, then content. |
-| `__content` | The scrolling area, padded 40px / 50px (less on narrow shells). |
+| `__content` | The scrolling area (the page scrolls instead in page mode), padded 40px / 50px (less on narrow shells). |
 | `__page` | Centres the page at up to 1180px with a 40px rhythm between blocks. `--narrow` for forms and settings (760px). |
-| `--dd-app-shell-h` | Shell height. Set it to fit a frame, or `auto` plus a sticky nav if the whole page should scroll. |
+| `--dd-app-shell-h` | Shell height in the default mode. Set it to fit a frame; for a page that scrolls as a whole, use `--page`. |
 
 ## Behaviour
 
 | class / attribute | what it does |
 |---|---|
 | `data-dd-nav-toggle` | On the rail’s chevron: folds the panel; remembered per nav `id`. |
-| `data-dd-nav-open="#id"` | On the top bar’s menu button: opens the nav off-canvas on narrow shells. |
+| `data-dd-nav-open="#id"` | On the top bar’s menu button: opens the nav off-canvas on narrow shells. Esc, the scrim, a link or the chevron close it and return focus to the button; tabbing out (onto the button too) closes it. While it covers the window the page behind doesn’t scroll (`dd-side-nav-lock` on `<html>`). Widen past the breakpoint and it is simply in view. |
 | `data-dd-autoclose` | On the avatar menu: closes on outside click, Esc or choosing an item. |
 
 ## Guidelines
@@ -372,3 +416,4 @@ Don't:
 - Don’t nest a second side nav inside the content; use vertical tabs.
 - Don’t centre content narrower than 760px on desktop unless it is a form.
 - Don’t hide the menu button on phones — it is the only way to the nav.
+

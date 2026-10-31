@@ -105,7 +105,7 @@ const siteNarrow = `<div class="tb-phone tb-phone--short">${site('tb-site-menu-n
   <Example code={menuOpen} stage="flush" />
 
   <h2 id="narrow">Narrow</h2>
-  <p>Below 640px of its own width the menu button appears (wire it to the side nav with <code>data-dd-nav-open="#app-nav"</code>), the search collapses to an icon, and the context plus anything marked <code>dd-top-bar__wide</code> step out. In an <a href="../app-shell">app shell</a> the menu button opens the side nav off-canvas.</p>
+  <p>Below 640px of its own width the menu button appears (wire it to the side nav with <code>data-dd-nav-open="#app-nav"</code>), the search collapses to an icon, and the context plus anything marked <code>dd-top-bar__wide</code> step out. In an <a href="../app-shell">app shell</a> the shell decides instead: the menu button and <code>__narrow</code> show while its side nav is off-canvas, and the context stays while the nav is in view. Only the shell’s own top bar follows it — top bars inside its content, like these examples, keep their own width rules.</p>
   <Example code={narrow} stage="flush" />
 
   <h2 id="site">Site header</h2>
@@ -125,7 +125,7 @@ const siteNarrow = `<div class="tb-phone tb-phone--short">${site('tb-site-menu-n
     ['__icon-btn / __dot', 'An icon button with an unread dot.'],
     ['__user / __avatar / __menu', 'Avatar menu: <code>&lt;details&gt;</code>, the initials disc, the floating menu.'],
     ['__menu-head / __menu-item / __menu-sep', 'Menu parts: who you are, items (links or buttons), hairline separators.'],
-    ['__wide / __narrow', '<code>__wide</code> hides an element when the bar is narrow; <code>__narrow</code> shows one only then (a compact stand-in, such as an icon-only theme button).'],
+    ['__wide / __narrow', '<code>__wide</code> hides an element when the bar is narrow; <code>__narrow</code> shows one only then (a compact stand-in, such as an icon-only theme button). In an app shell, <code>__narrow</code> follows the side nav: shown while it is off-canvas.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>

@@ -202,3 +202,4 @@ Don't:
 - Don’t use an alert for success that’s already visible — a toast is enough.
 - Don’t add borders or a coloured edge; the fill is the signal.
 - Don’t hide the only way to fix a problem behind dismiss.
+

@@ -117,25 +117,27 @@ Try it: open the account menu and hover or → on “Theme” for a submenu of r
 
 A “more” button at the end of a row. `data-dd-placement="bottom-end"` aligns the menu’s right edge with the trigger. Every row’s button can share one menu: open it on one row, then click another row’s ⋯ and the menu moves there.
 
-Try it: open a ⋯ menu, then click the next row’s ⋯; “Promote to” has a submenu.
+To know which row the menu is for, listen for `dd:menuopen` on the menu: `event.detail.trigger` is the button that opened it, so `trigger.closest(…)` finds the row. The menu also keeps that button as `menu.ddTrigger` after it closes, which is what an item’s click handler needs: the menu closes as the item runs.
+
+Try it: open a ⋯ menu — its header names the row — then click the next row’s ⋯; View logs and Roll back say which deployment they act on; “Promote to” has a submenu.
 
 ```html
 <div class="dd-stack" style="--dd-gap: 5px; max-width: 520px">
-  <div class="dd-surface" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
+  <div class="dd-surface" data-deploy="auth-gateway" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
     <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
       <b style="font-weight: 600">auth-gateway</b>
       <span class="dd-small dd-muted"><span class="dd-mono">a3f9c21</span> · deployed 4 min ago · iad1</span>
     </span>
     <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" data-dd-menu="mn-row" data-dd-placement="bottom-end" aria-haspopup="menu" aria-expanded="false" aria-controls="mn-row" aria-label="Actions for auth-gateway"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-more"/></svg></button>
   </div>
-  <div class="dd-surface" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
+  <div class="dd-surface" data-deploy="billing-worker" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
     <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
       <b style="font-weight: 600">billing-worker</b>
       <span class="dd-small dd-muted"><span class="dd-mono">7be04d2</span> · deployed 1 h ago · fra1</span>
     </span>
     <button class="dd-btn dd-btn--ghost dd-btn--icon dd-btn--sm" data-dd-menu="mn-row" data-dd-placement="bottom-end" aria-haspopup="menu" aria-expanded="false" aria-controls="mn-row" aria-label="Actions for billing-worker"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-more"/></svg></button>
   </div>
-  <div class="dd-surface" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
+  <div class="dd-surface" data-deploy="edge-cache" style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 20px">
     <span class="dd-stack" style="--dd-gap: 2px; flex: 1; min-width: 0">
       <b style="font-weight: 600">edge-cache</b>
       <span class="dd-small dd-muted"><span class="dd-mono">c41e9b0</span> · deployed yesterday · hnd1</span>
@@ -144,16 +146,33 @@ Try it: open a ⋯ menu, then click the next row’s ⋯; “Promote to” has a
   </div>
 </div>
 <div class="dd-menu" id="mn-row" role="menu" aria-label="Deployment actions" hidden>
-  <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">View logs</span><kbd class="dd-menu__kbd">L</kbd></button>
+  <div class="dd-menu__header"><span data-row-name>Deployment</span></div>
+  <hr class="dd-menu__sep" style="margin-top: 0">
+  <button class="dd-menu__item" role="menuitem" data-action="Opening logs for"><span class="dd-menu__body">View logs</span><kbd class="dd-menu__kbd">L</kbd></button>
   <button class="dd-menu__item" role="menuitem" data-dd-toast="Deployment URL copied" data-dd-toast-intent="ok"><span class="dd-menu__body">Copy deployment URL</span><kbd class="dd-menu__kbd">⌘C</kbd></button>
   <button class="dd-menu__item" role="menuitem" data-dd-menu="mn-row-promote"><span class="dd-menu__body">Promote to</span><svg class="dd-icon dd-menu__sub" aria-hidden="true"><use href="#dd-i-chevron-right"/></svg></button>
   <hr class="dd-menu__sep">
-  <button class="dd-menu__item dd-menu__item--danger" role="menuitem"><span class="dd-menu__body">Roll back</span></button>
+  <button class="dd-menu__item dd-menu__item--danger" role="menuitem" data-action="Rolling back"><span class="dd-menu__body">Roll back</span></button>
 </div>
 <div class="dd-menu" id="mn-row-promote" role="menu" aria-label="Promote to" hidden>
   <button class="dd-menu__item" role="menuitem"><span class="dd-menu__body">staging</span></button>
   <button class="dd-menu__item" role="menuitem" data-dd-toast="Promoting to production" data-dd-toast-description="Checks run first; you can cancel for 30 s."><span class="dd-menu__body">production</span></button>
 </div>
+<script>
+  {
+    // One menu serves every row: the trigger that opened it says which row.
+    const menu = document.getElementById('mn-row');
+    menu.addEventListener('dd:menuopen', (e) => {
+      const row = e.detail.trigger.closest('[data-deploy]');
+      menu.querySelector('[data-row-name]').textContent = row.dataset.deploy;
+    });
+    // menu.ddTrigger names it too, and stays set once the menu closes (for handlers that run after it).
+    menu.addEventListener('click', (e) => {
+      const item = e.target.closest('[data-action]');
+      if (item) dd.toast({ title: `${item.dataset.action} ${menu.ddTrigger.closest('[data-deploy]').dataset.deploy}` });
+    });
+  }
+</script>
 ```
 
 ## Context menu
@@ -209,6 +228,15 @@ Try it: right-click the file, or Tab to it and press Shift F10 or the Menu key.
 
 | class / attribute | what it does |
 |---|---|
+| `dd:menuopen` | Fired on the menu as it opens, before it is measured (so a listener can relabel or disable items). `detail.trigger` is the button that opened it — or the area, for a context menu. Bubbles. |
+| `dd:menuclose` | Fired on the menu as it closes, with the same `detail.trigger`. Moving a shared menu to another row fires `dd:menuclose` for the old trigger, then `dd:menuopen` for the new one. |
+| `menu.ddTrigger` | The element that last opened the menu. Still set after it closes, so an item’s click handler can read it. |
+| `dd.menu.open(menu, trigger, { focus })` | Opens `menu` (the element, its id or `"#id"`) under `trigger` (default: the first `[data-dd-menu]` pointing at it). `focus`: `"first"` (default), `"last"` or `"none"`. |
+| `dd.menu.close(menu)` | Closes that menu and its submenus; with no argument, every open menu. If focus was inside, it goes back to the trigger. Does nothing when the menu isn’t open. |
+| `dd.menu.trigger(menu)` | Same as `menu.ddTrigger`. |
+
+| class / attribute | what it does |
+|---|---|
 | `↓ / ↑ on the trigger` | Opens the menu with the first / last item focused. Enter and Space open at the first item. |
 | `↓ ↑ · Home End` | Move between items, wrapping at the ends; disabled items are skipped. |
 | `A letter` | Jumps to the next item that starts with it. |
@@ -228,3 +256,4 @@ Don't:
 - Don’t nest submenus more than one level deep.
 - Don’t put the only path to an action inside a context menu.
 - Don’t mix items with and without icons in one menu.
+

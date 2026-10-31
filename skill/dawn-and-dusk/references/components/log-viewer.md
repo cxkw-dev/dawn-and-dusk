@@ -217,3 +217,4 @@ Don't:
 - Don’t colour whole lines by level; the badge and the error tint are enough.
 - Don’t let the stream grow the page — cap its height.
 - Don’t auto-scroll to the bottom while someone is reading higher up.
+

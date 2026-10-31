@@ -207,3 +207,4 @@ Don't:
 - Don’t colour the value itself red or green — the delta carries the tone.
 - Don’t add axes or labels to a sparkline; if the values matter, use a chart.
 - Don’t show a delta without saying what it is compared against.
+

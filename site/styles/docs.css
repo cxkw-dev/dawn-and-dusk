@@ -3,44 +3,15 @@
 .doc-skip:focus { left: 8px; background: var(--dd-text); color: var(--dd-bg); padding: 6px 10px; border-radius: var(--dd-r-ctl); }
 
 /* ---------- app shell: the docs run on the system's own .dd-app-shell, side nav and top bar ----------
-   Page-scroll mode: the document scrolls (so anchors, scroll-padding, find-in-page, back/forward scroll restoration,
-   view transitions and position: sticky all behave as on any page) while the side nav and the top bar stick.
-   The shell is built to be the viewport and scroll inside, so a few of its layout rules are turned off here:
-   overflow / contain on the shell and overflow on __content would make them scroll containers (sticky would never
-   stick, and contain: layout would pin the off-canvas nav to the shell instead of the viewport), and the shell
-   resets the side nav and top bar to position: relative. Only layout changes; every look is the component's.
-   The shell's own container is off too: its container-query rules reach every top bar inside it (".dd-app-shell
-   .dd-top-bar__nav-btn"), which would strip the menu buttons from the examples on the page. The few steps the docs
-   chrome needs from those rules follow below as media queries (the docs shell is the viewport, so they match). */
-.doc-app.dd-app-shell {
-  container: none; --dd-app-shell-h: auto; min-height: 100dvh; overflow: visible; contain: none;
-  /* The docs page keeps the grained page tone (on <html>), and examples keep each component's own hover steps for it. */
-  background: none; --dd-card-hover: inherit; --dd-accordion-hover: inherit;
-}
-.doc-app > .doc-nav { position: sticky; top: 0; height: 100dvh; view-transition-name: doc-nav; }
-.doc-app > .dd-app-shell__main > .doc-bar { position: sticky; top: 0; view-transition-name: doc-bar; }
-.doc-content.dd-app-shell__content { container: doc-content / inline-size; overflow: visible; }
-@media (max-width: 1023px) {
-  .doc-content.dd-app-shell__content { padding: calc(var(--dd-u) * 6) calc(var(--dd-u) * 6) calc(var(--dd-u) * 10); }
-}
-@media (max-width: 767px) {
-  .doc-content.dd-app-shell__content { padding: calc(var(--dd-u) * 5) calc(var(--dd-u) * 4) calc(var(--dd-u) * 10); }
-}
-
-/* Wide: the side nav is in view and carries the logo, so the top bar keeps its context and drops the menu button and
-   the narrow-only wordmark, even when the bar itself is under 640px. 900px and down: the side nav's own off-canvas
-   mode (the class is set before paint in the layout) and the top bar's menu button. The shell's own breakpoint is
-   768px; its "> .dd-side-nav" rule outranks --offcanvas, so restore what it overrides. */
-@media (min-width: 901px) {
-  .doc-bar > .dd-top-bar__nav-btn, .doc-bar > .dd-top-bar__narrow { display: none !important; }
-  .doc-bar > .dd-top-bar__context { display: flex; }
-}
-.doc-app > .doc-nav.dd-side-nav--offcanvas { position: fixed; top: 0; height: auto; view-transition-name: none; }
-@media (max-width: 900px) {
-  .doc-bar > .dd-top-bar__nav-btn, .doc-bar > .dd-top-bar__narrow { display: inline-flex !important; }
-}
-/* The page stays put behind the open nav (the shell normally is the viewport, so the component doesn't lock it). */
-:root:has(.doc-nav.is-mobile-open) { overflow: hidden; }
+   In page-scroll mode (dd-app-shell--page in the layout): the document scrolls, so anchors, scroll-padding, find-in-page,
+   back/forward scroll restoration, view transitions and position: sticky all behave as on any page, while the side nav
+   and the top bar stick. Under 900px (dd-app-shell--offcanvas-md) the side nav goes off-canvas. Only the docs' own
+   additions follow: the view-transition names that keep the chrome still between pages. Off-canvas, the nav drops its
+   name (it would freeze the sliding nav into the page swap). */
+.doc-app > .doc-nav { view-transition-name: doc-nav; }
+.doc-app > .dd-app-shell__main > .doc-bar { view-transition-name: doc-bar; }
+@container dd-app-shell (width < 900px) { .doc-app > .doc-nav { view-transition-name: none; } }
+.doc-content { container: doc-content / inline-size; }
 
 /* side nav panel: the search at its head, then one scrolling list; every section's pane sits in it */
 .doc-nav-panel { display: flex; flex-direction: column; }
@@ -51,10 +22,14 @@
 .doc-find-status { margin: calc(var(--dd-u) * 2) 0 0 10px; font-size: var(--dd-fs-xs); color: var(--dd-quiet); }
 .doc-find-status:empty { display: none; }
 .doc-find-status.is-none { color: var(--dd-muted); }
-.doc-nav-list { flex: 1; min-height: 0; width: var(--dd-side-nav-panel); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+/* the list scrolls with the system's sleek scrollbar (.dd-scroll in the markup) */
+.doc-nav-list { flex: 1; min-height: 0; width: var(--dd-side-nav-panel); overflow-y: auto; }
 .doc-nav-list > .dd-side-nav__pane { width: auto; height: auto; overflow: visible; padding-top: calc(var(--dd-u) * 2); }
 .doc-nav-group:not([hidden]) { display: contents; }
 .doc-nav .dd-side-nav__link[hidden] { display: none; }
+/* The docs nav reads in the lockup's voice: page names and rail tooltips lowercase like the pane titles; only the
+   micro-caps group labels stay uppercase. */
+.doc-nav .dd-side-nav__label, .doc-nav .dd-side-nav__item[data-label]::after { text-transform: lowercase; }
 /* While a query is typed every section shows its matches, under its own heading. */
 .doc-nav-list.is-filtered > .dd-side-nav__pane[hidden] { display: flex; }
 .doc-nav-list.is-filtered > .dd-side-nav__pane.is-empty { display: none; }

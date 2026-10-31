@@ -350,7 +350,8 @@
      from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes (a still, deeper
      tint under reduced motion) instead of being added twice; Backspace in an empty field removes the last chip.
      The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x).
-   When a chip goes, the chips after it glide into its place (not under reduced motion). */
+   When a chip goes, the chips after it glide into its place (not under reduced motion). 
+   Inside [data-dd-manual] (chips a framework renders from state) the script does nothing; listen for clicks yourself. */
 (() => {
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const valueOf = (chip) => chip.dataset.value || chip.textContent.trim();
@@ -411,6 +412,7 @@
   };
 
   document.addEventListener('click', (e) => {
+    if (e.target.closest?.('[data-dd-manual]')) return;
     const x = e.target.closest('.dd-chip__remove');
     if (x) { e.preventDefault(); remove(x.closest('.dd-chip')); return; }
     const f = e.target.closest('button.dd-chip[aria-pressed]');
@@ -425,6 +427,7 @@
   });
 
   document.addEventListener('keydown', (e) => {
+    if (e.target.closest?.('[data-dd-manual]')) return;
     const x = e.target.closest?.('.dd-chip__remove');
     if (x && (e.key === 'Delete' || e.key === 'Backspace')) { e.preventDefault(); remove(x.closest('.dd-chip')); return; }
     const field = e.target.closest?.('.dd-chip-input__field');
@@ -917,12 +920,17 @@
 /* ===== behaviors/data-table.js ===== */
 /* Data table — opt in with [data-dd-data-table] on .dd-data-table.
    - Sort: <th aria-sort="none"><button class="dd-data-table__sort">…</button></th> cycles none → ascending → descending → none.
-     Rows sort within each group; expanded detail rows travel with their row. Mark numeric columns with .is-num;
-     a cell's data-value (if set) is used instead of its text. Emits dd:sort { column, direction, index }.
+     Rows sort within each group; expanded detail rows travel with their row. A cell's data-value (if set) is used instead
+     of its text. Two values compare as numbers only when both are fully numeric ("1,240", "0.5%", "-3"), else as times
+     when both are ISO dates ("2026-10-30", "2026-10-30T09:41"), else as text (localeCompare, numeric: true, so "v2" < "v10").
+     In a figure column (.is-num) a value like "84 ms" still reads as its number and a dash counts as blank. Blanks sort
+     last both ways. Emits dd:sort { column, direction, index }.
    - Select: .dd-data-table__check in the header selects every visible row (with indeterminate state); Shift-click selects a
-     range. Selected rows get .is-selected; .dd-data-table__bulk shows while anything is selected and
-     [data-dd-data-table-selected] receives the count. [data-dd-data-table-clear] clears the selection (focus moves to the
-     select-all box). Emits dd:selectionchange { count, rows }.
+     range. Disabled row boxes are never changed by the table (select all, range, clear) and don't count toward the
+     header's checked / indeterminate state. Selected rows get .is-selected; .dd-data-table__bulk shows while anything is
+     selected and [data-dd-data-table-selected] receives the count. [data-dd-data-table-clear] clears the selection (focus
+     moves to the select-all box), and so does the bulk bar hiding while focus is in it. Emits
+     dd:selectionchange { count, rows }.
    - Expand: .dd-data-table__expand[aria-controls] toggles its detail row (hidden) and aria-expanded.
    - Filter: [data-dd-data-table-search] (text), toggle chips [data-dd-data-table-filter="col=value"] with aria-pressed, and
      checkboxes with the same attribute (e.g. in a .dd-data-table__menu). Cells carry data-col="col" and optionally
@@ -935,7 +943,12 @@
      Filtering returns to page 1; sorting keeps the page.
    - Columns: inputs [data-dd-data-table-column="col"] show/hide the column whose <th data-col="col">.
    - Menus (.dd-data-table__menu, a <details>) close on Esc (focus returns to the summary) and on any click outside.
-   - Scroll: adds .is-scrolled-x / .is-scrolled-y to the root so the frozen column and sticky header cast an edge. */
+   - Scroll: adds .is-scrolled-x / .is-scrolled-y to the root so the frozen column and sticky header cast an edge.
+   - Rows added or removed from script (or a framework) are picked up on their own: count, filters, empty row, pages and
+     selection refresh on the next frame. dd.dataTable.refresh(root) does it by hand.
+   - Focus: when a row that held focus is removed, focus moves to the first control of the next remaining visible row
+     (else the previous one, else the select-all box, else the scroll region / table). A row that is only moved (re-sorted
+     or re-inserted by a framework) gets its focus back. */
 (() => {
   const ROOT = '[data-dd-data-table]';
   const SKIP = '.dd-data-table__group, .dd-data-table__detail, .dd-data-table__empty-row';
@@ -953,7 +966,8 @@
   // ---------- selection ----------
   function syncSelection(root) {
     const boxes = dataRows(root).map(rowBox).filter(Boolean);
-    const visible = boxes.filter((b) => !b.closest('tr').hidden);
+    // The header box speaks for the rows it can change: visible and enabled.
+    const visible = boxes.filter((b) => !b.closest('tr').hidden && !b.disabled);
     let n = 0;
     for (const b of boxes) {
       b.closest('tr').classList.toggle('is-selected', b.checked);
@@ -965,7 +979,12 @@
       all.checked = visible.length > 0 && vChecked === visible.length;
       all.indeterminate = vChecked > 0 && vChecked < visible.length;
     }
-    root.querySelectorAll('.dd-data-table__bulk').forEach((bar) => { bar.hidden = n === 0; });
+    root.querySelectorAll('.dd-data-table__bulk').forEach((bar) => {
+      // A bulk action that empties the selection (e.g. removes the rows) hides the bar under the focus: keep it in the table.
+      const had = n === 0 && !bar.hidden && bar.contains(document.activeElement);
+      bar.hidden = n === 0;
+      if (had) landFocus(root, null);
+    });
     root.querySelectorAll('[data-dd-data-table-selected]').forEach((el) => { el.textContent = n.toLocaleString(); });
     return n;
   }
@@ -975,13 +994,38 @@
   };
 
   // ---------- sorting ----------
+  // Fully numeric: digits with an optional sign, decimals, exponent, thousands separators, a leading currency sign or a
+  // trailing %. Anything else ("84 ms", "v2.1", "2026-10-30") is not.
+  const NUMBER = /^[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?$/i;
+  const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+  const asNumber = (s) => {
+    const t = s.replace(/[\s,_\u00a0\u202f]/g, '').replace(/^[$€£¥]/, '').replace(/%$/, '');
+    return NUMBER.test(t) ? Number(t) : null;
+  };
+  const asTime = (s) => {
+    if (!ISO_DATE.test(s)) return null;
+    const t = Date.parse(s.length === 10 ? `${s}T00:00` : s.replace(' ', 'T')); // date-only → local midnight, like the rest
+    return Number.isNaN(t) ? null : t;
+  };
+  // A sort key: { raw, num, time }, or null for a blank cell.
   const keyOf = (tr, i, numeric) => {
     const cell = tr.cells[i];
     if (!cell) return null;
     const raw = (cell.dataset.value ?? cell.textContent).trim();
-    if (!numeric) return raw || null;
-    const n = parseFloat(raw.replace(/[^\d.\-]/g, ''));
-    return Number.isNaN(n) ? null : n;
+    if (!raw) return null;
+    let num = asNumber(raw);
+    const time = num === null ? asTime(raw) : null;
+    if (numeric && num === null && time === null) {
+      // A figure column: "84 ms" or "1.2 GB" still reads as its number; a dash or other text counts as blank.
+      num = parseFloat(raw.replace(/[^\d.\-]/g, ''));
+      if (Number.isNaN(num)) return null;
+    }
+    return { raw, num, time };
+  };
+  const compareKeys = (a, b) => {
+    if (a.num !== null && b.num !== null) return a.num - b.num;
+    if (a.time !== null && b.time !== null) return a.time - b.time;
+    return a.raw.localeCompare(b.raw, undefined, { numeric: true, sensitivity: 'base' });
   };
 
   function sortTable(root, th, dir) {
@@ -1006,7 +1050,7 @@
         if (ka === null && kb === null) return 0;
         if (ka === null) return 1; // blanks always last
         if (kb === null) return -1;
-        const d = numeric ? ka - kb : String(ka).localeCompare(String(kb), undefined, { numeric: true, sensitivity: 'base' });
+        const d = compareKeys(ka, kb);
         return dir === 'descending' ? -d : d;
       };
       const frag = document.createDocumentFragment();
@@ -1140,7 +1184,7 @@
       const prev = lastClicked.get(root);
       if (e.shiftKey && prev && boxes.includes(prev)) {
         const [a, b] = [boxes.indexOf(prev), boxes.indexOf(box)].sort((x, y) => x - y);
-        boxes.slice(a, b + 1).forEach((b2) => { b2.checked = box.checked; });
+        boxes.slice(a, b + 1).forEach((b2) => { if (!b2.disabled) b2.checked = box.checked; });
       }
       lastClicked.set(root, box);
       selectionChanged(root);
@@ -1158,7 +1202,7 @@
     }
 
     if (e.target.closest('[data-dd-data-table-clear]')) {
-      dataRows(root).map(rowBox).filter(Boolean).forEach((b) => { b.checked = false; });
+      dataRows(root).map(rowBox).filter((b) => b && !b.disabled).forEach((b) => { b.checked = false; });
       selectionChanged(root);
       root.querySelector('thead .dd-data-table__check')?.focus();
       return;
@@ -1180,7 +1224,7 @@
     if (!root) return;
     if (e.target.matches('thead .dd-data-table__check')) {
       const on = e.target.checked;
-      dataRows(root).filter((r) => !r.hidden).map(rowBox).filter(Boolean).forEach((b) => { b.checked = on; });
+      dataRows(root).filter((r) => !r.hidden).map(rowBox).filter((b) => b && !b.disabled).forEach((b) => { b.checked = on; });
       selectionChanged(root);
     } else if (e.target.matches('[data-dd-data-table-column]')) {
       setColumn(root, e.target.dataset.ddDataTableColumn, e.target.checked);
@@ -1218,11 +1262,87 @@
     root?.classList.toggle('is-scrolled-y', el.scrollTop > 0);
   }, true);
 
-  const init = () => document.querySelectorAll(ROOT).forEach((root) => {
-    root.querySelectorAll('[data-dd-data-table-column]').forEach((inp) => { if (!inp.checked) setColumn(root, inp.dataset.ddDataTableColumn, false); });
+  const update = (root) => {
     if (root.querySelector('[data-dd-data-table-search], [data-dd-data-table-filter], [data-dd-data-table-count], [data-dd-pagination]')) refresh(root);
     else syncSelection(root);
+  };
+
+  // ---------- focus that would be lost with a removed row ----------
+  const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  const firstFocusable = (el) => [...el.querySelectorAll(FOCUSABLE)].find((f) => f.getClientRects().length);
+  const lastFocus = new WeakMap(); // root → the last element focused inside one of its body rows
+  const lostFocus = new WeakMap(); // root → where to land once the rows settle
+  // Only focus in a row counts: moving on to a row's ⋯ menu (which may sit inside the root) must not forget the row.
+  document.addEventListener('focusin', (e) => {
+    const root = e.target.closest?.('tbody > tr')?.closest(ROOT);
+    if (root) lastFocus.set(root, e.target);
   });
+  // Focus is "lost" when it sits on the page itself, or on something that is gone or no longer shown.
+  const focusLost = () => {
+    const a = document.activeElement;
+    return !a || a === document.body || a === document.documentElement || !a.isConnected || !a.getClientRects().length;
+  };
+  // Lands focus on the first control of the nearest shown row after where the lost row was (else before it; else the
+  // first shown row if every row was replaced), else on the select-all box, else on the scroll region (or the table).
+  // With no `lost` (the bulk bar hid under the focus) it goes straight to the select-all box.
+  function landFocus(root, lost) {
+    const shown = (r) => r instanceof HTMLTableRowElement && r.isConnected && !r.hidden && !r.matches(SKIP) && r.closest(ROOT) === root;
+    let target = null;
+    if (lost) {
+      for (let r = lost.next; r && !target; r = r.nextSibling) if (shown(r)) target = firstFocusable(r);
+      for (let r = lost.prev; r && !target; r = r.previousSibling) if (shown(r)) target = firstFocusable(r);
+      if (!target && !lost.next && !lost.prev) for (const r of dataRows(root)) if (!target && shown(r)) target = firstFocusable(r);
+    }
+    const all = root.querySelector('thead .dd-data-table__check');
+    if (!target && all && !all.disabled && all.getClientRects().length) target = all;
+    if (!target) {
+      target = root.querySelector('.dd-data-table__scroll[tabindex]') || root.querySelector('table');
+      if (target && !target.hasAttribute('tabindex')) target.tabIndex = -1;
+    }
+    target?.focus();
+  }
+  // From a batch of row mutations: did the row holding focus leave? Note where it was (its old neighbours, followed past
+  // any that left in the same batch) so focus can land on the next row once paging and filters have caught up.
+  function noteFocus(root, records) {
+    const el = lastFocus.get(root);
+    if (!el) return;
+    const next = new Map(); const prev = new Map();
+    for (const rec of records) for (const n of rec.removedNodes) { next.set(n, rec.nextSibling); prev.set(n, rec.previousSibling); }
+    const gone = [...next.keys()].find((n) => n.contains?.(el));
+    if (!gone) return;
+    if (el.isConnected) { lostFocus.set(root, { el }); return; } // only moved
+    const follow = (map, n) => { for (let k = 0; n && !n.isConnected && map.has(n) && k < 10000; k++) n = map.get(n); return n?.isConnected ? n : null; };
+    lostFocus.set(root, { next: follow(next, next.get(gone)), prev: follow(prev, prev.get(gone)) });
+  }
+  function restoreFocus(root) {
+    const lost = lostFocus.get(root);
+    lostFocus.delete(root);
+    if (!lost || !focusLost()) return; // something else has focus now (a dialog, the page): leave it there
+    if (lost.el) { if (lost.el.isConnected && lost.el.getClientRects().length) lost.el.focus({ preventScroll: true }); return; }
+    landFocus(root, lost);
+  }
+
+  // Rows added / removed later: refresh once per frame (sorting moves rows too; refreshing after it is harmless).
+  const pending = new WeakSet();
+  // Only each tbody's own row list is watched: refresh() rewrites counts and labels elsewhere in the table, which must not
+  // trigger it again.
+  const watch = (root) => {
+    const mo = new MutationObserver((records) => {
+      noteFocus(root, records);
+      if (pending.has(root)) return;
+      pending.add(root);
+      requestAnimationFrame(() => { pending.delete(root); update(root); restoreFocus(root); });
+    });
+    root.querySelectorAll('tbody').forEach((tb) => mo.observe(tb, { childList: true }));
+  };
+
+  const init = () => document.querySelectorAll(ROOT).forEach((root) => {
+    root.querySelectorAll('[data-dd-data-table-column]').forEach((inp) => { if (!inp.checked) setColumn(root, inp.dataset.ddDataTableColumn, false); });
+    update(root);
+    watch(root);
+  });
+  window.dd = window.dd || {};
+  window.dd.dataTable = { refresh: (root) => { const r = typeof root === 'string' ? document.querySelector(root) : root; if (r) update(r.closest(ROOT) || r); } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
@@ -1586,6 +1706,11 @@
    - <form method="dialog"> inside closes it on submit (after native validation) with the submitter's value.
    - A click on the backdrop closes it, unless the dialog has data-dd-dialog-backdrop="static". Esc closes (native).
    - Closing plays the exit animation (.is-closing), then calls close(); focus returns to the opener.
+     An opener inside a floating menu (a .dd-menu__item with data-dd-dialog-open) has closed with its menu, so focus goes
+     to the button that opened that menu instead (menu.ddTrigger; for a submenu, the root menu's trigger). If that
+     element is gone by then — removed before the dialog closed, or by a "close" listener (the row the dialog deleted) —
+     focus lands on the nearest focusable where it was: the first control of the next element after it, else the one
+     before, else further up the page.
    - Tab / Shift+Tab wrap inside the open dialog instead of leaving for the browser's own UI.
    - Inside a role="menu" list (sheet actions / choices): ↑ ↓ move between rows, Home / End jump to the ends. Choosing a
      role="menuitemradio" row marks it aria-checked (and unmarks the others); a menuitemcheckbox row flips.
@@ -1597,6 +1722,40 @@
   const pending = new WeakMap(); // dialog → cancels its in-flight exit animation
   const resolve = (target) => (typeof target === 'string' ? document.querySelector(target) : target);
 
+  // Where focus goes back to. A menu item closes with its menu, so use the menu's trigger (up through submenus).
+  const returnTarget = (el) => {
+    let t = el;
+    for (let k = 0; k < 10; k++) {
+      const menu = t?.closest?.('.dd-menu');
+      if (!menu || !menu.ddTrigger || !(menu.hidden || menu.classList.contains('is-floating'))) break;
+      t = menu.ddTrigger;
+    }
+    return t;
+  };
+  // The element's place in the page (ancestors and their neighbours), to find the nearest focusable if it is removed.
+  const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
+  const canFocus = (el) => el.matches(FOCUSABLE) && !el.closest('[inert], dialog:not([open])') && el.getClientRects().length > 0;
+  const firstIn = (el) => (el.nodeType !== 1 ? null : canFocus(el) ? el : [...el.querySelectorAll(FOCUSABLE)].find(canFocus) || null);
+  const placeOf = (el) => {
+    const path = [];
+    for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) path.push({ node: n, next: n.nextElementSibling, prev: n.previousElementSibling });
+    return path;
+  };
+  const nearest = (path) => {
+    const i = path.findIndex((p) => p.node.isConnected);
+    if (i < 0) return null;
+    if (i === 0) { const f = firstIn(path[0].node); if (f) return f; }
+    for (let k = Math.max(0, i - 1); k < path.length; k++) {
+      // The removed level uses the neighbours it had; the levels still in the page use their live ones.
+      const live = path[k].node.isConnected;
+      const next = live ? path[k].node.nextElementSibling : path[k].next;
+      const prev = live ? path[k].node.previousElementSibling : path[k].prev;
+      for (let n = next; n && n.isConnected; n = n.nextElementSibling) { const f = firstIn(n); if (f) return f; }
+      for (let n = prev; n && n.isConnected; n = n.previousElementSibling) { const f = firstIn(n); if (f) return f; }
+    }
+    return null;
+  };
+
   const open = (dlg, opener) => {
     if (!(dlg instanceof HTMLDialogElement)) return;
     // Reopened while its exit animation plays: cancel the exit and keep it open (and the original opener).
@@ -1607,7 +1766,8 @@
     pending.get(dlg)?.();
     dlg.classList.remove('is-closing');
     dlg.returnValue = '';
-    openers.set(dlg, opener || document.activeElement);
+    const back = returnTarget(opener || document.activeElement);
+    openers.set(dlg, back ? { el: back, path: placeOf(back) } : null);
     dlg.showModal();
   };
 
@@ -1722,7 +1882,18 @@
     if (!(dlg instanceof HTMLDialogElement) || !dlg.matches(SEL)) return;
     const back = openers.get(dlg);
     openers.delete(dlg);
-    if (back && back.isConnected && typeof back.focus === 'function') back.focus({ preventScroll: true });
+    if (!back) return;
+    const land = () => {
+      const shown = back.el.isConnected && back.el.getClientRects().length > 0;
+      (shown ? back.el : nearest(back.path))?.focus({ preventScroll: true });
+    };
+    land();
+    // The page's own close listener may remove the element focus just went to (the row this dialog deleted): once it
+    // has run, land on the nearest focusable where that element was.
+    setTimeout(() => {
+      const a = document.activeElement;
+      if (!dlg.open && (!a || a === document.body || !a.isConnected || !a.getClientRects().length)) land();
+    }, 0);
   }, true);
 
   window.dd = window.dd || {};
@@ -1929,12 +2100,13 @@
    The limit comes from data-dd-counter="280" (a soft limit: typing past it marks the field invalid) or from the
    control's maxlength (a hard limit). The counter gets .is-near at 90% and .is-over past the limit, and re-counts
    when its form is reset. An error in the same field marked [data-dd-counter-error] shows only while a soft limit
-   is passed. */
+   is passed. Leave a counter alone (a framework renders it) with data-dd-counter="manual" or [data-dd-manual] on an
+   ancestor. */
 (() => {
   const update = (field) => {
     const counter = field.querySelector('.dd-field__counter');
     const control = field.querySelector('input, textarea');
-    if (!counter || !control) return;
+    if (!counter || !control || counter.dataset.ddCounter === 'manual' || counter.closest('[data-dd-manual]')) return;
     const soft = Number(counter.dataset.ddCounter) || 0;
     const max = soft || Number(control.getAttribute('maxlength')) || 0;
     const n = control.value.length;
@@ -1965,12 +2137,18 @@
 /* ===== behaviors/form-layout.js ===== */
 /* Form validation: <form data-dd-validate novalidate> checks its controls when it is submitted, using the browser's
    own constraints (required, type, pattern, min / max, minlength…) but showing the result in the form's own style.
-   - Each invalid control gets aria-invalid="true" and a .dd-field__error under its box (text: the control's
-     data-dd-error, else the browser's message), linked with aria-describedby. A hint in the same spot steps aside
-     while the error shows.
+   - Each invalid control gets aria-invalid="true" and a .dd-field__error under its box, linked with aria-describedby.
+     A hint in the same spot steps aside while the error shows. The text, first match wins:
+       a message set from script with setCustomValidity();
+       the control's message for this reason: data-dd-error-missing (required), data-dd-error-type (type="email" / url,
+       or a number box holding text), data-dd-error-pattern, data-dd-error-range (min / max / step),
+       data-dd-error-length (minlength / maxlength);
+       the control's data-dd-error (any reason);
+       the browser's own message.
    - Focus moves to the first invalid control, and the submit stops there: no other submit listener sees it.
-   - After a failed submit, an error clears as soon as its control is valid again (on input), and a control is
-     re-checked when it is committed (on change) — never while someone is typing a first value.
+   - After a failed submit, an error clears as soon as its control is valid again (on input) and follows the reason
+     while it is still showing (an emptied name that now breaks the pattern says so); a control is re-checked when it is
+     committed (on change) — never while someone is typing a first value.
    - Resetting the form clears every error.
    A valid form submits as usual: handle "submit" yourself. A submit button with formnovalidate skips the check. */
 (() => {
@@ -1995,8 +2173,21 @@
     delete el.dataset.ddValid;
   };
 
+  // The message for the control's current problem (see the header for the order).
+  const messageFor = (el) => {
+    const v = el.validity, d = el.dataset;
+    if (v.customError) return el.validationMessage;
+    const reason = v.valueMissing ? d.ddErrorMissing
+      : v.typeMismatch || v.badInput ? d.ddErrorType
+      : v.patternMismatch ? d.ddErrorPattern
+      : v.rangeUnderflow || v.rangeOverflow || v.stepMismatch ? d.ddErrorRange
+      : v.tooShort || v.tooLong ? d.ddErrorLength
+      : undefined;
+    return reason || d.ddError || el.validationMessage;
+  };
+
   const flag = (el) => {
-    const text = el.dataset.ddError || el.validationMessage;
+    const text = messageFor(el);
     el.setAttribute('aria-invalid', 'true');
     const field = fieldOf(el);
     if (!field) { el.dataset.ddValid = ''; return; }
@@ -2015,6 +2206,8 @@
       el.setAttribute('aria-describedby', [err.id, el.getAttribute('aria-describedby')].filter(Boolean).join(' '));
       el.dataset.ddValid = err.id;
     }
+    if (err.dataset.ddText === text) return; // unchanged: don't rewrite (screen readers would re-read it)
+    err.dataset.ddText = text;
     err.innerHTML = `<svg class="dd-icon" aria-hidden="true"><use href="${sprite()}#dd-i-error"/></svg>`;
     err.append(text);
   };
@@ -2039,12 +2232,24 @@
   // Reward fixes right away; only re-judge a control once it is committed.
   document.addEventListener('input', (e) => {
     const el = e.target;
-    if ('ddValid' in (el.dataset || {}) && el.validity?.valid) clear(el);
+    if (!('ddValid' in (el.dataset || {})) || !el.validity) return;
+    if (el.validity.valid) clear(el); else flag(el);
   });
+  // Pressing Save blurs the field first, and its change event would show the error under the pointer — the layout
+  // shifts before mouseup and the click misses. While a submit button is being pressed, leave it to the submit check.
+  let pressing = null;
+  document.addEventListener('pointerdown', (e) => {
+    const btn = e.target.closest?.('button:not([type]), button[type="submit"], input[type="submit"]');
+    pressing = btn && btn.form && btn.form.matches('[data-dd-validate]') ? btn.form : null;
+  }, true);
+  const release = () => { setTimeout(() => { pressing = null; }); };
+  document.addEventListener('pointerup', release, true);
+  document.addEventListener('pointercancel', release, true);
   document.addEventListener('change', (e) => {
     const el = e.target;
     const form = el.form;
-    if (form && form.matches('[data-dd-validate]') && 'ddChecked' in form.dataset && el.willValidate) check(el);
+    if (!form || form === pressing) return;
+    if (form.matches('[data-dd-validate]') && 'ddChecked' in form.dataset && el.willValidate) check(el);
   });
 
   document.addEventListener('reset', (e) => {
@@ -2531,6 +2736,11 @@
    An item inside a menu with [data-dd-menu] opens a submenu to its side. Optional [data-dd-placement] on the trigger:
    bottom-start (default) · bottom-end · top-start · top-end. Menus flip when they would leave the viewport.
    Several triggers may share one menu (a ⋯ button per row): clicking another one moves the open menu to it.
+   Which trigger: the menu fires dd:menuopen and dd:menuclose (they bubble) with detail { trigger } — the button that
+   opened it, or the area for a context menu — and keeps menu.ddTrigger set to that element after it closes, so an
+   item's click handler can read the row it was opened from (moving to another trigger fires close, then open).
+   Global: dd.menu.open(menu, trigger, { focus: 'first' | 'last' | 'none' }), dd.menu.close(menu) (or no argument for every
+   open menu; focus inside it goes back to its trigger), dd.menu.trigger(menu). `menu` is the element, its id or '#id'.
    Keyboard: ↓ / ↑ on the trigger open at the first / last item; in the menu ↑ ↓ Home End move, a letter jumps,
    → opens a submenu, ← closes it, Esc closes and returns focus, Tab closes. Clicking outside closes.
    role=menuitemcheckbox toggles aria-checked; role=menuitemradio checks one per group — both keep the menu open. */
@@ -2543,6 +2753,7 @@
   let typedAt = 0;
 
   const byId = (v) => (v ? document.getElementById(v.replace(/^#/, '')) : null);
+  const emit = (menu, type, trigger) => menu.dispatchEvent(new CustomEvent(type, { bubbles: true, detail: { trigger } }));
   const menuFor = (trigger) => {
     const v = trigger.getAttribute('data-dd-menu');
     if (v) return byId(v);
@@ -2605,6 +2816,7 @@
       s.menu.hidden = true;
       s.menu.classList.remove('is-floating');
       s.trigger?.setAttribute('aria-expanded', 'false');
+      emit(s.menu, 'dd:menuclose', s.source);
     }
   }
   function closeAll(refocus) {
@@ -2617,13 +2829,17 @@
     const parent = trigger?.closest('.dd-menu.is-floating') || null;
     closeAbove(parent);
     const [side0, align] = (trigger?.getAttribute('data-dd-placement') || menu.getAttribute('data-dd-placement') || 'bottom-start').split('-');
-    const s = { menu, trigger: at ? null : trigger, side: parent ? 'right' : side0, align, at, ret: ret || document.activeElement };
+    const s = { menu, trigger: at ? null : trigger, source: trigger || null, side: parent ? 'right' : side0, align, at, ret: ret || document.activeElement };
     if (!menu.getAttribute('role')) menu.setAttribute('role', 'menu');
     if (!menu.hasAttribute('tabindex')) menu.tabIndex = -1;
+    menu.ddTrigger = s.source;
     menu.hidden = false;
     menu.classList.add('is-floating');
     stack.push(s);
     s.trigger?.setAttribute('aria-expanded', 'true');
+    // Before measuring: a listener may relabel or disable items for this trigger's row.
+    emit(menu, 'dd:menuopen', s.source);
+    if (entryOf(menu) !== s) return; // a listener closed it again
     itemsOf(menu).forEach((el) => { el.tabIndex = -1; });
     place(s, true);
     if (focus === 'none') return;
@@ -2791,6 +3007,28 @@
   };
   window.addEventListener('resize', follow);
   window.addEventListener('scroll', (e) => { if (!e.target?.closest?.('.dd-menu')) follow(); }, true);
+
+  // ---------- from script ----------
+  const resolveMenu = (m) => (typeof m === 'string' ? byId(m) : m) || null;
+  const firstTrigger = (menu) => [...document.querySelectorAll('[data-dd-menu]')].find((t) => menuFor(t) === menu) || null;
+  window.dd = window.dd || {};
+  window.dd.menu = {
+    open(m, trigger, { focus = 'first' } = {}) {
+      const menu = resolveMenu(m);
+      const t = (typeof trigger === 'string' ? document.querySelector(trigger) : trigger) || (menu && firstTrigger(menu));
+      if (!menu || !t) return;
+      open(menu, t, { focus });
+    },
+    close(m) {
+      const s = m == null ? stack[0] : entryOf(resolveMenu(m));
+      if (!s) return; // not open
+      const i = stack.indexOf(s);
+      const hadFocus = stack.slice(i).some((x) => x.menu.contains(document.activeElement));
+      closeAbove(i > 0 ? stack[i - 1].menu : null);
+      if (hadFocus) (s.trigger || s.ret)?.focus?.({ preventScroll: true });
+    },
+    trigger: (m) => resolveMenu(m)?.ddTrigger || null,
+  };
 
   // Fill in ARIA the markup left out.
   const init = () => document.querySelectorAll('[data-dd-menu]').forEach((t) => {
@@ -3047,6 +3285,25 @@
 })();
 
 
+/* ===== behaviors/scrollbar.js ===== */
+/* Scrollbar width: keeps --dd-scrollbar-w on <html> at the width of the page's vertical scrollbar (0 with overlay
+   scrollbars), so base.css can pad the page by it while a modal layer locks scrolling — nothing shifts sideways. It is
+   only measured while the page is not locked. */
+(() => {
+  const root = document.documentElement;
+  const locked = () => root.matches(':has(dialog:modal), .dd-side-nav-lock');
+  const measure = () => {
+    if (locked()) return;
+    root.style.setProperty('--dd-scrollbar-w', `${Math.max(0, innerWidth - root.clientWidth)}px`);
+  };
+  measure();
+  addEventListener('resize', measure, { passive: true });
+  addEventListener('load', measure);
+  // Content can grow until the page scrolls (or shrink until it doesn't): re-measure when the body's size changes.
+  if ('ResizeObserver' in window) document.addEventListener('DOMContentLoaded', () => new ResizeObserver(measure).observe(document.body));
+})();
+
+
 /* ===== behaviors/segmented-control.js ===== */
 /* Segmented control (button flavour): [data-dd-segmented] holds role="radio" buttons with aria-checked.
    Click or ← → ↑ ↓ Home End choose a segment; only the chosen one is in the tab order (roving tabindex).
@@ -3282,7 +3539,10 @@
    - [data-dd-nav-section="name"] on a rail item shows the pane [data-dd-nav-pane="name"]; pressing the active one again
      folds the panel, like the chevron.
    - [data-dd-nav-open="#id"] opens a nav that is off-canvas (mobile); [data-dd-nav-close] closes it. Esc, a click on the
-     scrim or following a link inside also close it, and focus returns to the opener. Tabbing out of it closes it too. */
+     scrim, the chevron or following a link inside also close it, and focus returns to the opener. Tabbing out of it, onto
+     anything outside (the menu button too), closes it and focus stays where it went. While it covers the viewport the
+     page behind doesn't scroll (.dd-side-nav-lock on <html>). If it stops being off-canvas while open (the window
+     widens past the breakpoint) it is simply in view, and closes. */
 (() => {
   const KEY = (id) => `dd-side-nav:${id}`;
   const store = {
@@ -3296,7 +3556,20 @@
   const offcanvas = (nav) => getComputedStyle(nav).position === 'fixed';
   const toggles = (nav) => [...document.querySelectorAll('[data-dd-nav-toggle]')].filter((t) => navFor(t, 'data-dd-nav-toggle') === nav);
   const openers = (nav) => [...document.querySelectorAll('[data-dd-nav-open]')].filter((t) => navFor(t, 'data-dd-nav-open') === nav);
-  let opener = null;
+  const openerOf = new WeakMap(); // nav → the element that opened it, where focus goes back on close
+  let pressed = null; // a menu button under the pointer: its own click closes the nav, so focus landing on it isn't a tab-out
+
+  // Scroll lock: only for a nav that covers the viewport. An off-canvas nav inside a frame (a frame-mode shell, a demo) is
+  // fixed to that frame, and its offsetParent is the frame; fixed to the viewport, it has none.
+  const LOCK = 'dd-side-nav-lock';
+  const syncLock = () => {
+    const lock = [...document.querySelectorAll('.dd-side-nav.is-mobile-open')].some((n) => offcanvas(n) && !n.offsetParent);
+    document.documentElement.classList.toggle(LOCK, lock);
+  };
+  // An open nav whose shell (or page) resizes past the breakpoint is in view again: drop the open state and the lock.
+  const resized = new ResizeObserver((entries) => entries.forEach(({ target }) => {
+    target.querySelectorAll(':scope > .dd-side-nav.is-mobile-open').forEach((nav) => { if (!offcanvas(nav)) setMobile(nav, false, { restore: false }); });
+  }));
 
   const syncAria = (nav) => {
     const open = !nav.classList.contains('is-collapsed');
@@ -3315,17 +3588,27 @@
     if (persist && nav.id) store.set(KEY(nav.id), collapsed ? 'collapsed' : 'open');
   };
 
-  const setMobile = (nav, open, trigger) => {
+  const setMobile = (nav, open, { trigger = null, restore = true } = {}) => {
     nav.classList.toggle('is-mobile-open', open);
     openers(nav).forEach((b) => b.setAttribute('aria-expanded', String(open)));
     if (open) {
-      opener = trigger || document.activeElement;
+      const from = trigger || document.activeElement;
+      openerOf.set(nav, from && from !== document.body && !nav.contains(from) ? from : null);
+      if (nav.parentElement) resized.observe(nav.parentElement);
       const first = nav.querySelector('.dd-side-nav__pane:not([hidden]) :is([aria-current="page"], .is-active)') || nav.querySelector('.dd-side-nav__item');
       requestAnimationFrame(() => first?.focus({ preventScroll: true }));
-    } else if (opener && nav.contains(document.activeElement)) {
-      opener.focus({ preventScroll: true });
-      opener = null;
+    } else {
+      if (nav.parentElement) resized.unobserve(nav.parentElement);
+      // Every close puts focus back on the opener, unless it already moved on (tabbing out): from inside the nav, or from
+      // nowhere — a press on the scrim blurs the focused link before its click closes the nav.
+      const at = document.activeElement;
+      if (restore && (!at || at === document.body || nav.contains(at))) {
+        const to = openerOf.get(nav) || openers(nav).find((b) => b.getClientRects().length);
+        to?.focus({ preventScroll: true });
+      }
+      openerOf.delete(nav);
     }
+    syncLock();
   };
 
   const showSection = (nav, item) => {
@@ -3357,7 +3640,7 @@
     const open = t.closest('[data-dd-nav-open]');
     if (open) {
       const nav = navFor(open, 'data-dd-nav-open');
-      if (nav) setMobile(nav, !nav.classList.contains('is-mobile-open'), open);
+      if (nav) setMobile(nav, !nav.classList.contains('is-mobile-open'), { trigger: open });
       return;
     }
     const close = t.closest('[data-dd-nav-close]');
@@ -3370,12 +3653,16 @@
     if (link) setMobile(link.closest('.dd-side-nav'), false);
   });
 
-  // Tabbing out of an open off-canvas nav closes it, so focus never sits on the page hidden behind the scrim. Only focus
-  // that leaves the nav counts: focus elsewhere that never was inside it (another demo on the same page) leaves it open.
+  // Tabbing out of an open off-canvas nav closes it, so focus never sits on the page hidden behind the scrim — whatever it
+  // lands on, the menu button included (in an app shell it is the next stop after the nav). Focus stays where it went.
+  // Only focus that leaves the nav counts: focus elsewhere that never was inside it (another demo on the same page),
+  // or focus that goes nowhere (a press on the scrim, whose click closes it), leaves it open.
+  document.addEventListener('pointerdown', (e) => { pressed = e.target.closest?.('[data-dd-nav-open]') || null; }, true);
+  document.addEventListener('keydown', () => { pressed = null; }, true);
   document.addEventListener('focusout', (e) => {
     const nav = e.target.closest?.('.dd-side-nav.is-mobile-open');
     const to = e.relatedTarget;
-    if (nav && to && !nav.contains(to) && !openers(nav).includes(to)) setMobile(nav, false);
+    if (nav && to && !nav.contains(to) && to !== pressed) setMobile(nav, false, { restore: false });
   });
 
   document.addEventListener('keydown', (e) => {
@@ -3395,6 +3682,7 @@
       }
       syncAria(nav);
     });
+    syncLock();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restore); else restore();
 })();
@@ -3559,6 +3847,566 @@
       if (root && enabled(tab)) { init(root); select(root, tab); }
     },
   };
+})();
+
+
+/* ===== behaviors/terminal.js ===== */
+/* Terminal (.dd-code--terminal): typing playback, copy-the-commands and a live prompt. Opt in per terminal:
+   Markup: one .dd-code__line per line (plain newline-separated markup is wrapped for you). A line with a
+   .dd-code__prompt is a command line; its command is the .dd-code__input after the prompt (or everything after it).
+   - [data-dd-terminal-play]: when the terminal scrolls into view, commands type out with a block cursor, output follows
+     after a short beat, then it rests. data-dd-terminal-speed="42" sets ms per character; data-dd-terminal-delay="600"
+     on a line holds before it appears. button[data-dd-terminal-replay] plays it again; a click in the terminal skips
+     to the end. With prefers-reduced-motion the final state shows at once (and replay hides).
+   - button[data-dd-terminal-copy]: copies only the commands, one per line — no prompts, no output. [data-copied] 1.6s.
+   - [data-dd-terminal-line-copy]: adds a small copy button to every command line (on hover / focus).
+   - [data-dd-terminal-interactive]: the last prompt goes live. Enter runs the line against
+     <template data-dd-terminal-command="npm test" data-dd-terminal-description="run the tests">output</template>
+     inside the terminal; unknown commands get a friendly "command not found". Built in: help, clear (also Ctrl+L),
+     Ctrl+C. ↑/↓ recall history, Tab completes known commands (only when there is something to complete — otherwise
+     Tab moves focus as usual). Output is announced through a polite live region. data-dd-terminal-label names the input.
+   The terminal reports data-dd-terminal-state="playing|done" and fires dd:terminalplayed and dd:terminalrun
+   (detail: { command, known }). API: dd.terminal(el) → { play(), finish(), run(command) }; dd.terminal.init(root). */
+(() => {
+  const C = 'dd-code';
+  const dd = (window.dd = window.dd || {});
+  const SEL = `.${C}--terminal:is([data-dd-terminal-play], [data-dd-terminal-interactive], [data-dd-terminal-line-copy])`;
+  const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const icon = (n) => `<svg class="dd-icon" aria-hidden="true"><use href="${dd.iconSprite || ''}#dd-i-${n}"/></svg>`;
+  const span = (cls, html = '') => { const el = document.createElement('span'); el.className = cls; el.innerHTML = html; return el; };
+  const norm = (s) => String(s || '').trim().replace(/\s+/g, ' ');
+  const states = new WeakMap();
+  const cmdOf = new WeakMap(); // command line → its full command text (survives typing and partial playback)
+
+  const state = (term) => {
+    let st = states.get(term);
+    if (!st) states.set(term, (st = { run: 0, history: [], hIndex: null, draft: '' }));
+    return st;
+  };
+  const codeOf = (term) => term.querySelector(`.${C}__pre code`) || term.querySelector(`.${C}__pre`);
+  const preOf = (term) => term.querySelector(`.${C}__pre`);
+  const lines = (code) => [...code.children].filter((el) => el.classList.contains(`${C}__line`));
+  const isCmd = (line) => !!line.querySelector(`.${C}__prompt`);
+  const scrollEnd = (pre) => { if (pre && pre.scrollHeight > pre.clientHeight) pre.scrollTop = pre.scrollHeight; };
+  const enter = (line) => {
+    if (still()) return;
+    line.classList.add('is-entering');
+    line.addEventListener('animationend', () => line.classList.remove('is-entering'), { once: true });
+  };
+
+  // Loose markup ("<prompt>npm test\n<out>…") → one .dd-code__line per line, separated by real newlines.
+  // Lines that are already .dd-code__line spans are kept as they are, so the two can be mixed.
+  const isLine = (n) => n.nodeType === 1 && n.classList.contains(`${C}__line`);
+  function wrapLines(code) {
+    const rows = [[]];
+    for (const node of [...code.childNodes]) {
+      if (node.nodeType !== 3) { rows[rows.length - 1].push(node); continue; }
+      node.nodeValue.split('\n').forEach((part, i) => {
+        if (i) rows.push([]);
+        if (part) rows[rows.length - 1].push(document.createTextNode(part));
+      });
+    }
+    const blank = (nodes) => nodes.every((n) => n.nodeType === 3 && !n.nodeValue.trim());
+    while (rows.length && blank(rows[0])) rows.shift();
+    while (rows.length && blank(rows[rows.length - 1])) rows.pop();
+    code.replaceChildren();
+    rows.forEach((nodes, i) => {
+      const own = nodes.filter((n) => !(n.nodeType === 3 && !n.nodeValue.trim()));
+      let line;
+      if (own.length === 1 && isLine(own[0])) line = own[0];
+      else { line = span(`${C}__line`); line.append(...nodes); }
+      code.append(...(i ? ['\n', line] : [line]));
+    });
+  }
+
+  // A command line keeps what was typed in .dd-code__input (created from whatever follows the prompt).
+  function markCommand(line) {
+    const prompt = line.querySelector(`.${C}__prompt`);
+    if (!prompt) return;
+    let input = line.querySelector(`.${C}__input`);
+    if (!input) {
+      input = span(`${C}__input`);
+      const move = [];
+      for (let n = prompt.nextSibling; n; n = n.nextSibling) {
+        if (!(n.nodeType === 1 && n.matches(`.${C}__cursor, .${C}__line-copy, .${C}__field`))) move.push(n);
+      }
+      input.append(...move);
+      prompt.after(input);
+    }
+    cmdOf.set(line, norm(input.textContent));
+  }
+
+  function addLineCopy(line) {
+    if (line.querySelector(`.${C}__line-copy`)) return;
+    const cmd = cmdOf.get(line);
+    if (!cmd) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `${C}__line-copy`;
+    btn.setAttribute('aria-label', `Copy command: ${cmd}`);
+    btn.innerHTML = icon('copy') + icon('check');
+    line.append(btn);
+  }
+
+  function decorate(term) {
+    const code = codeOf(term);
+    lines(code).forEach(markCommand);
+    if (term.hasAttribute('data-dd-terminal-line-copy')) {
+      lines(code).filter((l) => isCmd(l) && !l.classList.contains(`${C}__live`)).forEach(addLineCopy);
+    }
+  }
+
+  function prepare(term) {
+    const st = state(term);
+    if (st.ready) return st;
+    st.ready = true;
+    const code = codeOf(term);
+    wrapLines(code);
+    lines(code).forEach(markCommand);
+    st.snapshot = code.cloneNode(true); // the authored final state, before any decoration
+    decorate(term);
+    st.history = lines(code).map((l) => cmdOf.get(l)).filter(Boolean);
+    return st;
+  }
+
+  function restore(term) {
+    const st = state(term);
+    const code = codeOf(term);
+    code.replaceChildren(...st.snapshot.cloneNode(true).childNodes);
+    st.live = null;
+    decorate(term);
+  }
+
+  const commands = (term) => {
+    const st = prepare(term);
+    const all = st.playing ? st.lines : lines(codeOf(term));
+    return all.filter((l) => isCmd(l) && !l.classList.contains(`${C}__live`)).map((l) => cmdOf.get(l)).filter(Boolean);
+  };
+
+  // ---------- playback ----------
+  const charDelay = (ch, speed) => speed * (0.55 + Math.random() * 0.9) + (ch === ' ' ? speed * 0.9 : 0);
+
+  async function play(term) {
+    const st = prepare(term);
+    const run = ++st.run;
+    const alive = () => st.run === run && term.isConnected;
+    restore(term);
+    term.classList.remove('is-typing'); // a replay can cut a run off mid-word
+    if (still()) return done(term);
+    const code = codeOf(term), pre = preOf(term);
+    st.lines = lines(code);
+    st.playing = true;
+    term.dataset.ddTerminalState = 'playing';
+    // Hold the finished height so nothing below the terminal moves while lines arrive.
+    const h = pre.getBoundingClientRect().height;
+    if (h) pre.style.minHeight = `${h}px`;
+    code.replaceChildren();
+    const speed = Number(term.dataset.ddTerminalSpeed) || 42;
+    let first = true;
+    for (const line of st.lines) {
+      const delay = Number(line.dataset.ddTerminalDelay) || 0;
+      const sep = () => (code.childNodes.length ? ['\n', line] : [line]);
+      if (!isCmd(line)) {
+        await (first ? st.visible : null);
+        await sleep(delay || 110);
+        if (!alive()) return;
+        code.append(...sep());
+        enter(line);
+        scrollEnd(pre);
+        continue;
+      }
+      const input = line.querySelector(`.${C}__input`);
+      const walker = document.createTreeWalker(input, NodeFilter.SHOW_TEXT);
+      const texts = [];
+      while (walker.nextNode()) texts.push(walker.currentNode);
+      const full = texts.map((t) => t.nodeValue);
+      if (!full.join('').trim()) { // a resting prompt: it just appears
+        if (!first) await sleep(delay || 260);
+        if (!alive()) return;
+        code.append(...sep());
+        enter(line);
+        scrollEnd(pre);
+        continue;
+      }
+      texts.forEach((t) => { t.nodeValue = ''; });
+      const cursor = span(`${C}__cursor`);
+      input.after(cursor);
+      if (!first) await sleep(delay || 320);
+      if (!alive()) return;
+      code.append(...sep());
+      enter(line);
+      scrollEnd(pre);
+      await (first ? st.visible : null); // the first prompt waits, cursor blinking, until the terminal is seen
+      await sleep(first ? 550 : 420);
+      first = false;
+      if (!alive()) return;
+      term.classList.add('is-typing');
+      for (let t = 0; t < texts.length; t++) {
+        for (const ch of full[t]) {
+          texts[t].nodeValue += ch;
+          await sleep(charDelay(ch, speed));
+          if (!alive()) return;
+        }
+      }
+      term.classList.remove('is-typing');
+      await sleep(280); // a beat, then Enter
+      if (!alive()) return;
+      cursor.remove();
+      await sleep(220);
+    }
+    if (alive()) done(term);
+  }
+
+  function done(term) {
+    const st = state(term);
+    st.playing = false;
+    st.lines = null;
+    term.classList.remove('is-typing');
+    const pre = preOf(term);
+    if (pre) pre.style.minHeight = '';
+    if (term.hasAttribute('data-dd-terminal-play')) {
+      term.dataset.ddTerminalState = 'done';
+      term.dispatchEvent(new CustomEvent('dd:terminalplayed', { bubbles: true }));
+    }
+    if (term.hasAttribute('data-dd-terminal-interactive')) goLive(term);
+  }
+
+  function finish(term) {
+    const st = state(term);
+    if (!st.playing) return;
+    st.run++;
+    restore(term);
+    done(term);
+  }
+
+  function watch(term) {
+    const st = state(term);
+    st.visible = new Promise((r) => { st.reveal = r; });
+    if (!('IntersectionObserver' in window)) return st.reveal();
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      st.reveal();
+    }, { rootMargin: '0px 0px -15% 0px' });
+    io.observe(term);
+  }
+
+  // ---------- live prompt ----------
+  // Shell highlighting for what visitors type: the same token classes authors use by hand.
+  const TOKEN = /(\s+)|(#.*$)|("(?:[^"\\]|\\.)*"?|'[^']*'?)|(\|\||&&|[|;&<>]+)|([^\s|&;<>"'#][^\s|&;<>"']*|#)/gs;
+  function highlight(src, known) {
+    let html = '', expectCmd = true, words = 0, redirect = false;
+    const tok = (cls, t) => `<span class="${C}__${cls}">${esc(t)}</span>`;
+    for (const [t, ws, comment, str, op, word] of src.matchAll(TOKEN)) {
+      if (ws) html += esc(ws);
+      else if (comment) html += tok('c', comment);
+      else if (str) { html += tok('s', str); expectCmd = false; words++; }
+      else if (op) { html += tok('op', op); redirect = /[<>]/.test(op); if (!redirect) { expectCmd = true; words = 0; } }
+      else if (word) {
+        if (redirect) { html += tok('path', word); redirect = false; }
+        else if (expectCmd && /^[A-Za-z_]\w*=/.test(word)) html += tok('var', word);
+        else if (expectCmd) { html += tok(known && !known.has(word) ? 'err' : 'cmd', word); expectCmd = false; words = 0; }
+        else if (word[0] === '-') html += tok('flag', word);
+        else if (word.includes('$')) html += tok('var', word);
+        else if (/^(\.{0,2}\/|~)|\/|:\/\//.test(word)) html += tok('path', word);
+        else html += tok(words++ === 0 && /^[a-z][\w:-]*$/.test(word) ? 'sub' : 'arg', word);
+      } else html += esc(t);
+    }
+    return html;
+  }
+
+  const templates = (term) => [...term.querySelectorAll('template[data-dd-terminal-command]')];
+  const BUILTINS = { help: 'list what this terminal can run', clear: 'clear the screen' };
+  const known = (term) => [...new Set([...templates(term).map((t) => norm(t.dataset.ddTerminalCommand)), ...Object.keys(BUILTINS)])];
+  const knownWords = (term) => new Set(known(term).map((c) => c.split(' ')[0]));
+
+  // Template markup → output lines. Indentation from the page source is removed; plain lines read as muted output.
+  function parseOutput(html) {
+    let rows = html.replace(/\t/g, '  ').split('\n');
+    while (rows.length && !rows[0].trim()) rows.shift();
+    while (rows.length && !rows[rows.length - 1].trim()) rows.pop();
+    const indent = Math.min(...rows.filter((r) => r.trim()).map((r) => r.match(/^ */)[0].length));
+    rows = rows.map((r) => r.slice(Number.isFinite(indent) ? indent : 0));
+    const box = document.createElement('code');
+    box.innerHTML = rows.join('\n');
+    wrapLines(box);
+    return lines(box).map((l) => { if (l.classList.length === 1) l.classList.add(`${C}__out`); return l; });
+  }
+  const outLine = (html, cls = 'out') => { const l = span(`${C}__line ${C}__${cls}`, html); return l; };
+
+  function helpLines(term) {
+    const rows = [
+      ...templates(term).map((t) => [norm(t.dataset.ddTerminalCommand), t.dataset.ddTerminalDescription || '']),
+      ...Object.entries(BUILTINS),
+    ].filter(([c], i, all) => all.findIndex(([d]) => d === c) === i);
+    const w = Math.max(...rows.map(([c]) => c.length)) + 3;
+    const words = knownWords(term);
+    return [
+      outLine('this terminal knows:'),
+      ...rows.map(([c, d]) => outLine(`  ${highlight(c, words)}${' '.repeat(w - c.length)}<span class="${C}__dim">${esc(d)}</span>`)),
+      outLine('↑ ↓ history · tab completes · ctrl+l clears', 'dim'),
+    ];
+  }
+
+  function outputFor(term, cmd) {
+    const tpl = templates(term).find((t) => norm(t.dataset.ddTerminalCommand) === cmd);
+    if (tpl) return { known: true, lines: parseOutput(tpl.innerHTML) };
+    if (cmd === 'help') return { known: true, lines: helpLines(term) };
+    const name = cmd.split(' ')[0];
+    return {
+      known: false,
+      lines: [
+        outLine(`command not found: ${esc(name)}`, 'err'),
+        outLine(`this is a small demo shell — type <span class="${C}__cmd">help</span> to see what it can run`, 'dim'),
+      ],
+    };
+  }
+
+  function goLive(term) {
+    const st = state(term);
+    const code = codeOf(term);
+    if (st.live && st.live.isConnected) return;
+    const all = lines(code);
+    let line = all[all.length - 1];
+    if (!line || !isCmd(line) || cmdOf.get(line)) {
+      const proto = [...all].reverse().find(isCmd);
+      line = span(`${C}__line`);
+      line.append(proto ? proto.querySelector(`.${C}__prompt`).cloneNode(true) : span(`${C}__prompt`, '$ '));
+      code.append(...(code.childNodes.length ? ['\n', line] : [line]));
+    }
+    line.querySelectorAll(`.${C}__cursor, .${C}__line-copy`).forEach((el) => el.remove());
+    if (!line.querySelector(`.${C}__input`)) line.querySelector(`.${C}__prompt`).after(span(`${C}__input`));
+    line.querySelector(`.${C}__input`).setAttribute('aria-hidden', 'true'); // the field itself carries the value
+    line.classList.add(`${C}__live`);
+    if (!st.field) makeField(term);
+    line.append(st.field);
+    st.live = line;
+    render(term);
+  }
+
+  function makeField(term) {
+    const st = state(term);
+    const f = (st.field = document.createElement('input'));
+    f.type = 'text';
+    f.className = `${C}__field`;
+    f.setAttribute('aria-label', term.dataset.ddTerminalLabel || 'Terminal command (type help for a list)');
+    f.setAttribute('autocomplete', 'off');
+    f.setAttribute('autocapitalize', 'off');
+    f.setAttribute('autocorrect', 'off');
+    f.setAttribute('enterkeyhint', 'send');
+    f.spellcheck = false;
+    st.region = document.createElement('div');
+    st.region.className = 'dd-visually-hidden';
+    st.region.setAttribute('aria-live', 'polite');
+    term.append(st.region);
+    const later = () => requestAnimationFrame(() => render(term));
+    f.addEventListener('input', () => render(term));
+    ['keyup', 'click', 'select', 'focus', 'blur'].forEach((t) => f.addEventListener(t, later));
+    f.addEventListener('keydown', (e) => onKey(term, e));
+  }
+
+  // Mirror the field into the live line: highlighted text, with the block cursor on the character at the caret.
+  function render(term) {
+    const st = state(term);
+    if (!st.live) return;
+    const v = st.field.value;
+    const pos = st.field.selectionStart ?? v.length;
+    const input = st.live.querySelector(`.${C}__input`);
+    input.innerHTML = highlight(v, knownWords(term));
+    const cursor = span(`${C}__cursor`);
+    const walker = document.createTreeWalker(input, NodeFilter.SHOW_TEXT);
+    let n = pos;
+    let placed = false;
+    while (!placed && walker.nextNode()) {
+      const node = walker.currentNode;
+      if (n < node.length) {
+        const at = node.splitText(n);
+        at.splitText(1);
+        cursor.textContent = at.nodeValue === ' ' ? '\u00a0' : at.nodeValue;
+        at.replaceWith(cursor);
+        placed = true;
+      } else n -= node.length;
+    }
+    if (!placed) input.append(cursor);
+    // Keep the cursor in view when a long line scrolls sideways (narrow screens).
+    const pre = preOf(term);
+    if (document.activeElement === st.field && pre.scrollWidth > pre.clientWidth) {
+      const c = cursor.getBoundingClientRect(), p = pre.getBoundingClientRect(), pad = 24;
+      if (c.right > p.right - pad) pre.scrollLeft += c.right - p.right + pad;
+      else if (c.left < p.left + pad) pre.scrollLeft -= p.left + pad - c.left;
+    }
+  }
+
+  function setValue(term, v) {
+    const f = state(term).field;
+    f.value = v;
+    f.setSelectionRange(v.length, v.length);
+    render(term);
+  }
+
+  function onKey(term, e) {
+    const st = state(term);
+    const f = st.field;
+    if (e.isComposing) return;
+    if (e.key === 'Enter') { e.preventDefault(); if (st.busy) st.queued = true; else submit(term); } // type-ahead runs next
+    else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); recall(term, e.key === 'ArrowUp' ? -1 : 1); }
+    else if (e.key === 'Tab' && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) { if (complete(term)) e.preventDefault(); }
+    else if (e.ctrlKey && !e.metaKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); clear(term); }
+    else if (e.ctrlKey && !e.metaKey && (e.key === 'c' || e.key === 'C') && f.selectionStart === f.selectionEnd) {
+      e.preventDefault();
+      freeze(term, f.value, `<span class="${C}__dim">^C</span>`);
+      setValue(term, '');
+    }
+  }
+
+  function recall(term, dir) {
+    const st = state(term);
+    const h = st.history;
+    if (!h.length) return;
+    if (st.hIndex === null) { st.hIndex = h.length; st.draft = st.field.value; }
+    const next = Math.max(0, Math.min(h.length, st.hIndex + dir));
+    if (next === st.hIndex) return;
+    st.hIndex = next;
+    setValue(term, next === h.length ? st.draft : h[next]);
+  }
+
+  // Tab: complete to the one match, or to the shared prefix; with nothing more to add, list the matches (like zsh).
+  // Returns false when there is nothing to complete, so Tab keeps moving focus.
+  function complete(term) {
+    const st = state(term);
+    const v = st.field.value.replace(/^\s+/, '');
+    if (!v || st.field.selectionStart !== st.field.value.length) return false;
+    const matches = known(term).filter((c) => c.startsWith(v) && c !== v);
+    if (!matches.length) return false;
+    const prefix = matches.reduce((a, b) => { let i = 0; while (i < a.length && a[i] === b[i]) i++; return a.slice(0, i); });
+    if (prefix.length > v.length) setValue(term, prefix);
+    else {
+      const l = outLine(matches.map(esc).join('   '), 'dim');
+      st.live.before(l, '\n');
+      enter(l);
+      scrollEnd(preOf(term));
+    }
+    return true;
+  }
+
+  // Leave the typed line above the live prompt, as a terminal does.
+  function freeze(term, raw, suffix = '') {
+    const st = state(term);
+    const line = span(`${C}__line`);
+    line.append(st.live.querySelector(`.${C}__prompt`).cloneNode(true), span(`${C}__input`, highlight(raw, knownWords(term)) + suffix));
+    cmdOf.set(line, suffix ? '' : norm(raw));
+    st.live.before(line, '\n');
+    if (term.hasAttribute('data-dd-terminal-line-copy')) addLineCopy(line);
+    scrollEnd(preOf(term));
+    return line;
+  }
+
+  function clear(term) {
+    const st = state(term);
+    // Remove everything but the live line (moving it would drop focus from the field).
+    for (const n of [...codeOf(term).childNodes]) if (n !== st.live) n.remove();
+    preOf(term).scrollTop = 0;
+  }
+
+  async function submit(term, given) {
+    const st = state(term);
+    const raw = given ?? st.field.value;
+    const cmd = norm(raw);
+    freeze(term, raw);
+    st.hIndex = null;
+    st.draft = '';
+    setValue(term, '');
+    if (!cmd) return;
+    if (st.history[st.history.length - 1] !== cmd) st.history.push(cmd);
+    const emit = (isKnown) => term.dispatchEvent(new CustomEvent('dd:terminalrun', { bubbles: true, detail: { command: cmd, known: isKnown } }));
+    if (cmd === 'clear' && !templates(term).some((t) => norm(t.dataset.ddTerminalCommand) === 'clear')) {
+      clear(term);
+      announce(term, 'cleared');
+      return emit(true);
+    }
+    const out = outputFor(term, cmd);
+    const live = st.live;
+    const pre = preOf(term);
+    st.busy = true;
+    live.classList.add('is-busy');
+    for (const [i, l] of out.lines.entries()) {
+      if (!still()) await sleep(Number(l.dataset.ddTerminalDelay) || (i ? 55 : 180));
+      if (!live.isConnected) break; // replayed meanwhile
+      live.before(l, '\n');
+      enter(l);
+      scrollEnd(pre);
+    }
+    st.busy = false;
+    live.classList.remove('is-busy');
+    scrollEnd(pre);
+    announce(term, out.lines.map((l) => l.textContent.trim()).filter(Boolean).join('\n'));
+    emit(out.known);
+    if (st.queued && live.isConnected) { st.queued = false; submit(term); }
+  }
+
+  function announce(term, text) {
+    const r = state(term).region;
+    if (!r) return;
+    r.textContent = '';
+    setTimeout(() => { r.textContent = text; }, 60); // a fresh change, so a repeated output is read again
+  }
+
+  // ---------- wiring ----------
+  const timers = new WeakMap();
+  async function copy(btn, text) {
+    if (!text) return; // nothing on screen to copy: no false confirmation
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.setAttribute('data-copied', '');
+      clearTimeout(timers.get(btn));
+      timers.set(btn, setTimeout(() => btn.removeAttribute('data-copied'), 1600));
+    } catch { /* clipboard blocked — the text stays selectable */ }
+  }
+
+  document.addEventListener('click', (e) => {
+    const term = e.target.closest(`.${C}--terminal`);
+    if (!term) return;
+    const all = e.target.closest('[data-dd-terminal-copy]');
+    if (all) return void copy(all, commands(term).join('\n'));
+    const one = e.target.closest(`.${C}__line-copy`);
+    if (one) return void copy(one, cmdOf.get(one.closest(`.${C}__line`)) || '');
+    const replay = e.target.closest('[data-dd-terminal-replay]');
+    if (replay) {
+      const st = setup(term) && state(term);
+      st.reveal?.();
+      return void play(term);
+    }
+    if (!e.target.closest(`.${C}__pre`) || String(getSelection())) return;
+    const st = states.get(term);
+    if (st?.playing) finish(term); // click to skip
+    if (st?.live && e.target !== st.field) st.field.focus({ preventScroll: true });
+  });
+
+  function setup(term) {
+    const st = state(term);
+    if (!st.setup) {
+      st.setup = true;
+      prepare(term);
+      if (term.hasAttribute('data-dd-terminal-play')) {
+        if (still()) {
+          term.querySelectorAll('[data-dd-terminal-replay]').forEach((b) => { b.hidden = true; });
+          done(term);
+        } else {
+          watch(term);
+          play(term);
+        }
+      } else if (term.hasAttribute('data-dd-terminal-interactive')) goLive(term);
+    }
+    return { play: () => { st.reveal?.(); return play(term); }, finish: () => finish(term), run: (cmd) => (st.live ? submit(term, cmd) : undefined) };
+  }
+
+  const init = (root = document) => root.querySelectorAll(SEL).forEach(setup);
+  dd.terminal = setup;
+  dd.terminal.init = init;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => init());
+  else init();
 })();
 
 

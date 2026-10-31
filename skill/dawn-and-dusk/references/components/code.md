@@ -347,7 +347,7 @@ $HOME NODE_ENV=dev            # .dd-code__var  variable
 | `.dd-code__title / __lang` | File name (mono, with an icon) and a small uppercase language tag. |
 | `.dd-code__copy` | Icon button; pair with `data-dd-copy-target="#id"`. Holds `copy` + `check` icons; swaps on `[data-copied]`. |
 | `.dd-code__pre` | Scrolling `<pre>`. Set `--dd-code-height` to cap its height. |
-| `.dd-code__line` | One line. Separate lines with literal newlines, not block elements. |
+| `.dd-code__line` | One line. Separate lines with literal newlines, not block elements. In a terminal the script wraps loose lines for you. |
 | `.is-highlight / .is-add / .is-del` | Line states: highlighted, added, removed. |
 | `.dd-code--numbered` | Line-number gutter (CSS counter, not copied). |
 | `.dd-code--diff` | +/− gutter for diffs. |
@@ -358,7 +358,6 @@ $HOME NODE_ENV=dev            # .dd-code__var  variable
 | `.dd-code--terminal` | Dark terminal; use with `data-theme="dusk"`. Its bar is a three-column grid: dots, centred title, actions. |
 | `.dd-code__dots` | Three window dots (`<i>`) in quiet golden-hour tones; they warm up while a live terminal has focus. Retune with `--dd-code-dot-1…3`. |
 | `.dd-code__actions / __action` | Right-hand group of bar buttons; `__action` is a 28px icon button (replay) that matches `__copy`. |
-| `.dd-code__line` | In a terminal, one per line (loose newline-separated markup is wrapped for you by the script). |
 | `.dd-code__prompt` | The prompt (`$ `, `❯ `): apricot, never selected or copied. May hold `__user` and `__cwd`. |
 | `.dd-code__user / __cwd` | Prompt parts: user@host (muted) and the working directory (ochre). |
 | `.dd-code__input` | The command after the prompt — what playback types, copy copies and history recalls. |
@@ -386,7 +385,7 @@ $HOME NODE_ENV=dev            # .dd-code__var  variable
 | `data-dd-terminal-delay="600"` | On a line (also inside a template): wait this long before it appears. |
 | `data-dd-terminal-replay` | On a bar button: plays the terminal again. Hidden with reduced motion. |
 | `data-dd-terminal-interactive` | On the terminal: the last prompt becomes a live input. Fires `dd:terminalrun` with `{ command, known }`. |
-| `&lt;template data-dd-terminal-command="…"&gt;` | Inside a live terminal: the output for that command (markup, one line per line; plain lines read as muted output). `data-dd-terminal-description` shows in `help`. |
+| `<template data-dd-terminal-command="…">` | Inside a live terminal: the output for that command (markup, one line per line; plain lines read as muted output). `data-dd-terminal-description` shows in `help`. |
 | `data-dd-terminal-label` | Accessible name for the live input (default “Terminal command (type help for a list)”). |
 | `dd.terminal(el)` | Sets up a terminal added later and returns `{ play(), finish(), run(command) }`; `dd.terminal.init(root)` sets up every terminal inside `root`. |
 
@@ -410,3 +409,4 @@ Don't:
 - Don’t colour whole lines to show syntax — tokens only. Status colours go on output lines, not commands.
 - Don’t colour the window dots red, yellow and green; they are quiet tones, not buttons.
 - Don’t autoplay more than one terminal per view, or loop it.
+

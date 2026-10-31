@@ -286,3 +286,105 @@ test('dusk: active rail item and links read in ink on a deeper tone', async ({ o
   assert.notEqual(c.bg, 'rgba(0, 0, 0, 0)', 'active rail icon on a tone');
   assert.ok(await paneShown(page, NAV, 'deploys'));
 });
+
+// ---------- off-canvas: focus on every close path, the menu button, the scroll lock ----------
+const M = '#nav-demo-mobile';
+const MBTN = `[data-dd-nav-open="${M}"]`;
+const mOpen = (page) => page.get((s) => document.querySelector(s).classList.contains('is-mobile-open'), M);
+const onMBtn = (page) => page.get((s) => document.activeElement === document.querySelector(s), MBTN);
+const pressAt = async (page, { x, y }) => {
+  await page.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
+  await page.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', clickCount: 1 });
+  await page.sleep(150);
+};
+const lockState = (page) => page.get(() => ({ lock: document.documentElement.classList.contains('dd-side-nav-lock'), overflow: getComputedStyle(document.documentElement).overflow }));
+// Start with the demo closed (it is open in the markup, to show the state).
+const closeDemo = async (page) => { if (await mOpen(page)) { await page.focus(MBTN); await page.press('Escape'); } await settled(page, M); };
+
+test('off-canvas: a mouse click on the scrim puts focus back on the menu button, not on <body>', async ({ open, assert }) => {
+  const page = await fresh(open, 'components/side-nav');
+  await closeDemo(page);
+  await page.click(MBTN);
+  await settled(page, M);
+  assert.ok(await page.get((s) => document.querySelector(s).contains(document.activeElement), M), 'focus went in');
+  // A point on the scrim: inside the frame, right of the nav (centre the frame so its foot is on screen).
+  const scrimPoint = () => page.get(async (s) => {
+    const f = document.querySelector(s).closest('.sn-frame'); f.scrollIntoView({ block: 'center' });
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const r = f.getBoundingClientRect(); return { x: r.right - 20, y: r.bottom - 40 };
+  }, M);
+  await pressAt(page, await scrimPoint());
+  assert.ok(!(await mOpen(page)), 'the scrim closes it');
+  assert.ok(await onMBtn(page), 'focus is back on the menu button');
+  // By touch too.
+  await page.click(MBTN);
+  await settled(page, M);
+  await page.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [await scrimPoint()] });
+  await page.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await page.sleep(200);
+  assert.ok(!(await mOpen(page)), 'a tap on the scrim closes it');
+  assert.ok(await onMBtn(page), 'focus is back on the menu button');
+});
+
+test('off-canvas: a menu button above the scrim closes it on press (focus landing on it is no tab-out that reopens it)', async ({ open, assert }) => {
+  const page = await fresh(open, 'components/side-nav');
+  await closeDemo(page);
+  // Lift the demo's top bar over the scrim, as an app might with a menu / close toggle.
+  await page.get((s) => { document.querySelector(s).closest('.sn-frame').querySelector('.dd-top-bar').style.cssText = 'position: relative; z-index: 9999'; }, M);
+  await page.click(MBTN);
+  await settled(page, M);
+  assert.ok(await page.get((s) => document.querySelector(s).contains(document.activeElement), M));
+  await page.click(MBTN);
+  assert.ok(!(await mOpen(page)), 'the press closes it and it stays closed');
+  assert.equal(await page.attr(MBTN, 'aria-expanded'), 'false');
+  assert.ok(await onMBtn(page), 'focus on the menu button');
+  // A keyboard Tab onto the same button still counts as tabbing out.
+  await page.press('Enter');
+  await settled(page, M);
+  assert.ok(await mOpen(page));
+  await page.focus(`${M} .dd-side-nav__logo`);
+  await page.press({ key: 'Tab', shift: true }, { key: 'Tab', shift: true });
+  assert.ok(!(await mOpen(page)), 'tabbing back out closes it');
+});
+
+test('scroll lock: a nav over the window keeps the page behind still without shifting it; a nav fixed to its frame does not lock', async ({ open, assert }) => {
+  const page = await fresh(open, 'components/side-nav', { width: 1280, height: 800 });
+  await closeDemo(page);
+  // The demo is fixed to its frame (contain: layout): no lock.
+  await page.click(MBTN);
+  await settled(page, M);
+  assert.deepEqual(await lockState(page), { lock: false, overflow: 'visible' }, 'framed: the page still scrolls');
+  await page.press('Escape');
+  await settled(page, M);
+  // Out of its frame it is fixed to the window, as a standalone off-canvas nav in an app.
+  await page.get((s) => document.body.append(document.querySelector(s)), M);
+  await page.evaluate(() => scrollTo(0, 900));
+  await page.sleep(100);
+  const before = await page.get(() => ({ y: scrollY, w: document.querySelector('.doc-main').getBoundingClientRect().width, x: document.querySelector('.doc-main').getBoundingClientRect().left }));
+  await page.get((s) => document.querySelector(s).click(), MBTN);
+  await page.waitFor((s) => Math.abs(document.querySelector(s).getBoundingClientRect().left) < 1, { args: [M] });
+  assert.ok(await page.get((s) => document.querySelector(s).offsetParent === null, M), 'fixed to the window');
+  assert.deepEqual(await lockState(page), { lock: true, overflow: 'hidden' }, 'locked');
+  const during = await page.get(() => ({ y: scrollY, w: document.querySelector('.doc-main').getBoundingClientRect().width, x: document.querySelector('.doc-main').getBoundingClientRect().left }));
+  assert.deepEqual(during, before, 'nothing moved or shifted sideways');
+  await page.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 900, y: 400, deltaX: 0, deltaY: 500 });
+  await page.sleep(300);
+  assert.equal(await page.get(() => scrollY), before.y, 'the wheel does not scroll the page behind');
+  await pressAt(page, { x: 900, y: 400 });
+  assert.ok(!(await mOpen(page)), 'the scrim closes it');
+  assert.deepEqual(await lockState(page), { lock: false, overflow: 'visible' }, 'unlocked');
+  assert.ok(await onMBtn(page), 'focus back on the menu button');
+});
+
+test('the panel scrolls with the sleek scrollbar: no track, a tonal thumb only while hovered or focused', async ({ open, assert }) => {
+  const page = await fresh(open, 'components/side-nav', { theme: 'dusk' });
+  const P = pane(NAV, 'projects');
+  const bar = () => page.get((s) => { const cs = getComputedStyle(document.querySelector(s)); return { color: cs.scrollbarColor, width: cs.scrollbarWidth, gutter: cs.scrollbarGutter }; }, P);
+  await page.hover('.doc-head');
+  await page.sleep(400);
+  assert.deepEqual(await bar(), { color: 'rgba(0, 0, 0, 0) rgba(0, 0, 0, 0)', width: 'thin', gutter: 'stable' }, 'invisible at rest');
+  await page.hover(`${P} .dd-side-nav__link`);
+  await page.sleep(400);
+  const on = await bar();
+  assert.match(on.color, /\/ 0\.2\) rgba\(0, 0, 0, 0\)$/, `thumb tinted from the text at 20%, no track (${on.color})`);
+});

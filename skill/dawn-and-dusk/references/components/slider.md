@@ -117,3 +117,4 @@ Don't:
 - Don’t use a slider for more than ~100 meaningful steps.
 - Don’t hide the unit; put it in the value label.
 - Don’t make the range thumbs pass through each other.
+

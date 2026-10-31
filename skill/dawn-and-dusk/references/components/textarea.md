@@ -117,3 +117,4 @@ Don't:
 - Don’t use a textarea for one-line answers.
 - Don’t cut pasted text silently at maxlength; prefer a soft limit.
 - Don’t disable resizing unless the layout truly depends on it.
+

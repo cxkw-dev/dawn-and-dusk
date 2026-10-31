@@ -41,6 +41,9 @@ all.plus = { w: 24, h: 24, body: '<path fill="none" stroke="currentColor" stroke
 all.minus = { w: 24, h: 24, body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8" d="M5 12h14"/>' };
 all.check = { w: 24, h: 24, body: '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m5 12.5l4.5 4.5L19 7"/>' };
 
+// Custom: the AI mark — a four-point spark with a smaller one and a dot, two-tone like Solar Bold Duotone.
+all.ai = { w: 24, h: 24, body: '<g fill="currentColor"><path d="M10 5Q11.6 11.9 18.5 13.5Q11.6 15.1 10 22Q8.4 15.1 1.5 13.5Q8.4 11.9 10 5Z"/><path d="M18.6 2Q19.3 4.7 22 5.4Q19.3 6.1 18.6 8.8Q17.9 6.1 15.2 5.4Q17.9 4.7 18.6 2Z" opacity=".5"/><g opacity=".5"><circle cx="19.2" cy="18.6" r="1.4"/></g></g>' };
+
 const symbols = Object.entries(all).sort(([a], [b]) => a.localeCompare(b))
   .map(([id, i]) => `  <symbol id="dd-i-${id}" viewBox="0 0 ${i.w} ${i.h}">${i.body}</symbol>`).join('\n');
 await writeFile(new URL('../ds/icons/icons.svg', import.meta.url),

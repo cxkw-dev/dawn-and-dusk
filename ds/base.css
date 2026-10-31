@@ -3,9 +3,6 @@
 :where(*, *::before, *::after) { box-sizing: border-box; }
 
 :where(html) {
-  /* Reserve the scrollbar's space so the page never shifts sideways when a dialog, drawer or the off-canvas nav locks
-     scrolling (and when a page grows tall enough to scroll). */
-  scrollbar-gutter: stable;
   /* The page tone and grain live on <html> so they fill the whole viewport, however short the content is. */
   background-color: var(--dd-bg);
   background-image: var(--dd-grain);
@@ -18,6 +15,10 @@
   text-rendering: optimizeLegibility;
 }
 :where(body) { margin: 0; }
+/* Modal layers (dialogs, drawers, sheets, the off-canvas nav) lock the page scroll. behaviors/scrollbar.js keeps
+   --dd-scrollbar-w up to date, so the page is padded by the scrollbar it loses: nothing shifts sideways, and overlays
+   still reach the window's edge. */
+:where(html):has(dialog:modal), :where(html.dd-side-nav-lock) { overflow: hidden; padding-inline-end: var(--dd-scrollbar-w, 0px); }
 :where(button, input, select, textarea) { font: inherit; color: inherit; }
 :where(img, svg, video) { display: block; max-width: 100%; }
 ::selection { background: var(--dd-text); color: var(--dd-bg); }

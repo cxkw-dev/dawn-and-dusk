@@ -185,3 +185,4 @@ Don't:
 - Don’t show more than seven page slots; collapse with gaps.
 - Don’t hide the arrows on the first or last page; disable them.
 - Don’t paginate under ~50 rows; let the list scroll.
+

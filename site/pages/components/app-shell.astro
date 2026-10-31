@@ -187,8 +187,29 @@ const skeleton = `
     </main>
   </div>
 </div>`;
+
+// The docs' own shell (site/layouts/Docs.astro), trimmed: page-scroll mode, off-canvas under 900px.
+const pageSkeleton = `
+<html>
+  <body>
+    <div class="dd-app-shell dd-app-shell--page dd-app-shell--offcanvas-md">
+      <nav class="dd-side-nav" id="doc-nav" aria-label="Documentation">
+        <div class="dd-side-nav__rail">…</div>
+        <div class="dd-side-nav__panel" id="doc-nav-panel">…</div>
+      </nav>
+      <div class="dd-app-shell__main">
+        <header class="dd-top-bar">
+          <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-nav-open="#doc-nav" aria-controls="doc-nav" aria-expanded="false" aria-label="Open navigation">…</button>
+          <a class="dd-top-bar__brand dd-top-bar__narrow" href="/">…</a>
+          …
+        </header>
+        <main class="dd-app-shell__content">…</main>
+      </div>
+    </div>
+  </body>
+</html>`;
 ---
-<Docs title="App shell" group="Layout" lead="The page layout for apps: the side nav runs the full height on the left, the top bar and a scrolling content area share the rest. Fold the nav and the page reflows; on phones the nav slides in over the page." wide>
+<Docs title="App shell" group="Layout" lead="The page layout for apps: the side nav runs the full height on the left, the top bar and the content share the rest. Either the content scrolls inside a viewport-high shell, or the whole page scrolls under a sticky nav and bar. Fold the nav and the page reflows; on phones the nav slides in over the page." wide>
   <style is:global>
     .as-phone { max-width: 380px; margin: 28px auto; border-radius: var(--dd-r-lg); overflow: hidden;
       box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 10%, transparent); }
@@ -227,14 +248,30 @@ const skeleton = `
 
   <Example
     title="Full shell"
-    description="Side nav, top bar, page header and content. Try it: the chevron at the foot of the rail folds the panel and the page reflows; the services and projects icons switch it; a service link becomes the page. Shown 700px tall — in an app the shell is the viewport (100dvh) and only the content scrolls."
+    description="Side nav, top bar, page header and content. Try it: the chevron at the foot of the rail folds the panel and the page reflows; the services and projects icons switch it; a service link becomes the page. Shown 700px tall — in an app the shell is the viewport (100dvh) and only the content scrolls; for a page that scrolls as a whole, see Page scroll."
     code={full}
     stage="flush"
   />
 
   <h2 id="mobile">On a phone</h2>
-  <p>Under 768px of shell width the side nav leaves the flow. The top bar shows its menu button and the logo (<code>dd-top-bar__narrow</code>); the button opens the nav over a scrim. Esc, the scrim or a link closes it. Try it: open the menu and pick a service.</p>
+  <p>Under 768px of shell width (or the <a href="#breakpoints">breakpoint</a> you pick) the side nav leaves the flow. The top bar shows its menu button and the logo (<code>dd-top-bar__narrow</code>); the button opens the nav over a scrim. Esc, the scrim, a link or tabbing out of it closes it, and focus goes back to the menu button. Try it: open the menu and pick a service.</p>
   <Example code={phone} stage="flush" />
+
+  <h2 id="page-scroll">Page scroll</h2>
+  <p>By default the shell is the viewport and only its content area scrolls; the chrome never moves. Add <code>dd-app-shell--page</code> and the document scrolls instead: the shell grows with its content, the side nav and the top bar stick to the top of the window, and the off-canvas nav is fixed to the window. Anchors, find-in-page, the back button’s scroll position and <code>position: sticky</code> inside the content then behave as on any page — good for docs, settings and long reads.</p>
+  <p><strong>This page is the live example.</strong> These docs run on <code>dd-app-shell dd-app-shell--page dd-app-shell--offcanvas-md</code>. Try it: scroll, and the side nav and the top bar stay. Narrow the window under 900px and open the menu: the nav slides in over the page, and the page behind it stays put until Esc, the scrim, a link or tabbing out closes it.</p>
+  <div class="ex-frame"><details class="ex-code" open><summary>Page-scroll shell (these docs)</summary><Code code={pageSkeleton.trim()} lang="html" theme={ddTheme} wrap /></details></div>
+  <p>In page mode the shell paints no background of its own, so the page tone on <code>&lt;html&gt;</code> (with dusk’s grain) shows through, and cards keep their page hover. Give the document a <code>scroll-padding-top</code> a little taller than the top bar (these docs use 80px) so anchors land below it.</p>
+
+  <h2 id="breakpoints">Breakpoints</h2>
+  <p>The shell is a size container named <code>dd-app-shell</code>: its side nav goes off-canvas when the shell is narrower than its breakpoint, whatever the window does. A custom property can’t drive a container query, so pick the width with a class.</p>
+  <ClassTable head={['Class', 'Side nav goes off-canvas']} rows={[
+    ['.dd-app-shell', 'Under 768px of shell width (the default).'],
+    ['.dd-app-shell--offcanvas-md', 'Under 900px. Tablets in portrait get the slide-in nav; these docs use it.'],
+    ['.dd-app-shell--offcanvas-lg', 'Under 1024px, for pages that need the room, such as wide data tables.'],
+    ['.dd-side-nav--offcanvas', 'On the nav: off-canvas at every width, also inside a shell. The top bar keeps its menu button.'],
+  ]} />
+  <p>Your own rules can follow the same widths with <code>{'@container dd-app-shell (width < 900px) { … }'}</code> — these docs drop the nav’s view-transition name that way while it is off-canvas. The shell’s rules reach only its own side nav and top bar, so components in its content (examples, previews, a nested shell) keep theirs.</p>
 
   <h2 id="anatomy">Anatomy</h2>
   <p>The skeleton, without the contents. Wire the top bar’s menu button to the nav’s <code>id</code>; the nav’s collapsed state is remembered under that <code>id</code>.</p>
@@ -242,18 +279,20 @@ const skeleton = `
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
-    ['.dd-app-shell', 'Flex row at <code>--dd-app-shell-h</code> (default <code>100dvh</code>) on a plain <code>--dd-bg</code>. A size container: below 768px the side nav goes off-canvas. Because the page has no grain here, cards inside keep dawn’s gentler hover lift in both themes.'],
-    ['.dd-app-shell > .dd-side-nav', 'Fills the height; no extra class needed. See <a href="side-nav">Side nav</a>.'],
+    ['.dd-app-shell', 'Flex row at <code>--dd-app-shell-h</code> (default <code>100dvh</code>) on a plain <code>--dd-bg</code>; only <code>__content</code> scrolls. A size container named <code>dd-app-shell</code>: below 768px the side nav goes off-canvas. Because the page has no grain here, cards inside keep dawn’s gentler hover lift in both themes.'],
+    ['.dd-app-shell--page', 'Page-scroll mode: the document scrolls, the shell is at least <code>100dvh</code> and grows with its content; the side nav and top bar stick, the off-canvas nav is fixed to the window. No background of its own.'],
+    ['--offcanvas-md / --offcanvas-lg', 'Move the off-canvas breakpoint to 900px / 1024px of shell width. See <a href="#breakpoints">Breakpoints</a>.'],
+    ['.dd-app-shell > .dd-side-nav', 'Fills the height (sticks, in page mode); no extra class needed. Add <code>dd-side-nav--offcanvas</code> to keep it off-canvas at every width. See <a href="side-nav">Side nav</a>.'],
     ['__main', 'The column beside the nav: top bar, then content.'],
-    ['__content', 'The scrolling area, padded 40px / 50px (less on narrow shells).'],
+    ['__content', 'The scrolling area (the page scrolls instead in page mode), padded 40px / 50px (less on narrow shells).'],
     ['__page', 'Centres the page at up to 1180px with a 40px rhythm between blocks. <code>--narrow</code> for forms and settings (760px).'],
-    ['--dd-app-shell-h', 'Shell height. Set it to fit a frame, or <code>auto</code> plus a sticky nav if the whole page should scroll.'],
+    ['--dd-app-shell-h', 'Shell height in the default mode. Set it to fit a frame; for a page that scrolls as a whole, use <code>--page</code>.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['data-dd-nav-toggle', 'On the rail’s chevron: folds the panel; remembered per nav <code>id</code>.'],
-    ['data-dd-nav-open="#id"', 'On the top bar’s menu button: opens the nav off-canvas on narrow shells.'],
+    ['data-dd-nav-open="#id"', 'On the top bar’s menu button: opens the nav off-canvas on narrow shells. Esc, the scrim, a link or the chevron close it and return focus to the button; tabbing out (onto the button too) closes it. While it covers the window the page behind doesn’t scroll (<code>dd-side-nav-lock</code> on <code>&lt;html&gt;</code>). Widen past the breakpoint and it is simply in view.'],
     ['data-dd-autoclose', 'On the avatar menu: closes on outside click, Esc or choosing an item.'],
   ]} />
 

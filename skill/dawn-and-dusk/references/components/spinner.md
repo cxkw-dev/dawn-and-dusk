@@ -120,3 +120,4 @@ Don't:
 - Don’t put more than one spinner in a view.
 - Don’t block the whole page for something one panel needs.
 - Don’t use a spinner for progress you can measure — use a progress bar.
+
