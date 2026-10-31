@@ -141,3 +141,41 @@ test('reduced motion: a still diagonal, no entrance, no drift, no scroll sweep',
   await page.press('End');
   assert.equal(await value(page), 100);
 });
+
+for (const width of [375, 1440]) test(`scroll gives the sun and wordmark different depths at ${width}, with both theme faces aligned`, async ({ open, assert }) => {
+  const page = await open('', { width, height: 900 });
+  await settle(page);
+  await page.get(() => scrollTo(0, 300));
+  await page.sleep(150);
+  const layers = await page.get(() => [...document.querySelectorAll('.home-cover .home-face')].map((f) => {
+    const matrix = (s) => new DOMMatrix(getComputedStyle(f.querySelector(s)).transform);
+    return { sun: matrix('.home-sun').m42, mast: matrix('.home-mast').m42, copy: getComputedStyle(f.querySelector('.home-cover__intro')).transform };
+  }));
+  assert.ok(layers[0].sun > layers[0].mast && layers[0].mast > 0, 'sun sinks farther than the wordmark; both lag the scroll');
+  assert.equal(layers[0].copy, 'none', 'reading stays steady');
+  assert.deepEqual(layers[0], layers[1], 'no double image across the theme seam');
+  await page.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+  await page.sleep(100);
+  assert.equal(await page.get(() => getComputedStyle(document.querySelector('.home-sun')).transform), 'none');
+  assert.equal(await page.get(() => getComputedStyle(document.querySelector('.home-mast')).transform), 'none');
+});
+
+test('the gallery light sweeps across the specimens without shifting their alignment', async ({ open, assert }) => {
+  const page = await open('', { width: 1440 });
+  const read = () => page.get(() => {
+    const g = document.querySelector('.home-collage');
+    const x = (s) => new DOMMatrix(getComputedStyle(g.querySelector(s)).transform).m41;
+    return { window: x('.home-window'), face: x('.home-face--over'), width: g.clientWidth };
+  });
+  await page.get(() => { const g = document.querySelector('.home-collage'); scrollTo(0, scrollY + g.getBoundingClientRect().top - innerHeight * .8); });
+  await page.sleep(150);
+  const before = await read();
+  await page.get(() => { const g = document.querySelector('.home-collage'); scrollTo(0, scrollY + g.getBoundingClientRect().bottom - innerHeight * .2); });
+  await page.sleep(150);
+  const after = await read();
+  assert.ok(before.window > 0 && after.window < 0 && before.window - after.window > before.width * .7);
+  assert.ok(Math.abs(before.window + before.face) < .01 && Math.abs(after.window + after.face) < .01);
+  await page.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+  await page.sleep(100);
+  assert.equal((await read()).window, 0, 'reduced motion restores a still diagonal immediately');
+});

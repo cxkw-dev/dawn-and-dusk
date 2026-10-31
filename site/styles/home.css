@@ -233,16 +233,14 @@
   .home-collage .home-face { grid-template-columns: minmax(0, 1fr); gap: var(--dd-space-10); padding-block: var(--dd-space-4); }
   .home-look__stage { height: calc(var(--dd-u) * 30); }
 }
-/* the line sweeps from the page's light to the other one as the collage crosses the viewport (compositor-driven) */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .home-collage { view-timeline: --home-collage block; }
-    .home-collage .home-window { animation: home-sweep linear both; animation-timeline: --home-collage; animation-range: entry 10% exit 90%; }
-    .home-collage .home-face--over { animation: home-sweep-back linear both; animation-timeline: --home-collage; animation-range: entry 10% exit 90%; }
-  }
+/* Scroll transforms are synchronized across both theme faces by home-motion.ts. The copy remains in normal flow. */
+@media (prefers-reduced-motion: no-preference) {
+  .home-cover .home-sun, .home-cover .home-mast { will-change: transform; }
 }
-@keyframes home-sweep { from { transform: translate3d(48%, 0, 0); } to { transform: translate3d(-48%, 0, 0); } }
-@keyframes home-sweep-back { from { transform: translate3d(-48%, 0, 0); } to { transform: translate3d(48%, 0, 0); } }
+@media (prefers-reduced-motion: reduce) {
+  .home-cover .home-sun, .home-cover .home-mast { transform: none !important; }
+  .home-collage .home-window, .home-collage .home-face--over { transform: none !important; }
+}
 
 /* ---------- install ---------- */
 .home-install { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--dd-space-5); align-items: start; }
