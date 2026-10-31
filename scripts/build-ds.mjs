@@ -57,26 +57,64 @@ const dawnT = rows(tokenBlock(':root, [data-theme="dawn"] {'));
 const duskT = Object.fromEntries(rows(tokenBlock('[data-theme="dusk"] {')).map((r) => [r.name, r.value]));
 const short = (v) => (v.length > 60 ? v.slice(0, 57) + '…' : v);
 await writeFile(join(skillRef, 'tokens.md'), [
-  `# dawn & dusk tokens (v${pkg.version})`, '', 'Generated from `ds/tokens.css` by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; never hard-code these values.', '',
+  `# dawn & dusk tokens (v${pkg.version})`, '', 'Generated from `ds/tokens.css`, `ds/base.css` and the icon sprite by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; never hard-code these values.', '',
   '## Theme colours (dawn → dusk)', '', '| token | dawn | dusk | note |', '|---|---|---|---|',
   ...dawnT.filter((r) => !/color-scheme/.test(r.name)).map((r) => `| \`--dd-${r.name}\` | \`${short(r.value)}\` | \`${short(duskT[r.name] ?? '')}\` | ${r.note} |`),
   '', '## Type, space, shape, motion (shared)', '', '| token | value |', '|---|---|',
   ...shared.filter((r) => r.name !== 'grain').map((r) => `| \`--dd-${r.name}\` | \`${short(r.value)}\` |`), '',
+  '## Base classes (ds/base.css)', '',
+  'Typography and layout helpers every page uses. Headings `.dd-display/.dd-h1/.dd-h2/.dd-h3` are the logo lockup (Outfit 800,',
+  'lowercase, tight) for page and section titles; `.dd-h4/.dd-h5` are UI titles in sentence case.', '',
+  '| class | what it does |', '|---|---|',
+  ...[
+    ['.dd-display .dd-h1 .dd-h2 .dd-h3', 'Lockup headings: Outfit 800, lowercase, tight tracking. Page and section titles only.'],
+    ['.dd-h4 .dd-h5', 'UI titles (cards, dialogs, form sections), sentence case, 650 weight.'],
+    ['.dd-lead', 'Intro paragraph under a page title: larger, muted.'],
+    ['.dd-text / .dd-small / .dd-caption', 'Body paragraph / small text / caption (xs, muted).'],
+    ['.dd-eyebrow', 'Small mono uppercase label above a heading.'],
+    ['.dd-mono / .dd-num', 'DM Mono / tabular numerals — IDs, timestamps, figures.'],
+    ['.dd-muted / .dd-faint', 'Secondary text / decoration only (faint is not for text people must read).'],
+    ['.dd-stack', 'Vertical flex stack; gap from `--dd-gap` (default `--dd-space-3`).'],
+    ['.dd-row', 'Wrapping horizontal row, centred; gap from `--dd-gap` (default `--dd-space-2`).'],
+    ['.dd-surface', 'A tonal container: `--dd-surface` fill + box radius. No border, no shadow.'],
+    ['.dd-scroll', 'Thin tonal scrollbar that appears on hover/focus.'],
+    ['.dd-icon', 'Sizes an inline SVG icon to the text (1.15em).'],
+    ['.dd-visually-hidden', 'Hidden on screen, read by screen readers.'],
+  ].map(([c, d]) => `| ${c.split(' ').map((x) => (x.startsWith('.') ? `\`${x}\`` : x)).join(' ')} | ${d} |`), '',
+  '## Icons', '',
+  'Solar Bold Duotone, as an SVG sprite (`assets/icons.svg`): inline the sprite once after `<body>`, then',
+  '`<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-NAME"/></svg>`. These are ALL the names — pick the closest; never invent one:', '',
+  [...(await read('icons/icons.svg')).matchAll(/id="dd-i-([\w-]+)"/g)].map((m) => `\`${m[1]}\``).join(' '), '',
 ].join('\n'));
 
 // Component catalogue: header comment + every class each component file defines.
 const catalogue = [`# dawn & dusk components (v${pkg.version})`, '',
-  'Generated from `ds/components/*.css`. Every component is plain HTML + these classes; behaviours are opt-in `data-dd-*` attributes',
-  'handled by `dawn-and-dusk.js`. Full examples: https://cxkw-dev.github.io/dawn-and-dusk/components/<name>', ''];
+  'Generated from `ds/components/*.css`: what each component is, its classes and its `data-dd-*` hooks. Every component is plain',
+  'HTML + these classes; behaviours are opt-in `data-dd-*` attributes handled by `dawn-and-dusk.js`.', '',
+  '**For markup, read `components/<name>.md`** next to this file: the exact, working HTML of every docs example, the class',
+  'table and the guidelines. Live demos: https://cxkw-dev.github.io/dawn-and-dusk/components/<name>', '',
+  `Index: ${components.map((f) => f.replace(/\.css$/, '')).map((n) => `[${n}](#${n})`).join(' · ')}`, ''];
+// A component's "own" classes are those not belonging to another component's main block (e.g. .dd-btn inside button-group).
+const blockOf = (c) => c.split(/__|--/)[0];
+const mains = {};
+for (const f of components) {
+  const counts = {};
+  for (const m of (await read(`components/${f}`)).matchAll(/\.(dd-[\w-]+)/g)) counts[blockOf(m[1])] = (counts[blockOf(m[1])] || 0) + 1;
+  mains[f] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+}
 for (const f of components) {
   const src = await read(`components/${f}`);
   const name = f.replace(/\.css$/, '');
   const head = (src.match(/^\/\*([\s\S]*?)\*\//) ?? [, ''])[1].replace(/\s*\n\s*/g, ' ').trim();
-  const classes = [...new Set([...src.matchAll(/\.(dd-[\w-]+)/g)].map((m) => m[1]))].filter((c) => !c.startsWith('dd-icon') || name === 'icon');
+  const classes = [...new Set([...src.matchAll(/\.(dd-[\w-]+)/g)].map((m) => m[1]))].filter((c) => !c.startsWith('dd-icon'));
+  const foreign = new Set(Object.entries(mains).filter(([g]) => g !== f).map(([, b]) => b));
+  const own = classes.filter((c) => !foreign.has(blockOf(c)) || blockOf(c) === mains[f]);
+  const others = [...new Set(classes.filter((c) => !own.includes(c)).map(blockOf))];
   const attrs = [...new Set([...src.matchAll(/\[(data-dd-[\w-]+|aria-[\w-]+)/g)].map((m) => m[1]))];
-  catalogue.push(`## ${name}`, '', head || '_No description._', '', `Classes: ${classes.map((c) => `\`.${c}\``).join(' ')}`);
+  catalogue.push(`## ${name}`, '', head || '_No description._', '', `Classes: ${own.map((c) => `\`.${c}\``).join(' ')}`);
+  if (others.length) catalogue.push('', `Works with: ${others.map((c) => `\`.${c}\``).join(' ')}`);
   if (attrs.length) catalogue.push('', `Attributes/states: ${attrs.map((a) => `\`${a}\``).join(' ')}`);
-  catalogue.push('');
+  catalogue.push('', `Markup: \`references/components/${name}.md\``, '');
 }
 const behaviorDocs = [];
 for (const f of behaviors) {

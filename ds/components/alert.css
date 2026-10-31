@@ -1,4 +1,4 @@
-/* Alert — "Soft fill · with action" (pick #20 and its round-4 family). An inline status message: icon, title,
+/* Alert — "Soft fill · with action". An inline status message: icon, title,
    description, text actions on the right and an optional dismiss button ([data-dd-dismiss], see behaviors/dismiss.js).
    Intents: info (default) · ok · warn · bad.
    Dawn: a soft 14% wash of the status colour over the page. Dusk: a SOLID fill of 30% status over the surface and no

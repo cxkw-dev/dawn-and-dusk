@@ -3,7 +3,10 @@
 :where(*, *::before, *::after) { box-sizing: border-box; }
 
 :where(html) {
+  /* The page tone and grain live on <html> so they fill the whole viewport, however short the content is. */
   background-color: var(--dd-bg);
+  background-image: var(--dd-grain);
+  background-size: var(--dd-grain-size);
   color: var(--dd-text);
   font-family: var(--dd-font-body);
   font-size: var(--dd-fs-base);
@@ -11,13 +14,7 @@
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-:where(body) {
-  margin: 0;
-  background-color: var(--dd-bg);
-  background-image: var(--dd-grain);
-  background-size: var(--dd-grain-size);
-  transition: background-color var(--dd-dur) var(--dd-ease), color var(--dd-dur) var(--dd-ease);
-}
+:where(body) { margin: 0; }
 :where(button, input, select, textarea) { font: inherit; color: inherit; }
 :where(img, svg, video) { display: block; max-width: 100%; }
 ::selection { background: var(--dd-text); color: var(--dd-bg); }
@@ -59,7 +56,7 @@
 .dd-icon { display: inline-block; width: 1.15em; height: 1.15em; flex: none; vertical-align: -0.2em; }
 .dd-icon > svg { width: 100%; height: 100%; }
 .dd-visually-hidden {
-  position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 }
 .dd-surface { background: var(--dd-surface); border-radius: var(--dd-r-box); }
 .dd-stack { display: flex; flex-direction: column; gap: var(--dd-gap, var(--dd-space-3)); }

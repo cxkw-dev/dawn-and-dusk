@@ -11,6 +11,14 @@ Reading the skeletons:
   grid columns, `gap`, `padding`, `max-width` and container queries — with tokens only (`calc(var(--dd-u) * N)`,
   `var(--dd-space-N)`, `var(--dd-surface)`). Never restyle a component from glue.
 
+## Contents
+
+- [Rules for every pattern](#rules-for-every-pattern) — one primary per view, tone not lines, mono numerals, status columns
+- [The app shell](#the-app-shell-dashboard-explorer-settings) — side nav + top bar + content, shared by the app pages
+- [1. Dashboard](#1-dashboard) · [2. Data explorer](#2-data-explorer-compass-style) · [3. Settings](#3-settings) · [4. Landing page](#4-landing-page-cxkwdev)
+- [5. Pricing](#5-pricing) — plans, billing switch, comparison table, FAQ
+- [Before you finish](#before-you-finish) — the checklist
+
 ## Rules for every pattern
 
 1. **One primary action per view.** Exactly one `.dd-btn--primary` on screen: what the page is for (New deploy, Find,
@@ -30,7 +38,7 @@ Reading the skeletons:
    threshold with `td.is-warn` / `td.is-bad`; never colour a row. Summarise once in the page header
    (`.dd-page-header__status--warn|--bad`).
 5. **Density by job.** Many rows → `.dd-data-table` (default) or `--compact` (explorers, split panels). ≤ 10 rows, no
-   sorting → `.dd-table` (`--compact` in narrow columns). Forms are roomy. Marketing sections breathe (60–100px);
+   sorting → `.dd-table` (`--compact` in narrow columns). Forms are roomy. Marketing sections breathe (60–100px, `calc(var(--dd-u) * 12…20)`);
    cards and stat grids stay tight.
 6. **Mobile is designed.** Under 768px of shell width `.dd-app-shell` sends the side nav off-canvas and shows the top
    bar's menu button. `.dd-stat-grid`, `.dd-card-grid`, `.dd-form__grid` reflow on their own; glue splits stack via
@@ -428,7 +436,7 @@ Reading the skeletons:
       <form class="dd-form__section" aria-labelledby="profile-title">
         <div class="dd-form__head"><h2 class="dd-form__title" id="profile-title">Profile</h2><p class="dd-form__desc">Shown on deploys and comments.</p></div>
         <div class="app-avatar">
-          <span class="dd-avatar dd-avatar--xl dd-avatar--set-3" role="img" aria-label="Andy Nguyen">AN</span>
+          <span class="dd-avatar dd-avatar--xl dd-avatar--set-1" role="img" aria-label="Andy Nguyen">AN</span>
           <label class="dd-dropzone dd-dropzone--compact" data-dd-dropzone>
             <input type="file" accept="image/*" aria-label="Upload a new avatar"><span class="dd-dropzone__icon">[i:upload]</span>
             <span class="dd-dropzone__text"><span class="dd-dropzone__title">Drop a new avatar or <span class="dd-dropzone__browse">browse</span></span><span class="dd-dropzone__meta">Square, ≥ 256 × 256</span></span>
@@ -644,6 +652,48 @@ Reading the skeletons:
 - The footer is a quiet `--dd-surface` band: wordmark, credit, muted links — no second CTA.
 - Mobile: links fold into the menu, the headline drops to `--dd-fs-3xl`, buttons wrap, stats go 2 × 2, cards stack,
   the contact block stacks with its fields in one column.
+
+## 5. Pricing
+
+A landing-page section (or page) built from Card, Segmented control, Badge, Table and Accordion. Live markup for each part
+is in `components/<name>.md`.
+
+**Structure:** lockup headline + lead → billing switch → plan cards → comparison table → FAQ → closing call to action.
+
+```html
+<!-- billing switch: the radio flavour of the segmented control, so arrow keys work with no script -->
+<fieldset class="dd-segmented" id="billing">
+  <legend class="dd-visually-hidden">Billing period</legend>
+  <label class="dd-segmented__item"><input type="radio" name="period" value="monthly" checked><span>Monthly</span></label>
+  <label class="dd-segmented__item"><input type="radio" name="period" value="yearly"><span>Yearly</span> <span class="dd-segmented__count">2 months free</span></label>
+</fieldset>
+
+<div class="dd-card-grid app-plans">              <!-- glue: grid-template-columns: repeat(3, minmax(0, 1fr)) when it fits -->
+  <article class="dd-card" aria-labelledby="plan-pro">
+    <div class="dd-card__body">
+      <p class="dd-card__eyebrow">[i:bolt]<span>For solo operators</span><span class="dd-badge dd-badge--accent">Popular</span></p>
+      <h3 class="dd-card__title" id="plan-pro">pro</h3>
+      <p class="dd-card__text">One sentence on who the plan is for.</p>
+      <p class="dd-card__stat"><span data-price>$12</span><small>/mo</small></p>
+      <p class="dd-card__label">Billed monthly · cancel any time</p>
+      <ul class="app-plan-list"><li>[i:check]<span>100 monitors</span></li>…</ul>   <!-- glue: a stack of icon + text rows -->
+      <div class="dd-card__foot"><a class="dd-btn dd-btn--primary dd-btn--block" href="#signup">Start with Pro</a></div>
+    </div>
+  </article>
+  …
+</div>
+```
+
+Rules:
+- **The recommended plan carries the only primary button** in the cards; the other plans use `.dd-btn--secondary`. Mark it
+  with an accent badge ("Popular"), not a border or a coloured card.
+- Prices are figures: `.dd-card__stat`; units in `<small>`. Changing period swaps the numbers in place (announce the change
+  in a polite live region); keep the card heights stable.
+- Three plans sit in one row once they fit and stack below that — set the columns with glue, never leave 2 + 1.
+- Comparison: a `.dd-table` with one `<tbody>` per feature group and the group name as a row header (`<th scope="rowgroup"
+  colspan="…">`); `[i:check]` / an em dash for yes / no, each with visually hidden text ("Included" / "Not included").
+- FAQ: a `.dd-accordion` of native `<details>`, grouped with `name="faq"` so one opens at a time.
+- A long page may end with a closing call to action that repeats the same primary action (it's a new view).
 
 ## Before you finish
 

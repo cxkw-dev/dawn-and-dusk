@@ -1,5 +1,5 @@
 /* Form field — the wrapper around one control: label, hint, error and counter.
-   Default is the "Tucked label" pick: a micro label sits inside the tonal, borderless box and the value sits under it.
+   Default is the tucked label: a micro label sits inside the tonal, borderless box and the value sits under it.
    .dd-field--above moves the label over the box. The box itself is .dd-input (text-input.css) or one of its kin
    (textarea, select, combobox, date picker), placed directly inside the field or one wrapper deep. */
 .dd-field {

@@ -1,6 +1,6 @@
 # dawn & dusk tokens (v0.1.0)
 
-Generated from `ds/tokens.css` by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; never hard-code these values.
+Generated from `ds/tokens.css`, `ds/base.css` and the icon sprite by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; never hard-code these values.
 
 ## Theme colours (dawn → dusk)
 
@@ -108,3 +108,31 @@ Generated from `ds/tokens.css` by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; 
 | `--dd-z-overlay` | `60` |
 | `--dd-z-toast` | `80` |
 | `--dd-z-tooltip` | `90` |
+
+## Base classes (ds/base.css)
+
+Typography and layout helpers every page uses. Headings `.dd-display/.dd-h1/.dd-h2/.dd-h3` are the logo lockup (Outfit 800,
+lowercase, tight) for page and section titles; `.dd-h4/.dd-h5` are UI titles in sentence case.
+
+| class | what it does |
+|---|---|
+| `.dd-display` `.dd-h1` `.dd-h2` `.dd-h3` | Lockup headings: Outfit 800, lowercase, tight tracking. Page and section titles only. |
+| `.dd-h4` `.dd-h5` | UI titles (cards, dialogs, form sections), sentence case, 650 weight. |
+| `.dd-lead` | Intro paragraph under a page title: larger, muted. |
+| `.dd-text` / `.dd-small` / `.dd-caption` | Body paragraph / small text / caption (xs, muted). |
+| `.dd-eyebrow` | Small mono uppercase label above a heading. |
+| `.dd-mono` / `.dd-num` | DM Mono / tabular numerals — IDs, timestamps, figures. |
+| `.dd-muted` / `.dd-faint` | Secondary text / decoration only (faint is not for text people must read). |
+| `.dd-stack` | Vertical flex stack; gap from `--dd-gap` (default `--dd-space-3`). |
+| `.dd-row` | Wrapping horizontal row, centred; gap from `--dd-gap` (default `--dd-space-2`). |
+| `.dd-surface` | A tonal container: `--dd-surface` fill + box radius. No border, no shadow. |
+| `.dd-scroll` | Thin tonal scrollbar that appears on hover/focus. |
+| `.dd-icon` | Sizes an inline SVG icon to the text (1.15em). |
+| `.dd-visually-hidden` | Hidden on screen, read by screen readers. |
+
+## Icons
+
+Solar Bold Duotone, as an SVG sprite (`assets/icons.svg`): inline the sprite once after `<body>`, then
+`<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-NAME"/></svg>`. These are ALL the names — pick the closest; never invent one:
+
+`alert` `archive` `arrow-down` `arrow-left` `arrow-right` `arrow-up` `bell` `bolt` `bookmark` `box` `calendar` `chart` `chat` `check` `chevron-down` `chevron-left` `chevron-right` `chevron-up` `clock` `cloud` `code` `copy` `danger` `database` `download` `edit` `error` `external` `eye` `eye-off` `file` `filter` `flag` `folder` `globe` `graph` `grid` `heart` `home` `inbox` `info` `key` `layers` `link` `list` `lock` `logout` `mail` `menu` `minus` `moon` `more` `pause` `pin` `play` `plus` `question` `refresh` `search` `send` `server` `settings` `shield` `sidebar` `sort` `sparkle` `star` `success` `sun` `tag` `terminal` `trash` `unlock` `upload` `user` `users` `x`

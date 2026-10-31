@@ -1,79 +1,130 @@
 ---
 name: dawn-and-dusk
-description: Build UI in the dawn & dusk design system (cxkw.dev) — warm greige neutrals, golden-hour accents, heavy lowercase Outfit headings, light "dawn" and dark "dusk" themes. Use whenever building or restyling a web page, app screen, dashboard, data table, form, landing page or component for cxkw.dev or any project that uses dawn & dusk, or when the user mentions "dawn & dusk", "dawn and dusk", "dd- classes" or their design system.
+description: Build UI in the dawn & dusk design system (cxkw.dev) — warm greige neutrals, golden-hour accents, heavy lowercase Outfit headings, light "dawn" and dark "dusk" themes, plain CSS classes (dd-*) plus a small JS layer. Use whenever building, restyling or migrating a web page, app screen, dashboard, admin panel, data table, form, settings page, landing or pricing page, or a single component for cxkw.dev or any project that uses dawn & dusk — in static HTML, React, Next.js, Vue, Svelte or Astro, including moving a Tailwind UI onto it — or when the user mentions "dawn & dusk", "dawn and dusk", "dd- classes", dawn/dusk themes or their design system.
 ---
 
 # dawn & dusk
 
-dawn & dusk is plain CSS + a tiny vanilla JS layer. You build with semantic HTML, `dd-` classes and `--dd-*` tokens.
-It works in any stack (static HTML, Astro, React/JSX — use `className`, Vue, Svelte). Two themes share every name:
-**dawn** (light) and **dusk** (dark).
+dawn & dusk is plain CSS + a tiny delegated JS layer: semantic HTML, `dd-` classes and `--dd-*` tokens. Two themes share
+every name — **dawn** (light) and **dusk** (dark) — so anything built from the tokens works in both.
 
-## 1. Install into the project
+The system is complete: 59 components with tested markup. Your job is mostly to **compose** them. Copying the documented
+markup is what makes the result look and behave right; invented structure is where things break.
 
-Copy the files from this skill's `assets/` folder into the project's static/public folder, then:
+## How to work
+
+1. **Install** once (§1).
+2. **Whole page?** Start from the closest recipe in `references/patterns.md` (dashboard, data explorer, settings, landing,
+   pricing).
+3. **Each component:** find it in `references/components-index.md`, open `references/components/<name>.md`, copy the
+   closest example and change only text, data and variant classes. Keep the element structure exactly.
+4. **Layout between components** goes in your own small stylesheet (§5), from tokens only.
+5. **Check** your work (§6) before you finish.
+
+## 1. Install
+
+Copy three files from this skill's `assets/` into the project's static/public folder: `dawn-and-dusk.css` (fonts, tokens,
+base, every component), `dawn-and-dusk.js` (all behaviours) and `icons.svg` (the icon sprite). `tokens.css` is only for
+projects that want the tokens without the components. If the project already has `dawn-and-dusk.css`, don't copy again.
 
 ```html
-<link rel="stylesheet" href="/dawn-and-dusk.css">          <!-- fonts, tokens, base, every component -->
-<script src="/dawn-and-dusk.js" defer></script>            <!-- theme toggle, menus, dialogs, tables, toasts… -->
+<html lang="en">                                   <!-- add data-theme="dawn" or "dusk" to force one; omit to follow the OS -->
+<head>
+  <script>try{var t=localStorage.getItem('dd-theme');if(t==='dawn'||t==='dusk')document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="stylesheet" href="dawn-and-dusk.css">  <!-- path relative to the page, or /… from the site root -->
+  <script src="dawn-and-dusk.js" defer></script>
+</head>
+<body>
+  <!-- the contents of icons.svg, pasted once here, then: -->
+  <svg class="dd-icon" aria-hidden="true"><use href="#dd-i-bell"/></svg>
 ```
 
-Icons are an SVG sprite (`assets/icons.svg`). Inline its contents once right after `<body>` (or server-include it), then:
-`<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-bell"/></svg>`. Icon-only controls need `aria-label`.
-
-Theme: `<html data-theme="dawn">` or `"dusk"`; omit it to follow the OS. Any `[data-dd-theme-toggle]` element flips it
-(persisted). If the project already has the files, don't copy them again — check for `dawn-and-dusk.css` first.
+- The inline `<script>` applies a saved theme before the first paint, so dusk users never see a dawn flash.
+- **Icons:** inlining the sprite works everywhere, including a page opened from disk. A site served over http can instead
+  reference the file: `<use href="/icons.svg#dd-i-bell"/>`. All icon names are listed in `references/tokens.md`; pick
+  the closest, never invent one. Icon-only controls need `aria-label`.
+- **Theme toggle:** any element with `data-dd-theme-toggle` flips dawn ↔ dusk and remembers it.
+- **React, Next.js, Vue, Svelte, Astro, or alongside Tailwind:** read `references/frameworks.md` first. Some behaviours
+  must be owned by the framework, and Tailwind's preflight overrides the base styles.
 
 ## 2. Rules that make it look right
 
-1. **Tokens only.** Never hard-code a colour, radius, font or duration. Use `var(--dd-…)` — see `references/tokens.md`.
-2. **Tone, not lines.** Group with surface steps: page `--dd-bg` → container `--dd-surface` → inset `--dd-surface-2`
-   → pressed `--dd-surface-3`. For hover / pressed fills use `--dd-wash` / `--dd-wash-strong` (translucent, visible on
-   any background — in dusk the grain lifts the page to about `--dd-surface-2`, so a surface-2 hover on the page vanishes).
-   No borders on cards, alerts or panels. Hairlines only in dense tables and dividers.
-3. **Shadows only for floating layers** (menus, popovers, toasts, dialogs, drawers): `--dd-shadow-float`.
-4. **One primary action per view** — `.dd-btn--primary` (Golden hour apricot, `--dd-primary`). Everything else is
-   secondary, ghost, ink or link. `--dd-accent` (taupe/ink) is for selection, focus and links — not for buttons.
-5. **Headings are the logo lockup**: `.dd-display/.dd-h1/.dd-h2/.dd-h3` (Outfit 800, lowercase, tight). Use them for page
-   and section titles only; UI titles use `.dd-h4/.dd-h5` (sentence case). Write headings in lowercase on purpose.
-6. **Body is Figtree**; UI chrome runs at `--dd-fs-sm`. **Data is DM Mono**: IDs, timestamps, figures (`.dd-mono`,
-   `.dd-num` for tabular numerals). Right-align numeric table columns. Text steps `--dd-text` → `--dd-muted` →
-   `--dd-quiet` (hints, group labels, kbd); `--dd-faint` is for placeholders and decoration, never text people must read.
-7. **Status = meaning, set = category.** `--dd-ok/warn/bad/info` (+`-soft`) for state, always paired with an icon or word.
-   `--dd-set-1…8` (honey, amber, apricot, terracotta, rose, wine, ochre, sand) for chips, avatars, tags and chart series,
-   used in order.
-8. **Space in 5px units**: `calc(var(--dd-u) * N)` or `--dd-space-N`. Sections breathe (60–80px); panels don't.
-9. **Dusk is first-class.** Don't special-case colours per theme — tokens already switch. In dusk, status-tinted blocks
-   are solid (no border); the system handles it.
-10. **Motion is gentle**: `--dd-dur` / `--dd-dur-fast` with `--dd-ease`. Move a few pixels, fade, never bounce.
+1. **Tokens only** for colour, type, radius, shadow, motion and spacing: `var(--dd-…)`, never a hex, rgb() or px font size.
+   Tokens are what switch between dawn and dusk; one literal colour breaks the other theme. Widths and max-widths may use
+   rem/ch.
+2. **Tone, not lines.** Group with surface steps: page `--dd-bg` → container `--dd-surface` → inset `--dd-surface-2` →
+   pressed `--dd-surface-3`. Hover and pressed fills you add yourself use `--dd-wash` / `--dd-wash-strong`. Those are
+   translucent, so they show on any background; in dusk the grain lifts the page to about `--dd-surface-2`, so a
+   surface-2 hover would vanish. No borders on cards, alerts or panels; hairlines only in dense tables and dividers.
+3. **Shadows only on floating layers**: menus, popovers, toasts, dialogs, drawers (`--dd-shadow-float`).
+4. **One primary action per view**, meaning per screenful. `.dd-btn--primary` (Golden-hour apricot) is what the screen is
+   for; everything else is secondary, ghost, ink or link. In a set of choices (plans, options), the recommended one
+   carries the primary. A long page may repeat the same primary in a closing call to action. Never primary inside table
+   rows.
+5. **Headings are the logo lockup.** `.dd-display/.dd-h1/.dd-h2/.dd-h3` and dialog, drawer and sheet titles are Outfit
+   800, lowercase and tight. The CSS lowercases them, but write the copy in lowercase anyway. Titles inside panels
+   (cards, form sections, popovers, menus) use `.dd-h4/.dd-h5` in sentence case.
+6. **Body is Figtree**; UI chrome runs at `--dd-fs-sm`. **Data is DM Mono**: IDs, timestamps and figures (`.dd-mono`,
+   `.dd-num`). Right-align numeric columns. Text steps `--dd-text` → `--dd-muted` → `--dd-quiet`; `--dd-faint` is
+   decoration only, never text.
+7. **Status = meaning, set = category.** `--dd-ok/warn/bad/info` (+`-soft`) are for state, always with an icon or a word,
+   never colour alone. `--dd-set-1…8` (honey, amber, apricot, terracotta, rose, wine, ochre, sand) are for categories:
+   chips, tags and chart series, used in order. People (avatars) skip set-3 apricot, because apricot means "do this".
+8. **Space in 5px units**: `calc(var(--dd-u) * N)` or `--dd-space-N`. Page sections breathe (60–100px); panels and
+   tables stay tight.
+9. **Dusk is first-class.** Don't special-case colours per theme; the tokens already switch. In dusk, status blocks are
+   solid fills with no border; the components handle it.
+10. **Motion is gentle**: `--dd-dur` / `--dd-dur-fast` with `--dd-ease`. Move a few pixels, fade, never bounce. Respect
+    `prefers-reduced-motion`.
+11. **Icons lead their label** (`[icon] New deploy`). The only trailing icon is an arrow on a link or action that moves
+    you forward ("Read the docs →").
+12. **Switch vs checkbox:** a switch applies a setting at once; a checkbox is a choice saved with a form. A form with a
+    Save button uses checkboxes.
+13. **Voice:** short lowercase headlines ("ship at dusk"), plain verbs on buttons, sentence-case UI text, no exclamation
+    marks.
 
-## 3. Find the right component
+## 3. Where to look
 
-`references/components.md` lists every component, its classes and its `data-dd-*` behaviours. Before writing custom CSS,
-search it — the system covers app shells, side nav, top bar, tabs, breadcrumbs, steppers, buttons, menus, command palette,
-every form control (tucked-label inputs, combobox, date picker, file upload), tables and dense data tables (sort, select,
-expand, pagination), stats, charts, progress, code/JSON/log viewers, timelines, alerts, banners, toasts, tooltips,
-popovers, badges, chips, avatars, empty states, skeletons, spinners, the ampersand loader (`.dd-loader`), dialogs, drawers, cards and accordions.
+| file | read it when |
+|---|---|
+| `references/components-index.md` | finding which component fits; components grouped by category |
+| `references/components/<name>.md` | **writing markup**: the exact HTML of every working docs example, the class table, behaviour and do/don't |
+| `references/components.md` | searching all components at once: what each is, its classes, related components, `data-dd-*` hooks, every behaviour |
+| `references/tokens.md` | colours and other tokens, **base classes** (`.dd-h1…`, `.dd-lead`, `.dd-eyebrow`, `.dd-stack`, `.dd-row`, `.dd-mono`, `.dd-visually-hidden`…) and **every icon name** |
+| `references/patterns.md` | building a whole page: dashboard, data explorer, settings, landing, pricing; shared page rules |
+| `references/frameworks.md` | React, Next.js, Vue, Svelte or Astro; migrating from Tailwind; theme without a flash in SSR |
 
-Live examples with copyable HTML for each: `https://cxkw-dev.github.io/dawn-and-dusk/components/<name>`.
-Page recipes (dashboard, data explorer, settings, landing): `references/patterns.md`.
+Live demos, every state: `https://cxkw-dev.github.io/dawn-and-dusk/components/<name>`. The reference files above already
+hold their markup, so you don't need web access.
 
 ## 4. Behaviour (dawn-and-dusk.js)
 
-Behaviour is opt-in through `data-dd-*` attributes, so plain HTML works without extra code. Examples: `data-dd-menu`,
-`data-dd-tabs`, `data-dd-dialog-open="#id"`, `data-dd-tooltip="…"`, `data-dd-dismiss`, `data-dd-copy`,
-`data-dd-nav-toggle`, `data-dd-command` (⌘K), and the `data-dd-data-table-*` hooks for sort, select, expand and filter.
-`references/components.md` lists every attribute per component. For imperative use there is a small global API:
-`dd.toast({ title, description, intent, action })`, `dd.dialog`, `dd.tabs`, `dd.popover`, `dd.chip`, `dd.dismiss`,
-`dd.guide`, `dd.jsonViewer(el, data)`. Components emit bubbling events such as `dd:change`, `dd:tabchange`,
-`dd:command`, `dd-select`, `dd-date` and `dd:dismiss`.
-In frameworks (React, Vue…), render the same markup and let the script's delegated listeners handle it. Don't
-re-implement these behaviours.
+Behaviour is opt-in through `data-dd-*` attributes on the documented markup. The script's listeners are delegated from
+`document`, so elements added later just work. Don't re-implement what it already does: menus (`data-dd-menu`), dialogs
+(`data-dd-dialog-open="#id"`), tabs (`data-dd-tabs`), tooltips (`data-dd-tooltip="…"`), dismiss (`data-dd-dismiss`), copy
+(`data-dd-copy`), side-nav fold (`data-dd-nav-toggle`), ⌘K palette (`data-dd-command`), form validation
+(`data-dd-validate`), counters (`data-dd-counter`) and the `data-dd-data-table` sort, select, expand and filter hooks.
+Each component file lists its hooks.
 
-## 5. Writing new UI
+Small global API: `dd.toast({ title, description, intent, action })`, `dd.dialog`, `dd.tabs`, `dd.popover`, `dd.chip`,
+`dd.dismiss`, `dd.guide`, `dd.jsonViewer(el, data)`. Components emit bubbling events such as `dd:change`,
+`dd:tabchange`, `dd:command`, `dd-select`, `dd-date` and `dd:dismiss`; listen for them instead of patching internals.
 
-- Compose existing components first. If you must add CSS, put it in the project's own stylesheet, prefix classes with the
-  project's name (not `dd-`), and build it from tokens following the rules above.
+## 5. Your own CSS (page glue)
+
+Compose existing components first. When you need layout between them (page width, grid columns, section rhythm, a
+two-column split), write a small stylesheet:
+- Prefix classes with the project's name (`tidepool-plans`, `app-grid`), never `dd-`.
+- Glue may set `display`, grid/flex, `gap`, `padding`, `margin`, `max-width` and container queries, all from tokens.
+- Don't restyle a component from glue (its colour, radius, font or states). If a component looks wrong, you probably
+  have its markup wrong; re-check its file.
 - Keep markup semantic: real `<button>`, `<a>`, `<table>`, `<dialog>`, labels tied to inputs.
-- Check both themes before you finish (toggle `data-theme`), and a narrow (≈375px) width.
-- Content voice: short lowercase headlines ("ship at dusk", "the lab"), plain verbs on buttons, no exclamation marks.
+
+## 6. Before you finish
+
+- Every `dd-` class you used exists. Check it against `assets/dawn-and-dusk.css` (e.g. `grep -c "\.dd-name" …`), which
+  includes the base classes listed in `tokens.md`.
+- Every icon name is in the list in `tokens.md`.
+- Your own CSS has no colour literals (hex, rgb(), hsl()).
+- One primary action per screenful.
+- It works in both themes (toggle `data-theme` on `<html>`), at about 375px wide, by keyboard, and with no console errors.

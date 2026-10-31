@@ -5,7 +5,9 @@
   --_line: color-mix(in oklab, var(--dd-text) 9%, transparent);
   --_px: calc(var(--dd-u) * 4);
   --_py: calc(var(--dd-u) * 2.5);
-  max-width: 100%; overflow-x: auto; border-radius: var(--dd-r-box); background: var(--dd-surface);
+  /* position: relative keeps absolutely positioned children (e.g. .dd-visually-hidden header text) inside the scroller,
+     so they can't widen the page on narrow screens */
+  position: relative; max-width: 100%; overflow-x: auto; border-radius: var(--dd-r-box); background: var(--dd-surface);
   font-size: var(--dd-fs-sm); color: var(--dd-text);
   scrollbar-width: thin; scrollbar-color: var(--dd-surface-3) transparent;
 }

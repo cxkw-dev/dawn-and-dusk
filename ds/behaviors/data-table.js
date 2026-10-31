@@ -18,7 +18,9 @@
      Filtering returns to page 1; sorting keeps the page.
    - Columns: inputs [data-dd-data-table-column="col"] show/hide the column whose <th data-col="col">.
    - Menus (.dd-data-table__menu, a <details>) close on Esc (focus returns to the summary) and on any click outside.
-   - Scroll: adds .is-scrolled-x / .is-scrolled-y to the root so the frozen column and sticky header cast an edge. */
+   - Scroll: adds .is-scrolled-x / .is-scrolled-y to the root so the frozen column and sticky header cast an edge.
+   - Rows added or removed from script (or a framework) are picked up on their own: count, filters, empty row, pages and
+     selection refresh on the next frame. dd.dataTable.refresh(root) does it by hand. */
 (() => {
   const ROOT = '[data-dd-data-table]';
   const SKIP = '.dd-data-table__group, .dd-data-table__detail, .dd-data-table__empty-row';
@@ -301,10 +303,29 @@
     root?.classList.toggle('is-scrolled-y', el.scrollTop > 0);
   }, true);
 
-  const init = () => document.querySelectorAll(ROOT).forEach((root) => {
-    root.querySelectorAll('[data-dd-data-table-column]').forEach((inp) => { if (!inp.checked) setColumn(root, inp.dataset.ddDataTableColumn, false); });
+  const update = (root) => {
     if (root.querySelector('[data-dd-data-table-search], [data-dd-data-table-filter], [data-dd-data-table-count], [data-dd-pagination]')) refresh(root);
     else syncSelection(root);
+  };
+  // Rows added / removed later: refresh once per frame (sorting moves rows too; refreshing after it is harmless).
+  const pending = new WeakSet();
+  // Only each tbody's own row list is watched: refresh() rewrites counts and labels elsewhere in the table, which must not
+  // trigger it again.
+  const watch = (root) => {
+    const mo = new MutationObserver(() => {
+      if (pending.has(root)) return;
+      pending.add(root);
+      requestAnimationFrame(() => { pending.delete(root); update(root); });
+    });
+    root.querySelectorAll('tbody').forEach((tb) => mo.observe(tb, { childList: true }));
+  };
+
+  const init = () => document.querySelectorAll(ROOT).forEach((root) => {
+    root.querySelectorAll('[data-dd-data-table-column]').forEach((inp) => { if (!inp.checked) setColumn(root, inp.dataset.ddDataTableColumn, false); });
+    update(root);
+    watch(root);
   });
+  window.dd = window.dd || {};
+  window.dd.dataTable = { refresh: (root) => { const r = typeof root === 'string' ? document.querySelector(root) : root; if (r) update(r.closest(ROOT) || r); } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
