@@ -1,73 +1,381 @@
 ---
+// The introduction: a cover split diagonally into dawn and dusk (drag the sun on the seam), then the system in a few
+// big moves: its numbers, its colour, its type, its components across both themes, and the two lines that install it.
+// Layout and art direction live in site/styles/home.css; the seam's behaviour is the script at the bottom.
 import Docs from '../layouts/Docs.astro';
-import { Code } from 'astro:components';
-import { ddTheme } from '../lib/syntax';
+import HomeSplit from '../components/HomeSplit.astro';
 import { i } from '../lib/icon';
+import { dawn, dusk, setNames } from '../lib/tokens';
+import '../styles/home.css';
 
 const components = Object.keys(import.meta.glob('./components/*.astro')).length;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const install = `<link rel="stylesheet" href="dawn-and-dusk.css">
-<script src="dawn-and-dusk.js" defer></script>
+const href = (p: string) => `${base}/${p}`;
 
-<html data-theme="dawn">  <!-- or "dusk", or omit to follow the OS -->`;
+// A face's own theme, spelled out: each face shows only the name that matches its data-theme, so a caption always
+// names the light it sits in, even when the seam runs through it.
+const when = `<span class="home-when"><span class="home-when__dawn">${i('sun')}dawn</span><span class="home-when__dusk">${i('moon')}dusk</span></span>`;
 
-const panel = `
-<div class="home-ui">
-  <div class="home-ui-top"><b class="home-ui-logo">dawn &amp; dusk</b><span class="dd-caption">Work · Writing · Lab</span></div>
-  <p class="dd-eyebrow">deploys · today</p>
-  <p class="dd-h3">ship at dusk</p>
-  <div class="dd-row"><button class="dd-btn dd-btn--primary dd-btn--sm">${i('plus')}<span>New deploy</span></button><button class="dd-btn dd-btn--sm">${i('filter')}<span>Filter</span></button></div>
-  <div class="home-ui-rows">
-    <div><span>auth-gateway</span><span class="home-ui-st" style="--s: var(--dd-ok)">healthy</span><span class="dd-mono dd-muted">84 ms</span></div>
-    <div><span>search-indexer</span><span class="home-ui-st" style="--s: var(--dd-warn)">degraded</span><span class="dd-mono dd-muted">611 ms</span></div>
-    <div><span>notify-fanout</span><span class="home-ui-st" style="--s: var(--dd-bad)">down</span><span class="dd-mono dd-muted">—</span></div>
-  </div>
-</div>`;
+const sets = Array.from({ length: 8 }, (_, k) => `set-${k + 1}`);
+const greige: [string, string][] = [['bg', 'page'], ['surface', 'surface'], ['surface-2', 'inset'], ['surface-3', 'pressed'], ['muted', 'muted'], ['text', 'ink']];
+
+// The ampersand loader (Sky): the golden-hour set drifting through the glyph. Markup from components/loader.
+const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="true"><span class="dd-loader__glyph" aria-hidden="true"><i></i></span></span>`;
 ---
-<Docs title="dawn & dusk" group="cxkw.dev design system · v0.1" lead="Warm greige neutrals, golden-hour colour and a heavy lowercase voice — in a light dawn and a dark dusk. Plain CSS, a little JavaScript, and an agent skill so AI builds it right.">
-  <div class="dd-row" style="margin-top: calc(var(--dd-space-6) * -1); margin-bottom: var(--dd-space-10)">
-    <a class="dd-btn dd-btn--primary dd-btn--lg" href={`${base}/foundations/colors`}><Fragment set:html={i('arrow-right')} /><span>Explore the system</span></a>
-    <a class="dd-btn dd-btn--lg" href={`${base}/skill`}><Fragment set:html={i('sparkle')} /><span>Agent skill</span></a>
+<Docs title="dawn & dusk" wide>
+  <div class="home">
+    <!-- ── cover ─────────────────────────────────────────────────────────────────────────────────────────── -->
+    <HomeSplit class="home-cover" intro>
+      <p class="home-cap home-cover__tl"><span>cxkw.dev design system</span><Fragment set:html={when} /></p>
+      <p class="home-cap home-cover__tr"><Fragment set:html={when} /><span>v0.1</span></p>
+      <div class="home-cover__intro">
+        <p class="home-cover__lead">Warm greige neutrals, golden-hour colour and a heavy lowercase voice, in a light dawn and a dark dusk. Plain CSS and a little JavaScript, with an agent skill so AI builds it right.</p>
+        <div class="home-cover__ctas">
+          <a class="dd-btn dd-btn--primary" href={href('foundations/colors')}><Fragment set:html={i('layers')} /><span>Start with foundations</span></a>
+          <a class="dd-btn dd-btn--secondary" href={href('components/button')}><Fragment set:html={i('box')} /><span>Browse components</span></a>
+          <a class="dd-btn dd-btn--ghost" href={href('skill')}><Fragment set:html={i('ai')} /><span>Agent skill</span></a>
+        </div>
+      </div>
+      <div class="home-sun" aria-hidden="true"></div>
+      <div class="home-cover__objects" inert aria-hidden="true">
+        <div class="dd-toast dd-toast--ok">
+          <Fragment set:html={i('success')} />
+          <div class="dd-toast__body"><p class="dd-toast__title">Deployed to edge-cache</p><p class="dd-toast__text">dawn-and-dusk v0.1 is live in 3 regions.</p></div>
+        </div>
+        <div class="dd-chip-group">
+          {sets.slice(0, 6).map((s) => <span class={`dd-chip dd-chip--${s}`}>{setNames[s]}</span>)}
+        </div>
+      </div>
+      <span class="dd-logo dd-logo--stack home-mast" aria-hidden="true">
+        <span class="dd-logo__line">dawn</span>
+        <span class="dd-logo__line"><span class="dd-logo__amp">&amp;</span>dusk</span>
+      </span>
+      <Fragment slot="after">
+        <div class="home-handle" role="slider" tabindex="0" aria-label="Line between the two themes" aria-orientation="horizontal"
+          aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="half and half">
+          <svg class="dd-icon" aria-hidden="true"><use href="#dd-i-chevron-left" /></svg><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-chevron-right" /></svg>
+        </div>
+      </Fragment>
+    </HomeSplit>
+
+    <!-- ── the numbers: three ways in ─────────────────────────────────────────────────────────────────────── -->
+    <section class="home-figures" aria-labelledby="home-figures-h">
+      <h2 id="home-figures-h" class="dd-visually-hidden">What’s inside</h2>
+      <a class="home-figure home-figure--a" href={href('components/button')}>
+        <span class="home-figure__n">{components}</span>
+        <span class="home-figure__word">components<Fragment set:html={i('arrow-right')} /></span>
+        <span class="home-figure__text">Buttons to data tables, each with tested markup that works in both themes.</span>
+      </a>
+      <a class="home-figure home-figure--b" href={href('foundations/colors')}>
+        <span class="home-figure__n">2</span>
+        <span class="home-figure__word">themes<Fragment set:html={i('arrow-right')} /></span>
+        <span class="home-figure__text">dawn and dusk share every token name, so a page switches all at once.</span>
+      </a>
+      <a class="home-figure home-figure--c" href={href('skill')}>
+        <span class="home-figure__n">1</span>
+        <span class="home-figure__word">skill<Fragment set:html={i('arrow-right')} /></span>
+        <span class="home-figure__text">Teaches Claude and other agents to build with the system instead of around it.</span>
+      </a>
+    </section>
+
+    <!-- ── colour ────────────────────────────────────────────────────────────────────────────────────────── -->
+    <section class="home-colour" aria-labelledby="home-colour-h">
+      <div class="home-head">
+        <h2 id="home-colour-h" class="dd-h2 home-head__h">golden hour</h2>
+        <p class="home-head__text">Eight warm colours for tags, avatars and charts, tuned for each light. Every swatch is cut on the seam: dawn above the line, dusk below it.</p>
+      </div>
+      <ol class="home-swatches" role="list">
+        {sets.map((s) => (
+          <li class="home-swatch">
+            <span class="home-swatch__chip" aria-hidden="true"><i data-theme="dawn" style={`background: var(--dd-${s})`}></i><i data-theme="dusk" style={`background: var(--dd-${s})`}></i></span>
+            <span class="home-swatch__name">{setNames[s]}</span>
+            <span class="home-swatch__meta"><span class="home-swatch__token">--dd-{s}</span><span><span class="dd-visually-hidden">dawn </span>{dawn[s]}</span><span><span class="dd-visually-hidden">dusk </span>{dusk[s]}</span></span>
+          </li>
+        ))}
+      </ol>
+      <ol class="home-swatches home-swatches--greige" role="list" aria-label="warm greige neutrals">
+        {greige.map(([t, name]) => (
+          <li class="home-swatch">
+            <span class="home-swatch__chip" aria-hidden="true"><i data-theme="dawn" style={`background: var(--dd-${t})`}></i><i data-theme="dusk" style={`background: var(--dd-${t})`}></i></span>
+            <span class="home-swatch__name">{name}</span>
+            <span class="home-swatch__meta"><span class="home-swatch__token">--dd-{t}</span></span>
+          </li>
+        ))}
+      </ol>
+      <p class="home-more"><a class="dd-btn dd-btn--link" href={href('foundations/colors')}><span>Colours</span><Fragment set:html={i('arrow-right')} /></a></p>
+    </section>
+
+    <!-- ── type ──────────────────────────────────────────────────────────────────────────────────────────── -->
+    <section class="home-type" aria-labelledby="home-type-h">
+      <h2 id="home-type-h" class="dd-h2 home-type__giant"><span>loud headlines,</span> <span>calm everything else</span></h2>
+      <div class="home-type__faces">
+        <figure class="home-face-spec">
+          <p class="home-face-spec__sample home-face-spec__sample--display" aria-hidden="true">ship at dusk</p>
+          <figcaption class="home-cap"><b>Outfit 800</b><span>Headings and the logo. Lowercase, tracked in to −0.05em.</span></figcaption>
+        </figure>
+        <figure class="home-face-spec">
+          <p class="home-face-spec__sample home-face-spec__sample--body">Plain verbs on buttons, sentence case in the interface, and nothing louder than it needs to be.</p>
+          <figcaption class="home-cap"><b>Figtree</b><span>Body and interface text, 17px on a major third.</span></figcaption>
+        </figure>
+        <figure class="home-face-spec">
+          <p class="home-face-spec__sample home-face-spec__sample--mono"><span>a3f9c21</span><span>19:48:06</span><span>84 ms</span></p>
+          <figcaption class="home-cap"><b>DM Mono</b><span>IDs, timestamps and the figures in tables.</span></figcaption>
+        </figure>
+      </div>
+      <p class="home-more"><a class="dd-btn dd-btn--link" href={href('foundations/typography')}><span>Typography</span><Fragment set:html={i('arrow-right')} /></a></p>
+    </section>
+
+    <!-- ── components, across the seam ───────────────────────────────────────────────────────────────────── -->
+    <section class="home-parts" aria-labelledby="home-parts-h">
+      <div class="home-head">
+        <h2 id="home-parts-h" class="dd-h2 home-head__h">every part, both lights</h2>
+        <p class="home-head__text">The same components, rendered once in each theme and cut on the same line. Scroll, and the line moves with you.</p>
+      </div>
+      <HomeSplit class="home-collage" art label="A lookbook of six real components, a stat, a toast, a progress bar, a segmented control with a switch, chips with avatars, and buttons, shown half in dawn and half in dusk.">
+        <figure class="home-look">
+          <div class="home-look__stage">
+            <div class="dd-stat">
+              <p class="dd-stat__label"><Fragment set:html={i('bolt')} />Requests / min</p>
+              <div class="dd-stat__main">
+                <p class="dd-stat__value">41.3K</p>
+                <svg class="dd-stat__spark" viewBox="0 0 100 32" aria-hidden="true"><path class="dd-stat__spark-area" d="M0 27.7 L9.1 25.4 L18.2 28 L27.3 22.3 L36.4 23.4 L45.5 17.9 L54.5 19.4 L63.6 15.6 L72.7 12.9 L81.8 14.3 L90.9 8.6 L100 5 L100 32 L0 32 Z"/><path class="dd-stat__spark-line" d="M0 27.7 L9.1 25.4 L18.2 28 L27.3 22.3 L36.4 23.4 L45.5 17.9 L54.5 19.4 L63.6 15.6 L72.7 12.9 L81.8 14.3 L90.9 8.6 L100 5"/><circle class="dd-stat__spark-dot" cx="100" cy="5" r="3"/></svg>
+              </div>
+              <div class="dd-stat__foot"><span class="dd-stat__delta dd-stat__delta--ok"><Fragment set:html={i('arrow-up')} /><span class="dd-visually-hidden">Up</span>12.4%</span><span class="dd-stat__compare">vs <b>36.7K</b> last week</span></div>
+            </div>
+          </div>
+          <figcaption class="home-cap"><b>Stat</b><span>.dd-stat</span></figcaption>
+        </figure>
+        <figure class="home-look">
+          <div class="home-look__stage">
+            <div class="dd-toast dd-toast--info">
+              <Fragment set:html={i('info')} />
+              <div class="dd-toast__body"><p class="dd-toast__title">Invite sent</p><p class="dd-toast__text">mai@cxkw.dev can join ai-focus until Friday.</p></div>
+            </div>
+          </div>
+          <figcaption class="home-cap"><b>Toast</b><span>.dd-toast</span></figcaption>
+        </figure>
+        <figure class="home-look">
+          <div class="home-look__stage">
+            <div class="dd-progress">
+              <div class="dd-progress__head"><span class="dd-progress__label">Uploading build artefacts</span><span class="dd-progress__value"><b>62%</b></span></div>
+              <div class="dd-progress__track" role="progressbar" aria-label="Uploading build artefacts" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" style="--dd-value:62"><div class="dd-progress__fill"></div></div>
+              <p class="dd-progress__hint">38 MB of 61 MB · about 12 s left</p>
+            </div>
+          </div>
+          <figcaption class="home-cap"><b>Progress</b><span>.dd-progress</span></figcaption>
+        </figure>
+        <figure class="home-look">
+          <div class="home-look__stage home-look__stage--stack">
+            <div class="dd-segmented" role="radiogroup" aria-label="Theme">
+              <button class="dd-segmented__item" role="radio" aria-checked="false" type="button"><Fragment set:html={i('sun')} />dawn</button>
+              <button class="dd-segmented__item" role="radio" aria-checked="true" type="button"><Fragment set:html={i('moon')} />dusk</button>
+              <button class="dd-segmented__item" role="radio" aria-checked="false" type="button">system</button>
+            </div>
+            <label class="dd-switch"><input class="dd-switch__input" type="checkbox" role="switch" checked> Auto-deploy</label>
+          </div>
+          <figcaption class="home-cap"><b>Controls</b><span>.dd-segmented .dd-switch</span></figcaption>
+        </figure>
+        <figure class="home-look">
+          <div class="home-look__stage home-look__stage--stack">
+            <div class="dd-chip-group">
+              <span class="dd-chip"><i class="dd-chip__dot" style="--dd-chip-dot: var(--dd-set-3)"></i>dawn-and-dusk</span>
+              <span class="dd-chip"><i class="dd-chip__dot" style="--dd-chip-dot: var(--dd-set-1)"></i>dockey-ui</span>
+              <span class="dd-chip"><i class="dd-chip__dot" style="--dd-chip-dot: var(--dd-set-6)"></i>insomnia</span>
+            </div>
+            <div class="dd-row" style="--dd-gap: var(--dd-space-2)">
+              <span class="dd-avatar dd-avatar--set-1">AN</span>
+              <span class="dd-avatar dd-avatar--set-2">MK</span>
+              <span class="dd-avatar dd-avatar--set-5">RL</span>
+              <span class="dd-avatar dd-avatar--set-6">EV</span>
+            </div>
+          </div>
+          <figcaption class="home-cap"><b>Chips, avatars</b><span>.dd-chip .dd-avatar</span></figcaption>
+        </figure>
+        <figure class="home-look">
+          <div class="home-look__stage">
+            <div class="dd-row" style="--dd-gap: var(--dd-space-2)">
+              <button class="dd-btn dd-btn--primary" type="button"><Fragment set:html={i('send')} /><span>Ship at dusk</span></button>
+              <button class="dd-btn dd-btn--secondary" type="button"><Fragment set:html={i('eye')} /><span>Preview</span></button>
+            </div>
+          </div>
+          <figcaption class="home-cap"><b>Buttons</b><span>.dd-btn</span></figcaption>
+        </figure>
+      </HomeSplit>
+      <p class="home-more"><a class="dd-btn dd-btn--link" href={href('components/button')}><span>All {components} components</span><Fragment set:html={i('arrow-right')} /></a></p>
+    </section>
+
+    <!-- ── install ───────────────────────────────────────────────────────────────────────────────────────── -->
+    <section class="home-install" aria-labelledby="home-install-h">
+      <h2 id="home-install-h" class="dd-h2 home-head__h">two lines to start</h2>
+      <div class="home-install__body">
+        <figure class="dd-code">
+          <figcaption class="dd-code__bar">
+            <span class="dd-code__title"><Fragment set:html={i('file')} />index.html</span>
+            <span class="dd-code__lang">html</span>
+            <button class="dd-code__copy" type="button" data-dd-copy-target="#home-install-code" aria-label="Copy code"><Fragment set:html={i('copy')} /><Fragment set:html={i('check')} /></button>
+          </figcaption>
+          <pre class="dd-code__pre" tabindex="0"><code id="home-install-code"><span class="dd-code__line">&lt;<span class="dd-code__k">link</span> <span class="dd-code__p">rel</span>=<span class="dd-code__s">"stylesheet"</span> <span class="dd-code__p">href</span>=<span class="dd-code__s">"dawn-and-dusk.css"</span>&gt;</span>
+<span class="dd-code__line">&lt;<span class="dd-code__k">script</span> <span class="dd-code__p">src</span>=<span class="dd-code__s">"dawn-and-dusk.js"</span> <span class="dd-code__p">defer</span>&gt;&lt;/<span class="dd-code__k">script</span>&gt;</span></code></pre>
+        </figure>
+        <p class="home-install__text">Then write HTML with <code>dd-</code> classes. Put <code>data-theme="dawn"</code> or <code>"dusk"</code> on <code>&lt;html&gt;</code> to choose a light, or leave it off to follow the system. The files are in <code>release/</code>.</p>
+        <a class="dd-btn dd-btn--secondary" href={href('skill')}><Fragment set:html={i('ai')} /><span>Give the skill to your agent</span></a>
+      </div>
+    </section>
+
+    <!-- ── colophon ──────────────────────────────────────────────────────────────────────────────────────── -->
+    <footer class="home-colophon">
+      <span class="home-colophon__amp"><Fragment set:html={amp} /></span>
+      <p class="home-cap"><span class="dd-logo dd-logo--sm">dawn &amp; dusk</span><span>Made for cxkw.dev. Version 0.1.</span></p>
+    </footer>
   </div>
-
-  <div class="home-themes">
-    <figure data-theme="dawn"><figcaption class="dd-eyebrow">☀ dawn</figcaption><Fragment set:html={panel} /></figure>
-    <figure data-theme="dusk"><figcaption class="dd-eyebrow">☾ dusk</figcaption><Fragment set:html={panel} /></figure>
-  </div>
-
-  <h2 id="start">Get started</h2>
-  <p>Add one stylesheet and one script, then write HTML with <code>dd-</code> classes. Every value is a token, so dawn and dusk switch together. Files live in <code>release/</code> in the repo.</p>
-  <Code code={install} lang="html" theme={ddTheme} wrap />
-
-  <h2 id="contents">What’s here</h2>
-  <div class="doc-cards" style="grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr))">
-    <a class="doc-card" href={`${base}/foundations/colors`}><b>Foundations</b><span>Colours, typography, spacing, depth, motion, icons and brand.</span></a>
-    <a class="doc-card" href={`${base}/components/button`}><b>{components} components</b><span>Actions, forms, data display, feedback, navigation, overlays and layout.</span></a>
-    <a class="doc-card" href={`${base}/skill`}><b>Agent skill</b><span>Drop-in skill so Claude (and other agents) build with dawn & dusk.</span></a>
-  </div>
-
-  <h2 id="principles">Principles</h2>
-  <ul>
-    <li><b>Quiet by default</b> — tone instead of borders, one accent at a time.</li>
-    <li><b>Dusk is first-class</b> — every component is designed in both themes.</li>
-    <li><b>Data-ready</b> — dense tables, mono figures, logs, JSON and status are part of the core.</li>
-    <li><b>Framework-free</b> — HTML and CSS any stack (or agent) can use.</li>
-  </ul>
 </Docs>
 
-<style>
-  .home-themes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--dd-space-3); margin-bottom: var(--dd-space-8); }
-  .home-themes figure { margin: 0; padding: var(--dd-space-5); border-radius: var(--dd-r-lg); background-color: var(--dd-bg);
-    background-image: var(--dd-grain); background-size: var(--dd-grain-size); color: var(--dd-text); display: flex; flex-direction: column; gap: var(--dd-space-3);
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dd-text) 9%, transparent); }
-  .home-themes :global(.home-ui) { display: flex; flex-direction: column; gap: var(--dd-space-3); }
-  .home-themes :global(.home-ui-top) { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: var(--dd-space-2); }
-  .home-themes :global(.home-ui-logo) { font-family: var(--dd-font-display); font-weight: 800; letter-spacing: -0.055em; font-size: 18px; }
-  .home-themes :global(.home-ui-rows) { display: flex; flex-direction: column; gap: 2px; border-radius: var(--dd-r-box); overflow: hidden; }
-  .home-themes :global(.home-ui-rows > div) { display: grid; grid-template-columns: 1fr auto 60px; gap: 12px; align-items: center; padding: 9px 12px;
-    background: var(--dd-surface); font-size: var(--dd-fs-sm); }
-  .home-themes :global(.home-ui-rows > div > :last-child) { text-align: right; font-size: var(--dd-fs-xs); }
-  .home-themes :global(.home-ui-st) { display: inline-flex; align-items: center; gap: 6px; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
-  .home-themes :global(.home-ui-st::before) { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--s); }
-  @media (max-width: 760px) { .home-themes { grid-template-columns: 1fr; } }
-</style>
+<script>
+  // The cover's seam. State is one number, v: where the line sits, from 0 (the overlay theme fills the cover) to 1 (the
+  // page's theme fills it). The rest position is wherever the CSS draws the line (translate 0). Rendering is three
+  // transforms: the window (and the clip-path it carries) slides by dx, the face inside it slides back by -dx, and the
+  // handle rides the line. Nothing is laid out or repainted while it moves.
+  const cover = document.querySelector<HTMLElement>('.home-cover');
+  const win = cover?.querySelector<HTMLElement>('.home-window');
+  const over = win?.querySelector<HTMLElement>('.home-face--over');
+  const handle = cover?.querySelector<HTMLElement>('.home-handle');
+  const splits = [...document.querySelectorAll<HTMLElement>('[data-home-split]')];
+  const root = document.documentElement;
+  const dark = matchMedia('(prefers-color-scheme: dark)');
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+  // Base face in the page's theme, overlay in the other — again whenever the page theme changes.
+  const pageTheme = () => (root.dataset.theme === 'dawn' || root.dataset.theme === 'dusk' ? root.dataset.theme : dark.matches ? 'dusk' : 'dawn');
+  const mirror = () => {
+    const t = pageTheme();
+    for (const s of splits) {
+      s.querySelector<HTMLElement>('.home-face--base')!.dataset.theme = t;
+      s.querySelector<HTMLElement>('.home-face--over')!.dataset.theme = t === 'dusk' ? 'dawn' : 'dusk';
+      s.dataset.base = t;
+    }
+    if (handle) label();
+  };
+  new MutationObserver(mirror).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  dark.addEventListener('change', mirror);
+
+  // Geometry, in px, relative to the cover: the rest line runs from (x1, y1) to (x2, y2) (from the CSS custom properties);
+  // its x at height y is lineX(y) + dx. dx runs from dxMin (line past the bottom-left: all overlay) to dxMax (all base).
+  let W = 0, H = 0, x1 = 0, y1 = 0, x2 = 0, y2 = 0, dxMin = 0, dxMax = 0;
+  const lineX = (y: number) => x2 + ((x1 - x2) * (y - y2)) / (y1 - y2);
+  const measure = () => {
+    const r = cover!.getBoundingClientRect(); const cs = getComputedStyle(cover!);
+    const n = (p: string) => parseFloat(cs.getPropertyValue(p)) || 0;
+    W = r.width; H = r.height;
+    x1 = n('--home-x1') * W; y1 = n('--home-y1') * H; x2 = n('--home-x2') * W; y2 = n('--home-y2') * H;
+    dxMin = -Math.max(lineX(0), lineX(H)); dxMax = W - Math.min(lineX(0), lineX(H));
+  };
+
+  let v = 0.5, vRest = 0.5, drift = 0, driftTo = 0, shown = Number.NaN;
+  const dxOf = (val: number) => dxMin + (dxMax - dxMin) * val;
+  const clamp = (n: number, a: number, b: number) => Math.min(b, Math.max(a, n));
+  const R = 24; // the handle's radius: it stays inside the cover
+
+  function render(dx: number) {
+    shown = dx;
+    win!.style.transform = `translate3d(${dx}px, 0, 0)`;
+    over!.style.transform = `translate3d(${-dx}px, 0, 0)`;
+    // The handle rides the line at its preferred height, sliding along the line when that point leaves the cover.
+    const yPref = (parseFloat(getComputedStyle(cover!).getPropertyValue('--home-handle-y')) || 0.5) * H;
+    let hx = lineX(yPref) + dx, hy = yPref;
+    if (hx < R || hx > W - R) {
+      const xc = clamp(hx, R, W - R);
+      hy = clamp(y2 + ((xc - dx - x2) * (y1 - y2)) / (x1 - x2), R, H - R);
+      hx = clamp(lineX(hy) + dx, R, W - R);
+    }
+    handle!.style.transform = `translate3d(${hx - R}px, ${hy - R}px, 0)`;
+  }
+  function label() {
+    const n = Math.round(v * 100);
+    const t = pageTheme(), o = t === 'dusk' ? 'dawn' : 'dusk';
+    handle!.setAttribute('aria-valuenow', String(n));
+    handle!.setAttribute('aria-valuetext', n >= 100 ? `all ${t}` : n <= 0 ? `all ${o}` : `${t} ${n}%, ${o} ${100 - n}%`);
+    cover!.dataset.seam = String(n);
+  }
+
+  // One loop while anything is moving; it stops itself when the seam settles.
+  let raf = 0, anim: { from: number; to: number; t0: number; ms: number } | null = null;
+  const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  function tick(now: number) {
+    raf = 0;
+    if (anim) {
+      const t = Math.min(1, (now - anim.t0) / anim.ms);
+      v = anim.from + (anim.to - anim.from) * ease(t);
+      if (t >= 1) { v = anim.to; anim = null; cover!.classList.remove('is-intro'); label(); }
+    }
+    drift += (driftTo - drift) * 0.08;
+    if (Math.abs(driftTo - drift) < 0.3) drift = driftTo;
+    const dx = clamp(dxOf(v) + drift, dxMin, dxMax);
+    if (dx !== shown) render(dx);
+    if (anim || drift !== driftTo) raf = requestAnimationFrame(tick);
+  }
+  const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+  const glide = (to: number, ms = 700) => {
+    if (still.matches) { anim = null; v = to; label(); render(clamp(dxOf(v) + drift, dxMin, dxMax)); return; }
+    anim = { from: v, to, t0: performance.now(), ms }; kick();
+  };
+  const set = (to: number) => { anim = null; v = clamp(to, 0, 1); label(); render(clamp(dxOf(v) + drift, dxMin, dxMax)); };
+
+  if (cover && win && over && handle) {
+    measure();
+    vRest = (0 - dxMin) / (dxMax - dxMin);
+    v = vRest;
+    new ResizeObserver(() => { const keep = v === vRest; measure(); vRest = -dxMin / (dxMax - dxMin); if (keep) v = vRest; render(clamp(dxOf(v) + drift, dxMin, dxMax)); }).observe(cover);
+    label();
+    if (cover.classList.contains('is-intro') && !still.matches) {
+      // The one orchestrated moment: the cover arrives in the page's light and the other one falls across it.
+      v = 1; render(dxOf(1));
+      document.fonts.ready.then(() => setTimeout(() => { anim = { from: 1, to: vRest, t0: performance.now(), ms: 1800 }; kick(); }, 250));
+    } else {
+      cover.classList.remove('is-intro');
+      render(dxOf(v));
+    }
+
+    // Drag the handle: the line passes through the pointer.
+    let dragging = false;
+    const follow = (e: PointerEvent) => {
+      const r = cover.getBoundingClientRect();
+      const px = e.clientX - r.left, py = clamp(e.clientY - r.top, 0, H);
+      const dx = px - lineX(py);
+      set((clamp(dx, dxMin, dxMax) - dxMin) / (dxMax - dxMin));
+    };
+    handle.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault(); handle.focus({ preventScroll: true });
+      dragging = true; drift = driftTo = 0; cover.classList.add('is-dragging');
+      handle.setPointerCapture(e.pointerId); follow(e);
+    });
+    handle.addEventListener('pointermove', (e) => { if (dragging) follow(e); });
+    const end = (e: PointerEvent) => { if (!dragging) return; dragging = false; cover.classList.remove('is-dragging'); try { handle.releasePointerCapture(e.pointerId); } catch { /* already released */ } };
+    handle.addEventListener('pointerup', end);
+    handle.addEventListener('pointercancel', end);
+
+    // Keyboard: arrows nudge, Page keys jump, Home / End fill the cover with one light.
+    handle.addEventListener('keydown', (e) => {
+      const step = { ArrowLeft: -0.05, ArrowDown: -0.05, ArrowRight: 0.05, ArrowUp: 0.05, PageDown: -0.2, PageUp: 0.2 }[e.key];
+      if (step !== undefined) { set(v + step); e.preventDefault(); }
+      else if (e.key === 'Home') { set(0); e.preventDefault(); }
+      else if (e.key === 'End') { set(1); e.preventDefault(); }
+    });
+
+    // The line leans gently toward a mouse moving over the cover.
+    cover.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' || dragging || anim || still.matches) return;
+      const r = cover.getBoundingClientRect();
+      driftTo = ((e.clientX - r.left) / W - 0.5) * W * 0.07; kick();
+    });
+    cover.addEventListener('pointerleave', () => { driftTo = 0; kick(); });
+
+    // Keyboard focus on a link the overlay covers brings the line back to rest, so the focus ring is never hidden.
+    cover.querySelector('.home-face--base')!.addEventListener('focusin', (e) => {
+      const el = e.target as HTMLElement; const r = el.getBoundingClientRect(); const c = cover.getBoundingClientRect();
+      const dx = Number.isNaN(shown) ? 0 : shown;
+      const covered = [[r.left, r.top], [r.right, r.top], [r.left, r.bottom], [r.right, r.bottom]].some(([x, y]) => x - c.left > lineX(y - c.top) + dx);
+      if (covered) { driftTo = drift = 0; glide(Math.max(vRest, v)); }
+    });
+  }
+</script>

@@ -1,0 +1,34 @@
+---
+// One composition, rendered twice: a base face in the page's own theme and, over it, the same markup in the other theme,
+// clipped along a diagonal seam. The seam is drawn in .home-window (a clip-path polygon from the --home-x1/y1/x2/y2
+// custom properties, see site/styles/home.css); moving it is only a translate on the window and the opposite translate
+// on the face inside it, so the face stays still while the cut slides across it (compositor-only).
+// The overlay is inert and hidden from assistive tech: pointer, focus and screen readers all reach the base face.
+// `art` makes the base face decorative too (the composition is a specimen, not content). `intro` starts the split with
+// the overlay pushed off (class is-intro) for the page's script to sweep in.
+// The inline script after the split puts the page's theme on the base face before first paint (dusk page: dusk base,
+// dawn overlay), so the base always melts into the page and the overlay is the other light.
+interface Props { class?: string; art?: boolean; label?: string; intro?: boolean }
+const { class: cls, art = false, label, intro = false } = Astro.props;
+const html = await Astro.slots.render('default');
+const after = Astro.slots.has('after') ? await Astro.slots.render('after') : '';
+---
+<div class:list={['home-split', cls]} data-home-split data-home-intro={intro ? '' : undefined}>
+  <div class="home-face home-face--base" data-theme="dawn" aria-hidden={art ? 'true' : undefined} inert={art} set:html={html} />
+  <div class="home-window" inert aria-hidden="true">
+    <div class="home-face home-face--over" data-theme="dusk" set:html={html} />
+  </div>
+  {art && label && <p class="dd-visually-hidden">{label}</p>}
+  <Fragment set:html={after} />
+</div>
+<script is:inline>
+  (function (split) {
+    var html = document.documentElement, t = html.dataset.theme;
+    if (t !== 'dawn' && t !== 'dusk') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dusk' : 'dawn';
+    split.querySelector('.home-face--base').dataset.theme = t;
+    split.querySelector('.home-face--over').dataset.theme = t === 'dusk' ? 'dawn' : 'dusk';
+    split.dataset.base = t;
+    // A cover with an entrance starts in the page's light (the script then sweeps the other one in); not under reduced motion.
+    if (split.hasAttribute('data-home-intro') && !matchMedia('(prefers-reduced-motion: reduce)').matches) split.classList.add('is-intro');
+  })(document.currentScript.previousElementSibling);
+</script>
