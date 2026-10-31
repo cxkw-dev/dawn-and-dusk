@@ -8,7 +8,7 @@ Every snippet is the exact markup of a working docs example. Icons are `<svg cla
 
 ### Confirm in place
 
-Try it: press Promote, then Tab into the panel, press Esc or click outside. Header with an eyebrow and a close button, a sentence of body, and actions. Built on the native popover attribute: the browser handles open, Esc and outside clicks, and the panel floats above everything.
+Header with an eyebrow and a close button, a sentence of body, and actions. Built on the native popover attribute: the browser handles opening, Esc and outside clicks, and the panel floats above everything. Try it: press Promote, Tab into the panel, then press Esc or click outside.
 
 ```html
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--dd-space-2) var(--dd-space-4); max-width: 520px; margin-inline: auto; padding: var(--dd-space-3) var(--dd-space-3) var(--dd-space-3) var(--dd-space-4); border-radius: var(--dd-r-box); background: var(--dd-surface)">
@@ -106,13 +106,14 @@ Try it: open each one. Opening a second closes the first; scroll the page while 
 | `.dd-popover__actions` | Buttons, right-aligned. A `.dd-popover__meta` span sits on the left. |
 | `.dd-popover--wide` | 400px instead of up to 340px. |
 | `.dd-popover--static` | In-flow rendering for docs and mockups (set `data-placement`). |
+| `--dd-popover-bg` | Panel fill. Defaults to `--dd-float-bg`. |
 
 ## Behaviour
 
 | class / attribute | what it does |
 |---|---|
 | `popovertarget="id"` | On the trigger button: opens and closes the popover (native). `popovertargetaction="hide"` on buttons inside closes it. |
-| `data-dd-placement` | On the popover: preferred side, `bottom` by default. |
+| `data-dd-placement` | On the popover: `bottom` (default) · `top` · `left` · `right`, optionally `-start` / `-end`. Flips when it doesn’t fit. |
 | `aria-expanded` | Kept in sync on the trigger by the JS. |
 | `Esc · outside click` | Close the popover (native light dismiss). Focus returns to the trigger when it was inside. |
 | `Tab` | From the trigger, Tab moves into the open popover. |

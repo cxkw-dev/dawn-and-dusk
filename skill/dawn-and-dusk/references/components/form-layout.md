@@ -209,7 +209,7 @@ Try it: Create key confirms with a toast.
 
 ## Settings page
 
-A full example. `.dd-form--divided` draws a hairline between sections; `--aside` sections put their title and description on the left once the form is 640px wide (a container query, so it works in any column). Everything here waits for Save, so the on / off choices are checkboxes: a switch applies the moment it flips, so it belongs outside a form with a Save button (a preferences list that saves as you go).
+A full example. `.dd-form--divided` draws a hairline between sections; `--aside` sections put their title and description on the left once the form is 640px wide (a container query, so it works in any column). Everything here waits for Save, so the on / off choices are checkboxes; a switch applies the moment it flips, so it belongs in a list that saves as you go.
 
 Try it: change a few things, then Discard puts them all back (the counter re-counts).
 
@@ -308,11 +308,13 @@ Try it: change a few things, then Discard puts them all back (the counter re-cou
 | `.dd-form__body` | Field column of an aside section. |
 | `.dd-form__grid · --3` | Responsive grid: up to two (or three) columns, folding to one. |
 | `.dd-form__span` | Grid item that takes the full row. |
-| `.dd-form__row` | Simple wrapping row of fields. |
+| `.dd-form__row` | Wrapping row of fields, each at least 12rem wide. |
 | `.dd-form__choices · --rows` | Even stack of checkboxes (or of switches, in a list that applies each change at once); `--rows` adds hairlines. |
 | `.dd-form__footer · --sticky · --plain` | Action row. `.dd-form__meta` holds status on the left. |
 
 ## Behaviour
+
+`ds/behaviors/form-layout.js` adds validation on submit, in the form’s own style.
 
 | class / attribute | what it does |
 |---|---|

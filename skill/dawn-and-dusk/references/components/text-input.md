@@ -273,6 +273,7 @@ On its own the box drops the tucked pad and matches button heights at every size
 |---|---|
 | `.dd-input` | The tonal box. Holds one control plus any affixes. Tucks automatically inside a `.dd-field`. |
 | `.dd-input__control` | The `<input>` itself: transparent, fills the box, carries the block padding. |
+| `.dd-input__control.dd-mono · .dd-num` | Mono value at a slightly smaller size (IDs, keys); tabular figures for numbers. |
 | `.dd-input__affix` | Icon or short text before/after the value. Not clickable unless it holds a button. |
 | `.dd-input__unit` | Mono, muted unit or suffix: `MiB`, `USD / mo`, `.cxkw.dev`. |
 | `.dd-input__prefix` | Quiets a leading unit, like a URL scheme. |
@@ -285,11 +286,13 @@ On its own the box drops the tucked pad and matches button heights at every size
 
 ## Behaviour
 
+`ds/behaviors/text-input.js` wires the inline buttons. Each is opt-in, by attribute.
+
 | class / attribute | what it does |
 |---|---|
 | `data-dd-reveal` | On a button in the box: toggles the control’s `type` between password and text, sets `aria-pressed` and swaps `.dd-input__show` / `.dd-input__hide`. |
 | `data-dd-clear` | On a button in the box: empties the control, fires `input` and `change`, returns focus. |
-| `data-dd-step="1" / "-1"` | On a button in the box: steps a number control and fires `input` and `change`. The button disables itself while the value sits on that end of `min` / `max`. |
+| `data-dd-step="1" / "-1"` | On a button in the box: steps a number control and fires `input` and `change`. The button disables itself while the value sits on that end of `min` / `max`, or while the control is disabled or read-only. |
 
 ## Guidelines
 

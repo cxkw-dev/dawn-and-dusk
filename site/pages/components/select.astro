@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 const chev = `<span class="dd-select__chevron">${i('chevron-down')}</span>`;
 
@@ -202,7 +203,7 @@ const toolbar = `
   <Example title="Native select" description="A real <select> in the tonal box, with the label tucked in and a chevron. Option groups and placeholders work as usual." code={native} />
 
   <h2 id="states">States</h2>
-  <p>Set <code>aria-invalid="true"</code> or <code>disabled</code> on the <code>&lt;select&gt;</code> (or the custom trigger); the box and the tucked label follow.</p>
+  <p>Set <code>aria-invalid="true"</code> or <code>disabled</code> on the <code>&lt;select&gt;</code>; the box and the tucked label follow. A custom trigger takes <code>disabled</code> the same way; for the error look give it both <code>aria-invalid="true"</code> and <code>.is-invalid</code>.</p>
   <Example code={nativeStates} />
 
   <h2 id="custom">Custom select menu</h2>
@@ -214,7 +215,7 @@ const toolbar = `
   <Example description="Rendered open to show the anatomy; it works like the others. Try it: End skips the disabled Singapore option; type “e” twice to step through the eu- regions." code={customOpen} minHeight="520px" />
 
   <h3 id="multiple">Multiple</h3>
-  <p>Add <code>aria-multiselectable="true"</code> to the listbox. Choosing toggles an option and keeps the list open; the trigger lists what is chosen (or its <code>data-dd-placeholder</code> when nothing is), and a hidden input gets the values joined by commas. Past a handful of options, or when people type to find them, use a multi-select combobox instead.</p>
+  <p>Add <code>aria-multiselectable="true"</code> to the listbox. Choosing toggles an option and keeps the list open; the trigger lists what is chosen (or its <code>data-dd-placeholder</code> when nothing is), and a hidden input gets the values joined by commas. Past a handful of options, or when people type to find them, use a multi-select <a href={`${docs}/components/combobox#multi`}>combobox</a> instead.</p>
   <Example description="Try it: open the list, toggle a few with Space or a click, then Esc." code={multiple} minHeight="320px" />
 
   <h2 id="toolbar">In a toolbar</h2>
@@ -226,7 +227,7 @@ const toolbar = `
     ['.dd-input.dd-select', 'Select box: native <code>&lt;select class="dd-input__control"&gt;</code> inside, or the custom trigger <code>&lt;button&gt;</code> itself.'],
     ['.dd-select__chevron', 'Trailing chevron (wrap the icon). Flips while the custom menu is open.'],
     ['.dd-select__placeholder', 'Quiet text in the trigger before anything is chosen.'],
-    ['.dd-select-menu', 'Wrapper for the custom select: anchors the listbox under the trigger.'],
+    ['.dd-select-menu', 'Wrapper for the custom select: anchors the listbox under the trigger. <code>.is-open</code> while the list shows.'],
     ['.dd-listbox', 'Floating option list (<code>role="listbox"</code>). <code>--up</code> opens above, <code>--end</code> aligns right, <code>--static</code> renders in flow.'],
     ['.dd-listbox__option', 'An option (<code>role="option"</code>). <code>aria-selected</code> (check), <code>aria-disabled</code> (quiet, never highlights), <code>.is-active</code> (the one highlighted row — keyboard and pointer share it).'],
     ['.dd-listbox__group · __sep', 'Small-caps group label (<code>role="presentation"</code>) and hairline divider.'],
@@ -237,14 +238,14 @@ const toolbar = `
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <p>Add <code>data-dd-select</code> to the <code>.dd-select-menu</code>. The script wires <code>aria-expanded</code>, <code>aria-controls</code> and <code>aria-activedescendant</code>, writes the chosen label into <code>[data-dd-select-value]</code>, sets an optional hidden input, and fires a bubbling <code>dd-select</code> event with <code>{'{ value, label, option, values, selected }'}</code> — <code>values</code> is every chosen value (one, unless the list is multiple) and <code>selected</code> says whether the option was turned on or off.</p>
+  <p>Add <code>data-dd-select</code> to the <code>.dd-select-menu</code>. The script wires <code>aria-expanded</code>, <code>aria-controls</code> and <code>aria-activedescendant</code>, writes the chosen label into <code>[data-dd-select-value]</code>, puts the option’s <code>data-value</code> (or its label) into an optional hidden input and fires <code>change</code> on it, and fires a bubbling <code>dd:select</code> event (and the legacy <code>dd-select</code> event) with <code>{'{ value, label, option, values, selected }'}</code> — <code>values</code> is every chosen value (one, unless the list is multiple) and <code>selected</code> says whether the option was turned on or off.</p>
   <ClassTable head={['Key', 'What it does']} rows={[
     ['Enter · Space · ↓ · ↑', 'On the trigger: open the list on the selected option (↑ opens on the last).'],
     ['Home · End', 'On the trigger: open on the first or last option.'],
-    ['↑ ↓ · Home · End', 'Move through enabled options; disabled ones are skipped.'],
+    ['↑ ↓ · Home · End', 'Move through enabled options; disabled ones are skipped. Page Up / Page Down jump like Home / End.'],
     ['a–z', 'Type to jump to the option that starts with the letters; the same letter again moves to the next one. Typing on the closed trigger opens it there.'],
     ['Enter · Space', 'Choose the active option and close. In a multiple list: toggle it and stay open.'],
-    ['Esc · Tab', 'Close (Esc returns focus to the trigger). Clicking outside also closes.'],
+    ['Esc · Tab', 'Close (Esc returns focus to the trigger). Clicking outside, or focus leaving the menu, also closes it.'],
   ]} />
 
   <script is:inline>

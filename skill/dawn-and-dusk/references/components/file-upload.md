@@ -125,7 +125,7 @@ Still a working zone: click to browse or drag a file over it.
 
 | class / attribute | what it does |
 |---|---|
-| `.dd-dropzone` | A `<label>` around an `<input type="file">` (visually hidden, still focusable). |
+| `.dd-dropzone` | A `<label>` around an `<input type="file">` (visually hidden, still focusable). A `disabled` input fades the zone and ignores drops. |
 | `.dd-dropzone__icon · __title · __browse · __meta` | Icon disc, title with a dotted “browse” link, mono constraints line. |
 | `.dd-dropzone--compact · __text` | One-row zone; wrap the title and meta in `__text`. |
 | `.is-dragover · .is-invalid` | Drag-hover state (added by the script) and error state. |
@@ -138,12 +138,14 @@ Still a working zone: click to browse or drag a file over it.
 
 ## Behaviour
 
+`ds/behaviors/file-upload.js` adds the drag state, lists chosen files and checks them against the zone’s limits.
+
 | class / attribute | what it does |
 |---|---|
 | `data-dd-dropzone` | Adds `.is-dragover` while files hover; dropped files go to the inner input, which fires `change`. |
 | `data-dd-dropzone="#list"` | Also appends a `.dd-file` row per chosen file to that list. A `multiple` input adds to the list and its files are everything listed; a single one replaces its row. |
-| `accept · data-dd-max-size` | Files that don’t match the input’s `accept`, or are bigger than `data-dd-max-size` on the zone (`"20MB"`, `"500KB"`), are listed as errors with the reason and kept out of the input. Dropping skips the browser’s own `accept` filter, so this check matters. |
-| `data-dd-file-remove` | On a button in a row: removes the row, moves focus to the next remove button (or back to the dropzone when the list is empty), fires `dd-file-remove` on the list with `{ name }`. |
+| `accept · data-dd-max-size` | Files that don’t match the input’s `accept`, or are bigger than `data-dd-max-size` on the zone (`"20MB"`, `"500KB"` or bytes), are listed as errors with the reason and kept out of the input. Dropping skips the browser’s own `accept` filter, so this check matters. |
+| `data-dd-file-remove` | On a button in a row: removes the row and its file from the input, moves focus to a neighbouring remove button (or back to the dropzone when the list is empty), and fires a bubbling `dd-file-remove` event on the list with `{ name }`. |
 
 ## Guidelines
 

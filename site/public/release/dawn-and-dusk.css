@@ -275,10 +275,10 @@
     --dd-set-8: #d6c29c; /* sand */
     --dd-ring: color-mix(in oklab, var(--dd-accent) 45%, transparent);
     --dd-overlay: rgb(0 0 0 / 0.55);
-  --dd-float-bg: var(--dd-surface-3);
-  --dd-float-hover: #3e3a36;
-  --dd-btn-secondary: var(--dd-surface-3);
-  --dd-btn-secondary-hover: color-mix(in oklab, var(--dd-text) 19%, var(--dd-bg));
+    --dd-float-bg: var(--dd-surface-3);
+    --dd-float-hover: #3e3a36;
+    --dd-btn-secondary: var(--dd-surface-3);
+    --dd-btn-secondary-hover: color-mix(in oklab, var(--dd-text) 19%, var(--dd-bg));
     --dd-shadow-float: 0 18px 40px -14px rgb(0 0 0 / 0.65), 0 2px 6px rgb(0 0 0 / 0.3);
     color-scheme: dark;
   }
@@ -358,7 +358,7 @@
 
 /* ---------- scroll areas ---------- */
 /* .dd-scroll: a sleek, tonal scrollbar — no track, a thin rounded thumb tinted from the text colour (dark in dusk, ink in
-   dawn) that shows while the area is hovered, focused or scrolling and fades away otherwise. Standard properties for
+   dawn) that shows while the area is hovered or has focus and fades away otherwise. Standard properties for
    Chrome / Firefox, ::-webkit-scrollbar for Safari. */
 .dd-scroll {
   --_thumb: color-mix(in oklab, var(--dd-text) 20%, transparent);
@@ -373,7 +373,7 @@
 .dd-scroll:hover, .dd-scroll:focus-within { scrollbar-color: var(--_thumb) transparent; }
 .dd-scroll::-webkit-scrollbar { width: 8px; height: 8px; background: transparent; }
 .dd-scroll::-webkit-scrollbar-track, .dd-scroll::-webkit-scrollbar-corner { background: transparent; }
-.dd-scroll::-webkit-scrollbar-thumb { border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; background-color: transparent; }
+.dd-scroll::-webkit-scrollbar-thumb { border-radius: var(--dd-r-pill); border: 2px solid transparent; background-clip: padding-box; background-color: transparent; }
 .dd-scroll:hover::-webkit-scrollbar-thumb, .dd-scroll:focus-within::-webkit-scrollbar-thumb { background-color: var(--_thumb); }
 .dd-scroll::-webkit-scrollbar-thumb:hover { background-color: var(--_thumb-hover); }
 
@@ -700,8 +700,7 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
 /* Avatar — a person or project. Initials on a Color set wash (the same recipe as the Soft wash chips: 30% colour over
    the page, deep text in the same hue), or a photo. Sizes xs · sm · md (default) · lg · xl, round or square.
    Groups overlap with a ring in the page colour (set --dd-avatar-ring to the surface colour when they sit on one; the
-   initials wash mixes over it too) and end
-   in a "+3" overflow. A .dd-status-dot inside pins to the bottom-right corner. */
+   initials wash mixes over it too) and end in a "+3" overflow. A .dd-status-dot inside pins to the bottom-right corner. */
 .dd-avatar {
   --_c: var(--dd-avatar-color, var(--dd-tone-2));
   --_av: var(--dd-avatar-size, calc(var(--dd-u) * 7.2));
@@ -801,7 +800,8 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
 .dd-badge--bad { --_k: var(--dd-bad); --_solid: var(--dd-bad); --_on: var(--dd-bg); }
 .dd-badge--info { --_k: var(--dd-info); --_solid: var(--dd-info); --_on: var(--dd-bg); }
 :is(.dd-badge--accent, .dd-badge--ok, .dd-badge--warn, .dd-badge--bad, .dd-badge--info) {
-  --_c: color-mix(in oklab, var(--_k) 82%, var(--dd-text));
+  /* dawn pulls the hue further toward ink so small text clears 4.5:1 on its soft fill; dusk keeps the brighter hue */
+  --_c: light-dark(color-mix(in oklab, var(--_k) 50%, var(--dd-text)), color-mix(in oklab, var(--_k) 82%, var(--dd-text)));
   --_soft: color-mix(in oklab, var(--_k) 18%, transparent);
 }
 
@@ -1032,7 +1032,8 @@ a.dd-breadcrumbs__link[href]:active { background: var(--dd-wash-strong); }
 
 /* ===== components/button.css ===== */
 /* Button — "Solid · icon first". Primary is filled with --dd-primary (Golden hour apricot); secondary is a tonal
-   fill; ghost, danger and link cover the rest. Icons lead the label. Sizes: sm · md (default) · lg. */
+   fill; ink, ghost, danger and link cover the rest. Icons lead the label. Sizes: sm · md (default) · lg; plus
+   icon-only, block, disabled and loading (.is-loading + .dd-btn__spinner). */
 .dd-btn {
   --_py: 2.5; --_px: 4.5;
   appearance: none; position: relative; display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--dd-u) * 1.75);
@@ -1094,7 +1095,7 @@ a.dd-breadcrumbs__link[href]:active { background: var(--dd-wash-strong); }
    so a page full of callouts stays calm in dawn and never goes muddy in dusk. Prose inside keeps its rhythm. */
 .dd-callout {
   --_c: var(--dd-info);
-  display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1.5);
+  position: relative; display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1.5);
   margin: 0; padding: calc(var(--dd-u) * 3.5) calc(var(--dd-u) * 4.5) calc(var(--dd-u) * 4);
   border: 0; border-radius: var(--dd-r-box);
   background: var(--dd-surface); color: var(--dd-text);
@@ -1114,7 +1115,7 @@ a.dd-breadcrumbs__link[href]:active { background: var(--dd-wash-strong); }
 .dd-callout__title > .dd-icon { color: var(--_c); width: 1.2em; height: 1.2em; }
 
 /* Prose inside: everything after the title lines up with the title text, not the icon. */
-.dd-callout > :not(.dd-callout__title) { margin: 0 0 0 calc(1.2em + var(--dd-u) * 2); text-wrap: pretty; }
+.dd-callout > :not(.dd-callout__title, .dd-callout__dismiss) { margin: 0 0 0 calc(1.2em + var(--dd-u) * 2); text-wrap: pretty; }
 .dd-callout > :is(ul, ol) { padding-left: 1.1em; }
 .dd-callout :where(li + li) { margin-top: 2px; }
 .dd-callout :where(a:not([class])) { color: var(--dd-text); text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: .25em; }
@@ -1122,7 +1123,7 @@ a.dd-breadcrumbs__link[href]:active { background: var(--dd-wash-strong); }
 .dd-callout :where(a:not([class]):focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; border-radius: 2px; }
 .dd-callout :where(:not(pre) > code) {
   font-family: var(--dd-font-mono); font-size: .88em; padding: .08em .35em; border-radius: 4px;
-  background: color-mix(in oklab, var(--dd-text) 7%, transparent);
+  background: var(--dd-wash);
 }
 .dd-callout :where(pre) {
   overflow-x: auto; padding: calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 3); border-radius: var(--dd-r-ctl);
@@ -1133,6 +1134,21 @@ a.dd-breadcrumbs__link[href]:active { background: var(--dd-wash-strong); }
 .dd-callout--compact { flex-direction: row; align-items: flex-start; gap: calc(var(--dd-u) * 2.5); padding: calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 3.5); }
 .dd-callout--compact > .dd-icon { flex: none; width: 1.2em; height: 1.2em; margin-block: calc((1lh - 1.2em) / 2); color: var(--_c); }
 .dd-callout.dd-callout--compact > * { margin-left: 0; }
+
+/* Optional dismiss button: reserve space so long titles and compact prose never run beneath it. */
+.dd-callout:has(> .dd-callout__dismiss) { padding-right: calc(var(--dd-u) * 11); }
+.dd-callout > .dd-callout__dismiss {
+  appearance: none; position: absolute; top: calc(var(--dd-u) * 3); right: calc(var(--dd-u) * 3);
+  display: inline-grid; place-items: center; width: calc(var(--dd-u) * 5); height: calc(var(--dd-u) * 5);
+  margin: 0; padding: 0; border: 0; border-radius: var(--dd-r-ctl); background: none;
+  color: var(--dd-muted); font: inherit; cursor: pointer;
+  transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
+}
+.dd-callout > .dd-callout__dismiss:hover { color: var(--dd-text); background: var(--dd-wash); }
+.dd-callout > .dd-callout__dismiss:active { background: var(--dd-wash-strong); }
+.dd-callout > .dd-callout__dismiss:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
+.dd-callout__dismiss > .dd-icon { width: 1.05em; height: 1.05em; }
+.dd-callout--compact > .dd-callout__dismiss { top: calc(var(--dd-u) * 2); }
 
 
 /* ===== components/card.css ===== */
@@ -1276,6 +1292,7 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
   display: flex; flex-direction: column; gap: calc(var(--dd-u) * 4); min-width: 0;
   margin: 0; padding: calc(var(--dd-u) * 5); border-radius: var(--dd-r-box);
   background: var(--_bg); color: var(--dd-text); font-size: var(--dd-fs-sm); line-height: var(--dd-lh-tight);
+  overflow-x: clip; /* closed tooltips beside the last marks never widen the page */
 }
 .dd-chart--bare { --_bg: var(--dd-bg); padding: 0; background: none; border-radius: 0; }
 
@@ -1520,7 +1537,6 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 /* The mark under the pointer, finger or keyboard is .is-active: it gets the same tooltip, band and dimming as hover.
    Esc adds .is-tip-off to hide the tooltip until the next move. */
 .dd-chart[data-dd-chart] { position: relative; }
-.dd-chart { overflow-x: clip; } /* closed tooltips beside the last marks never widen the page */
 :is(.dd-chart__slot, .dd-chart__hit).is-active > .dd-chart__tip { opacity: 1; visibility: visible; transform: none; }
 .dd-chart__slot.is-active { background: color-mix(in oklab, var(--dd-text) 5%, transparent); }
 .dd-chart__cols:has(> .is-active) .dd-chart__slot:not(.is-active) > :is(.dd-chart__col, .dd-chart__stackcol) { opacity: .45; }
@@ -2077,8 +2093,8 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 
 /* ===== components/command-palette.css ===== */
 /* Command palette — the ⌘K dialog: a large borderless search field, grouped results, kbd hints, one selected row
-   (aria-selected) and an empty state. Floats like a menu (--dd-float-bg)
-   with --dd-shadow-float over a --dd-overlay backdrop.
+   (aria-selected) and an empty state. Floats like a menu (--dd-float-bg) with --dd-shadow-float over a --dd-overlay
+   backdrop.
    Use <dialog class="dd-command"> with ds/behaviors/command-palette.js, or a <div class="dd-command"> to show it inline. */
 .dd-command {
   display: flex; flex-direction: column; box-sizing: border-box;
@@ -2192,11 +2208,14 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   --_grain: var(--dd-data-table-grain, var(--dd-grain));
   --_line: var(--dd-border);
   --_head-line: var(--dd-border-strong);
-  --_hover: color-mix(in oklab, var(--dd-text) 4.5%, var(--_bg));
-  --_sel: color-mix(in oklab, var(--dd-accent) 11%, var(--_bg));
-  --_sel-hover: color-mix(in oklab, var(--dd-accent) 15%, var(--_bg));
-  --_detail: color-mix(in oklab, var(--dd-text) 2.5%, var(--_bg));
-  --_on: var(--dd-accent-soft); /* pressed chip, bulk bar */
+  /* Dusk (the second light-dark() value): the film grain on the page compresses small tone steps, so hover / selected /
+     expanded take bigger steps (hover stays clearly quieter than selected), and the accent tones are mixed from the
+     page rather than --dd-accent-soft, which sits barely a step off the grained page. */
+  --_hover: light-dark(color-mix(in oklab, var(--dd-text) 4.5%, var(--_bg)), color-mix(in oklab, var(--dd-text) 7%, var(--_bg)));
+  --_sel: light-dark(color-mix(in oklab, var(--dd-accent) 11%, var(--_bg)), color-mix(in oklab, var(--dd-accent) 15%, var(--_bg)));
+  --_sel-hover: light-dark(color-mix(in oklab, var(--dd-accent) 15%, var(--_bg)), color-mix(in oklab, var(--dd-accent) 20%, var(--_bg)));
+  --_detail: light-dark(color-mix(in oklab, var(--dd-text) 2.5%, var(--_bg)), color-mix(in oklab, var(--dd-text) 4%, var(--_bg)));
+  --_on: light-dark(var(--dd-accent-soft), color-mix(in oklab, var(--dd-accent) 16%, var(--dd-bg))); /* pressed chip, bulk bar */
   --_shade: color-mix(in oklab, var(--dd-text) 14%, transparent);
   --_py: calc(var(--dd-u) * 1.7);
   --_px: calc(var(--dd-u) * 2.5);
@@ -2207,25 +2226,6 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 }
 .dd-data-table:has(.dd-data-table__rownum) { --_rn-w: 44px; }
 .dd-data-table:has(.dd-data-table__select) { --_sel-w: 36px; }
-/* Dusk: the film grain on the page compresses small tone steps, so hover / selected / expanded take bigger steps
-   (hover stays clearly quieter than selected), and the accent tones are mixed from the page rather than
-   --dd-accent-soft, which sits barely a step off the grained page. */
-[data-theme="dusk"] .dd-data-table {
-  --_hover: color-mix(in oklab, var(--dd-text) 7%, var(--_bg));
-  --_sel: color-mix(in oklab, var(--dd-accent) 15%, var(--_bg));
-  --_sel-hover: color-mix(in oklab, var(--dd-accent) 20%, var(--_bg));
-  --_detail: color-mix(in oklab, var(--dd-text) 4%, var(--_bg));
-  --_on: color-mix(in oklab, var(--dd-accent) 16%, var(--dd-bg));
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .dd-data-table {
-    --_hover: color-mix(in oklab, var(--dd-text) 7%, var(--_bg));
-    --_sel: color-mix(in oklab, var(--dd-accent) 15%, var(--_bg));
-    --_sel-hover: color-mix(in oklab, var(--dd-accent) 20%, var(--_bg));
-    --_detail: color-mix(in oklab, var(--dd-text) 4%, var(--_bg));
-    --_on: color-mix(in oklab, var(--dd-accent) 16%, var(--dd-bg));
-  }
-}
 
 /* ---------- toolbar ---------- */
 .dd-data-table__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5); }
@@ -2989,7 +2989,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-empty-state__icon {
   display: grid; place-items: center; flex: none; width: calc(var(--dd-u) * 9.6); height: calc(var(--dd-u) * 9.6);
   margin-bottom: calc(var(--dd-u) * 2); border-radius: var(--dd-r-box);
-  background: color-mix(in oklab, var(--dd-text) 7%, transparent); color: var(--dd-muted);
+  background: var(--dd-wash); color: var(--dd-muted);
 }
 .dd-empty-state__icon > .dd-icon { width: 46%; height: 46%; }
 .dd-empty-state__title { margin: 0; font-size: var(--dd-fs-base); font-weight: 650; line-height: var(--dd-lh-tight); letter-spacing: -.005em; text-wrap: balance; }
@@ -3110,9 +3110,9 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-file__actions { display: flex; align-items: center; gap: 2px; }
 .dd-file__progress {
   appearance: none; display: block; width: 100%; height: 4px; margin: calc(var(--dd-u) * .5) 0 0; border: 0; border-radius: var(--dd-r-pill);
-  background: color-mix(in oklab, var(--dd-text) 12%, transparent); color: var(--dd-accent); overflow: hidden;
+  background: var(--dd-wash-strong); color: var(--dd-accent); overflow: hidden;
 }
-.dd-file__progress::-webkit-progress-bar { background: color-mix(in oklab, var(--dd-text) 12%, transparent); border-radius: var(--dd-r-pill); }
+.dd-file__progress::-webkit-progress-bar { background: var(--dd-wash-strong); border-radius: var(--dd-r-pill); }
 .dd-file__progress::-webkit-progress-value { background: currentColor; border-radius: var(--dd-r-pill); transition: width var(--dd-dur) var(--dd-ease); }
 .dd-file__progress::-moz-progress-bar { background: currentColor; border-radius: var(--dd-r-pill); }
 
@@ -3458,7 +3458,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-kbd {
   display: inline-grid; place-items: center; box-sizing: border-box;
   min-width: calc(var(--dd-u) * 4.4); height: calc(var(--dd-u) * 4.4); padding: 0 calc(var(--dd-u) * 1.2);
-  border-radius: 4px; background: color-mix(in oklab, var(--dd-text) 7%, transparent);
+  border-radius: 4px; background: var(--dd-wash);
   box-shadow: inset 0 -1.5px 0 color-mix(in oklab, var(--dd-text) 11%, transparent);
   color: var(--dd-muted); font-family: var(--dd-font-kbd); font-size: var(--dd-fs-xs); font-weight: 500; font-style: normal;
   line-height: 1; letter-spacing: 0; white-space: nowrap; vertical-align: 0.08em; text-transform: none;
@@ -3650,10 +3650,11 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-loader--sun { --_t: calc(var(--dd-dur) * 10); }
 .dd-loader--sun .dd-loader__glyph { background: var(--_ink); }
 .dd-loader__sky {
+  --_glyph-cut: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -755 740 800'><path d='M499 0L179 -353Q142 -395 125.5 -433Q109 -471 109 -516Q109 -570 137 -616.5Q165 -663 214 -692Q263 -721 328 -721Q379 -721 418.5 -706.5Q458 -692 486 -670Q514 -648 528 -625L415 -514Q396 -540 376 -551Q356 -562 332 -562Q306 -562 289 -547Q272 -532 272 -511Q272 -494 280 -479.5Q288 -465 302 -448L702 0ZM272 11Q200 11 146.5 -18Q93 -47 63.5 -96.5Q34 -146 34 -207Q34 -274 68.5 -326.5Q103 -379 175 -412L248 -296Q221 -286 208 -265.5Q195 -245 195 -220Q195 -200 204.5 -183Q214 -166 232 -156Q250 -146 275 -146Q300 -146 320.5 -157.5Q341 -169 357 -194L477 -76Q461 -56 430.5 -36Q400 -16 359.5 -2.5Q319 11 272 11Z' stroke='black' stroke-width='76' stroke-linejoin='round'/></svg>"); /* the glyph with a thick stroke: the gap around the & */
   overflow: hidden; clip-path: inset(0 0 5.625% 0);
-  -webkit-mask: linear-gradient(#000 0 0), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -755 740 800'><path d='M499 0L179 -353Q142 -395 125.5 -433Q109 -471 109 -516Q109 -570 137 -616.5Q165 -663 214 -692Q263 -721 328 -721Q379 -721 418.5 -706.5Q458 -692 486 -670Q514 -648 528 -625L415 -514Q396 -540 376 -551Q356 -562 332 -562Q306 -562 289 -547Q272 -532 272 -511Q272 -494 280 -479.5Q288 -465 302 -448L702 0ZM272 11Q200 11 146.5 -18Q93 -47 63.5 -96.5Q34 -146 34 -207Q34 -274 68.5 -326.5Q103 -379 175 -412L248 -296Q221 -286 208 -265.5Q195 -245 195 -220Q195 -200 204.5 -183Q214 -166 232 -156Q250 -146 275 -146Q300 -146 320.5 -157.5Q341 -169 357 -194L477 -76Q461 -56 430.5 -36Q400 -16 359.5 -2.5Q319 11 272 11Z' stroke='black' stroke-width='76' stroke-linejoin='round'/></svg>") center / 100% 100% no-repeat;
+  -webkit-mask: linear-gradient(#000 0 0), var(--_glyph-cut) center / 100% 100% no-repeat;
   -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -755 740 800'><path d='M499 0L179 -353Q142 -395 125.5 -433Q109 -471 109 -516Q109 -570 137 -616.5Q165 -663 214 -692Q263 -721 328 -721Q379 -721 418.5 -706.5Q458 -692 486 -670Q514 -648 528 -625L415 -514Q396 -540 376 -551Q356 -562 332 -562Q306 -562 289 -547Q272 -532 272 -511Q272 -494 280 -479.5Q288 -465 302 -448L702 0ZM272 11Q200 11 146.5 -18Q93 -47 63.5 -96.5Q34 -146 34 -207Q34 -274 68.5 -326.5Q103 -379 175 -412L248 -296Q221 -286 208 -265.5Q195 -245 195 -220Q195 -200 204.5 -183Q214 -166 232 -156Q250 -146 275 -146Q300 -146 320.5 -157.5Q341 -169 357 -194L477 -76Q461 -56 430.5 -36Q400 -16 359.5 -2.5Q319 11 272 11Z' stroke='black' stroke-width='76' stroke-linejoin='round'/></svg>") center / 100% 100% no-repeat;
+  mask: linear-gradient(#000 0 0), var(--_glyph-cut) center / 100% 100% no-repeat;
   mask-composite: exclude;
 }
 .dd-loader__sky > i {
@@ -3780,6 +3781,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
    level and toggle wrapping (behaviors/log-viewer.js). Columns line up across lines via subgrid. */
 .dd-log-viewer {
   --_line: color-mix(in oklab, var(--dd-text) 9%, transparent);
+  container: dd-log-viewer / inline-size;
   display: flex; flex-direction: column; min-width: 0; overflow: hidden;
   background: var(--dd-surface); color: var(--dd-text); border-radius: var(--dd-r-box);
 }
@@ -3816,11 +3818,9 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-log-viewer__toggle:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-log-viewer__levels .dd-log-viewer__toggle:focus-visible { outline-offset: -2px; } /* the level track scrolls, so it clips */
 .dd-log-viewer__toggle[aria-pressed='true'] { background-color: var(--dd-surface); color: var(--dd-text); }
-/* Dusk: --dd-surface is darker than the --dd-surface-2 track, so an "on" level read as a hole, not a raised key. */
-[data-theme="dusk"] .dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='true'] { background-color: color-mix(in oklab, var(--dd-text) 12%, var(--dd-surface)); }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='true'] { background-color: color-mix(in oklab, var(--dd-text) 12%, var(--dd-surface)); }
-}
+/* Dusk: --dd-surface is darker than the --dd-surface-2 track, so an "on" level would read as a hole, not a raised key;
+   there it lifts toward the text instead. */
+.dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='true'] { background-color: light-dark(var(--dd-surface), color-mix(in oklab, var(--dd-text) 12%, var(--dd-surface))); }
 .dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='false'] { text-decoration: line-through; text-decoration-color: color-mix(in oklab, currentColor 70%, transparent); }
 .dd-log-viewer__levels .dd-log-viewer__toggle::before {
   content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint));
@@ -3830,8 +3830,10 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-log-viewer__toggle:is(.dd-log-viewer__toggle--wrap, .dd-log-viewer__toggle--follow)[aria-pressed='true'] { background-color: var(--dd-surface-3); }
 /* Follow (stay on the newest line) is icon-only so the bar keeps to one line; name it with aria-label. */
 .dd-log-viewer__toggle--follow { width: 30px; padding: 0; justify-content: center; }
+/* A toggle may carry a visible label after its icon (e.g. Follow); it hides when the viewer is narrow. */
+.dd-log-viewer__toggle-label { white-space: nowrap; }
 .dd-log-viewer__n { font-family: var(--dd-font-mono); font-size: 10.5px; color: var(--dd-muted); }
-.dd-log-viewer__count { margin-left: auto; font-family: var(--dd-font-mono); font-size: 11px; color: var(--dd-muted); white-space: nowrap; }
+.dd-log-viewer__count { margin-left: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); white-space: nowrap; }
 .dd-log-viewer__live { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); font-weight: 600; color: var(--dd-text); white-space: nowrap; }
 .dd-log-viewer__live::before {
   content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--dd-ok);
@@ -3888,6 +3890,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 /* Narrow: drop the service column so the message keeps its room; the level filter fills its own row; wrapped
    messages drop under the timestamp and use the full width instead of a sliver of a column. */
 @container dd-log-viewer (max-width: 520px) {
+  .dd-log-viewer__toggle-label { display: none; } /* icon-only when narrow */
   .dd-log-viewer__src { display: none; }
   .dd-log-viewer__lines { grid-template-columns: max-content max-content max-content; }
   .dd-log-viewer__levels { flex: 1 1 100%; }
@@ -3900,7 +3903,6 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   .dd-log-viewer__n { display: none; }
   .dd-log-viewer__levels .dd-log-viewer__toggle { padding-inline: calc(var(--dd-u) * 1.5); }
 }
-.dd-log-viewer { container: dd-log-viewer / inline-size; }
 
 
 /* ===== components/logo.css ===== */
@@ -4283,14 +4285,13 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
   border-radius: 1px; background: color-mix(in oklab, var(--dd-text) 42%, transparent);
 }
 .dd-progress__scale {
-  position: relative; height: 1.2em; margin-top: calc(var(--dd-u) * -0.5);
+  position: relative; height: 1.2em; margin-top: calc(var(--dd-u) * -0.5); container-type: inline-size;
   font-family: var(--dd-font-mono); font-size: 10px; line-height: 1.2; font-variant-numeric: tabular-nums; color: var(--dd-muted);
 }
 .dd-progress__scale > span { position: absolute; left: calc(var(--at, 0) * 1%); transform: translateX(-50%); white-space: nowrap; }
 .dd-progress__scale > .is-start { left: 0; transform: none; }
 .dd-progress__scale > .is-end { left: auto; right: 0; transform: none; }
 /* Narrow tracks: drop the end label so it never collides with a threshold just before it. */
-.dd-progress__scale { container-type: inline-size; }
 @container (max-width: 360px) { .dd-progress__scale > .is-end { display: none; } }
 
 /* ---------- ring ---------- */
@@ -4390,7 +4391,7 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
 .dd-progress-quota__legend li::before {
   content: ''; width: 8px; height: 8px; border-radius: 2px; background: var(--dd-color, var(--dd-accent));
 }
-.dd-progress-quota__legend .is-free::before { background: color-mix(in oklab, var(--dd-text) 12%, transparent); }
+.dd-progress-quota__legend .is-free::before { background: var(--dd-wash-strong); }
 .dd-progress-quota__legend b { font-family: var(--dd-font-mono); font-weight: 400; color: var(--dd-text); font-variant-numeric: tabular-nums; }
 .dd-progress-quota__hint { display: flex; align-items: flex-start; gap: 6px; margin: 0; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
 .dd-progress-quota__hint .dd-icon { margin-top: 1px; }
@@ -4482,11 +4483,10 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
 /* Compact: one line per option, mark on the right — good for 2–3 short choices. */
 .dd-radio-card--row { flex-direction: row; align-items: center; gap: calc(var(--dd-u) * 3); padding-block: calc(var(--dd-u) * 3); }
 .dd-radio-card--row .dd-radio-card__icon { margin: 0; flex: none; }
-.dd-radio-card--row .dd-radio-card__mark { position: static; flex: none; margin-left: auto; }
+.dd-radio-card--row .dd-radio-card__mark { position: static; flex: none; }
 .dd-radio-card--row > .dd-radio__text { flex: 1; }
 .dd-radio-card--row .dd-radio-card__title { padding-right: 0; }
 .dd-radio-card--row .dd-radio-card__meta { flex: none; margin: 0; padding: 0; }
-.dd-radio-card--row .dd-radio-card__mark { margin-left: 0; }
 
 /* Hover halo, as on the switch: a soft wash ring so hover reads on a 20px circle in both themes, chosen or not. */
 :is(.dd-radio__input:hover, .dd-radio:hover > .dd-radio__input):not(:disabled, [aria-invalid='true']) { box-shadow: 0 0 0 4px var(--dd-wash); }
@@ -4596,10 +4596,9 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
   color: var(--dd-muted); pointer-events: none;
   transition: transform var(--dd-dur) var(--dd-ease);
 }
-.dd-select__chevron > .dd-icon { width: 16px; height: 16px; vertical-align: 0; }
+.dd-select__chevron > .dd-icon { width: 16px; height: 16px; vertical-align: 0; transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-select:is(:disabled, .is-disabled, :has(> select:disabled)) > .dd-select__chevron { color: color-mix(in oklab, var(--dd-muted) 55%, var(--dd-faint)); }
 .dd-select[aria-expanded='true'] > .dd-select__chevron > .dd-icon { transform: rotate(180deg); }
-.dd-select__chevron > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-select .dd-select__placeholder,
 .dd-select > select.dd-input__control:enabled:has(> option:checked:disabled) { color: var(--dd-quiet); }
 .dd-select > select.dd-input__control > :is(option, optgroup) { color: var(--dd-text); }
@@ -4609,7 +4608,6 @@ button.dd-select.dd-input--sm { font-size: var(--dd-fs-xs); }
 button.dd-select.dd-input--lg { font-size: var(--dd-fs-base); }
 button.dd-select > .dd-input__control { display: flex; align-items: center; gap: calc(var(--dd-u) * 2); text-overflow: ellipsis; }
 button.dd-select > .dd-input__control > .dd-icon { color: var(--dd-muted); }
-button.dd-select:focus-visible { outline: 0; }
 
 .dd-select-menu { position: relative; min-width: 0; }
 
@@ -4666,7 +4664,7 @@ button.dd-select:focus-visible { outline: 0; }
 .dd-listbox__empty[hidden] { display: none; }
 /* While the list is open, focus sits in the list; keep the trigger looking active. */
 button.dd-select[aria-expanded='true'] { background: var(--dd-surface); box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-accent) 26%, transparent); }
-button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-shadow-float); }
+button.dd-select:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-shadow-float); }
 
 
 /* ===== components/sheet.css ===== */
@@ -4832,13 +4830,11 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-side-nav:where(.is-collapsed) .dd-side-nav__panel {
   width: 0; visibility: hidden; transition: width var(--dd-dur) var(--dd-ease), visibility 0s linear var(--dd-dur);
 }
-.dd-side-nav__pane {
-  display: flex; flex-direction: column; gap: 1px; width: var(--dd-side-nav-panel); height: 100%; overflow-y: auto;
-  padding: calc(var(--dd-u) * 4) calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 3);
-}
 /* A pane scrolls with the system's sleek scrollbar (the .dd-scroll treatment in base.css): no track, a thin rounded thumb
    tinted from the text colour that shows only while the pane is hovered or focused. */
 .dd-side-nav__pane {
+  display: flex; flex-direction: column; gap: 1px; width: var(--dd-side-nav-panel); height: 100%; overflow-y: auto;
+  padding: calc(var(--dd-u) * 4) calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 3);
   --_thumb: color-mix(in oklab, var(--dd-text) 20%, transparent);
   --_thumb-hover: color-mix(in oklab, var(--dd-text) 34%, transparent);
   overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: transparent transparent; scrollbar-gutter: stable;
@@ -4847,7 +4843,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-side-nav__pane:is(:hover, :focus-within) { scrollbar-color: var(--_thumb) transparent; }
 .dd-side-nav__pane::-webkit-scrollbar { width: 8px; height: 8px; background: transparent; }
 .dd-side-nav__pane::-webkit-scrollbar-track, .dd-side-nav__pane::-webkit-scrollbar-corner { background: transparent; }
-.dd-side-nav__pane::-webkit-scrollbar-thumb { border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; background-color: transparent; }
+.dd-side-nav__pane::-webkit-scrollbar-thumb { border-radius: var(--dd-r-pill); border: 2px solid transparent; background-clip: padding-box; background-color: transparent; }
 .dd-side-nav__pane:is(:hover, :focus-within)::-webkit-scrollbar-thumb { background-color: var(--_thumb); }
 .dd-side-nav__pane::-webkit-scrollbar-thumb:hover { background-color: var(--_thumb-hover); }
 .dd-side-nav__pane[hidden] { display: none; }
@@ -4940,17 +4936,22 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-side-nav--offcanvas.is-mobile-open::before { opacity: 1; pointer-events: auto; }
 
 /* While an open off-canvas nav covers the viewport, the page behind it stays put: side-nav.js sets .dd-side-nav-lock on
-   <html>. (base.css reserves the scrollbar gutter on <html>, so nothing shifts sideways as the scrollbar goes.) */
+   <html>. (base.css pads <html> by the scrollbar's width, kept in --dd-scrollbar-w by behaviors/scrollbar.js, so nothing
+   shifts sideways as the scrollbar goes.) */
 :root.dd-side-nav-lock { overflow: hidden; }
 
 /* Restoring a persisted state on load: no animation. */
 .dd-side-nav.is-restoring, .dd-side-nav.is-restoring * { transition: none !important; }
 
+/* A saved desktop fold must not delay the mobile panel's visibility: focus moves into it on the next frame. */
+.dd-side-nav.is-mobile-open .dd-side-nav__panel { transition: none; }
+
 
 /* ===== components/skeleton.css ===== */
 /* Skeleton — the shape of content that is on its way: text lines, avatars, cards and table rows in a flat tone with a
-   slow shimmer. The tone is a 9% tint of the text colour, so it reads the same on the page and on a surface. Wrap a loading region in aria-busy="true" (and say "Loading…" for screen readers); the skeleton
-   pieces themselves are decoration. Under reduced motion the shimmer stops and the shapes stay still.
+   slow shimmer. The tone is a 9% tint of the text colour, so it reads the same on the page and on a surface. Wrap a
+   loading region in aria-busy="true" (and say "Loading…" for screen readers); the skeleton pieces themselves are
+   decoration. Under reduced motion the shimmer stops and the shapes stay still.
    The shimmer is tuned to the same perceived strength in both themes (dusk's shine is a stronger text tint, because a
    step on a dark tone reads smaller than the same step on a light one). */
 :root, [data-theme="dawn"] {
@@ -5205,7 +5206,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-stat__delta--ok { --_c: var(--dd-ok); }
 .dd-stat__delta--bad { --_c: var(--dd-bad); }
 .dd-stat__delta--warn { --_c: var(--dd-warn); }
-.dd-stat__delta--flat { --_c: var(--dd-muted); color: var(--dd-muted); background: color-mix(in oklab, var(--dd-text) 7%, transparent); }
+.dd-stat__delta--flat { --_c: var(--dd-muted); color: var(--dd-muted); background: var(--dd-wash); }
 .dd-stat__compare { font-size: var(--dd-fs-xs); color: var(--dd-muted); }
 .dd-stat__compare b { font-family: var(--dd-font-mono); font-weight: 500; color: var(--dd-text); font-variant-numeric: tabular-nums; }
 
@@ -5774,14 +5775,14 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-input:has(.dd-input__control:placeholder-shown) [data-dd-clear] { visibility: hidden; opacity: 0; }
 
 /* States */
-.dd-input.is-invalid, .dd-input:has(.dd-input__control[aria-invalid='true']) {
+.dd-input[aria-invalid='true'], .dd-input.is-invalid, .dd-input:has(.dd-input__control[aria-invalid='true']) {
   --_fill: color-mix(in oklab, var(--dd-bad) 14%, var(--dd-surface-2));
   --_fill-hover: color-mix(in oklab, var(--dd-bad) 23%, var(--dd-surface-2));
 }
-.dd-input.is-invalid:focus-within, .dd-input:has(.dd-input__control[aria-invalid='true']):focus-within {
+.dd-input[aria-invalid='true']:focus-within, .dd-input.is-invalid:focus-within, .dd-input:has(.dd-input__control[aria-invalid='true']):focus-within {
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-bad) 55%, transparent), var(--dd-shadow-float);
 }
-.dd-input.is-invalid .dd-input__status, .dd-input:has(.dd-input__control[aria-invalid='true']) .dd-input__status { color: var(--dd-bad); }
+.dd-input[aria-invalid='true'] .dd-input__status, .dd-input.is-invalid .dd-input__status, .dd-input:has(.dd-input__control[aria-invalid='true']) .dd-input__status { color: var(--dd-bad); }
 
 /* Read-only: no fill, a hairline frame. Hover and focus tint it (it can still be focused and copied), but it never
    lifts like an editable box. */
@@ -5931,7 +5932,7 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-timeline--audit .dd-timeline__marker { grid-area: m; font-size: 8.5px; }
 .dd-timeline--audit .dd-timeline__marker > .dd-icon { width: 13px; height: 13px; }
 .dd-timeline--audit .dd-timeline__body { grid-area: body; padding-top: 0; flex-wrap: nowrap; }
-.dd-timeline--audit .dd-timeline__text { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dd-text); }
+.dd-timeline--audit .dd-timeline__text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; color: var(--dd-text); } /* wraps; never cut off */
 .dd-timeline--audit .dd-timeline__text :where(b, strong) { font-weight: 600; }
 .dd-timeline.dd-timeline--audit .dd-timeline__day { font-size: var(--dd-fs-xs); }
 
@@ -6135,8 +6136,8 @@ button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-
 .dd-top-bar__switch > .dd-icon:last-child { width: 14px; height: 14px; color: var(--dd-faint); }
 .dd-top-bar__switch:hover { background: var(--dd-surface-2); }
 .dd-top-bar__switch:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
-.dd-top-bar__mark { display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: 5px;
-  background: var(--dd-set-3); color: var(--dd-on-primary); font-family: var(--dd-font-display); font-size: 11px; font-weight: 800; letter-spacing: -0.04em; }
+.dd-top-bar__mark { display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: var(--dd-r-ctl);
+  background: var(--dd-set-3); color: var(--dd-on-primary); font-family: var(--dd-font-display); font-size: var(--dd-fs-xs); font-weight: 800; letter-spacing: -0.04em; }
 
 /* Links (marketing-style header) */
 .dd-top-bar__links { display: flex; align-items: center; gap: calc(var(--dd-u) * 1); margin: 0; padding: 0; list-style: none; }

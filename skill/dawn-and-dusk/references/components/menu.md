@@ -119,7 +119,7 @@ A “more” button at the end of a row. `data-dd-placement="bottom-end"` aligns
 
 To know which row the menu is for, listen for `dd:menuopen` on the menu: `event.detail.trigger` is the button that opened it, so `trigger.closest(…)` finds the row. The menu also keeps that button as `menu.ddTrigger` after it closes, which is what an item’s click handler needs: the menu closes as the item runs.
 
-Try it: open a ⋯ menu — its header names the row — then click the next row’s ⋯; View logs and Roll back say which deployment they act on; “Promote to” has a submenu.
+Try it: open a ⋯ menu — its header names the row — then click the next row’s ⋯; “View logs” and “Roll back” say which deployment they act on; “Promote to” has a submenu.
 
 ```html
 <div class="dd-stack" style="--dd-gap: 5px; max-width: 520px">
@@ -212,19 +212,21 @@ Try it: right-click the file, or Tab to it and press Shift F10 or the Menu key.
 | `.dd-menu__check` | Check icon, visible when the item has `aria-checked="true"`. |
 | `.dd-menu__sub` | Chevron for an item that opens a submenu. |
 | `.dd-menu__item--danger` | Destructive item: red text, soft red highlight. |
-| `[aria-disabled="true"]` | Disabled item: dimmed to `--dd-quiet` (still readable), no highlight, skipped by the arrow keys. |
+| `[aria-disabled="true"]` | Disabled item (`disabled` works too): dimmed to `--dd-quiet` (still readable), no highlight, skipped by the arrow keys. |
+| `.dd-btn[data-dd-menu][aria-expanded="true"]` | A button trigger keeps its variant’s hover tone while its menu is open. |
+| `--dd-menu-bg / --dd-menu-hover` | Panel and highlight colours. Default to `--dd-float-bg` and `--dd-float-hover`; the command palette uses them too. |
 
 ## Behaviour
 
-`ds/behaviors/menu.js`. It fills in `aria-haspopup`, `aria-expanded` and `aria-controls` on triggers if you leave them out.
+`ds/behaviors/menu.js` floats the menu next to its trigger, moves focus into it and closes it on a click outside. It fills in `aria-haspopup`, `aria-expanded` and `aria-controls` on triggers if you leave them out.
 
 | class / attribute | what it does |
 |---|---|
 | `data-dd-menu="id"` | On a button: toggles the menu with that id. With an empty value, the next `.dd-menu` sibling. On an item inside a menu: opens a submenu to its side. |
-| `data-dd-placement` | `bottom-start` (default), `bottom-end`, `top-start`, `top-end`. Menus flip when they would leave the viewport. |
+| `data-dd-placement` | On the trigger or the menu: `bottom-start` (default), `bottom-end`, `top-start`, `top-end`. Menus flip when they would leave the viewport. |
 | `data-dd-contextmenu="id"` | On an area: opens the menu at the pointer on right-click, Shift F10 or the Menu key. |
 | `role="menuitemcheckbox"` | Click toggles `aria-checked`; the menu stays open. |
-| `role="menuitemradio"` | Click checks this item and unchecks the others in its `role="group"`; the menu stays open. |
+| `role="menuitemradio"` | Click checks this item and unchecks the others in its `role="group"` (or the whole menu); the menu stays open. |
 
 | class / attribute | what it does |
 |---|---|
@@ -238,8 +240,8 @@ Try it: right-click the file, or Tab to it and press Shift F10 or the Menu key.
 | class / attribute | what it does |
 |---|---|
 | `↓ / ↑ on the trigger` | Opens the menu with the first / last item focused. Enter and Space open at the first item. |
-| `↓ ↑ · Home End` | Move between items, wrapping at the ends; disabled items are skipped. |
-| `A letter` | Jumps to the next item that starts with it. |
+| `↓ ↑ · Home End` | Move between items, wrapping at the ends; disabled items are skipped. Page Up / Page Down act as Home / End. |
+| `A letter` | Jumps to the next item that starts with it; type several letters quickly to match more of a label. |
 | `Enter / Space` | Runs the focused item, or opens its submenu. |
 | `→ / ←` | Opens a submenu / closes it and returns to its parent item. |
 | `Esc` | Closes the innermost menu and returns focus to its trigger. |

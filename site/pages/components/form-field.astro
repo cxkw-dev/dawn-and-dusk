@@ -126,14 +126,17 @@ const any = `
     ['.dd-field__error', 'Error message in red, with an optional leading icon.'],
     ['.dd-field__foot', 'Row under the box: hint or error on the left, counter on the right.'],
     ['.dd-field__counter', 'Mono character counter. <code>.is-near</code> (90%), <code>.is-over</code>.'],
-    ['.is-invalid', 'Force the invalid look on the field (prefer <code>aria-invalid</code> on the control).'],
+    ['.is-invalid', 'Forces the invalid look on the field (prefer <code>aria-invalid</code> on the control).'],
+    ['[aria-invalid] · [disabled]', 'Set on the control; the label follows (red when invalid, faded when disabled).'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/form-field.js</code> keeps every counter in step with its control.</p>
   <ClassTable head={['Attribute', 'What it does']} rows={[
-    ['.dd-field__counter', 'Counts the field’s input or textarea on every keystroke, and again after a form reset: <code>n / maxlength</code>.'],
-    ['data-dd-counter="280"', 'Soft limit instead of <code>maxlength</code>: typing past it is allowed but marks the control invalid until it is back under.'],
+    ['.dd-field__counter', 'Counts the field’s input or textarea on every keystroke, and again after a form reset: <code>n / maxlength</code>, or just <code>n</code> without a limit. <code>.is-near</code> at 90%, <code>.is-over</code> past the limit.'],
+    ['data-dd-counter="280"', 'Soft limit instead of <code>maxlength</code>: typing past it is allowed but marks the control invalid until it is back under. It only clears an <code>aria-invalid</code> it set itself.'],
     ['data-dd-counter-error', 'On a <code>.dd-field__error</code> in the same field: shown only while the soft limit is passed.'],
+    ['data-dd-counter="manual"', 'Leaves the counter alone, for one a framework renders. <code>data-dd-manual</code> on an ancestor does the same.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

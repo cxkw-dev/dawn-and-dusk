@@ -54,7 +54,7 @@
 .dd-stat__delta--ok { --_c: var(--dd-ok); }
 .dd-stat__delta--bad { --_c: var(--dd-bad); }
 .dd-stat__delta--warn { --_c: var(--dd-warn); }
-.dd-stat__delta--flat { --_c: var(--dd-muted); color: var(--dd-muted); background: color-mix(in oklab, var(--dd-text) 7%, transparent); }
+.dd-stat__delta--flat { --_c: var(--dd-muted); color: var(--dd-muted); background: var(--dd-wash); }
 .dd-stat__compare { font-size: var(--dd-fs-xs); color: var(--dd-muted); }
 .dd-stat__compare b { font-family: var(--dd-font-mono); font-weight: 500; color: var(--dd-text); font-variant-numeric: tabular-nums; }
 

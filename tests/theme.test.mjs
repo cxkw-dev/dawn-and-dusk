@@ -90,3 +90,19 @@ test('rapid toggles stay consistent and leave no transition blocker behind', asy
   const after = await page.get(() => [...document.querySelectorAll('[data-dd-theme-toggle]')].map((b) => b.getAttribute('aria-pressed')));
   assert.ok(after.every((p) => p === 'false'), `all toggles released: ${after}`);
 });
+
+test('a toggle rendered after load gets aria-pressed when it takes focus, then flips like the others', async ({ open, assert }) => {
+  const page = await open('components/button', { theme: 'dusk' });
+  await page.send('Emulation.setFocusEmulationEnabled', { enabled: true }); // focus events, as in a focused window
+  await page.get(() => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.id = 'late-toggle'; b.setAttribute('data-dd-theme-toggle', ''); b.textContent = 'Theme';
+    document.querySelector('.doc-main').prepend(b);
+  });
+  await page.focus('#late-toggle');
+  assert.equal(await page.attr('#late-toggle', 'aria-pressed'), 'true', 'dusk is on');
+  await page.press('Enter');
+  assert.equal(await page.get(() => document.documentElement.dataset.theme), 'dawn');
+  assert.equal(await page.attr('#late-toggle', 'aria-pressed'), 'false');
+  await page.get(() => localStorage.removeItem('dd-theme'));
+});

@@ -63,7 +63,7 @@ Try it: focus starts on “Keep it”, so Enter is the safe answer.
 
 Wrap the parts in `<form method="dialog" class="dd-dialog__form">` and use the same fields as any form, with tucked labels. Native validation runs first; a valid submit closes the dialog with the button’s `value` as `returnValue`.
 
-Try it: press Add domain with the field empty — validation holds the dialog open. Type a domain and press Enter.
+Try it: press “Add domain” with the field empty — validation holds the dialog open. Type a domain and press Enter.
 
 ```html
 <button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#domain-dialog"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-globe"/></svg><span>Add domain</span></button>
@@ -98,7 +98,7 @@ Try it: press Add domain with the field empty — validation holds the dialog op
 
 ## Long content
 
-The dialog stops at 85% of the screen height. Only the body scrolls; a hairline appears at the edge where content is hidden.
+The dialog stops at 85% of the viewport height (760px at most). Only the body scrolls; a hairline appears at the edge where content is hidden.
 
 Try it: scroll inside — the head and the foot stay put, and the page behind doesn’t move.
 
@@ -184,7 +184,7 @@ Try it: Tab and Shift+Tab — focus cycles inside the dialog and never reaches t
 
 A menu item can open a dialog: put `data-dd-dialog-open` on the `.dd-menu__item`. The menu closes as the dialog opens, so when the dialog closes focus goes to the button that opened the menu, not the hidden item. If that button is gone — the dialog removed its row — focus lands on the nearest control where it was: the next row’s button, else the one before.
 
-Try it: open a member’s ⋯ menu and choose Remove from team…. Keep returns focus to that ⋯ button; Remove deletes the row and focus moves to the next member’s ⋯.
+Try it: open a member’s ⋯ menu and choose “Remove from team…”. “Keep” returns focus to that ⋯ button; “Remove” deletes the row and focus moves to the next member’s ⋯.
 
 ```html
 <div class="dd-stack" style="--dd-gap: 5px; max-width: 520px">
@@ -257,6 +257,7 @@ Try it: open a member’s ⋯ menu and choose Remove from team…. Keep returns 
 | `dialog.dd-dialog` | The modal card. Open it with `showModal()` (or `data-dd-dialog-open`). The scrim is its `::backdrop`. |
 | `.dd-dialog__head` | Top row: optional `__icon`, the `__titles` column and an optional `__close` button. |
 | `.dd-dialog__icon` | Square tonal icon tile. Turns red-tinted inside `--danger`. |
+| `.dd-dialog__titles` | Stacks the eyebrow and the title; takes the free width in the head. |
 | `.dd-dialog__eyebrow` | Mono caps context line above the title (project, release, section). |
 | `.dd-dialog__title` | The question or task, set in the heading lockup. Point `aria-labelledby` at it. |
 | `.dd-dialog__close` | Icon-only close button. Give it `aria-label="Close"` and `data-dd-dialog-close`. |
@@ -270,7 +271,7 @@ Try it: open a member’s ⋯ menu and choose Remove from team…. Keep returns 
 
 ## Behaviour
 
-Load `dawn-and-dusk.js`. The same script drives Drawer and Sheet.
+`ds/behaviors/dialog.js` (loaded by `dawn-and-dusk.js`) wires openers, close buttons, the scrim and the exit motion; the same script drives Drawer and Sheet. A click on the scrim closes the dialog only when the press starts and ends outside it, so drag-selecting text never closes it.
 
 | class / attribute | what it does |
 |---|---|

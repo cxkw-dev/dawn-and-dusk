@@ -87,3 +87,20 @@ test('clicking a tucked label focuses its control; typing at 375 updates the cou
   assert.equal((await counter(page, '#ff-1')).text, '10 / 40');
   assert.ok(await page.get(() => document.documentElement.scrollWidth <= innerWidth), 'no sideways scroll at 375');
 });
+
+test('a stray counter outside any .dd-field does not stop the others counting on load (script loaded late, too)', async ({ open, assert }) => {
+  const page = await open('components/form-field');
+  const texts = await page.get(async () => {
+    const frame = document.createElement('iframe');
+    document.body.append(frame);
+    await new Promise((r) => { frame.onload = r; frame.srcdoc = '<!doctype html><span class="dd-field__counter"></span>'
+      + '<div class="dd-field"><input class="dd-input__control" maxlength="10" value="hello"><span class="dd-field__counter"></span></div>'; });
+    const errors = [];
+    frame.contentWindow.addEventListener('error', (e) => errors.push(e.message));
+    const s = frame.contentDocument.createElement('script');
+    s.src = new URL('../release/dawn-and-dusk.js', location.href).href;
+    await new Promise((r, j) => { s.onload = r; s.onerror = j; frame.contentDocument.head.append(s); });
+    return { counter: frame.contentDocument.querySelector('.dd-field .dd-field__counter').textContent, errors };
+  });
+  assert.deepEqual(texts, { counter: '5 / 10', errors: [] });
+});

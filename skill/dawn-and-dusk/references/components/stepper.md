@@ -241,15 +241,15 @@ A failed stage tints its chip; stages after it never ran. A skipped stage fades 
 | class / attribute | what it does |
 |---|---|
 | `.dd-stepper` | An `<ol>` of steps. Horizontal by default. |
-| `.dd-stepper__step` | One `<li>`. No state class = upcoming / queued. |
-| `.is-done` | Finished step / passed stage. Put `i('success')` in the marker. |
+| `.dd-stepper__step` | One `<li>`. With no state class it is upcoming (queued, in a pipeline). |
+| `.is-done` | Finished step / passed stage. Put the `success` icon in the marker. |
 | `.is-current` | The step in progress; also set `aria-current="step"`. In a pipeline, the running stage (use `.dd-stepper__spinner` as the marker). |
-| `.is-error` | Failed step or stage. Put `i('error')` in the marker and say why in `__desc`. |
+| `.is-error` | Failed step or stage. Put the `error` icon in the marker and say why in `__desc`. |
 | `.is-skipped` | Pipeline only: a stage that was skipped. |
 | `.dd-stepper__marker` | Circle with the step number or a status icon. |
 | `.dd-stepper__text` | Wraps `__label` and an optional `__desc` (durations in a pipeline). |
 | `.dd-stepper--vertical` | Stacked steps with wrapping descriptions. |
-| `.dd-stepper--sm` | Smaller markers and type. |
+| `.dd-stepper--sm` | Smaller markers (22px) and type. |
 | `.dd-stepper--pipeline` | Deploy-style stage chips with status-coloured connectors. |
 | `.dd-stepper__spinner` | Running indicator for a pipeline marker (uses `dd-spin`). |
 

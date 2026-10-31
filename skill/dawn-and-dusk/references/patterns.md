@@ -24,9 +24,10 @@ Reading the skeletons:
    Save profile, Start a project). Everything else is `--secondary`, `--ghost` or `--link`. Row actions are ghost
    (`[i:more]` icon or a short word); never primary inside a table. Destructive = `.dd-btn--danger` behind a
    `.dd-dialog--danger`.
-2. **Tonal hierarchy, not lines.** Page `--dd-bg` → surfaces `--dd-surface` → inputs / hover `--dd-surface-2` →
-   selected `--dd-surface-3`. These components already are surfaces — **don't wrap them in a card**: `.dd-stat`,
-   `.dd-chart`, `.dd-card`, `.dd-json-viewer`, `.dd-description-list--card`, `.dd-table`, `.dd-form__section--panel`.
+2. **Tonal hierarchy, not lines.** Page `--dd-bg` → surfaces `--dd-surface` → inset `--dd-surface-2` → pressed
+   `--dd-surface-3`; hover and pressed fills you add yourself use `--dd-wash` / `--dd-wash-strong`. These components
+   already are surfaces — **don't wrap them in a card**: `.dd-stat`, `.dd-chart`, `.dd-card`, `.dd-json-viewer`,
+   `.dd-description-list--card`, `.dd-table`, `.dd-form__section--panel`.
    Dense tables and timelines sit on the page. No borders or card shadows; hairlines only in tables, form rows, dividers.
 3. **Mono numerals.** Figures, IDs, hashes, timestamps, queries and sizes are DM Mono with tabular digits:
    `td.is-num` (right-aligned), `td.is-mono`, `.dd-mono`, `.dd-description-list__mono`, `.dd-page-header__title--mono`
@@ -37,8 +38,8 @@ Reading the skeletons:
    threshold with `td.is-warn` / `td.is-bad`; never colour a row. Summarise once in the page header
    (`.dd-page-header__status--warn|--bad`).
 5. **Density by job.** Many rows → `.dd-data-table` (default) or `--compact` (explorers, split panels). ≤ 10 rows, no
-   sorting → `.dd-table` (`--compact` in narrow columns). Forms are roomy. Marketing sections breathe (60–100px, `calc(var(--dd-u) * 12…20)`);
-   cards and stat grids stay tight.
+   sorting → `.dd-table` (`--compact` in narrow columns). Forms are roomy. Marketing sections breathe (60–100px,
+   `calc(var(--dd-u) * 12…20)`); cards and stat grids stay tight.
 6. **Mobile is designed.** Under 768px of shell width `.dd-app-shell` sends the side nav off-canvas and shows the top
    bar's menu button. `.dd-stat-grid`, `.dd-card-grid`, `.dd-form__grid` reflow on their own; glue splits stack via
    container queries; wide tables scroll inside their own container with the first column frozen (`.is-frozen`);
@@ -63,7 +64,7 @@ Reading the skeletons:
     </div>
     <div class="dd-side-nav__panel" id="app-nav-panel">
       <div class="dd-side-nav__pane" data-dd-nav-pane="monitor">
-        <div class="dd-side-nav__head"><span class="dd-side-nav__title">production</span><span class="dd-side-nav__count">3 regions</span></div>
+        <div class="dd-side-nav__head"><span class="dd-side-nav__title">monitor</span><span class="dd-side-nav__count">5</span></div>
         <p class="dd-side-nav__section">Monitor</p>
         <a class="dd-side-nav__link" href="/" aria-current="page">[i:grid]<span class="dd-side-nav__label">Overview</span></a>
         <a class="dd-side-nav__link" href="/alerts">[i:bell]<span class="dd-side-nav__label">Alerts</span><span class="dd-side-nav__badge dd-side-nav__badge--solid">2</span></a>
@@ -352,8 +353,8 @@ html:has(.app-dash) { scrollbar-gutter: auto; }          /* the shell is the vie
 - Mobile: nav off-canvas, KPIs 2 × 2 without sparklines, chart and activity stack, the table scrolls in its own box
   with Service frozen.
 
-**For the shared app-shell section**: the pane head is the section's name (`monitor`), short enough never to truncate —
-the old `production` + `3 regions` head ellipsised to "producti…". Drop the rail's Inbox bell when the top bar has one.
+**In the app shell:** the pane head is the section's name (`monitor`), short enough never to truncate. When the top bar
+has a notifications bell, don't repeat it in the rail.
 
 ## 2. Data explorer (Compass-style)
 
@@ -871,7 +872,7 @@ is in `components/<name>.md`.
 </div>
 ```
 
-Rules:
+**Key rules**
 - **The recommended plan carries the only primary button** in the cards; the other plans use `.dd-btn--secondary`. Mark it
   with an accent badge ("Popular"), not a border or a coloured card.
 - Prices are `.dd-card__stat` (the display font, like stat values); units go in `<small>`. Changing the period swaps the

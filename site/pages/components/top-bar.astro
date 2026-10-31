@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 const userMenu = (open = false) => `
     <details class="dd-top-bar__user" data-dd-autoclose${open ? ' open' : ''}>
@@ -47,14 +48,14 @@ const site = (id: string) => `
   <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-menu="${id}" aria-haspopup="menu" aria-expanded="false" aria-controls="${id}" aria-label="Open menu">${i('menu')}</button>
   <div class="dd-menu" id="${id}" role="menu" aria-label="Sections" hidden>
     <a class="dd-menu__item" role="menuitem" href="#">Components</a>
-    <a class="dd-menu__item" role="menuitem" href="#">Patterns</a>
+    <a class="dd-menu__item" role="menuitem" href="#">Guides</a>
     <a class="dd-menu__item" role="menuitem" href="#">Changelog</a>
   </div>
   <a class="dd-top-bar__brand" href="#"><span class="dd-logo">dawn &amp; dusk</span></a>
   <nav aria-label="Sections">
     <ul class="dd-top-bar__links">
       <li><a class="dd-top-bar__link" href="#" aria-current="page">Components</a></li>
-      <li><a class="dd-top-bar__link" href="#">Patterns</a></li>
+      <li><a class="dd-top-bar__link" href="#">Guides</a></li>
       <li><a class="dd-top-bar__link" href="#">Changelog</a></li>
     </ul>
   </nav>
@@ -68,7 +69,7 @@ const site = (id: string) => `
 const siteWide = site('tb-site-menu');
 const siteNarrow = `<div class="tb-phone tb-phone--short">${site('tb-site-menu-narrow')}</div>`;
 ---
-<Docs title="Top bar" group="Navigation" lead="The app header. Logo and context on the left, then a search trigger, actions and the avatar menu. It sits on the page tone with a hairline underneath, and stays put while the page scrolls.">
+<Docs title="Top bar" group="Navigation" lead="The app header: logo and context on the left, then a search trigger, actions and the avatar menu. It sits on the page tone with a hairline underneath and stays put while the page scrolls.">
   <style is:global>
     /* Docs only: an open dropdown spills out of its example frame instead of being clipped by it. */
     .ex-frame:has(details[data-dd-autoclose][open]) { overflow: visible; }
@@ -101,21 +102,22 @@ const siteNarrow = `<div class="tb-phone tb-phone--short">${site('tb-site-menu-n
   <Example title="App header" description="Logo, workspace / project switcher, search, Docs, notifications, the primary action and the avatar menu. Try it: click the avatar, or focus it and press ↓; the other buttons say what they would do." code={app} stage="flush" />
 
   <h2 id="avatar-menu">Avatar menu</h2>
-  <p>A <code>&lt;details data-dd-autoclose&gt;</code>: it closes on a click outside, on Esc or after choosing an item, and ↓ ↑ move through the items. Who you are sits at the top in mono. Shown open; click anywhere else to close it, then the avatar to bring it back.</p>
+  <p>A <code>&lt;details data-dd-autoclose&gt;</code>: it closes on a click outside, on Esc or after choosing an item, and ↓ ↑ move through the items. Your name and email sit at the top, the email in mono. Shown open; click anywhere else to close it, then the avatar to bring it back.</p>
   <Example code={menuOpen} stage="flush" />
 
   <h2 id="narrow">Narrow</h2>
-  <p>Below 640px of its own width the menu button appears (wire it to the side nav with <code>data-dd-nav-open="#app-nav"</code>), the search collapses to an icon, and the context plus anything marked <code>dd-top-bar__wide</code> step out. In an <a href="../app-shell">app shell</a> the shell decides instead: the menu button and <code>__narrow</code> show while its side nav is off-canvas, and the context stays while the nav is in view. Only the shell’s own top bar follows it — top bars inside its content, like these examples, keep their own width rules.</p>
+  <p>Below 640px of its own width the menu button appears (wire it to the side nav with <code>data-dd-nav-open="#app-nav"</code>), the search collapses to an icon, and the context, the links and anything marked <code>dd-top-bar__wide</code> step out. In an <a href={`${docs}/components/app-shell`}>app shell</a> the shell decides instead: the menu button and <code>__narrow</code> show while its side nav is off-canvas, and the context stays while the nav is in view. Only the shell’s own top bar follows it — top bars inside its content, like these examples, keep their own width rules.</p>
   <Example code={narrow} stage="flush" />
 
   <h2 id="site">Site header</h2>
-  <p>For docs and marketing pages: links instead of a context switcher. On narrow screens the links fold into the menu button — here a <a href="../menu">menu</a> (<code>data-dd-menu</code>) with the same links; a sheet or the side nav work too.</p>
+  <p>For docs and marketing pages: links instead of a context switcher. On narrow screens the links fold into the menu button — here a <a href={`${docs}/components/menu`}>menu</a> (<code>data-dd-menu</code>) with the same links; a sheet or the side nav work too.</p>
   <Example code={siteWide} stage="flush" />
   <Example description="Narrow. Try it: open the menu button and pick a section with ↓ ↑ and Enter, or flip dusk from the moon." code={siteNarrow} stage="flush" />
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
     ['.dd-top-bar', 'The <code>&lt;header&gt;</code>. Sticky, 60px min height, translucent page tone with a hairline. A size container: it adapts to its own width.'],
+    ['__inner', 'Optional wrapper for the bar’s contents: a flex row with the bar’s gap that fills the bar.'],
     ['__nav-btn', 'Mobile menu button (a ghost icon <code>.dd-btn</code>). Hidden until the bar is narrow.'],
     ['__brand', 'Logo link. Holds a <code>.dd-logo</code> or a <code>.dd-logo-tile</code>.'],
     ['__context / __sep / __switch / __mark', 'Workspace and project after the logo: a hairline, switch buttons, a small coloured mark.'],
@@ -130,8 +132,10 @@ const siteNarrow = `<div class="tb-phone tb-phone--short">${site('tb-site-menu-n
 
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute / key', 'What it does']} rows={[
-    ['data-dd-nav-open="#id"', 'On <code>__nav-btn</code>: opens that side nav off-canvas (see <a href="side-nav">Side nav</a>).'],
+    ['data-dd-nav-open="#id"', `On <code>__nav-btn</code>: opens that side nav off-canvas (see <a href="${docs}/components/side-nav">Side nav</a>).`],
+    ['data-dd-menu="id"', `On <code>__nav-btn</code> in a site header: opens a <a href="${docs}/components/menu">menu</a> of the section links.`],
     ['data-dd-autoclose', 'On <code>__user</code>: outside click, Esc and choosing an item close the menu.'],
+    ['data-dd-theme-toggle', 'On a button or menu item: flips dawn / dusk and keeps <code>aria-pressed</code> in sync.'],
     ['↓ / ↑ · Esc', 'Open and move through the avatar menu; Esc closes it and returns focus to the avatar.'],
   ]} />
 

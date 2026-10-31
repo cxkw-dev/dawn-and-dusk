@@ -64,9 +64,9 @@ const services = `
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
     ['.dd-status-dot', 'The dot (its <code>::before</code>) plus any text inside as the label.'],
-    ['.dd-status-dot--{state}', '<code>online</code> (ok) · <code>idle</code> (warn) · <code>error</code> (bad) · <code>unknown</code> (hollow ring) · <code>offline</code> (greige) · <code>info</code> (maintenance).'],
-    ['.dd-status-dot--sm / --lg', '6px and 10px dots (default 8px). Or set <code>--dd-status-size</code>.'],
-    ['.dd-status-dot--live', 'Pulsing ring.'],
+    ['.dd-status-dot--{state}', 'State: <code>online</code> (ok) · <code>idle</code> (warn) · <code>error</code> (bad) · <code>unknown</code> (hollow ring) · <code>offline</code> (greige) · <code>info</code> (maintenance).'],
+    ['.dd-status-dot--sm / --lg', '6px and 10px dots (default 8px); <code>--sm</code> also takes smaller text. Or set <code>--dd-status-size</code>.'],
+    ['.dd-status-dot--live', 'A soft ring pulsing out from the dot; dropped under reduced motion.'],
     ['.dd-status-dot--muted', 'Muted label colour.'],
   ]} />
 

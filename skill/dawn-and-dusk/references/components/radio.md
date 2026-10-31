@@ -109,12 +109,12 @@ Try it: click a plan, or Tab to the group and use ← →; one Tab leaves it.
 | class / attribute | what it does |
 |---|---|
 | `.dd-radio` | The `<label>` wrapper: control + text. |
-| `.dd-radio__input` | The native `<input type="radio">`. |
+| `.dd-radio__input` | The native `<input type="radio">`. Uses `:checked`, `:disabled`, `[aria-invalid]`. |
 | `.dd-radio__text · __label · __desc` | Label stack with a muted description. |
 | `.dd-radio-group` | A `<fieldset>` of radios; `--inline` lays them in a row. |
 | `.dd-radio-group__legend · __hint` | Group legend and an optional hint under it. |
 | `.dd-radio-cards` | Radio box group: a responsive grid (min column `--_min`, default 11rem). |
-| `.dd-radio-card` | One selectable card. Holds a hidden `.dd-radio__input`. |
+| `.dd-radio-card` | One selectable card. Holds a visually hidden `.dd-radio__input`. |
 | `.dd-radio-card__icon · __title · __desc · __meta` | Card content: icon tile (accent when chosen), title, description, mono meta (wrap a price in `<b>`). |
 | `.dd-radio-card__mark` | Check badge, shown when chosen. |
 | `.dd-radio-card--row` | One-line card with the mark at the end. |

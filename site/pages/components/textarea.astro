@@ -3,6 +3,7 @@ import Docs from '../../layouts/Docs.astro';
 import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 const basic = `
 <div class="dd-field" style="max-width: 520px">
@@ -81,14 +82,16 @@ LOG_LEVEL=info</textarea>
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
     ['.dd-input.dd-textarea', 'The box. Carries the padding so scrolled text never slides under the tucked label.'],
-    ['.dd-input__control', 'The <code>&lt;textarea&gt;</code>. Height follows <code>rows</code> (2, 3, 4 or 6); resizes vertically.'],
+    ['.dd-input__control', 'The <code>&lt;textarea&gt;</code>. Height follows <code>rows</code> (2, 3, 4 or 6; 3 by default); resizes vertically, up to 24 lines.'],
+    ['.dd-input__control.dd-mono', 'Mono text with a taller line height, for config, keys and logs.'],
     ['[data-dd-autogrow]', 'Grows with its content (2–10 lines).'],
-    ['.dd-field__counter', 'Character counter in the field foot (see Form field).'],
+    ['.dd-field__counter', `Character counter in the field foot (see <a href="${docs}/components/form-field">Form field</a>).`],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/textarea.js</code> handles auto-grow; the counter comes from <code>form-field.js</code>.</p>
   <ClassTable head={['Attribute', 'What it does']} rows={[
-    ['textarea[data-dd-autogrow]', 'Resizes to fit on every input, up to the CSS max-height, then scrolls. Also refits after its form is reset.'],
+    ['textarea[data-dd-autogrow]', 'Resizes to fit on every input, up to the CSS max-height, then scrolls. Also refits after its form is reset, and once a hidden one (in a closed dialog or tab panel) shows.'],
     ['.dd-field__counter', 'Counts the field’s control: <code>n / maxlength</code>, or <code>n / data-dd-counter</code> as a soft limit. <code>.is-near</code> at 90%, <code>.is-over</code> past it. Re-counts when its form is reset.'],
     ['[data-dd-counter-error]', 'On a <code>.dd-field__error</code> in the field: shown only while the soft limit is passed.'],
   ]} />
@@ -104,6 +107,6 @@ LOG_LEVEL=info</textarea>
   <h2 id="guidelines">Guidelines</h2>
   <Guides
     do={['Size the box to the expected answer — two lines for a note, six for a description.', 'Show a counter only when there is a limit.', 'Use a soft limit when people need to see the whole draft before trimming.']}
-    dont={['Don’t use a textarea for one-line answers.', 'Don’t cut pasted text silently at maxlength; prefer a soft limit.', 'Don’t disable resizing unless the layout truly depends on it.']}
+    dont={['Don’t use a textarea for one-line answers.', 'Don’t cut pasted text silently at maxlength; prefer a soft limit.', 'Don’t turn off resizing unless the layout depends on it.']}
   />
 </Docs>

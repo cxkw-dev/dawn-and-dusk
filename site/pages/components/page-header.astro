@@ -100,7 +100,7 @@ const withMark = `
 </header>`;
 ---
 <Docs title="Page header" group="Layout" lead="The top of a view: where you are, what this is, what you can do here, and the views inside it. Title in the heading lockup, actions on the right, tabs underneath.">
-  <Example title="Full" description="Breadcrumbs, title and actions on one row, then the description, meta facts and tabs. Actions wrap under the title when space runs out. Try it: press an action, or a tab — here a tab just moves aria-current; in an app it is a link to that view." code={full} />
+  <Example title="Full" description="Breadcrumbs, title and actions on one row, then the description, meta facts and tabs. Actions wrap under the title when space runs out. Try it: press an action, or a tab — here a tab only moves aria-current; in an app it is a link to that view." code={full} />
 
   <h2 id="simple">Title and actions</h2>
   <p>Most index pages only need a title, one line of description and the main action.</p>
@@ -126,9 +126,9 @@ const withMark = `
     ['__mark', 'A tonal square with an icon, sized to the title.'],
     ['__desc', 'One or two lines of muted description.'],
     ['__meta', 'A list of small facts; <code>&lt;b&gt;</code> values are set in mono.'],
-    ['__status (--warn, --bad)', 'Status dot for the meta row.'],
+    ['__status (--warn, --bad)', 'Status dot for the meta row; green by default.'],
     ['__actions', 'Buttons. One primary at most.'],
-    ['--sm / --lg', 'Title at 2xl / 4xl. Default is 3xl.'],
+    ['--sm / --lg', 'Title at 2xl / 4xl (default 3xl); every size steps down one on screens under 600px. <code>--sm</code> also shrinks the description.'],
   ]} />
 
   <script>

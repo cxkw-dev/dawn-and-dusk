@@ -8,7 +8,7 @@ Every snippet is the exact markup of a working docs example. Icons are `<svg cla
 
 ### Intents
 
-Ok for done, info for news, warn for heads-up, bad for a failure the person should know about. The intent tints the icon and the timer line; the toast itself stays an ink slab in dawn and a raised dark surface in dusk. These sit in the page so you can see them side by side (× still works); raise the real ones under Try it.
+Ok for done, info for news, warn for a heads-up, bad for a failure the person should know about. The intent tints the icon and the timer line; the toast itself stays an ink slab in dawn and a raised dark surface in dusk. These sit in the page so you can compare them (× still works); raise live ones under Try it.
 
 ```html
 <div class="dd-stack" style="max-width: 400px; margin-inline: auto">
@@ -104,18 +104,19 @@ dd.toast.clear();                       // close them all
 | `.dd-toast` | One toast. Ink in dawn, `--dd-float-bg` + `--dd-shadow-float` in dusk. Inside a `.dd-toaster` it slides in and can be swiped away. |
 | `.dd-toast--{intent}` | Intent: `info` · `ok` · `warn` · `bad` · `neutral`. Tints the icon and the timer line. |
 | `> .dd-icon` | Leading icon. The JS picks `info`, `success`, `alert`, `danger` or `bell`. |
-| `.dd-toast__body / __title / __text` | Title (600) and a muted one-line description. |
+| `.dd-toast__body / __title / __text` | Title (600) and a muted description. |
 | `.dd-toast__actions / __action` | The single dotted text action. |
 | `.dd-toast__dismiss` | Close button. Needs an `aria-label`. |
 | `.dd-toast__progress` | Hairline timer along the bottom; animated by the JS, hidden under reduced motion. |
+| `--dd-toast-bg / -fg / -muted` | Theme-level colours: ink with page-coloured text in dawn, `--dd-float-bg` in dusk. |
 
 ## Behaviour
 
 | class / attribute | what it does |
 |---|---|
-| `dd.toast(options | title)` | Shows a toast; returns `{ el, dismiss() }`. Options: `title`, `description`, `intent`, `action: { label, onClick }`, `duration` (ms, default 5000, 0 = sticky), `icon`, `dismissible`. |
+| `dd.toast(options | title)` | Shows a toast; returns `{ el, dismiss() }`. Options: `title`, `description`, `intent` (default `info`), `action: { label, onClick }` (runs, then closes the toast), `duration` (ms, default 5000, 0 = sticky), `icon` (any sprite name), `dismissible` (`false` drops the ×). |
 | `dd.toast.clear()` | Dismisses every toast. |
-| `data-dd-toast="Title"` | Click to show a toast. Add `data-dd-toast-description`, `-intent`, `-action` and `-duration`. |
+| `data-dd-toast="Title"` | Click to show a toast. Add `data-dd-toast-description`, `-intent`, `-action` (a label; the button closes the toast) and `-duration`. |
 | `Pause` | Hovering or focusing the stack, or switching tabs, pauses every timer. |
 | `Stacking` | New toasts slide in at the bottom; the ones above glide up to make room. Past four, the oldest leaves. |
 | `Swipe` | Drag a toast sideways (touch, pen or mouse) past a third of its width, or flick it, to dismiss it. A short drag springs back. |

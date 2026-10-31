@@ -81,12 +81,12 @@ const block = `
 </div>`;
 ---
 <Docs title="Segmented control" group="Actions" lead="One choice from a small set, all visible at once. A tonal track; the chosen segment takes the deeper selected tone.">
-  <Example title="Default" description="Two to five short options that switch a view or a filter. Click a segment, or tab in and use the arrow keys." code={basic} />
+  <Example title="Default" description="Two to five short options that switch a view or a filter. Try it: click a segment, or Tab in and use the arrow keys." code={basic} />
   <h2 id="sizes">Sizes</h2>
   <p>Small for toolbars and dense headers, medium by default, large for settings and onboarding.</p>
   <Example code={sizes} />
   <h2 id="icons">Icons</h2>
-  <p>Icon-only segments (<code>__item--icon</code>) are square; give each an <code>aria-label</code>. Icons can also lead a label.</p>
+  <p>Icon-only segments (<code>.dd-segmented__item--icon</code>) are square; give each an <code>aria-label</code>. Icons can also lead a label.</p>
   <Example code={icons} />
   <h2 id="counts">Counts and disabled</h2>
   <p>A <code>.dd-segmented__count</code> sits beside the label in mono. Disabled segments fade and are skipped by the arrow keys. The control fires <code>dd:change</code> when the choice changes.</p>
@@ -95,27 +95,27 @@ const block = `
   <p>The same look from a <code>&lt;fieldset&gt;</code> of native radios: each <code>&lt;label class="dd-segmented__item"&gt;</code> wraps an <code>&lt;input type="radio"&gt;</code>. Arrow keys, form submission and focus come from the browser.</p>
   <Example code={radios} />
   <h2 id="block">Full width, on a surface</h2>
-  <p><code>--block</code> shares the width equally. On a <code>--dd-surface</code> container add <code>--inset</code> so the track steps one tone deeper.</p>
+  <p><code>.dd-segmented--block</code> shares the width equally. On a <code>.dd-surface</code> card, add <code>.dd-segmented--inset</code> so the track steps one tone deeper.</p>
   <Example code={block} />
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
-    ['.dd-segmented', 'The track. A <code>div[role="radiogroup"][data-dd-segmented]</code>, or a <code>&lt;fieldset&gt;</code> for the radio version. Scrolls sideways if it runs out of room.'],
+    ['.dd-segmented', 'The track. A <code>div[role="radiogroup"][data-dd-segmented]</code>, or a <code>&lt;fieldset&gt;</code> for the radio version. Scrolls sideways if it runs out of room, with soft fades at the hidden edges where the browser supports them.'],
     ['.dd-segmented__item', 'A segment: <code>&lt;button role="radio" aria-checked&gt;</code>, or <code>&lt;label&gt;</code> wrapping an <code>&lt;input type="radio"&gt;</code>.'],
     ['[aria-checked="true"] / :checked', 'The chosen segment: deeper tone, full-strength text. <code>.is-selected</code> also works for static markup.'],
     ['.dd-segmented__item--icon', 'Square, icon-only segment. Needs <code>aria-label</code>.'],
     ['.dd-segmented__count', 'A mono count or note beside the label.'],
     ['.dd-segmented--sm / --lg', 'Sizes. Medium has no modifier.'],
-    ['.dd-segmented--block', 'Fills its container; segments share the width.'],
-    ['.dd-segmented--inset', 'Track one tone deeper, for use on <code>--dd-surface</code>.'],
-    ['disabled / aria-disabled', 'Faded and skipped by the keyboard.'],
+    ['.dd-segmented--block', 'Fills its container; segments share the width but never squeeze below their labels (the track scrolls instead).'],
+    ['.dd-segmented--inset', 'Track one tone deeper, for use on a <code>.dd-surface</code> card.'],
+    [':disabled / [aria-disabled="true"]', 'Faded to 45% and skipped by the keyboard.'],
   ]} />
   <h2 id="behaviour">Behaviour</h2>
   <p><code>ds/behaviors/segmented-control.js</code> handles the button version. The radio version needs nothing.</p>
   <ClassTable head={['Attribute / key', 'What it does']} rows={[
-    ['data-dd-segmented', 'On the track: clicks choose a segment; only the chosen segment is in the tab order (roving tabindex).'],
+    ['data-dd-segmented', 'On the track: clicks choose a segment; only the chosen segment is in the tab order (roving tabindex). Fills in <code>role="radiogroup"</code> and <code>aria-checked="false"</code> if you leave them out.'],
     ['← → ↑ ↓', 'Move to and choose the previous / next segment, wrapping at the ends.'],
     ['Home / End', 'Choose the first / last segment.'],
-    ['dd:change', 'Bubbling event on the track; <code>detail.value</code> is the item’s <code>value</code> or <code>data-value</code> (else its label), <code>detail.item</code> the button.'],
+    ['dd:change', 'Bubbling event on the track, fired only when the choice changes. <code>detail.value</code> is the item’s <code>value</code> or <code>data-value</code> (else its label); <code>detail.item</code> is the button.'],
   ]} />
   <h2 id="guidelines">Guidelines</h2>
   <Guides

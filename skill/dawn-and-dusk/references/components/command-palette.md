@@ -56,7 +56,7 @@ Shown inline. The selected row takes the deeper tone and trades its shortcut for
 
 Typing narrows every group at once; groups with no matches disappear and the first match is selected. Rows also match their `data-keywords`, so “service” finds auth-gateway.
 
-Try it: add or delete letters in the search; rows also match their keywords, so “deploy” finds the recent deploys.
+Try it: add or delete letters in the search. “deploy” finds the recent deploys through their keywords.
 
 ```html
 <div class="dd-command" aria-label="Command palette">
@@ -124,7 +124,7 @@ Try it: type in the field and the query echoes in the message.
 
 ## As a dialog
 
-Make it a `<dialog class="dd-command">` and open it from any `[data-dd-command]` button, or press ⌘K (Ctrl K on Windows and Linux) anywhere on this page. It opens a third of the way down over a dimmed page.
+Make it a `<dialog class="dd-command">` and open it from any `[data-dd-command]` button, or press ⌘K (Ctrl K on Windows and Linux) anywhere on this page. It opens near the top of the screen over a dimmed page.
 
 Try it: click the button or press ⌘K / Ctrl K, type to filter, Enter runs the selected row. Esc clears the search, a second Esc closes.
 
@@ -181,24 +181,25 @@ Try it: click the button or press ⌘K / Ctrl K, type to filter, Enter runs the 
 | `.dd-command__list` | Scrolling results, `role="listbox"`. |
 | `.dd-command__group + __label` | A `role="group"` of results with a small-caps label. |
 | `.dd-command__item` | A result, `role="option"`. `aria-selected="true"` marks the selected row. Optional `data-keywords` and `data-value`. |
+| `[aria-disabled="true"]` | Disabled row: dimmed to `--dd-quiet`, skipped by ↑ ↓ and never runs. |
 | `.dd-command__icon` | Leading icon; turns full-strength on the selected row. |
-| `.dd-command__body + __meta` | The name, then muted detail that truncates first (hidden below 560px). |
+| `.dd-command__body + __meta` | The name, then muted detail that truncates first (hidden on screens 560px wide or less). |
 | `.dd-command__hint` | Trailing shortcut keys (`.dd-kbd`). |
 | `.dd-command__enter` | A ↵ key inside the hint, shown only on the selected row (and hiding the shortcut after it). |
 | `.dd-command__empty` | Empty state; any `.dd-command__query` inside it echoes the search. |
-| `.dd-command__foot + __brand` | Footer with keyboard hints on a deeper tone; the brand sits at the start. |
+| `.dd-command__foot + __brand` | Footer with keyboard hints on a deeper tone; the brand sits at the start. Hidden on screens 560px wide or less. |
 
 ## Behaviour
 
-`ds/behaviors/command-palette.js`. Filtering and keyboard selection also work on inline palettes.
+`ds/behaviors/command-palette.js` opens the dialog, filters and selects rows, and runs them. Everything but opening also works on inline palettes.
 
 | class / attribute | what it does |
 |---|---|
-| `data-dd-command="id"` | On a button: opens that `<dialog class="dd-command">` (empty value → the first on the page), clears the search and focuses it. |
-| `data-dd-hotkey` | On the dialog: the one ⌘K / Ctrl K toggles. Without it, the first palette on the page. |
+| `data-dd-command="id"` | On a button: opens that `<dialog class="dd-command">` (empty value → the `data-dd-hotkey` palette, else the first on the page), clears the search and focuses it. |
+| `data-dd-hotkey` | On the dialog: the one ⌘K / Ctrl K toggles. Without it, ⌘K toggles the first dialog palette on the page. |
 | `Typing` | Filters rows by their text and `data-keywords` (every word must match); selects the first match. |
-| `↑ ↓ · Ctrl P / Ctrl N` | Move the selected row, wrapping at the ends; the list scrolls to keep it in view. |
-| `Enter / click` | Runs the row: clicks it (links navigate), fires a bubbling `dd:command` event with `detail.item` and `detail.value`, and closes the dialog. |
+| `↑ ↓ · Ctrl P / Ctrl N` | Move the selected row, wrapping at the ends; the list scrolls to keep it in view. Hovering a row selects it too. |
+| `Enter / click` | Runs the row: clicks it (links navigate), fires a bubbling `dd:command` event with `detail.item` and `detail.value` (the row’s `data-value`, else its name), and closes the dialog. |
 | `Esc` | Clears the search; a second Esc closes. Clicking the backdrop closes too, and focus returns to the opener. |
 
 ## Guidelines

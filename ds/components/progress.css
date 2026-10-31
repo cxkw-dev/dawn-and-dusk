@@ -59,14 +59,13 @@
   border-radius: 1px; background: color-mix(in oklab, var(--dd-text) 42%, transparent);
 }
 .dd-progress__scale {
-  position: relative; height: 1.2em; margin-top: calc(var(--dd-u) * -0.5);
+  position: relative; height: 1.2em; margin-top: calc(var(--dd-u) * -0.5); container-type: inline-size;
   font-family: var(--dd-font-mono); font-size: 10px; line-height: 1.2; font-variant-numeric: tabular-nums; color: var(--dd-muted);
 }
 .dd-progress__scale > span { position: absolute; left: calc(var(--at, 0) * 1%); transform: translateX(-50%); white-space: nowrap; }
 .dd-progress__scale > .is-start { left: 0; transform: none; }
 .dd-progress__scale > .is-end { left: auto; right: 0; transform: none; }
 /* Narrow tracks: drop the end label so it never collides with a threshold just before it. */
-.dd-progress__scale { container-type: inline-size; }
 @container (max-width: 360px) { .dd-progress__scale > .is-end { display: none; } }
 
 /* ---------- ring ---------- */
@@ -166,7 +165,7 @@
 .dd-progress-quota__legend li::before {
   content: ''; width: 8px; height: 8px; border-radius: 2px; background: var(--dd-color, var(--dd-accent));
 }
-.dd-progress-quota__legend .is-free::before { background: color-mix(in oklab, var(--dd-text) 12%, transparent); }
+.dd-progress-quota__legend .is-free::before { background: var(--dd-wash-strong); }
 .dd-progress-quota__legend b { font-family: var(--dd-font-mono); font-weight: 400; color: var(--dd-text); font-variant-numeric: tabular-nums; }
 .dd-progress-quota__hint { display: flex; align-items: flex-start; gap: 6px; margin: 0; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
 .dd-progress-quota__hint .dd-icon { margin-top: 1px; }

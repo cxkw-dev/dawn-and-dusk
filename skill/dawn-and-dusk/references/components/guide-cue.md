@@ -103,13 +103,14 @@ Try it: start the tour, then Next and Back to walk the three steps; × or Esc en
 |---|---|
 | `.dd-guide-cue[popover="manual"]` | One step. 300px wide; `role="dialog"` labelled by its title. |
 | `.dd-guide-cue__arrow` | Arrow toward the target (placed by the JS). |
-| `.dd-guide-cue__step` | Mono step line. An empty `__count` inside gets “2 of 3”; empty `__pips` get one pip per step. |
+| `.dd-guide-cue__step` | Mono step line. The JS writes “2 of 3” into an empty `__count` and one pip per step into `__pips`; in static markup, mark pips `.is-done` / `.is-current`. |
 | `.dd-guide-cue__title / __text` | Title and one or two sentences. `<kbd>` works inside. |
 | `.dd-guide-cue__actions` | Quiet action on the left (Skip on the first step, Back after), Next on the right. Focus rings inside use the cue’s own ink so they show on the dark dawn card. |
 | `.dd-guide-cue__close` | Top-right × with `data-dd-guide-dismiss`: ends the tour from any step. Give it an `aria-label`. |
 | `.dd-guide-beacon` | Pulsing apricot dot on the target. `--static` for mockups. |
 | `[data-dd-guide-active]` | Set on the current target: a soft apricot ring. |
 | `.dd-guide-cue--static` | In-flow cue for docs and mockups (set `data-placement`). |
+| `--dd-cue-bg / --dd-cue-fg / --dd-cue-muted` | Colours: ink in dawn, surface-3 in dusk. |
 
 ## Behaviour
 
@@ -122,8 +123,8 @@ Try it: start the tour, then Next and Back to walk the three steps; × or Esc en
 | `data-dd-guide-next / -back / -dismiss` | Buttons inside a cue. Next on the last step finishes the tour. |
 | `Esc · ×` | End the tour from any step. Focus returns to the button that started it. |
 | `Back` | `data-dd-guide-back` returns to the previous step; focus moves into that cue. |
-| `dd:guide-step / dd:guide-end` | Events on `document`: `detail.index`; `detail.completed` — store it so the tour doesn’t come back. |
-| `dd.guide.start(name)` | Start a tour from code, e.g. on first sign-in. Also `next()`, `back()` and `end()`. |
+| `dd:guide-step / dd:guide-end` | Events on `document`. A step carries `detail.name`, `index` and `cue`; the end carries `name` and `completed` — store it so the tour doesn’t come back. |
+| `dd.guide.start(name, trigger)` | Start a tour from code, e.g. on first sign-in; focus returns to `trigger` (default: whatever had focus) at the end. Also `next()`, `back()` and `end()`. |
 
 ## Guidelines
 

@@ -103,7 +103,7 @@ const auditLog = `
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
-    ['.dd-timeline', 'Wrapper for day groups. A size container: below 440px the time drops under the sentence.'],
+    ['.dd-timeline', 'Wrapper for day groups, or for a single <code>__list</code>. A size container: below 440px the time drops under the sentence.'],
     ['.dd-timeline__group', 'One day: a <code>__day</code> heading and a <code>__list</code>.'],
     ['.dd-timeline__day / __date', 'Day heading (“Today”) with a mono date.'],
     ['.dd-timeline__list / __item', 'The <code>&lt;ol&gt;</code> of events. A faint connector runs between markers.'],
@@ -115,7 +115,7 @@ const auditLog = `
     ['.dd-timeline__meta', 'Mono source detail (IP, client) — mostly for audit rows.'],
     ['.dd-timeline__detail', 'Inset tonal block: commit message, error, quoted comment.'],
     ['.dd-timeline__diff / __add / __del', 'Diff stats line: <code>+128 −42</code>.'],
-    ['.dd-timeline--audit', 'Compact single-line rows with a time column and hairlines.'],
+    ['.dd-timeline--audit', 'Compact single-line rows with a time column and hairlines. Put the <code>__time</code> first in each item, before the marker.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

@@ -17,10 +17,9 @@
   color: var(--dd-muted); pointer-events: none;
   transition: transform var(--dd-dur) var(--dd-ease);
 }
-.dd-select__chevron > .dd-icon { width: 16px; height: 16px; vertical-align: 0; }
+.dd-select__chevron > .dd-icon { width: 16px; height: 16px; vertical-align: 0; transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-select:is(:disabled, .is-disabled, :has(> select:disabled)) > .dd-select__chevron { color: color-mix(in oklab, var(--dd-muted) 55%, var(--dd-faint)); }
 .dd-select[aria-expanded='true'] > .dd-select__chevron > .dd-icon { transform: rotate(180deg); }
-.dd-select__chevron > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
 .dd-select .dd-select__placeholder,
 .dd-select > select.dd-input__control:enabled:has(> option:checked:disabled) { color: var(--dd-quiet); }
 .dd-select > select.dd-input__control > :is(option, optgroup) { color: var(--dd-text); }
@@ -30,7 +29,6 @@ button.dd-select.dd-input--sm { font-size: var(--dd-fs-xs); }
 button.dd-select.dd-input--lg { font-size: var(--dd-fs-base); }
 button.dd-select > .dd-input__control { display: flex; align-items: center; gap: calc(var(--dd-u) * 2); text-overflow: ellipsis; }
 button.dd-select > .dd-input__control > .dd-icon { color: var(--dd-muted); }
-button.dd-select:focus-visible { outline: 0; }
 
 .dd-select-menu { position: relative; min-width: 0; }
 
@@ -87,4 +85,4 @@ button.dd-select:focus-visible { outline: 0; }
 .dd-listbox__empty[hidden] { display: none; }
 /* While the list is open, focus sits in the list; keep the trigger looking active. */
 button.dd-select[aria-expanded='true'] { background: var(--dd-surface); box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-accent) 26%, transparent); }
-button.dd-select:focus-visible { box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-shadow-float); }
+button.dd-select:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--dd-ring), var(--dd-shadow-float); }

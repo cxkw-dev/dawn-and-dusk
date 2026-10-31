@@ -8,10 +8,12 @@
        <h3 class="dd-guide-cue__title">…</h3> <p class="dd-guide-cue__text">…</p>
        <div class="dd-guide-cue__actions"><button data-dd-guide-dismiss>Skip tour</button><button data-dd-guide-next>Next</button></div>
      </div>
-   Steps run in document order. Next on the last step finishes the tour; Esc or [data-dd-guide-dismiss] ends it early.
+   Steps run in document order (a cue whose target isn't on the page is skipped). [data-dd-guide-back] goes back a step;
+   Next on the last step finishes the tour; Esc or [data-dd-guide-dismiss] ends it early.
    Each step scrolls its target into view, rings it, drops a beacon on it and points the arrow at it. Focus moves to
    the cue and returns to the start button at the end. Events on document: "dd:guide-step" (detail.index) and
-   "dd:guide-end" (detail.completed). From code: dd.guide.start(name, trigger) · dd.guide.next() · dd.guide.end(). */
+   "dd:guide-end" (detail.completed).
+   From code: dd.guide.start(name, trigger) · dd.guide.next() · dd.guide.back() · dd.guide.end(). */
 (() => {
   let tour = null;
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -47,7 +49,8 @@
     el.dataset.placement = align === 'center' ? side : `${side}-${align}`;
   };
 
-  const targetOf = (cue) => document.querySelector(cue.dataset.ddGuideTarget || '');
+  // A cue without a target (or whose target is gone) is skipped.
+  const targetOf = (cue) => (cue.dataset.ddGuideTarget ? document.querySelector(cue.dataset.ddGuideTarget) : null);
   const showCue = (cue) => { if (cue.showPopover) { if (!cue.matches(':popover-open')) cue.showPopover(); } else cue.hidden = false; };
   const hideCue = (cue) => { if (cue.hidePopover) { if (cue.matches(':popover-open')) cue.hidePopover(); } else cue.hidden = true; };
 
@@ -56,8 +59,8 @@
     const cue = tour.steps[tour.i];
     const target = cue && targetOf(cue);
     if (!target) return;
+    const r = target.getBoundingClientRect(); // read before place() writes, so a scroll costs one layout, not two
     place(cue, target, cue.dataset.ddPlacement || 'bottom');
-    const r = target.getBoundingClientRect();
     tour.beacon.style.left = `${Math.round(r.right - 2)}px`;
     tour.beacon.style.top = `${Math.round(r.top + 2)}px`;
   };

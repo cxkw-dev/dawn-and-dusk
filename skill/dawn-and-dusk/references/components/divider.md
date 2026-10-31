@@ -8,7 +8,7 @@ Every snippet is the exact markup of a working docs example. Icons are `<svg cla
 
 ### Horizontal
 
-A plain hr. It inherits its spacing from the divider, not the surrounding margins.
+A plain hr that brings its own spacing: 20px above and below.
 
 ```html
 <div style="max-width: 520px">
@@ -36,7 +36,7 @@ Splits groups inside a toolbar or a meta line. It stretches to the height of the
 
 ## With label
 
-A `role="separator"` element with a short mono label. Centered for choices (“or”), start-aligned to name the section that follows.
+A `role="separator"` element with a short mono label. Centred for choices (“or”), start-aligned to name the section that follows.
 
 ```html
 <div class="dd-stack" style="max-width: 420px">
@@ -58,6 +58,8 @@ A `role="separator"` element with a short mono label. Centered for choices (“o
 
 ## Spacing
 
+Three amounts of space around the line, and a firmer line for when the hairline is too quiet.
+
 ```html
 <div style="max-width: 520px">
   <p class="dd-text dd-small dd-muted">tight · 10px</p>
@@ -77,7 +79,7 @@ A `role="separator"` element with a short mono label. Centered for choices (“o
 |---|---|
 | `.dd-divider` | Horizontal hairline (`--dd-text` at 10%) with 20px space above and below. Use on `<hr>`. |
 | `.dd-divider--vertical` | Vertical line between inline items; add `aria-orientation="vertical"`. |
-| `.dd-divider--label` | Labelled divider on a `role="separator"` element. Centered by default. |
+| `.dd-divider--label` | Labelled divider on a `role="separator"` element. Centred by default. |
 | `.dd-divider--start` | With `--label`: text at the start, line after. |
 | `.dd-divider--tight / --loose` | 10px or 40px of space instead of 20px. |
 | `.dd-divider--strong` | Uses `--dd-border-strong` for a firmer line. |

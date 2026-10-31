@@ -103,20 +103,22 @@ Try it: pick a region — the check moves and the button shows your choice.
 | `dialog.dd-sheet` | The sheet, pinned to the bottom edge. Open with `showModal()` or `data-dd-dialog-open`. |
 | `.dd-sheet__handle` | The grab handle. Decorative: `aria-hidden="true"`. |
 | `.dd-sheet__head / __titles` | Title row with an optional `__close` button. |
-| `.dd-sheet__title` | In the heading lockup. Point `aria-labelledby` at it. |
+| `.dd-sheet__title` | The title, in the heading lockup. Point `aria-labelledby` at it. |
 | `.dd-sheet__desc` | A muted line or two under the title. |
 | `.dd-sheet__close` | Icon-only close button (`aria-label="Close"`, `data-dd-dialog-close`). |
 | `.dd-sheet__body` | Scrolls once the sheet reaches 85% of the screen height. |
-| `.dd-sheet__list` | A column of touch rows; bleeds slightly into the padding so hovers line up with the edges. |
+| `.dd-sheet__list` | A column of touch rows; bleeds slightly into the padding so hovers line up with the edges. Give it `role="menu"` for arrow-key movement. |
 | `.dd-sheet__item` | 50px touch row: icon, `__item-label`, optional `__item-meta` (mono shortcut, code, count). |
 | `.dd-sheet__item--danger` | Destructive row, in `--dd-bad`. Put it last, after a `__sep`. |
 | `[aria-checked="true"] / .is-selected` | The current choice: a stronger wash than hover and a visible `.dd-sheet__check` icon. |
 | `.dd-sheet__sep` | A hairline between groups of rows (`<hr>`). |
-| `.dd-sheet__foot` | Full-width actions sharing the row. `--stack` stacks them, primary on top. |
+| `.dd-sheet__foot` | Full-width actions sharing the row. |
+| `.dd-sheet__foot--stack` | Stacks the actions in reverse order, so the primary (last in the markup) sits on top. |
+| `.is-closing` | Set by the script while the slide-down plays. |
 
 ## Behaviour
 
-The sheet shares its script with Dialog: `data-dd-dialog-open="#id"` opens it, `data-dd-dialog-close="value"` on a row or button closes it and sets `returnValue`, a tap on the scrim or Esc slides it away, and focus returns to the opener.
+The sheet shares `ds/behaviors/dialog.js` with Dialog: `data-dd-dialog-open="#id"` opens it, `data-dd-dialog-close="value"` on a row or button closes it and sets `returnValue`, a tap on the scrim or Esc slides it away, and focus returns to the opener. Choosing a `role="menuitemradio"` row checks it and unchecks the others; a `menuitemcheckbox` row flips.
 
 | class / attribute | what it does |
 |---|---|
@@ -134,6 +136,6 @@ Do:
 
 Don't:
 - Don’t nest sheets or open a dialog from a sheet.
-- Don’t rely on the handle alone to close — keep a close button, Cancel, or a scrim tap.
+- Don’t rely on the handle to close the sheet; it’s decorative. Keep a close button, Cancel or the scrim.
 - Don’t use a sheet on wide screens for long forms; use a drawer.
 

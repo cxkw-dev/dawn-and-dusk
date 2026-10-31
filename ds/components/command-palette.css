@@ -1,6 +1,6 @@
 /* Command palette — the ⌘K dialog: a large borderless search field, grouped results, kbd hints, one selected row
-   (aria-selected) and an empty state. Floats like a menu (--dd-float-bg)
-   with --dd-shadow-float over a --dd-overlay backdrop.
+   (aria-selected) and an empty state. Floats like a menu (--dd-float-bg) with --dd-shadow-float over a --dd-overlay
+   backdrop.
    Use <dialog class="dd-command"> with ds/behaviors/command-palette.js, or a <div class="dd-command"> to show it inline. */
 .dd-command {
   display: flex; flex-direction: column; box-sizing: border-box;

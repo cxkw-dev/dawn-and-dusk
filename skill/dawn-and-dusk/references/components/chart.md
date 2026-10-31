@@ -485,16 +485,6 @@ Series take the Golden hour set in this fixed order — never cycled, never re-s
 
 Nothing changes in markup. The set tokens are lifted for dusk, so marks keep their contrast on dark surfaces; gridlines and the baseline are mixed from `--dd-text` and follow it; the 2px gaps and marker rings use the chart’s own surface (`--_bg`), so they cut cleanly in both modes. Ink inside a filled segment comes from `--dd-series-ink`: dark on every hue, except wine (3), which flips to light ink in dawn. Use “View in dusk” on any example above to compare.
 
-## Behaviour
-
-Charts work as static HTML: tooltips open on hover and keyboard focus with CSS alone. Add `data-dd-chart` to the `.dd-chart` figure and the script adds the rest:
-
-- One tab stop per plot. Slots, line points (`__hit`), 100% segments (`__seg`) and donut arcs (`__arc`) — or any element with `data-dd-chart-point` — share a roving `tabindex`. ← → (or ↑ ↓) step through them, Home / End jump to the ends, Esc hides the tooltip until the next move.
-- Touch. Tapping a mark opens its tooltip; tapping anywhere else closes it. Tooltips flip to the side with room.
-- Floating tooltips. Marks without a `.dd-chart__tip` inside get one built from `data-dd-chart-label`, `data-dd-chart-value` and an optional `data-dd-chart-title`, keyed by the mark’s series class. Give each mark `role="img"` and an `aria-label`, and its container `role="group"`.
-- Table view. A `<details class="dd-chart__data">` “View as table” needs no script. To swap the plot for its table instead, add a toggle button `data-dd-chart-view aria-pressed="false" aria-controls="ID"` and a `.dd-chart__data.dd-chart__data--swap` container with that ID and `hidden`; the figure gets `.is-table` and fires `dd:change` with `detail.view` = `"table"` or `"chart"`.
-- The active mark has `.is-active` (same look as hover); use it to style custom marks.
-
 ## Classes
 
 | class / attribute | what it does |
@@ -506,6 +496,7 @@ Charts work as static HTML: tooltips open on hover and keyboard focus with CSS a
 | `.dd-chart__legend / __key` | Legend list and key. `__key--line`, `__key--dot` change the swatch; `__key-value`, `__key-share` add figures. |
 | `.dd-chart__legend--stack` | One key per row, values right-aligned. |
 | `.dd-chart__frame` | Grid: `__y` ticks · `__plot` · optional `__end` labels, with `__x` below. |
+| `.dd-chart__end` | Direct end labels for lines, each placed at its `--y`. `--dd-chart-end-width` sets the column (7.5rem). Hidden in charts under 460px. |
 | `.dd-chart__y / __x` | Tick labels in mono. `__x` is a band axis (one label per slot); `__x--points` centres labels on line points. `.is-minor` ticks hide on narrow charts. |
 | `.dd-chart__plot` | Plot area with hairline gridlines and a baseline. `--dd-chart-ticks` = number of intervals (4). `__plot--clean` keeps only the baseline. |
 | `.dd-chart__svg` | Absolutely filled SVG; use `viewBox="0 0 100 100" preserveAspectRatio="none"`. |
@@ -519,10 +510,20 @@ Charts work as static HTML: tooltips open on hover and keyboard focus with CSS a
 | `.dd-chart__tip` | Tooltip with `__tip-title`, `__tip-row` (value in `<b>`) and `__tip-row--total`. Shown on hover/focus of a slot or hit; `.is-flip` opens it to the left; `.is-static` for a standalone tooltip. |
 | `.dd-chart__hbars / __hbar` | Horizontal bar list: `__hbar-label`, `__hbar-track` > `__hbar-fill` (`--v`), `__hbar-value`. `--dd-chart-label-width` sets the label column. |
 | `.dd-chart__stack / __seg` | 100% bar; segments weighted by `--v`. `__stack--thin` for the 8px form; `.is-quiet` hides a label that won’t fit. |
-| `.dd-chart__pie / __donut / __arc` | Donut layout, SVG wrapper (`--dd-chart-donut` size) and arcs; `__donut-center` for the total. |
-| `.dd-chart__empty` | Centered empty message over a faded plot (`__plot.is-empty`). |
-| `.dd-chart__data` | `<details>` “View as table” with every value. `__data--swap`: a hidden container the `data-dd-chart-view` toggle swaps in for the plot. |
+| `.dd-chart__pie / __donut / __arc` | Donut layout, SVG wrapper (`--dd-chart-donut` size, 168px) and arcs; `__arc-track` draws an empty ring behind them, `__donut-center` holds the total. |
+| `.dd-chart__empty` | Centred empty message over a faded plot (`__plot.is-empty`). |
+| `.dd-chart__data` | `<details>` “View as table” with every value; wrap the table in `__data-scroll`. `__data--swap`: a hidden container the `data-dd-chart-view` toggle swaps in for the plot. |
 | `.dd-chart[data-dd-chart]` | Opts into the script: roving focus, touch and floating tooltips, table swap. `.is-active` marks the current mark, `.is-table` the swapped figure. |
+
+## Behaviour
+
+Charts work as static HTML: tooltips open on hover and keyboard focus with CSS alone. Add `data-dd-chart` to the `.dd-chart` figure and the script adds the rest:
+
+- One tab stop per plot. Slots, line points (`__hit`), 100% segments (`__seg`) and donut arcs (`__arc`) — or any element with `data-dd-chart-point` — share a roving `tabindex`. ← → (or ↑ ↓) step through them, Home / End jump to the ends, Esc hides the tooltip until the next move.
+- Touch. Tapping a mark opens its tooltip; tapping anywhere else closes it. Tooltips flip to the side with room.
+- Floating tooltips. Marks without a `.dd-chart__tip` inside get one built from `data-dd-chart-label`, `data-dd-chart-value` and an optional `data-dd-chart-title`, keyed by the mark’s series class. Give each mark `role="img"` and an `aria-label`, and its container `role="group"`.
+- Table view. A `<details class="dd-chart__data">` “View as table” needs no script. To swap the plot for its table instead, add a toggle button `data-dd-chart-view aria-pressed="false" aria-controls="ID"` and a `.dd-chart__data.dd-chart__data--swap` container with that ID and `hidden`; the figure gets `.is-table` and fires `dd:change` with `detail.view` = `"table"` or `"chart"`.
+- The active mark has `.is-active` (same look as hover); use it to style custom marks.
 
 ## Guidelines
 

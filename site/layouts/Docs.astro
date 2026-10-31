@@ -6,61 +6,58 @@ import '../../ds/dawn-and-dusk.css';
 import '../styles/docs.css';
 import DocsNav from '../components/DocsNav.astro';
 import { i } from '../lib/icon';
+import { base, hrefOf, locate, sections } from '../lib/nav';
+import { dawn, dusk } from '../lib/tokens';
 import sprite from '../../ds/icons/icons.svg?raw';
 
 interface Props {
   title: string;
+  /** The eyebrow above the title. */
   group?: string;
+  /** The intro paragraph; also the page's description for search and social cards. */
   lead?: string;
+  /** A wider content column, for pages built around big examples. */
   wide?: boolean;
 }
 const { title, group, lead, wide = false } = Astro.props;
-type NavItem = { title: string; href: string; tag?: string | number; group?: string };
-type NavGroup = { group: string; order: number; items: NavItem[]; keywords?: string; section?: string };
-type RailSection = { key: string; label: string; icon: string; title: string; groups: NavGroup[] };
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const here = Astro.url.pathname.replace(/\/$/, '');
+const isHome = here === base;
+const isNotFound = /^\/404(\.html)?$/.test(here.slice(base.length));
 
-// Rail sections. Each nav file (site/nav/*.mjs) is one group, or — when its items name their own `group` — one group per
-// label, in order; either way every pane reads the same: title, micro-caps label, pages. The file's own name stays a
-// search keyword for its pages. Each group lands in the section its pages live under.
-const groups = Object.values(import.meta.glob('../nav/*.mjs', { eager: true }))
-  .map((m: any) => m.default as NavGroup)
-  .sort((a, b) => a.order - b.order)
-  .flatMap((f) => {
-    const out: NavGroup[] = [];
-    for (const it of f.items) {
-      const name = it.group ?? f.group;
-      let g = out.find((x) => x.group === name);
-      if (!g) out.push((g = { group: name, order: f.order, items: [], keywords: f.group, section: f.section }));
-      g.items.push(it);
-    }
-    return out;
-  });
-const RAIL = [
-  { key: 'foundations', label: 'Foundations', icon: 'layers', title: 'foundations' },
-  { key: 'components', label: 'Components', icon: 'box', title: 'components' },
-  { key: 'ai', label: 'AI', icon: 'ai', title: 'ai' },
-];
-// A nav file can name its rail section (`section`); otherwise its pages' paths decide.
-const railOf = (g: NavGroup) => g.section ?? ((g.items[0]?.href ?? '').startsWith('components/') ? 'components' : 'foundations');
-const sections: RailSection[] = RAIL.map((r) => ({ ...r, groups: groups.filter((g) => railOf(g) === r.key) })).filter((s) => s.groups.length);
-const hrefOf = (href: string) => `${base}/${href}`.replace(/\/$/, '');
-let section: RailSection | undefined;
-let pageTitle = title;
-for (const s of sections) for (const g of s.groups) for (const it of g.items) if (hrefOf(it.href) === here) { section = s; pageTitle = it.title; }
+// Where the page sits in the nav: the rail section it opens on, and its breadcrumb.
+const { section, item } = locate(here);
 const active = (section ?? sections[0]).key;
 const sectionHome = section ? hrefOf(section.groups[0].items[0].href) || `${base}/` : null;
-const toc = group !== 'Patterns';
+const pageTitle = item?.title ?? title;
+
+// Head: title, description, and the social card (Open Graph / Twitter) with absolute URLs built from `site` + base.
+const docTitle = isHome ? 'dawn & dusk — the cxkw.dev design system' : `${title} · dawn & dusk`;
+const description = lead ?? 'Warm greige neutrals, golden-hour colour and a heavy lowercase voice, in a light dawn and a dark dusk. Plain CSS, a little JavaScript, and an agent skill so AI builds it right.';
+const absolute = (path: string) => new URL(path, Astro.site ?? Astro.url).href;
+const canonical = absolute(`${here}/`);
+const ogImage = absolute(`${base}/og.png`);
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title === 'dawn & dusk' ? title : `${title} · dawn & dusk`}</title>
-    <meta name="description" content={lead ?? 'dawn & dusk — the cxkw.dev design system.'} />
+    <title>{docTitle}</title>
+    <meta name="description" content={description} />
+    {isNotFound ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml" />
+    <meta name="theme-color" content={dawn.bg} media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content={dusk.bg} media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="dawn & dusk" />
+    <meta property="og:title" content={docTitle} />
+    <meta property="og:description" content={description} />
+    {!isNotFound && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="dawn & dusk — a design system split diagonally between a light dawn and a dark dusk" />
+    <meta name="twitter:card" content="summary_large_image" />
     <script is:inline>
       // Apply the stored (or ?theme=) choice before paint to avoid a flash.
       (() => {
@@ -78,12 +75,13 @@ const toc = group !== 'Patterns';
     <Fragment set:html={sprite} />
     <a class="doc-skip" href="#content">Skip to content</a>
     <div class="dd-app-shell dd-app-shell--page dd-app-shell--offcanvas-md doc-app">
-      <DocsNav sections={sections} active={active} base={base} here={here} />
+      <DocsNav active={active} here={here} />
       <script is:inline>
         // Before paint: the side nav's own state, so nothing jumps or animates on load. (Under 900px the shell puts it
         // off-canvas by itself: dd-app-shell--offcanvas-md.)
         // - The fold is remembered by side-nav.js under "dd-side-nav:doc-nav"; apply it now rather than after the scripts.
-        // - The panel keeps its scroll position per section between pages, and the current page is always in view.
+        // - The panel keeps its scroll position per section between pages (saved by site/scripts/docs.js under
+        //   "dd-docs-nav"), and the current page is always in view.
         (() => {
           const nav = document.getElementById('doc-nav');
           const list = document.getElementById('doc-nav-list');
@@ -130,7 +128,7 @@ const toc = group !== 'Patterns';
           </div>
         </header>
         <main id="content" class="dd-app-shell__content doc-content">
-          <div class:list={['doc-body', { 'is-wide': wide, 'has-toc': toc }]}>
+          <div class:list={['doc-body has-toc', { 'is-wide': wide }]}>
             <article class="doc-main">
               <header class="doc-head">
                 {group && <p class="dd-eyebrow">{group}</p>}
@@ -139,7 +137,7 @@ const toc = group !== 'Patterns';
               </header>
               <slot />
             </article>
-            {toc && <nav class="doc-toc dd-scroll" aria-label="On this page" hidden><p class="doc-toc-h">On this page</p><ul></ul></nav>}
+            <nav class="doc-toc dd-scroll" aria-label="On this page" hidden><p class="doc-toc-h">On this page</p><ul></ul></nav>
           </div>
         </main>
       </div>

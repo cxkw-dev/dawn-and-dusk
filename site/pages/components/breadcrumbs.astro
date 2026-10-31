@@ -101,12 +101,12 @@ const long = `
   <Example code={withIcons} />
 
   <h2 id="overflow">Overflow</h2>
-  <p>For deep trails, keep the root and the last two levels and fold the rest into “…”. It opens a small menu of the skipped levels; Esc or a click outside closes it.</p>
+  <p>For deep trails, keep the root and the last two levels and fold the rest into “…”. It opens a small menu of the skipped levels.</p>
   <Example code={overflow} description="Try it: click “…”, or Tab to it and press ↓, then ↑ ↓ through the levels; Esc or a click outside closes it." />
   <Example title="Overflow, open" description="The same menu shown open for reference — it is live too, and closes like the one above." code={open} minHeight="220px" />
 
   <h2 id="long">Long labels and small</h2>
-  <p>Each crumb truncates at 24 characters with an ellipsis. Screen readers still get the full text; add a <code>title</code> if sighted users need it too. The small size fits inside a top bar.</p>
+  <p>Each crumb truncates with an ellipsis at about 24 characters (<code>24ch</code>). Screen readers still get the full text; add a <code>title</code> if sighted users need it too. The small size fits inside a top bar.</p>
   <Example code={long} />
 
   <h2 id="api">Classes</h2>

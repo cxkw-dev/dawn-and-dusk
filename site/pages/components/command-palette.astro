@@ -87,12 +87,12 @@ ${palette('cp-live', all, { tag: 'dialog', hotkey: true })}`;
   <Example title="Open" description="Shown inline. The selected row takes the deeper tone and trades its shortcut for ↵. Try it: type “service” or “deploy” in the field, move with ↑ ↓, press Enter or click a row to run it." code={open} stage="center" />
   <h2 id="filtered">Filtered</h2>
   <p>Typing narrows every group at once; groups with no matches disappear and the first match is selected. Rows also match their <code>data-keywords</code>, so “service” finds auth-gateway.</p>
-  <Example description="Try it: add or delete letters in the search; rows also match their keywords, so “deploy” finds the recent deploys." code={search} stage="center" />
+  <Example description="Try it: add or delete letters in the search. “deploy” finds the recent deploys through their keywords." code={search} stage="center" />
   <h2 id="empty">Empty state</h2>
   <p>When nothing matches, the list hides and <code>.dd-command__empty</code> echoes the query and suggests what to try.</p>
   <Example description="Try it: type in the field and the query echoes in the message." code={empty} stage="center" />
   <h2 id="dialog">As a dialog</h2>
-  <p>Make it a <code>&lt;dialog class="dd-command"&gt;</code> and open it from any <code>[data-dd-command]</code> button, or press <kbd class="dd-kbd-combo"><kbd class="dd-kbd">⌘</kbd><kbd class="dd-kbd">K</kbd></kbd> (Ctrl K on Windows and Linux) anywhere on this page. It opens a third of the way down over a dimmed page.</p>
+  <p>Make it a <code>&lt;dialog class="dd-command"&gt;</code> and open it from any <code>[data-dd-command]</code> button, or press <kbd class="dd-kbd-combo"><kbd class="dd-kbd">⌘</kbd><kbd class="dd-kbd">K</kbd></kbd> (Ctrl K on Windows and Linux) anywhere on this page. It opens near the top of the screen over a dimmed page.</p>
   <Example description="Try it: click the button or press ⌘K / Ctrl K, type to filter, Enter runs the selected row. Esc clears the search, a second Esc closes." code={live} />
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
@@ -102,21 +102,22 @@ ${palette('cp-live', all, { tag: 'dialog', hotkey: true })}`;
     ['.dd-command__list', 'Scrolling results, <code>role="listbox"</code>.'],
     ['.dd-command__group + __label', 'A <code>role="group"</code> of results with a small-caps label.'],
     ['.dd-command__item', 'A result, <code>role="option"</code>. <code>aria-selected="true"</code> marks the selected row. Optional <code>data-keywords</code> and <code>data-value</code>.'],
+    ['[aria-disabled="true"]', 'Disabled row: dimmed to <code>--dd-quiet</code>, skipped by ↑ ↓ and never runs.'],
     ['.dd-command__icon', 'Leading icon; turns full-strength on the selected row.'],
-    ['.dd-command__body + __meta', 'The name, then muted detail that truncates first (hidden below 560px).'],
+    ['.dd-command__body + __meta', 'The name, then muted detail that truncates first (hidden on screens 560px wide or less).'],
     ['.dd-command__hint', 'Trailing shortcut keys (<code>.dd-kbd</code>).'],
     ['.dd-command__enter', 'A ↵ key inside the hint, shown only on the selected row (and hiding the shortcut after it).'],
     ['.dd-command__empty', 'Empty state; any <code>.dd-command__query</code> inside it echoes the search.'],
-    ['.dd-command__foot + __brand', 'Footer with keyboard hints on a deeper tone; the brand sits at the start.'],
+    ['.dd-command__foot + __brand', 'Footer with keyboard hints on a deeper tone; the brand sits at the start. Hidden on screens 560px wide or less.'],
   ]} />
   <h2 id="behaviour">Behaviour</h2>
-  <p><code>ds/behaviors/command-palette.js</code>. Filtering and keyboard selection also work on inline palettes.</p>
+  <p><code>ds/behaviors/command-palette.js</code> opens the dialog, filters and selects rows, and runs them. Everything but opening also works on inline palettes.</p>
   <ClassTable head={['Attribute / key', 'What it does']} rows={[
-    ['data-dd-command="id"', 'On a button: opens that <code>&lt;dialog class="dd-command"&gt;</code> (empty value → the first on the page), clears the search and focuses it.'],
-    ['data-dd-hotkey', 'On the dialog: the one ⌘K / Ctrl K toggles. Without it, the first palette on the page.'],
+    ['data-dd-command="id"', 'On a button: opens that <code>&lt;dialog class="dd-command"&gt;</code> (empty value → the <code>data-dd-hotkey</code> palette, else the first on the page), clears the search and focuses it.'],
+    ['data-dd-hotkey', 'On the dialog: the one ⌘K / Ctrl K toggles. Without it, ⌘K toggles the first dialog palette on the page.'],
     ['Typing', 'Filters rows by their text and <code>data-keywords</code> (every word must match); selects the first match.'],
-    ['↑ ↓ · Ctrl P / Ctrl N', 'Move the selected row, wrapping at the ends; the list scrolls to keep it in view.'],
-    ['Enter / click', 'Runs the row: clicks it (links navigate), fires a bubbling <code>dd:command</code> event with <code>detail.item</code> and <code>detail.value</code>, and closes the dialog.'],
+    ['↑ ↓ · Ctrl P / Ctrl N', 'Move the selected row, wrapping at the ends; the list scrolls to keep it in view. Hovering a row selects it too.'],
+    ['Enter / click', 'Runs the row: clicks it (links navigate), fires a bubbling <code>dd:command</code> event with <code>detail.item</code> and <code>detail.value</code> (the row’s <code>data-value</code>, else its name), and closes the dialog.'],
     ['Esc', 'Clears the search; a second Esc closes. Clicking the backdrop closes too, and focus returns to the opener.'],
   ]} />
   <script is:inline>

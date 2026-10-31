@@ -98,7 +98,7 @@ const bare = `
   <Example title="Tile" description="Label, value, delta and comparison. The sparkline is a de-emphasis tone so the figure stays the loudest thing on the tile; the end dot marks now." code={single} />
 
   <h2 id="grid">Stat grid</h2>
-  <p>Tiles flow into as many columns as fit — 210px minimum by default; set <code>--dd-stat-min</code> to change it (260px here) and stack on narrow screens. Tone, not lines, separates them.</p>
+  <p>Tiles flow into as many columns as fit, 210px minimum by default; set <code>--dd-stat-min</code> to change it (260px here). They stack on narrow screens. Tone, not lines, separates them.</p>
   <Example code={grid} />
 
   <h2 id="joined">Joined grid</h2>
@@ -123,7 +123,7 @@ const bare = `
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
-    ['.dd-stat', 'A tile on <code>--dd-surface</code>. Works on <code>&lt;div&gt;</code>, <code>&lt;a&gt;</code> and <code>&lt;button&gt;</code> (links and buttons get a hover tone).'],
+    ['.dd-stat', 'A tile on <code>--dd-surface</code>. Works on <code>&lt;div&gt;</code>, <code>&lt;a&gt;</code> and <code>&lt;button&gt;</code> (links and buttons step a tone on hover and press).'],
     ['.dd-stat__label', 'Sentence-case label, no trailing colon. An icon may lead.'],
     ['.dd-stat__main', 'Row holding the value and the sparkline; the spark shrinks (to 48px) before anything wraps.'],
     ['.dd-stat__value / __unit', 'The figure in the display face (700, proportional figures). The unit is half size and muted.'],
@@ -136,6 +136,7 @@ const bare = `
     ['.dd-stat--inline', 'Label · value · delta on one baseline. Group with <code>.dd-stat-inline-group</code>.'],
     ['.dd-stat-grid', 'Auto-fit grid of tiles. <code>--dd-stat-min</code> sets the minimum tile width.'],
     ['.dd-stat-grid--joined', 'One surface split by 2px page-coloured gaps; outer corners only.'],
+    ['--dd-stat-hover / --dd-stat-press', 'Fill of a linked tile on hover and press, set per theme.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>
@@ -144,7 +145,7 @@ const bare = `
       'Compact large values: 1,284 · 41.3K · $4.2M · 1.28B. Keep the full figure in a tooltip or table.',
       'Name the comparison period in the compare text: “vs 36.7K last week”.',
       'Colour a delta by whether the change is good for that metric, not by its sign.',
-      'Keep sparklines to ~12 points in the muted tone; they show shape, not values.',
+      'Keep sparklines to ~12 points in the de-emphasis tone; they show shape, not values.',
     ]}
     dont={[
       'Don’t put more than one hero figure on a view.',

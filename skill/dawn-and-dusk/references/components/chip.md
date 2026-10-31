@@ -25,7 +25,7 @@ One chip per Golden hour colour, .dd-chip--set-1 to --set-8. In dusk the set lif
 
 ## Dot, icon and link
 
-A neutral chip with a coloured dot names a category without colouring the whole row. Icons lead like they do in buttons. Chips that are links or buttons darken a step toward the text colour on hover, so even the palest hue answers the pointer.
+A neutral chip with a coloured dot names a category without colouring the whole row. Icons lead like they do in buttons. Chips that are links or buttons step toward the text colour on hover, so even the palest hue answers the pointer.
 
 ```html
 <div class="dd-stack" style="--dd-gap: var(--dd-space-3)">
@@ -39,7 +39,7 @@ A neutral chip with a coloured dot names a category without colouring the whole 
     <span class="dd-chip dd-chip--set-2"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-code"/></svg>TypeScript</span>
     <span class="dd-chip dd-chip--set-5"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-database"/></svg>Postgres</span>
     <span class="dd-chip dd-chip--set-7"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-cloud"/></svg>Edge</span>
-    <a class="dd-chip dd-chip--set-8" href="#tag-writing"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-tag"/></svg><span>writing</span></a>
+    <a class="dd-chip dd-chip--set-8" href="#"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-tag"/></svg><span>writing</span></a>
   </div>
 </div>
 ```
@@ -136,7 +136,8 @@ A person (or a bot) with a tiny avatar. Pill-shaped to echo the avatar; neutral 
 | `dd:chip-remove` | Cancelable event on the chip before it goes; `detail.value` is its `data-value` or text. |
 | `button.dd-chip[aria-pressed]` | Click toggles `aria-pressed` and fires `dd:chip-toggle` (`detail.pressed`). |
 | `.dd-chip-input__field` | Enter or comma adds a chip; a duplicate flashes the existing one instead. Backspace in the empty field removes the last one. The container fires `dd:chips-change` with `detail.values`. |
-| `dd.chip.create(text) / remove(chip)` | Make or remove a chip from code. |
+| `dd.chip.create(text) / remove(chip)` | From code: `create` returns a removable chip coloured by its text, ready to insert; `remove` takes one out the same way the × does. |
+| `data-dd-manual` | On a container: the script leaves the chips inside alone — for chips a framework renders from state. Handle the clicks yourself. |
 
 ## Guidelines
 

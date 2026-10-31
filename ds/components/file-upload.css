@@ -82,9 +82,9 @@
 .dd-file__actions { display: flex; align-items: center; gap: 2px; }
 .dd-file__progress {
   appearance: none; display: block; width: 100%; height: 4px; margin: calc(var(--dd-u) * .5) 0 0; border: 0; border-radius: var(--dd-r-pill);
-  background: color-mix(in oklab, var(--dd-text) 12%, transparent); color: var(--dd-accent); overflow: hidden;
+  background: var(--dd-wash-strong); color: var(--dd-accent); overflow: hidden;
 }
-.dd-file__progress::-webkit-progress-bar { background: color-mix(in oklab, var(--dd-text) 12%, transparent); border-radius: var(--dd-r-pill); }
+.dd-file__progress::-webkit-progress-bar { background: var(--dd-wash-strong); border-radius: var(--dd-r-pill); }
 .dd-file__progress::-webkit-progress-value { background: currentColor; border-radius: var(--dd-r-pill); transition: width var(--dd-dur) var(--dd-ease); }
 .dd-file__progress::-moz-progress-bar { background: currentColor; border-radius: var(--dd-r-pill); }
 

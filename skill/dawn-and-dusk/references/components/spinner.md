@@ -49,7 +49,7 @@ A spinner beside the thing that’s loading, in muted text. `--inline` sizes the
 
 ## Page loader
 
-Centred in the space the page will fill (at least 60% of the viewport, up to 480px — the example is shorter). `--overlay` lays it over content that’s being recalculated (its parent needs `position: relative`); `--fixed` covers the viewport.
+Centred in the space the page will fill (at least 60% of the viewport tall, or 480px on tall screens — the example is shorter). `--overlay` lays it over content that’s being recalculated (its parent needs `position: relative`); `--fixed` covers the viewport.
 
 ```html
 <div class="dd-page-loader" role="status" style="min-height: 240px">

@@ -9,7 +9,9 @@ const block = (selector: string) => {
 const parse = (body: string) =>
   Object.fromEntries([...body.matchAll(/--dd-([\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
 
+/** Tokens both themes share (type, space, radius, motion), by name without the --dd- prefix. */
 export const base = parse(block(':root {'));
+/** Theme colours: dawn (light) and dusk (dark). */
 export const dawn = parse(block(':root, [data-theme="dawn"] {'));
 export const dusk = parse(block('[data-theme="dusk"] {'));
 /** Names after `/* … *\/` on the color-set lines, e.g. set-1 → honey. */

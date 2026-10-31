@@ -214,7 +214,7 @@ Put a `__list` straight inside `.dd-timeline` when there is only one day — a d
 
 | class / attribute | what it does |
 |---|---|
-| `.dd-timeline` | Wrapper for day groups. A size container: below 440px the time drops under the sentence. |
+| `.dd-timeline` | Wrapper for day groups, or for a single `__list`. A size container: below 440px the time drops under the sentence. |
 | `.dd-timeline__group` | One day: a `__day` heading and a `__list`. |
 | `.dd-timeline__day / __date` | Day heading (“Today”) with a mono date. |
 | `.dd-timeline__list / __item` | The `<ol>` of events. A faint connector runs between markers. |
@@ -226,7 +226,7 @@ Put a `__list` straight inside `.dd-timeline` when there is only one day — a d
 | `.dd-timeline__meta` | Mono source detail (IP, client) — mostly for audit rows. |
 | `.dd-timeline__detail` | Inset tonal block: commit message, error, quoted comment. |
 | `.dd-timeline__diff / __add / __del` | Diff stats line: `+128 −42`. |
-| `.dd-timeline--audit` | Compact single-line rows with a time column and hairlines. |
+| `.dd-timeline--audit` | Compact single-line rows with a time column and hairlines. Put the `__time` first in each item, before the marker. |
 
 ## Guidelines
 

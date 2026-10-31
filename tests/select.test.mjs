@@ -181,3 +181,31 @@ test('touch at 375: tap opens, tap chooses, tap outside closes', async ({ open, 
   await page.tap('#se-note');
   assert.ok(!(await isOpen(page, OWNER)));
 });
+
+test('namespaced selection event preserves the legacy payload and bubbles', async ({ open, assert }) => {
+  const page = await open('components/select');
+  await page.get(() => {
+    window.events = [];
+    for (const type of ['dd-select', 'dd:select']) document.addEventListener(type, (e) => window.events.push({ type, value: e.detail.value, values: e.detail.values, target: e.target.hasAttribute('data-dd-select') }));
+  });
+  await page.click(trig(ENV));
+  await page.click(`${list(ENV)} [data-value="preview"]`);
+  assert.deepEqual(await page.get(() => window.events), [
+    { type: 'dd-select', value: 'preview', values: ['preview'], target: true },
+    { type: 'dd:select', value: 'preview', values: ['preview'], target: true },
+  ]);
+});
+
+for (const theme of ['dawn', 'dusk']) test(`invalid custom select uses the same error fill as an invalid input (${theme})`, async ({ open, assert }) => {
+  const page = await open('components/select', { theme });
+  const fills = await page.get((s) => {
+    const trigger = document.querySelector(s);
+    trigger.setAttribute('aria-invalid', 'true');
+    trigger.style.transition = 'none';
+    const reference = document.createElement('div');
+    reference.className = 'dd-input is-invalid';
+    trigger.after(reference);
+    return [getComputedStyle(trigger).backgroundColor, getComputedStyle(reference).backgroundColor];
+  }, trig(ENV));
+  assert.equal(fills[0], fills[1]);
+});

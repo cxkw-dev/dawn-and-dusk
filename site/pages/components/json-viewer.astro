@@ -77,9 +77,11 @@ dd.jsonViewer.<span class="dd-code__f">init</span>();</code></pre>
     ['.dd-json-viewer__tree', 'The <code>role="tree"</code> list. Scrolls when <code>--dd-json-viewer-height</code> is set.'],
     ['.dd-json-viewer__node', 'A <code>treeitem</code>; containers carry <code>aria-expanded</code>, the selected node <code>aria-selected</code>.'],
     ['.dd-json-viewer__row', 'One line: toggle, key or index, value / brace, preview and count.'],
+    ['.dd-json-viewer__key / __index', 'An object key (<code>--dd-json-key</code>) or a muted array index.'],
     ['.dd-json-viewer__value--string / --number / --boolean / --null', 'Type colours. Override with <code>--dd-json-string</code>, <code>--dd-json-number</code>, <code>--dd-json-boolean</code>, <code>--dd-json-null</code>.'],
     ['.dd-json-viewer__count / __preview', 'Child count (“3 items”, “6 keys”) and the <code>{…}</code> shown while collapsed.'],
     ['.dd-json-viewer__group', 'Nested <code>role="group"</code> list with a faint indent guide.'],
+    ['.dd-json-viewer__error', 'Shown instead of the tree when the inline JSON can’t be parsed.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
@@ -87,7 +89,8 @@ dd.jsonViewer.<span class="dd-code__f">init</span>();</code></pre>
     ['data-dd-json-viewer', 'Renders the tree from the inline <code>&lt;script type="application/json"&gt;</code> on load.'],
     ['data-depth="2"', 'Levels open at first (root is level 0). Default 2.'],
     ['aria-label', 'Names the tree for screen readers (“Deploy dpl_7Hq2xK9m”).'],
-    ['dd.jsonViewer(el, data, { depth, label })', 'Renders a value programmatically. <code>dd.jsonViewer.init()</code> renders new viewers.'],
+    ['dd.jsonViewer(el, data, { depth, label })', 'Renders a value into <code>el</code>, replacing its content. <code>dd.jsonViewer.init()</code> renders viewers added later.'],
+    ['Expand all / Collapse all', 'Bar buttons: open every container, or close all but the root.'],
     ['↑ / ↓', 'Previous / next visible node. Selection follows focus and updates the path.'],
     ['→ / ←', 'Expand, or move to the first child · collapse, or move to the parent.'],
     ['Enter / Space', 'Toggle the focused container.'],

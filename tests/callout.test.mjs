@@ -47,3 +47,18 @@ test('compact callout dismisses instantly under reduced motion at 375', async ({
   await page.get(() => dd.dismiss(document.querySelector('[data-t="c"]')));
   assert.equal(await page.exists('[data-t="c"]'), false);
 });
+
+for (const theme of ['dawn', 'dusk']) test(`documented dismiss button is usable at 375px (${theme})`, async ({ open, assert }) => {
+  const page = await open('components/callout', { theme, width: 375 });
+  const button = '.ex-stage .dd-callout__dismiss';
+  assert.equal(await page.attr(button, 'aria-label'), 'Dismiss note');
+  const layout = await page.get((s) => {
+    const b = document.querySelector(s).getBoundingClientRect();
+    const title = document.querySelector(s).parentElement.querySelector('.dd-callout__title').getBoundingClientRect();
+    return { width: b.width, height: b.height, noOverlap: title.right <= b.left };
+  }, button);
+  assert.ok(layout.width >= 25 && layout.height >= 25 && layout.noOverlap);
+  await page.focus(button);
+  await page.press('Enter');
+  await page.waitFor(() => !document.querySelector('.ex-stage .dd-callout__dismiss'));
+});

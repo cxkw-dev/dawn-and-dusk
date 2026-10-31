@@ -58,16 +58,16 @@ const states = `
   <p>A link on its own line, at the end of a card or section. A little heavier, with a trailing arrow that nudges forward on hover. Wrap the label in a <code>&lt;span&gt;</code> so only the words are underlined.</p>
   <Example code={standalone} />
   <h2 id="external">External</h2>
-  <p>Leaves cxkw.dev. Use the <code>arrow-right</code> icon: <code>--external</code> tilts it to ↗ and lifts it on hover. Any other icon (such as <code>external</code>) is shown as is. Open in a new tab only when leaving would lose work.</p>
+  <p>Leaves the site. Use the <code>arrow-right</code> icon: <code>.dd-link--external</code> tilts it to ↗ and lifts it on hover. Any other icon (such as <code>external</code>) keeps its shape and still lifts. Open in a new tab only when leaving would lose work.</p>
   <Example code={external} />
   <h2 id="muted">Muted</h2>
   <p>Meta lines, footers and secondary references: muted text with faint dots.</p>
   <Example code={muted} />
   <h2 id="nav">Nav</h2>
   <p>Top-level navigation. Muted with no underline at rest, dotted on hover, solid when it is the current page (<code>aria-current="page"</code>). Lay a row out with <code>.dd-link-nav</code>.</p>
-  <Example code={nav} description="Try it: click a link; it becomes the current page (the docs move aria-current for you here, as a new page load would)." />
+  <Example code={nav} description="Try it: click a link; it becomes the current page (a docs script moves aria-current here, as loading the page would)." />
   <h2 id="inverse">On ink</h2>
-  <p>On a panel filled with <code>--dd-text</code>, <code>--inverse</code> switches the dots to the background colour.</p>
+  <p>On a panel filled with <code>--dd-text</code>, <code>.dd-link--inverse</code> draws the dots and the focus ring in the page colour.</p>
   <Example code={inverse} />
   <h2 id="states">States</h2>
   <p>Hover and focus forced on for reference. A link that can’t go anywhere yet gets <code>aria-disabled="true"</code> and no <code>href</code>.</p>
@@ -78,15 +78,15 @@ const states = `
     ['.dd-link--standalone', 'Label + trailing arrow; the arrow nudges right on hover. Label goes in a <code>&lt;span&gt;</code>.'],
     ['.dd-link--external', 'Label + ↗. Tilts an <code>arrow-right</code> icon by −45° and lifts it on hover.'],
     ['.dd-link--muted', 'Muted text and faint dots, for meta lines and footers.'],
-    ['.dd-link--nav', 'Navigation: no underline at rest, solid underline when <code>aria-current</code> or <code>.is-active</code>.'],
+    ['.dd-link--nav', 'Navigation: muted with no underline at rest, dotted on hover, solid when <code>aria-current</code> or <code>.is-active</code>.'],
     ['.dd-link-nav', 'A wrapping row for nav links.'],
-    ['.dd-link--inverse', 'For links on ink (<code>--dd-text</code>) surfaces.'],
+    ['.dd-link--inverse', 'For links on ink (<code>--dd-text</code>) surfaces: dots and focus ring in the page colour.'],
     ['[aria-disabled="true"]', 'Dimmed to <code>--dd-quiet</code> with faint dots, and inert.'],
   ]} />
   <h2 id="guidelines">Guidelines</h2>
   <Guides
     do={['Use a link to go somewhere and a button to do something.', 'Write the destination as the label: “All deployments”, not “click here”.', 'Mark links that leave the site with ↗.']}
-    dont={['Don’t colour inline links; the dots are enough and keep paragraphs calm.', 'Don’t use <code>--nav</code> inside running text.', 'Don’t underline non-links with dots; that pattern now means “link”.']}
+    dont={['Don’t colour inline links; the dots are enough and keep paragraphs calm.', 'Don’t use <code>.dd-link--nav</code> inside running text.', 'Don’t underline non-links with dots; that pattern means “link”.']}
   />
 </Docs>
 <script>

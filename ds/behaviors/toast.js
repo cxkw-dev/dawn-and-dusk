@@ -3,10 +3,11 @@
      action    { label: 'Undo', onClick(toast) {} } — clicking it runs onClick, then dismisses the toast
      duration  ms before it leaves on its own (default 5000; 0 keeps it until dismissed). A hairline shows the time
                left; hovering or focusing the stack pauses every timer, and so does hiding the tab.
+     icon      any sprite name, to override the intent's icon
+     dismissible  false leaves out the × button (default true)
    Swipe a toast sideways (or drag it with the mouse) to dismiss it; Esc dismisses the toast that has focus, and focus
    then moves to the next toast or back to where it was before the stack. The stack is a manual popover (top layer),
    so toasts show above modal dialogs; while a modal is open the stack moves inside it so its buttons aren't inert.
-     icon      any sprite name, to override the intent's icon
    Returns { el, dismiss() }. dd.toast('Saved') works too, and dd.toast.clear() empties the stack.
    Declarative: <button data-dd-toast="Title" data-dd-toast-description="…" data-dd-toast-intent="ok"
    data-dd-toast-action="Undo" data-dd-toast-duration="8000">. The toast takes the dawn/dusk theme of the

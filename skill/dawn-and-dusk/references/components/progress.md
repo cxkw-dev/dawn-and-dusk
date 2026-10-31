@@ -105,7 +105,7 @@ When the length of the work is unknown, add `is-indeterminate` to the track and 
 
 ## Meter with thresholds
 
-A level, not a task: use `role="meter"`. Ticks mark the thresholds; the fill takes the tone of the band the value is in, and the hint says what happens next.
+A level, not a task: use `role="meter"`. Ticks mark the thresholds; give the bar the tone of the band its value is in (`--ok`, `--warn`, `--bad`), and let the hint say what happens next.
 
 ```html
 <div class="dd-stack" style="--dd-gap: var(--dd-space-6); max-width: 520px">
@@ -275,11 +275,11 @@ A whole split into parts. Segments use the colour set in chart order with 2px ga
 | `.dd-progress__track` | The bar. `role="progressbar"` (or `meter`), `aria-value*` and `style="--dd-value:62"`. |
 | `.dd-progress__fill` | The filled part; width comes from `--dd-value`. |
 | `.dd-progress__hint` | Small muted line under the bar. An icon inside takes the tone. |
-| `.is-indeterminate` | On the track (or ring): unknown length, sliding fill. |
+| `.is-indeterminate` | On the track (or ring): unknown length. The bar’s fill slides; the ring’s arc spins. |
 | `.dd-progress--sm / --lg` | Heights 4px / 10px (default 6px). |
 | `.dd-progress--ok / --warn / --bad / --info / --primary` | Tones. Default is `--dd-accent`. |
 | `.dd-progress__mark` | Threshold tick at `style="--at:70"`. |
-| `.dd-progress__scale` | Labels under the ticks, each a `<span style="--at:70">`; `.is-start` / `.is-end` pin the ends. |
+| `.dd-progress__scale` | Labels under the ticks, each a `<span style="--at:70">`; `.is-start` / `.is-end` pin the ends. The end label drops on tracks under 360px. |
 | `.dd-progress-ring` | Circular progress. Two circles with `pathLength="100"`; `__track`, `__fill`, `__label`, `__sub`. |
 | `.dd-progress-ring--sm / --lg` | 24px (no label) / 104px with a caption. Default 56px. |
 | `.dd-progress-ring--ok / --warn / --bad / --info / --primary` | Ring tones. |

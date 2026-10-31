@@ -1,6 +1,6 @@
 # checkbox — `checkbox`
 
-Turns an option on or off, alone or as one of many. Crisp checks: a hairline box with tight corners that fills with the accent when checked.
+Turns an option on or off, alone or as one of many. A hairline box with tight corners that fills with the accent when checked.
 
 Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/checkbox
 
@@ -121,16 +121,19 @@ Try it: click anywhere on a card, or Tab to it and press Space. Audit export is 
 | `.dd-checkbox-group` | A `<fieldset>` of checkboxes; `--inline` lays them in a row. |
 | `.dd-checkbox-group__legend · __nested` | Group legend; indented children under a select-all parent. |
 | `.dd-checkbox-card` | Selectable card: a tonal row that takes an accent tint when checked. |
+| `.dd-checkbox-card__icon` | Optional icon tile before the text. |
 | `.dd-checkbox-card__aside` | Trailing mono detail (price, size, count). |
 | `.dd-checkbox-cards` | Responsive grid of cards (fieldset). |
 
 ## Behaviour
 
+`ds/behaviors/checkbox.js` adds the mixed state and select-all groups.
+
 | class / attribute | what it does |
 |---|---|
 | `data-dd-indeterminate` | Sets `indeterminate = true` on load (HTML has no attribute for it). |
 | `data-dd-check-all="key"` | Parent checkbox: checks or clears every `data-dd-check-in="key"`, and shows mixed when some are on. |
-| `data-dd-check-in="key"` | Child checkbox of that parent. |
+| `data-dd-check-in="key"` | Child checkbox of that parent. Disabled children are left as they are and don’t count. |
 
 ## Guidelines
 

@@ -8,7 +8,7 @@ Every snippet is the exact markup of a working docs example. Icons are `<svg cla
 
 ### Announcement
 
-Centred icon, a bold lead-in and one action. Dismiss sits at the far right so it never crowds the message. Try it: press × — the banner fades, the page closes up under it, and keyboard focus stays where it was.
+Centred content: an icon, a bold lead-in and one action. Dismiss sits at the far right so it never crowds the message. Try it: press × — the banner fades, the page closes up under it, and keyboard focus moves to the banner’s parent instead of the top of the page.
 
 ```html
 <div class="dd-banner dd-banner--info">
@@ -37,14 +37,14 @@ Try it: only the maintenance banner has a ×; the incident can’t be dismissed 
     <div class="dd-banner__inner">
       <svg class="dd-icon" aria-hidden="true"><use href="#dd-i-success"/></svg>
       <p class="dd-banner__text"><strong>All systems normal.</strong>auth-gateway recovered at 09:58 UTC.</p>
-      <div class="dd-banner__actions"><a class="dd-banner__action" href="#status">Status page</a></div>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#">Status page</a></div>
     </div>
   </div>
   <div class="dd-banner dd-banner--warn">
     <div class="dd-banner__inner">
       <svg class="dd-icon" aria-hidden="true"><use href="#dd-i-alert"/></svg>
       <p class="dd-banner__text"><strong>Scheduled maintenance.</strong>billing-worker is read-only Sat 02:00–02:30 UTC.</p>
-      <div class="dd-banner__actions"><a class="dd-banner__action" href="#details">Details</a></div>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#">Details</a></div>
     </div>
     <button class="dd-banner__dismiss" type="button" data-dd-dismiss aria-label="Dismiss"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-x"/></svg></button>
   </div>
@@ -52,14 +52,14 @@ Try it: only the maintenance banner has a ×; the incident can’t be dismissed 
     <div class="dd-banner__inner">
       <svg class="dd-icon" aria-hidden="true"><use href="#dd-i-danger"/></svg>
       <p class="dd-banner__text"><strong>Incident.</strong>Sign-ins are failing in sfo3. We’re on it.</p>
-      <div class="dd-banner__actions"><a class="dd-banner__action" href="#incident">Follow updates</a></div>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#">Follow updates</a></div>
     </div>
   </div>
   <div class="dd-banner dd-banner--neutral">
     <div class="dd-banner__inner">
       <svg class="dd-icon" aria-hidden="true"><use href="#dd-i-eye"/></svg>
       <p class="dd-banner__text">You’re viewing a read-only snapshot of <span class="dd-mono">ai-focus</span> from 12 Oct.</p>
-      <div class="dd-banner__actions"><a class="dd-banner__action" href="#latest">Back to live</a></div>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#">Back to live</a></div>
     </div>
   </div>
 </div>
@@ -75,7 +75,7 @@ Banners are size containers too. Under about 560px the content left-aligns, the 
     <div class="dd-banner__inner">
       <svg class="dd-icon" aria-hidden="true"><use href="#dd-i-alert"/></svg>
       <p class="dd-banner__text"><strong>Scheduled maintenance.</strong>billing-worker is read-only Sat 02:00–02:30 UTC.</p>
-      <div class="dd-banner__actions"><a class="dd-banner__action" href="#details">Details</a><a class="dd-banner__action" href="#calendar">Add to calendar</a></div>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#">Details</a><a class="dd-banner__action" href="#">Add to calendar</a></div>
     </div>
     <button class="dd-banner__dismiss" type="button" data-dd-dismiss aria-label="Dismiss"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-x"/></svg></button>
   </div>
@@ -123,13 +123,14 @@ Dawn washes 14% of the status colour over the page. Dusk uses a solid 30% fill o
 | `.dd-banner__text` | The message. Put a short lead-in in `<strong>`. |
 | `.dd-banner__actions / __action` | Dotted text actions, `<a>` or `<button>`. |
 | `.dd-banner__dismiss` | Icon button at the right edge. Add `data-dd-dismiss` and an `aria-label`. |
+| `--dd-banner-wash / -base` | Theme-level knobs: 14% over `--dd-bg` in dawn, 30% over `--dd-surface` in dusk. |
 
 ## Behaviour
 
 | class / attribute | what it does |
 |---|---|
 | `data-dd-dismiss` | Fades and collapses the banner, then removes it. Fires a cancelable `dd:dismiss` event first — listen for it to remember the choice. |
-| `dd.dismiss(el)` | Dismiss from code, e.g. when the incident is resolved. |
+| `dd.dismiss(el)` | Dismiss from code, e.g. when the incident is resolved. The full dismiss API is on the alert page. |
 
 Use `role="alert"` only for an incident banner inserted while the page is open; a banner present at load needs no role, or `role="region"` with an `aria-label` if it should be a landmark.
 

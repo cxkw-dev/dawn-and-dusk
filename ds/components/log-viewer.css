@@ -2,6 +2,7 @@
    level and toggle wrapping (behaviors/log-viewer.js). Columns line up across lines via subgrid. */
 .dd-log-viewer {
   --_line: color-mix(in oklab, var(--dd-text) 9%, transparent);
+  container: dd-log-viewer / inline-size;
   display: flex; flex-direction: column; min-width: 0; overflow: hidden;
   background: var(--dd-surface); color: var(--dd-text); border-radius: var(--dd-r-box);
 }
@@ -38,11 +39,9 @@
 .dd-log-viewer__toggle:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-log-viewer__levels .dd-log-viewer__toggle:focus-visible { outline-offset: -2px; } /* the level track scrolls, so it clips */
 .dd-log-viewer__toggle[aria-pressed='true'] { background-color: var(--dd-surface); color: var(--dd-text); }
-/* Dusk: --dd-surface is darker than the --dd-surface-2 track, so an "on" level read as a hole, not a raised key. */
-[data-theme="dusk"] .dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='true'] { background-color: color-mix(in oklab, var(--dd-text) 12%, var(--dd-surface)); }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='true'] { background-color: color-mix(in oklab, var(--dd-text) 12%, var(--dd-surface)); }
-}
+/* Dusk: --dd-surface is darker than the --dd-surface-2 track, so an "on" level would read as a hole, not a raised key;
+   there it lifts toward the text instead. */
+.dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='true'] { background-color: light-dark(var(--dd-surface), color-mix(in oklab, var(--dd-text) 12%, var(--dd-surface))); }
 .dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='false'] { text-decoration: line-through; text-decoration-color: color-mix(in oklab, currentColor 70%, transparent); }
 .dd-log-viewer__levels .dd-log-viewer__toggle::before {
   content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint));
@@ -52,8 +51,10 @@
 .dd-log-viewer__toggle:is(.dd-log-viewer__toggle--wrap, .dd-log-viewer__toggle--follow)[aria-pressed='true'] { background-color: var(--dd-surface-3); }
 /* Follow (stay on the newest line) is icon-only so the bar keeps to one line; name it with aria-label. */
 .dd-log-viewer__toggle--follow { width: 30px; padding: 0; justify-content: center; }
+/* A toggle may carry a visible label after its icon (e.g. Follow); it hides when the viewer is narrow. */
+.dd-log-viewer__toggle-label { white-space: nowrap; }
 .dd-log-viewer__n { font-family: var(--dd-font-mono); font-size: 10.5px; color: var(--dd-muted); }
-.dd-log-viewer__count { margin-left: auto; font-family: var(--dd-font-mono); font-size: 11px; color: var(--dd-muted); white-space: nowrap; }
+.dd-log-viewer__count { margin-left: auto; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); white-space: nowrap; }
 .dd-log-viewer__live { display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1.25); font-weight: 600; color: var(--dd-text); white-space: nowrap; }
 .dd-log-viewer__live::before {
   content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--dd-ok);
@@ -123,7 +124,3 @@
   .dd-log-viewer__n { display: none; }
   .dd-log-viewer__levels .dd-log-viewer__toggle { padding-inline: calc(var(--dd-u) * 1.5); }
 }
-.dd-log-viewer { container: dd-log-viewer / inline-size; }
-
-/* A toggle may carry a visible label after its icon (e.g. Follow); it hides when the viewer is narrow. */
-.dd-log-viewer__toggle-label { white-space: nowrap; }

@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 const close = `<button class="dd-sheet__close" type="button" data-dd-dialog-close aria-label="Close">${i('x')}</button>`;
 
@@ -88,20 +89,22 @@ ${regions.map(([code, city, on]) => `      <button class="dd-sheet__item" type="
     ['dialog.dd-sheet', 'The sheet, pinned to the bottom edge. Open with <code>showModal()</code> or <code>data-dd-dialog-open</code>.'],
     ['.dd-sheet__handle', 'The grab handle. Decorative: <code>aria-hidden="true"</code>.'],
     ['.dd-sheet__head / __titles', 'Title row with an optional <code>__close</code> button.'],
-    ['.dd-sheet__title', 'In the heading lockup. Point <code>aria-labelledby</code> at it.'],
+    ['.dd-sheet__title', 'The title, in the heading lockup. Point <code>aria-labelledby</code> at it.'],
     ['.dd-sheet__desc', 'A muted line or two under the title.'],
     ['.dd-sheet__close', 'Icon-only close button (<code>aria-label="Close"</code>, <code>data-dd-dialog-close</code>).'],
     ['.dd-sheet__body', 'Scrolls once the sheet reaches 85% of the screen height.'],
-    ['.dd-sheet__list', 'A column of touch rows; bleeds slightly into the padding so hovers line up with the edges.'],
+    ['.dd-sheet__list', 'A column of touch rows; bleeds slightly into the padding so hovers line up with the edges. Give it <code>role="menu"</code> for arrow-key movement.'],
     ['.dd-sheet__item', '50px touch row: icon, <code>__item-label</code>, optional <code>__item-meta</code> (mono shortcut, code, count).'],
     ['.dd-sheet__item--danger', 'Destructive row, in <code>--dd-bad</code>. Put it last, after a <code>__sep</code>.'],
     ['[aria-checked="true"] / .is-selected', 'The current choice: a stronger wash than hover and a visible <code>.dd-sheet__check</code> icon.'],
     ['.dd-sheet__sep', 'A hairline between groups of rows (<code>&lt;hr&gt;</code>).'],
-    ['.dd-sheet__foot', 'Full-width actions sharing the row. <code>--stack</code> stacks them, primary on top.'],
+    ['.dd-sheet__foot', 'Full-width actions sharing the row.'],
+    ['.dd-sheet__foot--stack', 'Stacks the actions in reverse order, so the primary (last in the markup) sits on top.'],
+    ['.is-closing', 'Set by the script while the slide-down plays.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <p>The sheet shares its script with <a href="dialog">Dialog</a>: <code>data-dd-dialog-open="#id"</code> opens it, <code>data-dd-dialog-close="value"</code> on a row or button closes it and sets <code>returnValue</code>, a tap on the scrim or Esc slides it away, and focus returns to the opener.</p>
+  <p>The sheet shares <code>ds/behaviors/dialog.js</code> with <a href={`${docs}/components/dialog`}>Dialog</a>: <code>data-dd-dialog-open="#id"</code> opens it, <code>data-dd-dialog-close="value"</code> on a row or button closes it and sets <code>returnValue</code>, a tap on the scrim or Esc slides it away, and focus returns to the opener. Choosing a <code>role="menuitemradio"</code> row checks it and unchecks the others; a <code>menuitemcheckbox</code> row flips.</p>
   <ClassTable head={['Key', 'What it does']} rows={[
     ['Esc', 'Closes the sheet.'],
     ['Tab / Shift+Tab', 'Stays inside the sheet, wrapping at the ends; the page behind is inert.'],
@@ -112,7 +115,7 @@ ${regions.map(([code, city, on]) => `      <button class="dd-sheet__item" type="
   <h2 id="guidelines">Guidelines</h2>
   <Guides
     do={['Use a sheet on phones where a desktop would use a menu, popover or small dialog.', 'Keep it short: one task, or up to about seven actions.', 'Put the destructive action last and separate it.']}
-    dont={['Don’t nest sheets or open a dialog from a sheet.', 'Don’t rely on the handle alone to close — keep a close button, Cancel, or a scrim tap.', 'Don’t use a sheet on wide screens for long forms; use a drawer.']}
+    dont={['Don’t nest sheets or open a dialog from a sheet.', 'Don’t rely on the handle to close the sheet; it’s decorative. Keep a close button, Cancel or the scrim.', 'Don’t use a sheet on wide screens for long forms; use a drawer.']}
   />
 
   <style is:global>

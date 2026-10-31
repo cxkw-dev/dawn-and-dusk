@@ -1,6 +1,6 @@
 # combobox — `combobox`
 
-A text input that filters a list as you type. Single select fills the field with the choice; multi select collects choices as Soft wash chips in the Color set.
+A text input that filters a list as you type. Single select fills the field with the choice; multi select collects choices as chips in Color set hues.
 
 Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/combobox
 
@@ -184,7 +184,7 @@ Try it: delete a few letters and the matches come back.
 
 ## Multi select with chips
 
-Add `data-dd-combobox="multi"` and `.dd-combobox--multi`. Each choice becomes a chip coloured from the option’s `data-set` (1–8, the Color set). Backspace in the empty input removes the last chip; the list stays open while you pick.
+Add `data-dd-combobox="multi"` and `.dd-combobox--multi`. Each choice becomes a chip coloured from the option’s `data-set` (1–8, the Color set), or by its position when it has none. Backspace in the empty input removes the last chip; the list stays open while you pick.
 
 Try it: click labels to add or remove them, type to filter, or press Backspace in the empty field.
 
@@ -311,7 +311,7 @@ Try it: type a label that isn’t in the list, like “flaky-test”, and press 
 
 ## Chips
 
-The Soft wash chip: a 22% wash of a Color set hue with deep text in the same hue (34% on hover). Set `--dd-chip` to any `--dd-set-N`.
+A 22% wash of a Color set hue with deep text in the same hue (34% on hover). Set `--dd-chip` to any `--dd-set-N`.
 
 Outside a combobox a chip can still go: give it data-dd-dismissible and its remove button data-dd-dismiss. Try removing one.
 
@@ -365,7 +365,7 @@ Invalid: the text matches no team; open the list and pick one. Disabled: the fie
 
 | class / attribute | what it does |
 |---|---|
-| `.dd-combobox` | Wrapper: anchors the listbox under the box. Holds a `.dd-input` and a `.dd-listbox`. |
+| `.dd-combobox` | Wrapper: anchors the listbox under the box. Holds a `.dd-input` and a `.dd-listbox`. `.is-open` while the list shows. |
 | `.dd-combobox--multi` | Chips and the input wrap together inside the box. |
 | `.dd-combobox__toggle` | Chevron button in an affix (`.dd-input__btn`); flips while open. |
 | `.dd-combobox__chip` | Soft wash chip. Colour from `--dd-chip` (default `var(--dd-set-1)`). |
@@ -376,21 +376,21 @@ Invalid: the text matches no team; open the list and pick one. Disabled: the fie
 
 ## Behaviour
 
-Add `data-dd-combobox` (or `="multi"`) to the wrapper and `role="combobox"` to the input. The script keeps `aria-expanded` and `aria-activedescendant` on the input, writes values into an optional hidden input, and fires a bubbling `dd-combobox` event with `{ value, values, option }` (plus `created: true` for a new value). Options may carry `data-keywords` to match on more than their label; `data-dd-combobox-create` on the wrapper allows new values.
+Add `data-dd-combobox` (or `="multi"`) to the wrapper and `role="combobox"` to the input. The script keeps `aria-expanded` and `aria-activedescendant` on the input, writes the values into an optional hidden input (comma-separated) and fires `change` on it, and fires a bubbling `dd-combobox` event with `{ value, values, option }` (plus `created: true` for a new value). Options may carry `data-keywords` to match on more than their label; `data-dd-combobox-create` on the wrapper allows new values.
 
 | class / attribute | what it does |
 |---|---|
 | `Typing` | Filters and opens; the first match becomes active. |
-| `↓ · ↑` | Open (on the typed text, if any), then move through matches. |
+| `↓ · ↑` | ↓ opens the list (filtered by the typed text, if any); then both move through the matches. |
 | `Enter` | Choose the active option (multi: toggle it), or create the typed value. |
 | `Esc` | Close; pressed again in single mode, clear the field. |
 | `Backspace` | Multi, empty input: remove the last chip. |
-| `Tab · blur` | Close. Single mode restores the chosen label if the text matches nothing. |
+| `Tab · blur` | Close. Single mode picks an option whose label matches the text exactly; otherwise it puts back the chosen label, or empties the field. |
 
 ## Guidelines
 
 Do:
-- Use a combobox once a list passes ~15 options or people know what they’re looking for.
+- Use a combobox once a list passes about 15 options, or when people know what they’re looking for.
 - Show a description or metadata when labels alone are ambiguous.
 - Keep chip colours stable per value, so “incident” is always the same hue.
 

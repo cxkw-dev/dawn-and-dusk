@@ -2,7 +2,7 @@
    Calendar: [data-dd-calendar] on a .dd-calendar with data-month="YYYY-MM", data-today, data-week-start (1 = Monday,
    default; 0 = Sunday), data-min / data-max (YYYY-MM-DD), data-mode="single" (data-value) or "range"
    (data-start / data-end). The script renders the month body, moves months ([data-dd-cal-nav="-1|1"]), selects days
-   and supports ← → ↑ ↓, Page Up / Down (month), Home / End (week). Fires a bubbling "dd-date" event with
+   and supports ← → ↑ ↓, Page Up / Down (month), Home / End (week). Fires bubbling "dd:date" and legacy "dd-date" events with
    detail { value } or { start, end }.
    Date picker: [data-dd-date-picker] wraps a .dd-input (with a [data-dd-date-toggle] button) and a
    .dd-date-picker__popover holding a calendar. Choosing a day fills the input and closes; a range closes on its
@@ -95,6 +95,7 @@
     const s = state(cal);
     const detail = s.mode === 'range' ? { start: s.start, end: s.end } : { value: s.value };
     cal.dispatchEvent(new CustomEvent('dd-date', { bubbles: true, detail }));
+    cal.dispatchEvent(new CustomEvent('dd:date', { bubbles: true, detail }));
   };
 
   const pick = (cal, day) => {
@@ -287,8 +288,8 @@
       e.preventDefault(); openPicker(root); return;
     }
     const b = e.target.closest?.('.dd-calendar__day');
-    if (!b) return;
-    const cal = b.closest('[data-dd-calendar]');
+    const cal = b?.closest('[data-dd-calendar]');
+    if (!cal) return; // a calendar without the hook is the page's own (a framework renders it)
     const d = parse(b.dataset.date);
     const ws = Number(cal.dataset.weekStart ?? 1);
     const moves = {

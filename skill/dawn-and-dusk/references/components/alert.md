@@ -47,7 +47,7 @@ Info, ok, warn and bad. The icon and the fill carry the intent; the title says w
 
 Actions are dotted text links on the right — the first is the way forward, `--secondary` steps back. A dismiss button with `data-dd-dismiss` fades the alert out and collapses the space it took.
 
-Try it: press × to dismiss an alert (or Tab to it and press Enter), or choose an action — here each one answers with a toast and clears the alert, since the problem is dealt with.
+Try it: press × (or Tab to it and press Enter) to dismiss an alert, or choose an action — each one answers with a toast and clears the alert, since the problem is dealt with.
 
 ```html
 <div class="dd-stack">
@@ -71,7 +71,7 @@ Try it: press × to dismiss an alert (or Tab to it and press Enter), or choose a
     </div>
     <div class="dd-alert__actions">
       <button class="dd-alert__action" type="button" data-dd-dismiss data-dd-toast="Retrying deploy" data-dd-toast-description="leetnode · a91f3c2 · from step 4 of 6">Retry</button>
-      <a class="dd-alert__action dd-alert__action--secondary" href="#logs">View logs</a>
+      <a class="dd-alert__action dd-alert__action--secondary" href="#">View logs</a>
     </div>
     <button class="dd-alert__dismiss" type="button" data-dd-dismiss aria-label="Dismiss"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-x"/></svg></button>
   </div>
@@ -99,7 +99,7 @@ One line, title and text running together. For forms, panels and table toolbars 
   <div class="dd-alert dd-alert--info dd-alert--compact">
     <svg class="dd-icon" aria-hidden="true"><use href="#dd-i-info"/></svg>
     <div class="dd-alert__body"><p class="dd-alert__title">Read-only.</p><p class="dd-alert__text">This snapshot is from 12 Oct, 09:41 UTC.</p></div>
-    <div class="dd-alert__actions"><a class="dd-alert__action" href="#latest">Open latest</a></div>
+    <div class="dd-alert__actions"><a class="dd-alert__action" href="#">Open latest</a></div>
   </div>
   <div class="dd-alert dd-alert--warn dd-alert--compact">
     <svg class="dd-icon" aria-hidden="true"><use href="#dd-i-alert"/></svg>
@@ -178,14 +178,15 @@ In dawn the status colour washes 14% over the page. In dusk a wash over a dark p
 | `.dd-alert__actions` | Right-aligned actions; wrap under the text when narrow. |
 | `.dd-alert__action` | Dotted text action — a `<button>` or `<a>`. `--secondary` for the quieter one. |
 | `.dd-alert__dismiss` | Square icon button, top-right. Add `data-dd-dismiss` and an `aria-label`. |
-| `--dd-alert-wash / -base` | Theme-level knobs: 14% over `--dd-bg` in dawn, 30% over `--dd-surface` in dusk. |
+| `--dd-alert-wash / -base / -desc` | Theme-level knobs: 14% over `--dd-bg` in dawn, 30% over `--dd-surface` in dusk; `-desc` is how much text colour the description keeps (72% / 80%). |
 
 ## Behaviour
 
 | class / attribute | what it does |
 |---|---|
-| `data-dd-dismiss` | On a button inside an alert, banner or callout: removes it with a short fade-and-collapse (instant under reduced motion). Focus moves to the parent so keyboard users aren’t dropped at the top of the page. |
+| `data-dd-dismiss` | On a button inside an alert, banner, callout or `data-dd-dismissible` element: removes it with a short fade-and-collapse (instant under reduced motion). Focus moves to the parent so keyboard users aren’t dropped at the top of the page. |
 | `data-dd-dismiss="#id"` | Dismisses the element the selector names instead of the enclosing one. |
+| `data-dd-dismissible` | Makes any other element a target for a `data-dd-dismiss` button inside it. |
 | `dd:dismiss` | Cancelable event fired on the alert before it goes. Call `preventDefault()` to keep it (e.g. to store the choice first). |
 | `dd.dismiss(el)` | Dismiss from code. |
 

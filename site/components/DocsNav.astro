@@ -1,18 +1,20 @@
 ---
 // The docs' main navigation, built on the system's own side nav: an icon rail with one item per section and a panel
-// with that section's pages. Sections come from site/nav/*.mjs (one file per group); the layout maps them to the rail.
+// with that section's pages (the model is site/lib/nav.ts, read from site/nav/*.mjs).
 // Every pane has the same anatomy: its title and page count, then each group under a micro-caps label, then the pages.
-// The search sits at the head of the panel and, while a query is typed, searches every section at once.
+// The search sits at the head of the panel and, while a query is typed, searches every section at once
+// (site/scripts/docs.js).
 import { i } from '../lib/icon';
+import { base, hrefOf, sections, type RailSection } from '../lib/nav';
 
-export interface NavItem { title: string; href: string; tag?: string | number; group?: string }
-export interface NavGroup { group: string; order: number; items: NavItem[]; keywords?: string }
-export interface RailSection { key: string; label: string; icon: string; title: string; groups: NavGroup[] }
+interface Props {
+  /** The rail section whose pane is open. */
+  active: string;
+  /** The current page's path, without a trailing slash. */
+  here: string;
+}
+const { active, here } = Astro.props;
 
-interface Props { sections: RailSection[]; active: string; base: string; here: string }
-const { sections, active, base, here } = Astro.props;
-
-const hrefOf = (it: NavItem) => `${base}/${it.href}`.replace(/\/$/, '');
 // Other names people search for, so "modal" finds Dialog and "dropdown" finds Menu and Select.
 const aka: Record<string, string> = {
   dialog: 'modal popup confirm', drawer: 'panel slide-over side panel', sheet: 'bottom sheet action sheet', menu: 'dropdown context menu actions',
@@ -62,13 +64,11 @@ const pages = (s: RailSection) => s.groups.reduce((n, g) => n + g.items.length, 
             <div class="doc-nav-group">
               <p class="dd-side-nav__section">{g.group}</p>
               {g.items.map((it) => {
-                const href = hrefOf(it);
-                const tag = it.tag == null ? null : String(it.tag);
+                const href = hrefOf(it.href);
                 return (
                   <a class="dd-side-nav__link" href={href} aria-current={href === here ? 'page' : undefined}
-                    data-find={`${it.title} ${g.keywords ?? g.group} ${aka[it.href.split('/').pop() ?? ''] ?? ''}`.toLowerCase()}>
+                    data-find={`${it.title} ${g.keywords} ${aka[it.href.split('/').pop() ?? ''] ?? ''}`.toLowerCase()}>
                     <span class="dd-side-nav__label">{it.title}</span>
-                    {tag && (/^\d+$/.test(tag) ? <span class="dd-side-nav__count">{tag}</span> : <span class="dd-side-nav__badge dd-side-nav__badge--new">{tag}</span>)}
                   </a>
                 );
               })}

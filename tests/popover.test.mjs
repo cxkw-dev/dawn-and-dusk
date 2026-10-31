@@ -120,3 +120,35 @@ test('touch at 375 in dusk: tap opens, left falls back below, tap outside closes
   const q = await rect(page, '#pop-promote');
   assert.ok(q.l >= 0 && q.r <= 375, `promote stays on screen: ${q.l}–${q.r}`);
 });
+
+test('a trigger rendered after load gets aria-expanded when it takes focus, and it follows open and close', async ({ open, assert }) => {
+  const page = await open('components/popover');
+  await page.send('Emulation.setFocusEmulationEnabled', { enabled: true }); // focus events, as in a focused window
+  await page.get(() => {
+    const box = document.createElement('div');
+    box.innerHTML = '<button class="dd-btn" type="button" id="late-pop-btn" popovertarget="late-pop">Later</button><div class="dd-popover" id="late-pop" popover role="dialog"><p>hello</p></div>';
+    document.querySelector('.doc-main').prepend(box);
+  });
+  await page.focus('#late-pop-btn');
+  assert.equal(await page.attr('#late-pop-btn', 'aria-expanded'), 'false');
+  await page.press('Enter');
+  assert.ok(await opened(page, 'late-pop'));
+  assert.equal(await page.attr('#late-pop-btn', 'aria-expanded'), 'true');
+});
+
+test('a panel removed while open (a re-render) lets its trigger go: aria-expanded back to false, nothing left to follow', async ({ open, assert }) => {
+  const page = await open('components/popover');
+  const id = await page.get(() => document.querySelector('.ex-stage .dd-popover[popover]').id);
+  await page.click(trigger(id));
+  assert.ok(await opened(page, id));
+  assert.equal(await page.attr(trigger(id), 'aria-expanded'), 'true');
+  await page.get((i) => { window.__panel = document.getElementById(i); window.__panel.remove(); }, id);
+  await page.waitFor((s) => document.querySelector(s).getAttribute('aria-expanded') === 'false', { args: [trigger(id)] });
+  // Put it back (the re-render's new node): it opens and closes as before.
+  await page.get(() => document.querySelector('.ex-stage').append(window.__panel));
+  await page.click(trigger(id));
+  assert.ok(await opened(page, id));
+  assert.equal(await page.attr(trigger(id), 'aria-expanded'), 'true');
+  await page.press('Escape');
+  assert.equal(await page.attr(trigger(id), 'aria-expanded'), 'false');
+});

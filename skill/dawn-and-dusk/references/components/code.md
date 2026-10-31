@@ -207,7 +207,7 @@ watching for file changes…
 &#x3C;/figure>
 ```
 
-`data-dd-terminal-play` types the commands out when the terminal scrolls into view: a natural typing rhythm and a steady block cursor, output a beat later, then it rests on a blinking prompt. `data-dd-terminal-delay` on a line holds it back (a slow upload, a build). Click the terminal to skip to the end; with reduced motion it simply shows the final state.
+`data-dd-terminal-play` types the commands out when the terminal scrolls into view: a natural typing rhythm and a steady block cursor, output a beat later, then it rests on a blinking prompt. `data-dd-terminal-delay` on a line holds it back (a slow upload, a build). Click the terminal to skip to the end; with reduced motion it shows the final state at once.
 
 ```
 $ npm run deploy -- --region eu-west-2
@@ -351,7 +351,7 @@ $HOME NODE_ENV=dev            # .dd-code__var  variable
 | `.is-highlight / .is-add / .is-del` | Line states: highlighted, added, removed. |
 | `.dd-code--numbered` | Line-number gutter (CSS counter, not copied). |
 | `.dd-code--diff` | +/− gutter for diffs. |
-| `.dd-code__k / __s / __n / __c / __f / __p` | Syntax tokens: keyword, string, number, comment, function, property. Prism (`.token.*`) and highlight.js (`.hljs-*`) classes map to the same colours. |
+| `.dd-code__k / __s / __n / __c / __f / __p / __t` | Syntax tokens: keyword, string, number, comment, function, property, tag name. Prism (`.token.*`) and highlight.js (`.hljs-*`) classes map to the same colours. |
 | `--dd-code-keyword … --dd-code-punct` | Override the token colours on `.dd-code`. |
 | `.dd-code-inline` | Inline code in running text. |
 | `.dd-code-field` | Copyable value: `__label`, `__box`, `__prefix`, `__value`, `__btn`, `__hint`. |

@@ -125,3 +125,17 @@ test('dusk, and a tooltip takes the theme of its trigger’s stage; rapid hoveri
   await page.waitFor(() => !document.querySelector('.dd-tooltip.is-open'));
   assert.equal(await page.count('.dd-tooltip:not(.dd-tooltip--static)'), 1, 'one shared tooltip');
 });
+
+test('a trigger removed under the pointer (a list re-rendered) takes its tooltip with it on the next move', async ({ open, assert }) => {
+  const page = await open('components/tooltip');
+  await page.hover(redeploy);
+  await page.waitFor(isOpen, { timeout: 1500 });
+  const c = await page.get((s) => { const r = document.querySelector(s).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, redeploy);
+  await page.get((s) => document.querySelector(s).remove(), redeploy);
+  for (let k = 1; k <= 4; k++) await moveTo(page, c.x + k * 4, c.y + 30 + k * 4);
+  await page.waitFor(() => !document.querySelector('.dd-tooltip.is-open:not(.dd-tooltip--static)'), { timeout: 1000 });
+  // Tooltips still work afterwards.
+  await page.hover(copy);
+  await page.waitFor(isOpen, { timeout: 1500 });
+  assert.equal(await page.text('#dd-tooltip'), 'Copy link');
+});

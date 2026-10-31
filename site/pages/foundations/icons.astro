@@ -17,12 +17,12 @@ const code = `<!-- once per page: the sprite (release/icons.svg), inline or fetc
 <svg class="dd-icon" aria-hidden="true"><use href="#dd-i-bell"/></svg>
 <svg class="dd-icon" role="img" aria-label="Alerts"><use href="#dd-i-bell"/></svg>`;
 ---
-<Docs title="Icons" group="Foundations" lead="Solar by 480 Design, Bold Duotone weight — soft, rounded and two-toned. Small UI glyphs (chevrons, check, close) use the linear cut so they stay crisp.">
+<Docs title="Icons" group="Foundations" lead="Solar by 480 Design, Bold Duotone weight: soft, rounded and two-toned. Small UI glyphs (chevrons, check, close, plus) are thin line strokes so they stay crisp, and the ai family is drawn in the same two-tone style.">
   <h2 id="usage">Usage</h2>
   <p>Icons ship as an SVG sprite (<code>release/icons.svg</code>). Inline it once near the top of <code>&lt;body&gt;</code>, then reference symbols with <code>&lt;use&gt;</code>. Icons inherit <code>currentColor</code> and size to <code>1.15em</code> via <code>.dd-icon</code>.</p>
   <Example code={usage} description="Duotone icons take their colour from the text; the second tone is the same colour at lower opacity." />
   <pre class="dd-mono" style="background: var(--dd-surface); padding: 16px 20px; border-radius: var(--dd-r-box); font-size: 13px; overflow:auto">{code}</pre>
-  <p>Need more? The full Solar set (1,200+ icons) is on <a href="https://icon-sets.iconify.design/solar/">Iconify</a>; add names to <code>scripts/fetch-icons.mjs</code> and run it.</p>
+  <p>Need more? Browse the full Solar set on <a href="https://icon-sets.iconify.design/solar/">Iconify</a>, add the names to <code>scripts/fetch-icons.mjs</code> and run it to rebuild the sprite.</p>
 
   <h2 id="set">The set</h2>
   <p>Click an icon to copy its <code>&lt;use&gt;</code> snippet.</p>

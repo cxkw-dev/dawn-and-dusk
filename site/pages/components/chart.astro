@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 // The examples are static HTML/SVG generated here; the Code panel shows the output.
 const r1 = (n: number) => +n.toFixed(1);
@@ -336,16 +337,6 @@ const order = `
   <h2 id="dusk">Dusk</h2>
   <p>Nothing changes in markup. The set tokens are lifted for dusk, so marks keep their contrast on dark surfaces; gridlines and the baseline are mixed from <code>--dd-text</code> and follow it; the 2px gaps and marker rings use the chart’s own surface (<code>--_bg</code>), so they cut cleanly in both modes. Ink inside a filled segment comes from <code>--dd-series-ink</code>: dark on every hue, except wine (3), which flips to light ink in dawn. Use “View in dusk” on any example above to compare.</p>
 
-  <h2 id="behaviour">Behaviour</h2>
-  <p>Charts work as static HTML: tooltips open on hover and keyboard focus with CSS alone. Add <code>data-dd-chart</code> to the <code>.dd-chart</code> figure and the script adds the rest:</p>
-  <ul>
-    <li><b>One tab stop per plot.</b> Slots, line points (<code>__hit</code>), 100% segments (<code>__seg</code>) and donut arcs (<code>__arc</code>) — or any element with <code>data-dd-chart-point</code> — share a roving <code>tabindex</code>. <kbd class="dd-kbd">←</kbd> <kbd class="dd-kbd">→</kbd> (or <kbd class="dd-kbd">↑</kbd> <kbd class="dd-kbd">↓</kbd>) step through them, <kbd class="dd-kbd">Home</kbd> / <kbd class="dd-kbd">End</kbd> jump to the ends, <kbd class="dd-kbd">Esc</kbd> hides the tooltip until the next move.</li>
-    <li><b>Touch.</b> Tapping a mark opens its tooltip; tapping anywhere else closes it. Tooltips flip to the side with room.</li>
-    <li><b>Floating tooltips.</b> Marks without a <code>.dd-chart__tip</code> inside get one built from <code>data-dd-chart-label</code>, <code>data-dd-chart-value</code> and an optional <code>data-dd-chart-title</code>, keyed by the mark’s series class. Give each mark <code>role="img"</code> and an <code>aria-label</code>, and its container <code>role="group"</code>.</li>
-    <li><b>Table view.</b> A <code>&lt;details class="dd-chart__data"&gt;</code> “View as table” needs no script. To swap the plot for its table instead, add a toggle button <code>data-dd-chart-view aria-pressed="false" aria-controls="ID"</code> and a <code>.dd-chart__data.dd-chart__data--swap</code> container with that ID and <code>hidden</code>; the figure gets <code>.is-table</code> and fires <code>dd:change</code> with <code>detail.view</code> = <code>"table"</code> or <code>"chart"</code>.</li>
-    <li>The active mark has <code>.is-active</code> (same look as hover); use it to style custom marks.</li>
-  </ul>
-
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
     ['.dd-chart', 'Chart card on <code>--dd-surface</code>; a size container. <code>--dd-chart-height</code> sets the plot height (200px).'],
@@ -355,6 +346,7 @@ const order = `
     ['.dd-chart__legend / __key', 'Legend list and key. <code>__key--line</code>, <code>__key--dot</code> change the swatch; <code>__key-value</code>, <code>__key-share</code> add figures.'],
     ['.dd-chart__legend--stack', 'One key per row, values right-aligned.'],
     ['.dd-chart__frame', 'Grid: <code>__y</code> ticks · <code>__plot</code> · optional <code>__end</code> labels, with <code>__x</code> below.'],
+    ['.dd-chart__end', 'Direct end labels for lines, each placed at its <code>--y</code>. <code>--dd-chart-end-width</code> sets the column (7.5rem). Hidden in charts under 460px.'],
     ['.dd-chart__y / __x', 'Tick labels in mono. <code>__x</code> is a band axis (one label per slot); <code>__x--points</code> centres labels on line points. <code>.is-minor</code> ticks hide on narrow charts.'],
     ['.dd-chart__plot', 'Plot area with hairline gridlines and a baseline. <code>--dd-chart-ticks</code> = number of intervals (4). <code>__plot--clean</code> keeps only the baseline.'],
     ['.dd-chart__svg', 'Absolutely filled SVG; use <code>viewBox="0 0 100 100" preserveAspectRatio="none"</code>.'],
@@ -368,16 +360,26 @@ const order = `
     ['.dd-chart__tip', 'Tooltip with <code>__tip-title</code>, <code>__tip-row</code> (value in <code>&lt;b&gt;</code>) and <code>__tip-row--total</code>. Shown on hover/focus of a slot or hit; <code>.is-flip</code> opens it to the left; <code>.is-static</code> for a standalone tooltip.'],
     ['.dd-chart__hbars / __hbar', 'Horizontal bar list: <code>__hbar-label</code>, <code>__hbar-track</code> &gt; <code>__hbar-fill</code> (<code>--v</code>), <code>__hbar-value</code>. <code>--dd-chart-label-width</code> sets the label column.'],
     ['.dd-chart__stack / __seg', '100% bar; segments weighted by <code>--v</code>. <code>__stack--thin</code> for the 8px form; <code>.is-quiet</code> hides a label that won’t fit.'],
-    ['.dd-chart__pie / __donut / __arc', 'Donut layout, SVG wrapper (<code>--dd-chart-donut</code> size) and arcs; <code>__donut-center</code> for the total.'],
-    ['.dd-chart__empty', 'Centered empty message over a faded plot (<code>__plot.is-empty</code>).'],
-    ['.dd-chart__data', '<code>&lt;details&gt;</code> “View as table” with every value. <code>__data--swap</code>: a hidden container the <code>data-dd-chart-view</code> toggle swaps in for the plot.'],
+    ['.dd-chart__pie / __donut / __arc', 'Donut layout, SVG wrapper (<code>--dd-chart-donut</code> size, 168px) and arcs; <code>__arc-track</code> draws an empty ring behind them, <code>__donut-center</code> holds the total.'],
+    ['.dd-chart__empty', 'Centred empty message over a faded plot (<code>__plot.is-empty</code>).'],
+    ['.dd-chart__data', '<code>&lt;details&gt;</code> “View as table” with every value; wrap the table in <code>__data-scroll</code>. <code>__data--swap</code>: a hidden container the <code>data-dd-chart-view</code> toggle swaps in for the plot.'],
     ['.dd-chart[data-dd-chart]', 'Opts into the script: roving focus, touch and floating tooltips, table swap. <code>.is-active</code> marks the current mark, <code>.is-table</code> the swapped figure.'],
   ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <p>Charts work as static HTML: tooltips open on hover and keyboard focus with CSS alone. Add <code>data-dd-chart</code> to the <code>.dd-chart</code> figure and the script adds the rest:</p>
+  <ul>
+    <li><b>One tab stop per plot.</b> Slots, line points (<code>__hit</code>), 100% segments (<code>__seg</code>) and donut arcs (<code>__arc</code>) — or any element with <code>data-dd-chart-point</code> — share a roving <code>tabindex</code>. <kbd class="dd-kbd">←</kbd> <kbd class="dd-kbd">→</kbd> (or <kbd class="dd-kbd">↑</kbd> <kbd class="dd-kbd">↓</kbd>) step through them, <kbd class="dd-kbd">Home</kbd> / <kbd class="dd-kbd">End</kbd> jump to the ends, <kbd class="dd-kbd">Esc</kbd> hides the tooltip until the next move.</li>
+    <li><b>Touch.</b> Tapping a mark opens its tooltip; tapping anywhere else closes it. Tooltips flip to the side with room.</li>
+    <li><b>Floating tooltips.</b> Marks without a <code>.dd-chart__tip</code> inside get one built from <code>data-dd-chart-label</code>, <code>data-dd-chart-value</code> and an optional <code>data-dd-chart-title</code>, keyed by the mark’s series class. Give each mark <code>role="img"</code> and an <code>aria-label</code>, and its container <code>role="group"</code>.</li>
+    <li><b>Table view.</b> A <code>&lt;details class="dd-chart__data"&gt;</code> “View as table” needs no script. To swap the plot for its table instead, add a toggle button <code>data-dd-chart-view aria-pressed="false" aria-controls="ID"</code> and a <code>.dd-chart__data.dd-chart__data--swap</code> container with that ID and <code>hidden</code>; the figure gets <code>.is-table</code> and fires <code>dd:change</code> with <code>detail.view</code> = <code>"table"</code> or <code>"chart"</code>.</li>
+    <li>The active mark has <code>.is-active</code> (same look as hover); use it to style custom marks.</li>
+  </ul>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides
     do={[
-      'Pick the form from the job: columns or bars for comparing amounts, lines for change over time, a 100% bar or donut for parts of one whole, a <a href="stat">stat</a> for a single number.',
+      `Pick the form from the job: columns or bars for comparing amounts, lines for change over time, a 100% bar or donut for parts of one whole, a <a href="${docs}/components/stat">stat</a> for a single number.`,
       'Assign series colours in the fixed order and keep each series’ colour when filters change.',
       'Label selectively: the line ends, the extreme, the one series the story is about. Let the axis, tooltip and table carry the rest.',
       'Round ticks to clean numbers and compact large ones on the axis (0 · 10K · 20K).',

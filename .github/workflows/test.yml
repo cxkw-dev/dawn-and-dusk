@@ -1,0 +1,43 @@
+# Behaviour tests: builds the docs, serves the build with `astro preview` and runs every tests/*.test.mjs in headless
+# Chrome against it (tests/lib/browser.mjs reads CHROME and DD_BASE). Runs on pull requests and on demand from the
+# Actions tab; the deploy workflow doesn't wait for it.
+name: Test
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DD_BASE: http://127.0.0.1:4321/dawn-and-dusk/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Serve the build
+        run: |
+          npx astro preview --host 127.0.0.1 --port 4321 > "$RUNNER_TEMP/preview.log" 2>&1 &
+          for i in $(seq 1 30); do curl -sf -o /dev/null "$DD_BASE" && exit 0; sleep 1; done
+          cat "$RUNNER_TEMP/preview.log"; exit 1
+      - name: Chrome
+        # The runner's Chrome, without the sandbox Ubuntu's AppArmor policy blocks (a throwaway VM, our own pages).
+        run: |
+          printf '#!/bin/sh\nexec google-chrome --no-sandbox "$@"\n' > "$RUNNER_TEMP/chrome"
+          chmod +x "$RUNNER_TEMP/chrome"
+          echo "CHROME=$RUNNER_TEMP/chrome" >> "$GITHUB_ENV"
+          google-chrome --version
+      - run: npm test

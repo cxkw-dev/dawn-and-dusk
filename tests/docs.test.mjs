@@ -1,7 +1,40 @@
 import { test } from './lib/test.mjs';
+import { BASE } from './lib/browser.mjs';
 
 // The docs chrome: site/layouts/Docs.astro + site/scripts/docs.js (+ copy.js for Copy HTML) — per-example theme, code,
 // copy, TOC, and the app shell the docs run on: side nav (#doc-nav: rail, panel, search, fold, off-canvas) and top bar.
+
+test('head: title, description, canonical URL and the social card (Open Graph / Twitter) on every kind of page', async ({ open, assert }) => {
+  const SITE = 'https://cxkw-dev.github.io/dawn-and-dusk/';
+  const head = (page) => page.get(() => {
+    const meta = (k) => document.head.querySelector(`meta[property="${k}"], meta[name="${k}"]`)?.getAttribute('content') ?? null;
+    return {
+      title: document.title, description: meta('description'), canonical: document.head.querySelector('link[rel="canonical"]')?.href ?? null,
+      robots: meta('robots'), type: meta('og:type'), site: meta('og:site_name'), ogTitle: meta('og:title'), ogDescription: meta('og:description'),
+      url: meta('og:url'), image: meta('og:image'), size: [meta('og:image:width'), meta('og:image:height')], alt: meta('og:image:alt'), card: meta('twitter:card'),
+      themeColor: [...document.head.querySelectorAll('meta[name="theme-color"]')].map((m) => [m.media, m.content]),
+    };
+  });
+  const card = { type: 'website', site: 'dawn & dusk', image: `${SITE}og.png`, size: ['1200', '630'], card: 'summary_large_image',
+    themeColor: [['(prefers-color-scheme: light)', '#f4efe7'], ['(prefers-color-scheme: dark)', '#1c1916']] };
+  const page = await open('components/button');
+  const lead = await page.text('.doc-head .dd-lead');
+  const { alt, ...button } = await head(page);
+  assert.deepEqual(button, { ...card, title: 'Button · dawn & dusk', description: lead, canonical: `${SITE}components/button/`, robots: null,
+    ogTitle: 'Button · dawn & dusk', ogDescription: lead, url: `${SITE}components/button/` }, 'the page’s lead describes it; the card image is absolute');
+  assert.match(alt, /^dawn & dusk — /);
+  const home = await head(await open(''));
+  assert.equal(home.ogTitle, 'dawn & dusk — the cxkw.dev design system');
+  assert.equal(home.canonical, SITE);
+  assert.ok(home.ogDescription.length > 60 && home.ogDescription === home.description, 'a site description when the page has no lead');
+  const lost = await head(await open('404'));
+  assert.equal(lost.robots, 'noindex', 'the 404 page is not indexed');
+  assert.deepEqual([lost.canonical, lost.url], [null, null], 'and claims no address of its own');
+  // The card's image ships with the site.
+  const png = await fetch(`${BASE}og.png`);
+  assert.equal(png.status, 200);
+  assert.equal(png.headers.get('content-type'), 'image/png');
+});
 
 // Tag the first n example frames so they can be addressed by selector: [data-t="ex0"], [data-t="ex1"]…
 const tagFrames = (page, n = 3) => page.evaluate((k) => [...document.querySelectorAll('.ex-frame')].slice(0, k).forEach((f, i) => { f.dataset.t = `ex${i}`; }), n);
@@ -224,9 +257,9 @@ test('fold: the chevron folds the panel to the rail, tooltips label the icons, a
   await page.waitFor(() => Number(getComputedStyle(document.querySelector('#doc-nav [data-dd-nav-section="foundations"]'), '::after').opacity) > 0.95);
   assert.equal(await page.get(() => getComputedStyle(document.querySelector('#doc-nav [data-dd-nav-section="foundations"]'), '::after').content), '"Foundations"', 'the rail shows its tooltip');
   // Next page: folded already when the parser finishes (before side-nav.js runs), so it never opens and closes.
-  await page.send('Page.addScriptToEvaluateOnNewDocument', { source: `document.addEventListener('readystatechange', () => { if (document.readyState !== 'interactive') return; const n = document.getElementById('doc-nav'); window.__atParse = { folded: n.classList.contains('is-collapsed'), restoring: n.classList.contains('is-restoring'), w: n.querySelector('.dd-side-nav__panel').getBoundingClientRect().width }; });` });
+  await page.send('Page.addScriptToEvaluateOnNewDocument', { source: `document.addEventListener('readystatechange', () => { if (document.readyState !== 'interactive') return; const n = document.getElementById('doc-nav'); window.__atParse = { folded: n.classList.contains('is-collapsed'), w: n.querySelector('.dd-side-nav__panel').getBoundingClientRect().width }; });` });
   await reload(page);
-  assert.deepEqual(await page.get(() => window.__atParse), { folded: true, restoring: true, w: 0 }, 'folded, without a transition, before the scripts');
+  assert.deepEqual(await page.get(() => window.__atParse), { folded: true, w: 0 }, 'the saved fold is already laid out before the deferred scripts');
   assert.equal(await panelW(), 0);
   assert.equal(await page.attr(`${NAV} [data-dd-nav-toggle]`, 'aria-label'), 'Expand navigation');
   assert.equal(await page.get(() => document.getElementById('doc-nav').classList.contains('is-restoring')), false, 'transitions are back after the first frames');
@@ -458,3 +491,14 @@ for (const [width, theme] of [[1440, 'dawn'], [375, 'dusk']]) {
     await unfold(page);
   });
 }
+
+
+for (const width of [375, 860]) test(`a saved desktop fold still focuses the current page when mobile navigation opens at ${width}`, async ({ open, assert }) => {
+  const page = await open('components/tabs', { width, height: 760 });
+  await page.get((key) => localStorage.setItem(key, 'collapsed'), FOLD_KEY);
+  await reload(page);
+  await page.click(MENU);
+  await page.waitFor(() => document.activeElement === document.querySelector('#doc-nav [aria-current="page"]'));
+  assert.equal(await page.get(() => getComputedStyle(document.activeElement).visibility), 'visible');
+  await page.get((key) => localStorage.setItem(key, 'open'), FOLD_KEY);
+});

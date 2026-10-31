@@ -67,7 +67,7 @@ const cards = `
   <legend class="dd-checkbox-group__legend">Add-ons for auth-gateway</legend>${card('Edge cache', 'Serve sessions from 30 regions.', '+$12/mo', true)}${card('Bot shield', 'Challenge suspicious sign-ins.', '+$8/mo')}${card('Point-in-time restore', 'Seven days of recovery for the session store.', '+$20/mo', true)}${card('Audit export', 'Requires the Team plan.', '+$5/mo', false, true)}
 </fieldset>`;
 ---
-<Docs title="Checkbox" group="Forms" lead="Turns an option on or off, alone or as one of many. Crisp checks: a hairline box with tight corners that fills with the accent when checked.">
+<Docs title="Checkbox" group="Forms" lead="Turns an option on or off, alone or as one of many. A hairline box with tight corners that fills with the accent when checked.">
   <Example title="States" description="On, off, mixed (indeterminate) and disabled. Hovering anywhere on the label lifts the box’s edge, or steps a checked box one tone. The native input is styled directly, so forms, keyboard and screen readers work as usual." code={states} />
 
   <h2 id="description">With a description</h2>
@@ -94,15 +94,17 @@ const cards = `
     ['.dd-checkbox-group', 'A <code>&lt;fieldset&gt;</code> of checkboxes; <code>--inline</code> lays them in a row.'],
     ['.dd-checkbox-group__legend · __nested', 'Group legend; indented children under a select-all parent.'],
     ['.dd-checkbox-card', 'Selectable card: a tonal row that takes an accent tint when checked.'],
+    ['.dd-checkbox-card__icon', 'Optional icon tile before the text.'],
     ['.dd-checkbox-card__aside', 'Trailing mono detail (price, size, count).'],
     ['.dd-checkbox-cards', 'Responsive grid of cards (fieldset).'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/checkbox.js</code> adds the mixed state and select-all groups.</p>
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['data-dd-indeterminate', 'Sets <code>indeterminate = true</code> on load (HTML has no attribute for it).'],
     ['data-dd-check-all="key"', 'Parent checkbox: checks or clears every <code>data-dd-check-in="key"</code>, and shows mixed when some are on.'],
-    ['data-dd-check-in="key"', 'Child checkbox of that parent.'],
+    ['data-dd-check-in="key"', 'Child checkbox of that parent. Disabled children are left as they are and don’t count.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

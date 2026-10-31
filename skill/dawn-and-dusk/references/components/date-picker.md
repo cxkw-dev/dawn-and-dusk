@@ -265,17 +265,19 @@ Try it: pick a preset or two days, then Apply; Cancel, Esc or a click outside pu
 
 ## Behaviour
 
+`ds/behaviors/date-picker.js` renders the months and handles selection, the keyboard and the popover.
+
 | class / attribute | what it does |
 |---|---|
-| `data-dd-calendar` | Renders the month from `data-month`, `data-value` or `data-start` / `data-end`, `data-mode`, `data-today`, `data-min`, `data-max`, `data-week-start`. Fires `dd-date`. |
-| `data-dd-date-picker` | On the wrapper: popover, filling the input, optional hidden input (ISO, ranges as `start/end`). |
+| `data-dd-calendar` | Renders the month from `data-month`, `data-value` or `data-start` / `data-end`, `data-mode`, `data-today`, `data-min`, `data-max`, `data-week-start` (1 = Monday, the default; 0 = Sunday). Fires a bubbling `dd:date` event (and the legacy `dd-date` event) with `{ value }`, or `{ start, end }` for a range. |
+| `data-dd-date-picker` | On the wrapper: popover, filling the input, optional hidden input (ISO, ranges as `start/end`). A read-only input opens the popover on click. |
 | `data-dd-date-toggle` | Button that opens / closes the popover. |
 | `data-dd-date-apply · data-dd-date-cancel` | Range footer buttons: commit, or close and restore. Without an Apply button, the second day or a preset commits and closes. |
-| `← → ↑ ↓` | Move a day or a week; crossing a month edge turns the page. |
-| `Page Up · Page Down · Home · End` | Previous / next month; start / end of the week. |
+| `← → ↑ ↓` | Move a day or a week; crossing a month edge turns the page. Focus stops at `data-min` / `data-max`. |
+| `Page Up · Page Down · Home · End` | Same day in the previous / next month; start / end of the week. |
 | `Enter · Space` | Choose the focused day. |
 | `Esc · Tab out · click outside` | Close the popover without changes; Esc returns focus to the calendar button. |
-| `Typing a date` | Parsed on change (`2026-12-01`, `Dec 1, 2026`). A date outside `data-min` / `data-max`, or text that isn’t a date, sets `aria-invalid`. |
+| `Typing a date` | Single mode: parsed on change (`2026-12-01`, `Dec 1, 2026`). A date outside `data-min` / `data-max`, or text that isn’t a date, sets `aria-invalid`; clearing the field clears the value. |
 
 ## Guidelines
 

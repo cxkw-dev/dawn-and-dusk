@@ -2,11 +2,12 @@
    - data-depth="2" sets how many levels start expanded (root = level 0).
    - Click a row to select it: the bar shows its path ($.replicas[0].region) and the copy button copies it.
    - Keyboard (WAI-ARIA tree): ↑/↓ move, → expand / first child, ← collapse / parent, Enter/Space toggle, Home/End.
-   - dd.jsonViewer(el, data, { depth, label }) renders any value programmatically. */
+   - dd.jsonViewer(el, data, { depth, label }) renders any value programmatically.
+   Clicks and keys act only on trees rendered here; a tree a framework renders from the same classes is left to it. */
 (() => {
   const dd = (window.dd = window.dd || {});
   const C = 'dd-json-viewer';
-  const icon = (n) => `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-${n}"/></svg>`;
+  const icon = (n) => `<svg class="dd-icon" aria-hidden="true"><use href="${dd.iconSprite || ''}#dd-i-${n}"/></svg>`;
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const ident = /^[A-Za-z_$][\w$]*$/;
   const childPath = (path, key, isArr) => (isArr ? `${path}[${key}]` : ident.test(key) ? `${path}.${key}` : `${path}[${JSON.stringify(key)}]`);
@@ -98,8 +99,11 @@
     });
   }
 
+  // Only trees this script rendered: one a framework renders from the same classes is left to it.
+  const ROOT = `.${C}[data-dd-json-viewer-ready]`;
+
   document.addEventListener('click', (e) => {
-    const root = e.target.closest(`.${C}`);
+    const root = e.target.closest(ROOT);
     if (!root) return;
     if (e.target.closest('[data-dd-json-viewer-expand], [data-dd-json-viewer-collapse]')) {
       const open = !!e.target.closest('[data-dd-json-viewer-expand]');
@@ -116,8 +120,8 @@
 
   document.addEventListener('keydown', (e) => {
     const item = e.target;
-    if (!(item instanceof Element) || item.getAttribute('role') !== 'treeitem' || !item.closest(`.${C}`)) return;
-    const root = item.closest(`.${C}`);
+    const root = item instanceof Element && item.getAttribute('role') === 'treeitem' ? item.closest(ROOT) : null;
+    if (!root) return;
     const list = visible(item.closest('[role="tree"]'));
     const i = list.indexOf(item);
     const expandable = item.hasAttribute('aria-expanded');

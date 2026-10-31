@@ -5,7 +5,8 @@
      the tab in one step, wrapping at the ends; disabled tabs are skipped.
    - Fires "dd:tabchange" on the [data-dd-tabs] element when the selection changes (not on load, not when the current
      tab is pressed again) with { detail: { tab, panel, previous } }.
-   - Global: dd.tabs.select(tabOrSelector) · dd.tabs.init() wires tabs added to the page later. */
+   - Global: dd.tabs.select(tabOrSelector) · dd.tabs.init() wires tabs added to the page later (left alone, they wire
+     themselves the first time focus, a click or a key reaches them). */
 (() => {
   let uid = 0;
   const own = (root, sel) => [...root.querySelectorAll(sel)].filter((el) => el.closest('[data-dd-tabs]') === root);
@@ -84,6 +85,12 @@
     else return;
     e.preventDefault();
     select(root, list[i], { focus: true });
+  });
+
+  // Tabs rendered after load are wired the first time focus reaches them (or on the first click / key, above).
+  document.addEventListener('focusin', (e) => {
+    const root = e.target.closest?.('[data-dd-tabs]');
+    if (root && e.target.matches('[role="tab"]')) init(root);
   });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAll); else initAll();

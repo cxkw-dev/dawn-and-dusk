@@ -1,6 +1,6 @@
 # switch — `switch`
 
-Turns a setting on or off right away. The classic pill: the track fills with the accent when on and the knob slides across.
+Turns a setting on or off right away. The pill track fills with the accent when on, and the knob slides across.
 
 Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/switch
 

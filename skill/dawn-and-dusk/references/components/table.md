@@ -115,10 +115,10 @@ Try it: hover a row and click anywhere on it, or Tab to a row and press Enter.
 | `.dd-table` | The card: `--dd-surface`, rounded, and the horizontal scroll container. Put a plain `<table>` inside, with `scope="col"` on the header cells. Give it `tabindex="0"`, `role="region"` and a label (`aria-label`, or `aria-labelledby` pointing at the header title) so a wide table can be scrolled from the keyboard. |
 | `th.is-num / td.is-num` | Right-aligned figure column (tabular numbers). |
 | `.is-muted · .is-strong · .is-mono · .is-shrink` | Cell helpers: secondary text, emphasis, mono IDs/hashes, shrink-to-fit column. |
-| `.dd-table__status[data-status]` | Dot + label. `ok · warn · bad · info · muted`. |
+| `.dd-table__status[data-status]` | Dot + label: `ok · warn · bad · info · muted`. `bad` also colours the label; `muted` greys it. |
 | `.dd-table--compact` | Tighter rows and padding. |
 | `.dd-table--mono` | Numeric cells in DM Mono. |
-| `.dd-table--interactive` | Rows get a pointer and a hover wash (a stronger one while pressed); a row also lights up while a link inside it has keyboard focus. |
+| `.dd-table--interactive` | Rows get a pointer and a hover wash (a stronger one while pressed); a row also lights up while something inside it has focus. |
 | `.dd-table__row-link` | In an `--interactive` table: the row’s one link, stretched over the whole row. It keeps the cell’s text style; keyboard focus rings the row. |
 | `.dd-table--plain` | No card: hairlines on the page, flush to the text edge. |
 | `.dd-table-header (+ __title, __meta, __action)` | Title row above the card. A `.dd-btn` placed in it is pushed to the far edge. |

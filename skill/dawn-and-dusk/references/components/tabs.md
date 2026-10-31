@@ -176,7 +176,7 @@ edge-cache in `fra1`: healthy.
 
 ## As page navigation
 
-For tabs that change the URL, use links with `aria-current="page"` inside a `<nav>` — no `data-dd-tabs`, no tab roles. The script leaves them alone: they navigate like any link and the next page marks its own tab. (On this page the links go nowhere, so a click just moves `aria-current` to show the marker.)
+For tabs that change the URL, use links with `aria-current="page"` inside a `<nav>` — no `data-dd-tabs`, no tab roles. The script leaves them alone: they navigate like any link and the next page marks its own tab. (On this page the links go nowhere, so a click only moves `aria-current` to show the marker.)
 
 ```html
 <nav aria-label="Project">
@@ -197,9 +197,10 @@ For tabs that change the URL, use links with `aria-current="page"` inside a `<na
 | `.dd-tabs__list` | The row of tabs (`role="tablist"`). Scrolls sideways when it overflows. |
 | `.dd-tabs__tab` | A tab. Active with `aria-selected="true"`, `aria-current="page"` or `.is-active`. |
 | `.dd-tabs__count` | Mono count pill inside a tab. |
+| `.dd-tabs__dot` | Small primary dot inside a tab, to flag something new. |
 | `.dd-tabs__panel` | A panel (`role="tabpanel"`). Hidden with the `hidden` attribute. |
-| `.dd-tabs--sm` | Smaller tabs. |
-| `.dd-tabs--pill` | Secondary pill tabs, no baseline. |
+| `.dd-tabs--sm` | Smaller tabs. On the wrapper, or on a lone `__list` of links. |
+| `.dd-tabs--pill` | Secondary pill tabs, no baseline. On the wrapper, or on a lone `__list` of links. |
 | `.dd-tabs--vertical` | List beside the panels; the current tab sits on a deeper tone. Wraps above the panels when narrow. |
 
 ## Behaviour

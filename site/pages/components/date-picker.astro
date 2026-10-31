@@ -169,16 +169,17 @@ const rangePicker = `
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/date-picker.js</code> renders the months and handles selection, the keyboard and the popover.</p>
   <ClassTable head={['Attribute / key', 'What it does']} rows={[
-    ['data-dd-calendar', 'Renders the month from <code>data-month</code>, <code>data-value</code> or <code>data-start</code> / <code>data-end</code>, <code>data-mode</code>, <code>data-today</code>, <code>data-min</code>, <code>data-max</code>, <code>data-week-start</code>. Fires <code>dd-date</code>.'],
-    ['data-dd-date-picker', 'On the wrapper: popover, filling the input, optional hidden input (ISO, ranges as <code>start/end</code>).'],
+    ['data-dd-calendar', 'Renders the month from <code>data-month</code>, <code>data-value</code> or <code>data-start</code> / <code>data-end</code>, <code>data-mode</code>, <code>data-today</code>, <code>data-min</code>, <code>data-max</code>, <code>data-week-start</code> (1 = Monday, the default; 0 = Sunday). Fires a bubbling <code>dd:date</code> event (and the legacy <code>dd-date</code> event) with <code>{ value }</code>, or <code>{ start, end }</code> for a range.'],
+    ['data-dd-date-picker', 'On the wrapper: popover, filling the input, optional hidden input (ISO, ranges as <code>start/end</code>). A read-only input opens the popover on click.'],
     ['data-dd-date-toggle', 'Button that opens / closes the popover.'],
     ['data-dd-date-apply · data-dd-date-cancel', 'Range footer buttons: commit, or close and restore. Without an Apply button, the second day or a preset commits and closes.'],
-    ['← → ↑ ↓', 'Move a day or a week; crossing a month edge turns the page.'],
-    ['Page Up · Page Down · Home · End', 'Previous / next month; start / end of the week.'],
+    ['← → ↑ ↓', 'Move a day or a week; crossing a month edge turns the page. Focus stops at <code>data-min</code> / <code>data-max</code>.'],
+    ['Page Up · Page Down · Home · End', 'Same day in the previous / next month; start / end of the week.'],
     ['Enter · Space', 'Choose the focused day.'],
     ['Esc · Tab out · click outside', 'Close the popover without changes; Esc returns focus to the calendar button.'],
-    ['Typing a date', 'Parsed on change (<code>2026-12-01</code>, <code>Dec 1, 2026</code>). A date outside <code>data-min</code> / <code>data-max</code>, or text that isn’t a date, sets <code>aria-invalid</code>.'],
+    ['Typing a date', 'Single mode: parsed on change (<code>2026-12-01</code>, <code>Dec 1, 2026</code>). A date outside <code>data-min</code> / <code>data-max</code>, or text that isn’t a date, sets <code>aria-invalid</code>; clearing the field clears the value.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

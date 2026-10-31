@@ -1,6 +1,6 @@
 # app shell — `app-shell`
 
-The page layout for apps: the side nav runs the full height on the left, the top bar and the content share the rest. Either the content scrolls inside a viewport-high shell, or the whole page scrolls under a sticky nav and bar. Fold the nav and the page reflows; on phones the nav slides in over the page.
+The page layout for apps: the side nav runs the full height on the left; the top bar and the content share the rest. The content scrolls inside a viewport-high shell, or the whole page scrolls under a sticky nav and bar; on phones the nav slides in over the page.
 
 Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/app-shell
 
@@ -163,7 +163,7 @@ Side nav, top bar, page header and content. Try it: the chevron at the foot of t
 
 ## On a phone
 
-Under 768px of shell width (or the breakpoint you pick) the side nav leaves the flow. The top bar shows its menu button and the logo (`dd-top-bar__narrow`); the button opens the nav over a scrim. Esc, the scrim, a link or tabbing out of it closes it, and focus goes back to the menu button. Try it: open the menu and pick a service.
+Under 768px of shell width (or the breakpoint you pick) the side nav leaves the flow. The top bar shows its menu button and the logo (`dd-top-bar__narrow`); the button opens the nav over a scrim. Esc, the scrim or a link closes it and returns focus to the menu button; tabbing out closes it too. Try it: open the menu and pick a service.
 
 ```html
 <div class="as-phone">
@@ -402,7 +402,8 @@ The skeleton, without the contents. Wire the top bar’s menu button to the nav�
 | class / attribute | what it does |
 |---|---|
 | `data-dd-nav-toggle` | On the rail’s chevron: folds the panel; remembered per nav `id`. |
-| `data-dd-nav-open="#id"` | On the top bar’s menu button: opens the nav off-canvas on narrow shells. Esc, the scrim, a link or the chevron close it and return focus to the button; tabbing out (onto the button too) closes it. While it covers the window the page behind doesn’t scroll (`dd-side-nav-lock` on `<html>`). Widen past the breakpoint and it is simply in view. |
+| `data-dd-nav-section="name"` | On a rail item: shows that section’s pane in the panel (see Side nav). |
+| `data-dd-nav-open="#id"` | On the top bar’s menu button: opens the nav off-canvas on narrow shells. Esc, the scrim, a link or the chevron close it and return focus to the button; tabbing out (onto the button too) closes it. While it covers the window the page behind doesn’t scroll (`dd-side-nav-lock` on `<html>`). If the shell widens past the breakpoint while it is open, it closes and stays in view. |
 | `data-dd-autoclose` | On the avatar menu: closes on outside click, Esc or choosing an item. |
 
 ## Guidelines

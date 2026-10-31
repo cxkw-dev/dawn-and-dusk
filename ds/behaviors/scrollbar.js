@@ -12,5 +12,6 @@
   addEventListener('resize', measure, { passive: true });
   addEventListener('load', measure);
   // Content can grow until the page scrolls (or shrink until it doesn't): re-measure when the body's size changes.
-  if ('ResizeObserver' in window) document.addEventListener('DOMContentLoaded', () => new ResizeObserver(measure).observe(document.body));
+  const watch = () => { if ('ResizeObserver' in window) new ResizeObserver(measure).observe(document.body); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch(); // loaded late too
 })();

@@ -75,7 +75,7 @@ t.dismiss();                            // close it early
 dd.toast.clear();                       // close them all`;
 ---
 <Docs title="Toast" group="Feedback & status" lead="A short confirmation that something happened, out of the way at the bottom-right. It leaves on its own, waits while you hover, and offers one action — usually undo.">
-  <Example title="Intents" description="Ok for done, info for news, warn for heads-up, bad for a failure the person should know about. The intent tints the icon and the timer line; the toast itself stays an ink slab in dawn and a raised dark surface in dusk. These sit in the page so you can see them side by side (× still works); raise the real ones under Try it." code={intents} stage="center" />
+  <Example title="Intents" description="Ok for done, info for news, warn for a heads-up, bad for a failure the person should know about. The intent tints the icon and the timer line; the toast itself stays an ink slab in dawn and a raised dark surface in dusk. These sit in the page so you can compare them (× still works); raise live ones under Try it." code={intents} stage="center" />
 
   <h2 id="actions">Action and undo</h2>
   <p>One action, a verb the person might want right now — almost always <b>Undo</b>. The hairline along the bottom shows the time left before the toast leaves.</p>
@@ -95,17 +95,18 @@ dd.toast.clear();                       // close them all`;
     ['.dd-toast', 'One toast. Ink in dawn, <code>--dd-float-bg</code> + <code>--dd-shadow-float</code> in dusk. Inside a <code>.dd-toaster</code> it slides in and can be swiped away.'],
     ['.dd-toast--{intent}', 'Intent: <code>info</code> · <code>ok</code> · <code>warn</code> · <code>bad</code> · <code>neutral</code>. Tints the icon and the timer line.'],
     ['> .dd-icon', 'Leading icon. The JS picks <code>info</code>, <code>success</code>, <code>alert</code>, <code>danger</code> or <code>bell</code>.'],
-    ['.dd-toast__body / __title / __text', 'Title (600) and a muted one-line description.'],
+    ['.dd-toast__body / __title / __text', 'Title (600) and a muted description.'],
     ['.dd-toast__actions / __action', 'The single dotted text action.'],
     ['.dd-toast__dismiss', 'Close button. Needs an <code>aria-label</code>.'],
     ['.dd-toast__progress', 'Hairline timer along the bottom; animated by the JS, hidden under reduced motion.'],
+    ['--dd-toast-bg / -fg / -muted', 'Theme-level colours: ink with page-coloured text in dawn, <code>--dd-float-bg</code> in dusk.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute / API', 'What it does']} rows={[
-    ['dd.toast(options | title)', 'Shows a toast; returns <code>{ el, dismiss() }</code>. Options: <code>title</code>, <code>description</code>, <code>intent</code>, <code>action: { label, onClick }</code>, <code>duration</code> (ms, default 5000, 0 = sticky), <code>icon</code>, <code>dismissible</code>.'],
+    ['dd.toast(options | title)', 'Shows a toast; returns <code>{ el, dismiss() }</code>. Options: <code>title</code>, <code>description</code>, <code>intent</code> (default <code>info</code>), <code>action: { label, onClick }</code> (runs, then closes the toast), <code>duration</code> (ms, default 5000, 0 = sticky), <code>icon</code> (any sprite name), <code>dismissible</code> (<code>false</code> drops the ×).'],
     ['dd.toast.clear()', 'Dismisses every toast.'],
-    ['data-dd-toast="Title"', 'Click to show a toast. Add <code>data-dd-toast-description</code>, <code>-intent</code>, <code>-action</code> and <code>-duration</code>.'],
+    ['data-dd-toast="Title"', 'Click to show a toast. Add <code>data-dd-toast-description</code>, <code>-intent</code>, <code>-action</code> (a label; the button closes the toast) and <code>-duration</code>.'],
     ['Pause', 'Hovering or focusing the stack, or switching tabs, pauses every timer.'],
     ['Stacking', 'New toasts slide in at the bottom; the ones above glide up to make room. Past four, the oldest leaves.'],
     ['Swipe', 'Drag a toast sideways (touch, pen or mouse) past a third of its width, or flick it, to dismiss it. A short drag springs back.'],

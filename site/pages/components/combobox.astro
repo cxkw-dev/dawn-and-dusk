@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 type Svc = { value: string; desc: string; meta: string };
 const services: [string, Svc[]][] = [
@@ -134,7 +135,7 @@ const states = `
   </div>
 </div>`;
 ---
-<Docs title="Combobox" group="Forms" lead="A text input that filters a list as you type. Single select fills the field with the choice; multi select collects choices as Soft wash chips in the Color set.">
+<Docs title="Combobox" group="Forms" lead="A text input that filters a list as you type. Single select fills the field with the choice; multi select collects choices as chips in Color set hues.">
   <Example title="Searchable select" description="Shown open on the current choice: groups, a description and mono metadata per row, a check on the chosen one. Click outside to close it; click, type or press ↓ to open it again." code={basic} minHeight="570px" />
 
   <h2 id="filtering">Filtering</h2>
@@ -146,7 +147,7 @@ const states = `
   <Example code={empty} description="Try it: delete a few letters and the matches come back." minHeight="215px" />
 
   <h2 id="multi">Multi select with chips</h2>
-  <p>Add <code>data-dd-combobox="multi"</code> and <code>.dd-combobox--multi</code>. Each choice becomes a chip coloured from the option’s <code>data-set</code> (1–8, the Color set). Backspace in the empty input removes the last chip; the list stays open while you pick.</p>
+  <p>Add <code>data-dd-combobox="multi"</code> and <code>.dd-combobox--multi</code>. Each choice becomes a chip coloured from the option’s <code>data-set</code> (1–8, the Color set), or by its position when it has none. Backspace in the empty input removes the last chip; the list stays open while you pick.</p>
   <Example code={multi} description="Try it: click labels to add or remove them, type to filter, or press Backspace in the empty field." minHeight="515px" />
 
   <h3 id="create">Creating new values</h3>
@@ -154,7 +155,7 @@ const states = `
   <Example code={creatable} description="Try it: type a label that isn’t in the list, like “flaky-test”, and press Enter." minHeight="430px" />
 
   <h2 id="chips">Chips</h2>
-  <p>The Soft wash chip: a 22% wash of a Color set hue with deep text in the same hue (34% on hover). Set <code>--dd-chip</code> to any <code>--dd-set-N</code>.</p>
+  <p>A 22% wash of a Color set hue with deep text in the same hue (34% on hover). Set <code>--dd-chip</code> to any <code>--dd-set-N</code>.</p>
   <Example code={chips} description="Outside a combobox a chip can still go: give it data-dd-dismissible and its remove button data-dd-dismiss. Try removing one." />
 
   <h2 id="states">States</h2>
@@ -162,30 +163,30 @@ const states = `
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
-    ['.dd-combobox', 'Wrapper: anchors the listbox under the box. Holds a <code>.dd-input</code> and a <code>.dd-listbox</code>.'],
+    ['.dd-combobox', 'Wrapper: anchors the listbox under the box. Holds a <code>.dd-input</code> and a <code>.dd-listbox</code>. <code>.is-open</code> while the list shows.'],
     ['.dd-combobox--multi', 'Chips and the input wrap together inside the box.'],
     ['.dd-combobox__toggle', 'Chevron button in an affix (<code>.dd-input__btn</code>); flips while open.'],
     ['.dd-combobox__chip', 'Soft wash chip. Colour from <code>--dd-chip</code> (default <code>var(--dd-set-1)</code>).'],
     ['.dd-combobox__remove', 'The chip’s remove button. Give it an <code>aria-label</code>.'],
     ['.dd-combobox__create', 'The “Create …” row the script adds with <code>data-dd-combobox-create</code>.'],
-    ['.dd-listbox · __option · __group · __empty', 'The option list, shared with the custom select (see Select).'],
+    ['.dd-listbox · __option · __group · __empty', `The option list, shared with the custom select (see <a href="${docs}/components/select">Select</a>).`],
     ['.dd-listbox__match', 'The underlined part of a label that matches the query (added by the script).'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <p>Add <code>data-dd-combobox</code> (or <code>="multi"</code>) to the wrapper and <code>role="combobox"</code> to the input. The script keeps <code>aria-expanded</code> and <code>aria-activedescendant</code> on the input, writes values into an optional hidden input, and fires a bubbling <code>dd-combobox</code> event with <code>{'{ value, values, option }'}</code> (plus <code>created: true</code> for a new value). Options may carry <code>data-keywords</code> to match on more than their label; <code>data-dd-combobox-create</code> on the wrapper allows new values.</p>
+  <p>Add <code>data-dd-combobox</code> (or <code>="multi"</code>) to the wrapper and <code>role="combobox"</code> to the input. The script keeps <code>aria-expanded</code> and <code>aria-activedescendant</code> on the input, writes the values into an optional hidden input (comma-separated) and fires <code>change</code> on it, and fires a bubbling <code>dd-combobox</code> event with <code>{'{ value, values, option }'}</code> (plus <code>created: true</code> for a new value). Options may carry <code>data-keywords</code> to match on more than their label; <code>data-dd-combobox-create</code> on the wrapper allows new values.</p>
   <ClassTable head={['Key', 'What it does']} rows={[
     ['Typing', 'Filters and opens; the first match becomes active.'],
-    ['↓ · ↑', 'Open (on the typed text, if any), then move through matches.'],
+    ['↓ · ↑', '↓ opens the list (filtered by the typed text, if any); then both move through the matches.'],
     ['Enter', 'Choose the active option (multi: toggle it), or create the typed value.'],
     ['Esc', 'Close; pressed again in single mode, clear the field.'],
     ['Backspace', 'Multi, empty input: remove the last chip.'],
-    ['Tab · blur', 'Close. Single mode restores the chosen label if the text matches nothing.'],
+    ['Tab · blur', 'Close. Single mode picks an option whose label matches the text exactly; otherwise it puts back the chosen label, or empties the field.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides
-    do={['Use a combobox once a list passes ~15 options or people know what they’re looking for.', 'Show a description or metadata when labels alone are ambiguous.', 'Keep chip colours stable per value, so “incident” is always the same hue.']}
+    do={['Use a combobox once a list passes about 15 options, or when people know what they’re looking for.', 'Show a description or metadata when labels alone are ambiguous.', 'Keep chip colours stable per value, so “incident” is always the same hue.']}
     dont={['Don’t use free-text entry here; if new values are allowed, add an explicit “Create …” option.', 'Don’t colour chips by status — the Color set is categorical.', 'Don’t let a multi select grow past three rows; summarise (“+4 more”) instead.']}
   />
 </Docs>

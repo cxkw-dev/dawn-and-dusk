@@ -149,7 +149,11 @@
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Tab' || e.altKey || e.ctrlKey || e.metaKey) return;
     const modal = (d) => { try { return d.matches(':modal'); } catch { return d.open; } };
-    const dlg = [...document.querySelectorAll(SEL)].reverse().find((d) => d.open && modal(d));
+    // The top modal is the one holding focus (the others are inert); only with focus nowhere, fall back to the last open
+    // one in the page. Another kind of modal on top (a command palette) is left to the browser.
+    const host = document.activeElement?.closest?.('dialog');
+    const dlg = host?.open && modal(host) ? (host.matches(SEL) ? host : null)
+      : [...document.querySelectorAll(SEL)].reverse().find((d) => d.open && modal(d));
     if (!dlg) return;
     const list = tabbables(dlg);
     if (!list.length) { e.preventDefault(); dlg.focus(); return; }

@@ -16,6 +16,7 @@
   const GAP = 5;
   const stack = []; // open floating menus, root first: { menu, trigger, side, align, at, ret }
   let hoverTimer = 0;
+  let hoverItem = null;
   let typed = '';
   let typedAt = 0;
 
@@ -78,6 +79,8 @@
   }
 
   function closeAbove(menu) { // close every open menu stacked above `menu` (null → all)
+    clearTimeout(hoverTimer);
+    hoverItem = null;
     while (stack.length && stack[stack.length - 1].menu !== menu) {
       const s = stack.pop();
       s.menu.hidden = true;
@@ -183,13 +186,16 @@
     openContext(c.area, c.menu, e.clientX, e.clientY);
   });
 
-  // Hover moves focus within floating menus and opens / closes submenus after a short pause.
-  document.addEventListener('pointerover', (e) => {
+  // Real pointer movement moves focus; opening a menu beneath a stationary pointer must not steal keyboard focus.
+  // Moving onto another item opens / closes its submenu after a short pause.
+  document.addEventListener('pointermove', (e) => {
     // Touch has no hover: a finger held past the delay would open a submenu that the tap's click then closes.
     if (e.pointerType === 'touch') return;
     const item = e.target.closest(ITEM);
     const menu = item?.closest('.dd-menu.is-floating');
-    if (!menu) return;
+    if (!menu) { hoverItem = null; return; }
+    if (item === hoverItem) return;
+    hoverItem = item;
     clearTimeout(hoverTimer);
     if (!disabled(item)) item.focus({ preventScroll: true });
     hoverTimer = setTimeout(() => {
@@ -266,11 +272,17 @@
     }
   });
 
-  // Keep anchored menus attached while the page scrolls or resizes.
+  // Keep anchored menus attached while the page scrolls or resizes. A menu whose trigger has left the page (its row was
+  // re-rendered) closes, with its submenus, instead of jumping to the corner.
   let raf = 0;
   const follow = () => {
     if (!stack.length || raf) return;
-    raf = requestAnimationFrame(() => { raf = 0; stack.forEach((s) => { if (!s.at) place(s); }); });
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const gone = stack.findIndex((s) => s.trigger && !s.trigger.isConnected);
+      if (gone >= 0) closeAbove(gone > 0 ? stack[gone - 1].menu : null);
+      stack.forEach((s) => { if (!s.at) place(s); });
+    });
   };
   window.addEventListener('resize', follow);
   window.addEventListener('scroll', (e) => { if (!e.target?.closest?.('.dd-menu')) follow(); }, true);
@@ -297,12 +309,14 @@
     trigger: (m) => resolveMenu(m)?.ddTrigger || null,
   };
 
-  // Fill in ARIA the markup left out.
-  const init = () => document.querySelectorAll('[data-dd-menu]').forEach((t) => {
+  // Fill in ARIA the markup left out: on load, and for a trigger rendered later the first time it takes focus.
+  const fill = (t) => {
     if (!t.hasAttribute('aria-haspopup')) t.setAttribute('aria-haspopup', 'menu');
     if (!t.hasAttribute('aria-expanded')) t.setAttribute('aria-expanded', 'false');
     const m = menuFor(t);
     if (m?.id && !t.hasAttribute('aria-controls')) t.setAttribute('aria-controls', m.id);
-  });
+  };
+  document.addEventListener('focusin', (e) => { const t = e.target.closest?.('[data-dd-menu]'); if (t) fill(t); });
+  const init = () => document.querySelectorAll('[data-dd-menu]').forEach(fill);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

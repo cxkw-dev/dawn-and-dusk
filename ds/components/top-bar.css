@@ -31,8 +31,8 @@
 .dd-top-bar__switch > .dd-icon:last-child { width: 14px; height: 14px; color: var(--dd-faint); }
 .dd-top-bar__switch:hover { background: var(--dd-surface-2); }
 .dd-top-bar__switch:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 0; }
-.dd-top-bar__mark { display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: 5px;
-  background: var(--dd-set-3); color: var(--dd-on-primary); font-family: var(--dd-font-display); font-size: 11px; font-weight: 800; letter-spacing: -0.04em; }
+.dd-top-bar__mark { display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: var(--dd-r-ctl);
+  background: var(--dd-set-3); color: var(--dd-on-primary); font-family: var(--dd-font-display); font-size: var(--dd-fs-xs); font-weight: 800; letter-spacing: -0.04em; }
 
 /* Links (marketing-style header) */
 .dd-top-bar__links { display: flex; align-items: center; gap: calc(var(--dd-u) * 1); margin: 0; padding: 0; list-style: none; }

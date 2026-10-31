@@ -84,3 +84,20 @@ test('dusk and 375px touch: tap chooses; the chosen tone reads on the inset trac
   await page.tap(`${level} [role="radio"][value="warn"]`);
   assert.equal(await page.text('[data-seg-out]'), 'warn');
 });
+
+test('a control rendered after load gets its roving tabindex the first time focus reaches it', async ({ open, assert }) => {
+  const page = await open('components/segmented-control');
+  await page.send('Emulation.setFocusEmulationEnabled', { enabled: true }); // focus events, as in a focused window
+  await page.get(() => {
+    const g = document.createElement('div');
+    g.className = 'dd-segmented'; g.setAttribute('data-dd-segmented', ''); g.setAttribute('aria-label', 'Rendered later');
+    g.setAttribute('role', 'radiogroup'); // authored, as in the docs
+    g.innerHTML = '<button class="dd-segmented__item" type="button" role="radio">Day</button><button class="dd-segmented__item" type="button" role="radio" aria-checked="true">Week</button><button class="dd-segmented__item" type="button" role="radio">Month</button>';
+    document.querySelector('.doc-main').prepend(g);
+  });
+  const late = '[data-dd-segmented][aria-label="Rendered later"]';
+  await page.focus(`${late} [role="radio"]:nth-child(2)`);
+  assert.equal(await states(page, late), '0:-1 1:0 0:-1', 'only the chosen segment is a tab stop');
+  await page.press('ArrowRight');
+  assert.equal(await states(page, late), '0:-1 0:-1 1:0');
+});

@@ -236,6 +236,7 @@ const standalone = `
   <ClassTable rows={[
     ['.dd-input', 'The tonal box. Holds one control plus any affixes. Tucks automatically inside a <code>.dd-field</code>.'],
     ['.dd-input__control', 'The <code>&lt;input&gt;</code> itself: transparent, fills the box, carries the block padding.'],
+    ['.dd-input__control.dd-mono · .dd-num', 'Mono value at a slightly smaller size (IDs, keys); tabular figures for numbers.'],
     ['.dd-input__affix', 'Icon or short text before/after the value. Not clickable unless it holds a button.'],
     ['.dd-input__unit', 'Mono, muted unit or suffix: <code>MiB</code>, <code>USD / mo</code>, <code>.cxkw.dev</code>.'],
     ['.dd-input__prefix', 'Quiets a leading unit, like a URL scheme.'],
@@ -248,10 +249,11 @@ const standalone = `
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/text-input.js</code> wires the inline buttons. Each is opt-in, by attribute.</p>
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['data-dd-reveal', 'On a button in the box: toggles the control’s <code>type</code> between password and text, sets <code>aria-pressed</code> and swaps <code>.dd-input__show</code> / <code>.dd-input__hide</code>.'],
     ['data-dd-clear', 'On a button in the box: empties the control, fires <code>input</code> and <code>change</code>, returns focus.'],
-    ['data-dd-step="1" / "-1"', 'On a button in the box: steps a number control and fires <code>input</code> and <code>change</code>. The button disables itself while the value sits on that end of <code>min</code> / <code>max</code>.'],
+    ['data-dd-step="1" / "-1"', 'On a button in the box: steps a number control and fires <code>input</code> and <code>change</code>. The button disables itself while the value sits on that end of <code>min</code> / <code>max</code>, or while the control is disabled or read-only.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

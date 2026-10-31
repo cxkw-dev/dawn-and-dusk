@@ -349,3 +349,56 @@ test('context menus report their area as the trigger', async ({ open, assert }) 
   assert.equal(await page.get(() => document.getElementById('mn-ctx').ddTrigger.getAttribute('data-dd-contextmenu')), 'mn-ctx');
   await page.press('Escape');
 });
+
+test('a row re-rendered while its menu is open closes the menu instead of pinning it to the corner', async ({ open, assert }) => {
+  const page = await open('components/menu');
+  const row = '[data-dd-menu="mn-row"][aria-label^="Actions for auth-gateway"]';
+  await page.click(row);
+  assert.ok(await isOpen('mn-row')(page));
+  await page.get(() => { window.__closes = 0; document.getElementById('mn-row').addEventListener('dd:menuclose', () => window.__closes++); });
+  // A framework swaps the row's button for a fresh node, then the page scrolls.
+  await page.get((s) => { const t = document.querySelector(s); t.replaceWith(t.cloneNode(true)); }, row);
+  await page.get(() => window.scrollBy(0, 40));
+  await page.waitFor(() => document.getElementById('mn-row').hidden);
+  assert.equal(await page.get(() => window.__closes), 1, 'closed once, with dd:menuclose');
+  assert.equal(await page.get(() => document.getElementById('mn-row').classList.contains('is-floating')), false);
+  // The fresh button opens it again, anchored to it.
+  await page.click(row);
+  assert.ok(await isOpen('mn-row')(page));
+  const [t, m] = await page.get((s) => [document.querySelector(s).getBoundingClientRect().toJSON(), document.getElementById('mn-row').getBoundingClientRect().toJSON()], row);
+  assert.ok(m.top >= t.bottom - 1 && m.top < t.bottom + 20, 'anchored under the new button');
+});
+
+test('a trigger rendered after load gets aria-haspopup / -expanded / -controls when it takes focus, and works', async ({ open, assert }) => {
+  const page = await open('components/menu');
+  await page.click('.doc-head h1'); // the page has focus, as it would for a user
+  await page.get(() => {
+    const box = document.createElement('div');
+    box.innerHTML = '<button class="dd-btn" type="button" id="late-trigger" data-dd-menu="late-menu">Later</button>'
+      + '<div class="dd-menu" id="late-menu" hidden><button class="dd-menu__item" role="menuitem" type="button">Rename</button></div>';
+    document.querySelector('.doc-head').append(box);
+  });
+  await page.focus('#late-trigger');
+  assert.deepEqual(await page.get(() => ['aria-haspopup', 'aria-expanded', 'aria-controls'].map((a) => document.getElementById('late-trigger').getAttribute(a))), ['menu', 'false', 'late-menu']);
+  await page.press('ArrowDown');
+  assert.ok(await isOpen('late-menu')(page));
+  assert.equal(await page.attr('#late-trigger', 'aria-expanded'), 'true');
+  assert.equal(await focused(page), 'Rename');
+});
+
+test('opening under a stationary pointer preserves first-item focus until the pointer moves', async ({ open, assert }) => {
+  const page = await open('components/menu');
+  const trigger = '[aria-label="Actions for edge-cache"]';
+  await page.click(trigger);
+  await page.hover('#mn-row [data-dd-toast="Deployment URL copied"]');
+  assert.equal(await focused(page), 'Copy deployment URL');
+  await page.get(() => dd.menu.close('mn-row'));
+  await page.sleep(180);
+  await page.get((s) => dd.menu.open('mn-row', document.querySelector(s)), trigger);
+  await page.sleep(250);
+  // Browsers can emit a boundary event when a floating layer moves under a stationary pointer.
+  await page.get(() => document.querySelector('#mn-row [data-dd-toast]').dispatchEvent(new PointerEvent('pointerover', { bubbles: true, pointerType: 'mouse' })));
+  assert.equal(await focused(page), 'View logs', 'layout changes under the cursor do not change focus');
+  await page.hover('#mn-row [data-action="Rolling back"]');
+  assert.equal(await focused(page), 'Roll back', 'moving the pointer still focuses an item');
+});

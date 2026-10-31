@@ -38,7 +38,7 @@ Wrap keys pressed together in `.dd-kbd-combo`. Glyph combos need no separator; w
 
 ## Sizes and variants
 
-Small for buttons and dense rows, medium (default) for running text, large for shortcut help and onboarding. `--quiet` drops the keycap for hints in menus and lists. `is-active` shows a held key.
+Small for buttons and dense rows, medium (default) for running text, large for shortcut help and onboarding. `.dd-kbd--quiet` drops the keycap for hints in menus and lists. `.is-active` shows a held key.
 
 ```html
 <div class="dd-row" style="--dd-gap: 25px">
@@ -104,11 +104,12 @@ A `<dl class="dd-kbd-list">` lines actions up against their keys, with hairline 
 |---|---|
 | `.dd-kbd` | One key. Use it on `<kbd>`. |
 | `.dd-kbd--sm / --lg` | Sizes. Medium has no modifier. |
-| `.dd-kbd--quiet` | No keycap, just the glyphs in `--dd-quiet`. For hints inside menus and lists. |
-| `.dd-kbd.is-active` | A held key, filled with the accent. |
+| `.dd-kbd--quiet` | No keycap, only the glyphs in `--dd-quiet`. For hints inside menus and lists. |
+| `.dd-kbd.is-active` | A held key: filled with the accent and pressed down a pixel. |
 | `.dd-kbd-combo` | Groups keys pressed together. Use an outer `<kbd>`, as HTML recommends for combos. |
 | `.dd-kbd-combo__sep` | A `+`, `then` or short note between keys. |
 | `.dd-kbd-list` | A `<dl>` of shortcuts: `<dt>` action, `<dd>` keys. |
+| `--dd-font-kbd` | The key font: DM Mono, with the system UI font filling in the ⌘ ⇧ ⌥ ⌃ ↵ glyphs DM Mono lacks. Menu shortcut hints use it too. |
 
 ## Guidelines
 

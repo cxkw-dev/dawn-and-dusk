@@ -1,6 +1,5 @@
-/* Docs chrome (not part of the design system). Built only from dawn & dusk tokens. */
-.doc-skip { position: absolute; left: -999px; top: 8px; z-index: 100; }
-.doc-skip:focus { left: 8px; background: var(--dd-text); color: var(--dd-bg); padding: 6px 10px; border-radius: var(--dd-r-ctl); }
+/* Docs chrome: the shell, side-nav panel, top bar, page column, examples and foundations visuals of the docs site
+   (site/layouts/Docs.astro and site/components). Not part of the design system; built only from dawn & dusk tokens. */
 
 /* ---------- app shell: the docs run on the system's own .dd-app-shell, side nav and top bar ----------
    In page-scroll mode (dd-app-shell--page in the layout): the document scrolls, so anchors, scroll-padding, find-in-page,
@@ -8,12 +7,14 @@
    and the top bar stick. Under 900px (dd-app-shell--offcanvas-md) the side nav goes off-canvas. Only the docs' own
    additions follow: the view-transition names that keep the chrome still between pages. Off-canvas, the nav drops its
    name (it would freeze the sliding nav into the page swap). */
+.doc-skip { position: absolute; left: -999px; top: 8px; z-index: 100; }
+.doc-skip:focus { left: 8px; background: var(--dd-text); color: var(--dd-bg); padding: 6px 10px; border-radius: var(--dd-r-ctl); }
 .doc-app > .doc-nav { view-transition-name: doc-nav; }
 .doc-app > .dd-app-shell__main > .doc-bar { view-transition-name: doc-bar; }
 @container dd-app-shell (width < 900px) { .doc-app > .doc-nav { view-transition-name: none; } }
 .doc-content { container: doc-content / inline-size; }
 
-/* side nav panel: the search at its head, then one scrolling list; every section's pane sits in it */
+/* ---------- side nav panel: the search at its head, then one scrolling list; every section's pane sits in it ---------- */
 .doc-nav-panel { display: flex; flex-direction: column; }
 .doc-find { flex: none; width: var(--dd-side-nav-panel); padding: calc(var(--dd-u) * 3) calc(var(--dd-u) * 2.5) calc(var(--dd-u) * 1); }
 .doc-find-key { transition: opacity var(--dd-dur-fast) var(--dd-ease); }
@@ -37,7 +38,7 @@
 .doc-nav-list.is-filtered > .dd-side-nav__pane:last-child { padding-bottom: calc(var(--dd-u) * 3); }
 .doc-nav mark { background: color-mix(in oklab, var(--dd-primary) 30%, transparent); color: inherit; border-radius: 2px; padding: 0 1px; margin: 0 -1px; }
 
-/* top bar: page context on the left; version, GitHub and the theme on the right */
+/* ---------- top bar: page context on the left; version, GitHub and the theme on the right ---------- */
 .doc-ver { font-size: var(--dd-fs-xs); color: var(--dd-quiet); }
 .doc-theme-dusk { display: none; }
 [data-theme="dusk"] .doc-theme-dawn { display: none; }
@@ -47,14 +48,34 @@
   :root:not([data-theme]) .doc-theme-dusk { display: inline; }
 }
 
-/* content: the article and its "On this page" column, centred in the shell's content area */
+/* ---------- page: the article and its "On this page" column, centred in the shell's content area ---------- */
 .doc-body { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: var(--dd-space-10); max-width: 920px; margin-inline: auto; }
 .doc-body.is-wide { max-width: 1240px; }
 .doc-main { min-width: 0; padding-bottom: var(--dd-space-6); }
 .doc-head { display: flex; flex-direction: column; gap: var(--dd-space-3); margin-bottom: var(--dd-space-10); }
 .doc-head .dd-h1 { font-size: var(--dd-fs-4xl); }
+/* anchors land below the sticky top bar */
+html { scroll-padding-top: 80px; }
+/* on this page: a column beside the article once the content area has room for both (it depends on the fold too) */
+.doc-toc { display: none; }
+@container doc-content (min-width: 1000px) {
+  .doc-body.has-toc { grid-template-columns: minmax(0, 1fr) 220px; max-width: 1180px; }
+  .doc-toc:not([hidden]) {
+    display: block; position: sticky; top: calc(60px + var(--dd-space-8)); align-self: start;
+    max-height: calc(100dvh - 60px - var(--dd-space-8) * 2); padding: 0 0 var(--dd-space-4);
+  }
+}
+.doc-toc-h { margin: 0 0 8px; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-quiet); }
+.doc-toc ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+.doc-toc a { display: block; padding: 4px 10px; border-radius: var(--dd-r-ctl); font-size: var(--dd-fs-xs); line-height: 1.4; color: var(--dd-muted);
+  text-decoration: none; transition: color var(--dd-dur-fast) var(--dd-ease), background var(--dd-dur-fast) var(--dd-ease); }
+.doc-toc a:first-letter { text-transform: uppercase; }
+.doc-toc a:hover { color: var(--dd-text); }
+.doc-toc a[aria-current] { color: var(--dd-text); background: var(--dd-surface); }
+/* drawn inside: the list's scroll box would clip it */
+.doc-toc a:focus-visible { outline-offset: -2px; }
 
-/* prose inside docs pages */
+/* ---------- prose inside docs pages ---------- */
 .doc-main > h2, .doc-main > section > h2 { margin: var(--dd-space-12) 0 var(--dd-space-3); font-family: var(--dd-font-display); font-weight: 800;
   font-size: var(--dd-fs-2xl); letter-spacing: -0.045em; line-height: 1; text-transform: lowercase; }
 .doc-main > h3, .doc-main > section > h3 { margin: var(--dd-space-8) 0 var(--dd-space-2); font-size: var(--dd-fs-lg); font-weight: 650; letter-spacing: -0.01em; }
@@ -68,7 +89,8 @@
   text-decoration-color: color-mix(in oklab, currentColor 55%, transparent); transition: text-decoration-color var(--dd-dur-fast) var(--dd-ease); }
 .doc-main a:not([class]):hover { color: var(--dd-accent); text-decoration-style: solid; text-decoration-color: var(--dd-accent); }
 
-/* examples: one clean frame — the live stage on the page colour, a quiet toolbar and the code beneath, hairline edge */
+/* ---------- examples (Example.astro): one clean frame — the live stage on the page colour, a quiet toolbar and the
+   code beneath, hairline edge ---------- */
 .ex { margin: var(--dd-space-6) 0 var(--dd-space-10); }
 .ex-cap { display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--dd-space-3); }
 .ex-cap p { margin: 0; }
@@ -79,13 +101,18 @@
 .ex-stage--pad { padding: var(--dd-space-8); }
 .ex-stage--center { padding: var(--dd-space-10); display: grid; place-items: center; }
 .ex-stage--flush { padding: 0; overflow: hidden; }
+@media (max-width: 600px) { .ex-stage--pad, .ex-stage--center { padding: var(--dd-space-4); } }
 .ex-bar { display: flex; gap: 6px; padding: 6px 8px; background: var(--dd-surface); box-shadow: 0 -1px 0 var(--_hair); position: relative; }
 .ex-btn { border: 0; background: transparent; color: var(--dd-muted); font-size: var(--dd-fs-xs); padding: 4px 8px; border-radius: var(--dd-r-ctl); cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease); }
 .ex-btn:hover { color: var(--dd-text); background: var(--dd-wash); }
 .ex-btn:active { background: var(--dd-wash-strong); }
 .ex-btn:last-child { margin-left: auto; }
-.ex-copied { display: none; } .ex-btn[data-copied] .ex-copy { display: none; } .ex-btn[data-copied] .ex-copied { display: inline; color: var(--dd-ok); }
+.ex-btn[aria-expanded='true'] { color: var(--dd-text); background: var(--dd-wash-strong); }
+/* Copy HTML: copy.js marks the button [data-copied] for a moment */
+.ex-copied { display: none; }
+.ex-btn[data-copied] .ex-copy { display: none; }
+.ex-btn[data-copied] .ex-copied { display: inline; color: var(--dd-ok); }
 /* "View in dusk / dawn" names the theme the stage is NOT showing; pure CSS, so the label is right before any script runs */
 .ex-t-dawn { display: none; }
 :root[data-theme='dusk'] .ex-frame:not(:has(> .ex-stage[data-theme])) .ex-t-dusk, .ex-frame:has(> .ex-stage[data-theme='dusk']) .ex-t-dusk { display: none; }
@@ -95,24 +122,36 @@
   :root:not([data-theme]) .ex-frame:not(:has(> .ex-stage[data-theme])) .ex-t-dawn { display: inline; }
 }
 .ex-code { background: var(--dd-surface); box-shadow: 0 -1px 0 var(--_hair); position: relative; }
-.ex-btn[aria-expanded='true'] { color: var(--dd-text); background: var(--dd-wash-strong); }
 .ex-code pre { margin: 0; padding: var(--dd-space-3) var(--dd-space-5) var(--dd-space-4); font-size: 13px; line-height: 1.6; max-height: 480px; overflow: auto;
   scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--dd-text) 22%, transparent) transparent; }
+/* a standalone code panel, written as <details class="ex-code"> inside an .ex-frame */
+details.ex-code { box-shadow: none; }
+details.ex-code summary { cursor: pointer; list-style: none; padding: 8px 16px; font-size: var(--dd-fs-xs); color: var(--dd-muted); font-family: var(--dd-font-mono); }
+details.ex-code summary::-webkit-details-marker { display: none; }
+details.ex-code summary::before { content: '▸ '; }
+details.ex-code[open] summary::before { content: '▾ '; }
 
-/* Highlighted code uses site/lib/syntax.ts, a Shiki theme painted with the system's --dd-syntax-* tokens. */
+/* ---------- highlighted code: site/lib/syntax.ts, a Shiki theme painted with the system's --dd-syntax-* tokens ---------- */
 .astro-code { font-family: var(--dd-font-mono) !important; background: transparent !important; }
+/* standalone code blocks in prose (not inside an example) */
+.doc-main > pre.astro-code, .doc-main > section > pre.astro-code {
+  margin: var(--dd-space-3) 0 var(--dd-space-6); padding: var(--dd-space-4) var(--dd-space-5); border-radius: var(--dd-r-box);
+  background: var(--dd-surface) !important; font-size: 13px; line-height: 1.65; overflow-x: auto;
+}
+/* Shiki code blocks are focusable (they scroll): show where focus is, inside the box that would clip a ring outside */
+.doc-main pre.astro-code:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: -2px; }
+.ex-code pre:focus-visible { outline-offset: -2px; }
 
-/* tables, guides, swatches */
+/* ---------- class tables (ClassTable.astro), do / don't (Guides.astro), cards ---------- */
 .doc-table-wrap { overflow-x: auto; margin: var(--dd-space-4) 0 var(--dd-space-6); }
 .doc-table { width: 100%; border-collapse: collapse; font-size: var(--dd-fs-sm); }
 .doc-table th { text-align: left; font-weight: 500; color: var(--dd-muted); font-size: var(--dd-fs-xs); padding: 8px 12px 8px 0;
   border-bottom: 1px solid var(--dd-border-strong); }
 .doc-table td { padding: 10px 12px 10px 0; border-bottom: 1px solid color-mix(in oklab, var(--dd-text) 8%, transparent); vertical-align: top; }
 .doc-table td:first-child { white-space: nowrap; }
-.doc-table code { font-family: var(--dd-font-mono); font-size: 12.5px; padding: 0.1em 0.38em; border-radius: 4px; background: color-mix(in oklab, var(--dd-text) 8%, transparent); }
+@media (max-width: 700px) { .doc-table td:first-child { white-space: normal; overflow-wrap: normal; word-break: normal; } }
 .doc-guides { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--dd-space-4); margin: var(--dd-space-4) 0 var(--dd-space-8); }
-.doc-guide { padding: var(--dd-space-4) var(--dd-space-5); border-radius: var(--dd-r-box); background: var(--dd-surface); }
-.doc-guide { --_c: var(--dd-ok); }
+.doc-guide { --_c: var(--dd-ok); padding: var(--dd-space-4) var(--dd-space-5); border-radius: var(--dd-r-box); background: var(--dd-surface); }
 .doc-guide.is-dont { --_c: var(--dd-bad); }
 .doc-guide-h { display: flex; align-items: center; gap: 8px; margin: 0; font-size: var(--dd-fs-sm); font-weight: 650; color: var(--_c); }
 .doc-guide-h .dd-icon { width: 1.25em; height: 1.25em; }
@@ -123,15 +162,15 @@
   background: var(--dd-surface); color: var(--dd-text); text-decoration: none; }
 a.doc-card:hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
 a.doc-card:active { background-image: linear-gradient(var(--dd-wash-strong), var(--dd-wash-strong)); }
-.doc-card b { font-weight: 650; } .doc-card span { font-size: var(--dd-fs-sm); color: var(--dd-muted); }
+.doc-card b { font-weight: 650; }
+.doc-card span { font-size: var(--dd-fs-sm); color: var(--dd-muted); }
 
-/* foundations: swatches */
+/* ---------- foundations pages: swatches, the colour set, type specs, scales, icons, layers ---------- */
 .doc-swatches { display: flex; flex-direction: column; gap: 2px; margin: var(--dd-space-4) 0 var(--dd-space-8); border-radius: var(--dd-r-box); overflow: hidden; }
 .doc-sw-row { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(200px, 1.6fr); align-items: stretch;
   background: var(--dd-surface); font-size: var(--dd-fs-sm); }
 .doc-sw-row > * { padding: 10px 14px; display: flex; align-items: center; gap: 10px; min-width: 0; }
 .doc-sw-row.is-head { background: transparent; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
-.doc-sw-row code { font-family: var(--dd-font-mono); font-size: 12.5px; }
 .doc-sw-chip { width: 26px; height: 26px; flex: none; border-radius: 6px; box-shadow: inset 0 0 0 1px rgb(127 127 127 / 0.25); }
 .doc-sw-mode[data-theme] { background: var(--dd-bg); color: var(--dd-text); }
 .doc-sw-hex { font-family: var(--dd-font-mono); font-size: 12px; }
@@ -159,7 +198,7 @@ a.doc-card:active { background-image: linear-gradient(var(--dd-wash-strong), var
 .doc-layers { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0; margin: var(--dd-space-4) 0 var(--dd-space-8);
   border-radius: var(--dd-r-lg); overflow: hidden; }
 .doc-layers > div { padding: var(--dd-space-6) var(--dd-space-4); min-height: 120px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; font-size: var(--dd-fs-sm); }
-.doc-layers code { align-self: flex-start; font-family: var(--dd-font-mono); font-size: 12px; }
+.doc-layers code { align-self: flex-start; }
 .doc-layers > .doc-layer-page { background-color: var(--dd-bg); background-image: var(--dd-grain); background-size: var(--dd-grain-size); }
 @media (max-width: 700px) {
   /* phone: token on its own line, the two themes side by side, then the use */
@@ -170,15 +209,7 @@ a.doc-card:active { background-image: linear-gradient(var(--dd-wash-strong), var
   .doc-spec-row { grid-template-columns: 1fr; gap: 4px; }
 }
 
-/* standalone code blocks in prose (not inside an example) */
-.doc-main > pre.astro-code, .doc-main > section > pre.astro-code {
-  margin: var(--dd-space-3) 0 var(--dd-space-6); padding: var(--dd-space-4) var(--dd-space-5); border-radius: var(--dd-r-box);
-  background: var(--dd-surface) !important; font-size: 13px; line-height: 1.65; overflow-x: auto;
-}
-@media (max-width: 700px) { .doc-table td:first-child { white-space: normal; overflow-wrap: normal; word-break: normal; } }
-@media (max-width: 600px) { .ex-stage--pad, .ex-stage--center { padding: var(--dd-space-4); } }
-
-/* page-to-page: cross-document view transition — the side nav and top bar stay put, content cross-fades */
+/* ---------- page to page: a cross-document view transition — the side nav and top bar stay put, content cross-fades ---------- */
 @view-transition { navigation: auto; }
 ::view-transition-group(doc-nav), ::view-transition-group(doc-bar) { animation: none; }
 ::view-transition-old(root) { animation: 120ms var(--dd-ease) both doc-fade-out; }
@@ -186,35 +217,3 @@ a.doc-card:active { background-image: linear-gradient(var(--dd-wash-strong), var
 @keyframes doc-fade-out { to { opacity: 0; } }
 @keyframes doc-fade-in { from { opacity: 0; transform: translateY(6px); } }
 @media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root) { animation: none; } }
-
-/* on this page: a column beside the article once the content area has room for both (it depends on the fold too) */
-html { scroll-padding-top: 80px; }
-.doc-toc { display: none; }
-@container doc-content (min-width: 1000px) {
-  .doc-body.has-toc { grid-template-columns: minmax(0, 1fr) 220px; max-width: 1180px; }
-  .doc-toc:not([hidden]) {
-    display: block; position: sticky; top: calc(60px + var(--dd-space-8)); align-self: start;
-    max-height: calc(100dvh - 60px - var(--dd-space-8) * 2); padding: 0 0 var(--dd-space-4);
-  }
-}
-.doc-toc-h { margin: 0 0 8px; font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dd-quiet); }
-.doc-toc ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
-.doc-toc a { display: block; padding: 4px 10px; border-radius: var(--dd-r-ctl); font-size: var(--dd-fs-xs); line-height: 1.4; color: var(--dd-muted);
-  text-decoration: none; transition: color var(--dd-dur-fast) var(--dd-ease), background var(--dd-dur-fast) var(--dd-ease); }
-.doc-toc a:first-letter { text-transform: uppercase; }
-.doc-toc a:hover { color: var(--dd-text); }
-.doc-toc a[aria-current] { color: var(--dd-text); background: var(--dd-surface); }
-
-/* standalone code panel written as <details class="ex-code"> inside an .ex-frame */
-details.ex-code summary { cursor: pointer; list-style: none; padding: 8px 16px; font-size: var(--dd-fs-xs); color: var(--dd-muted); font-family: var(--dd-font-mono); }
-details.ex-code summary::-webkit-details-marker { display: none; }
-details.ex-code summary::before { content: '▸ '; } details.ex-code[open] summary::before { content: '▾ '; }
-details.ex-code { box-shadow: none; }
-
-/* focus rings that would be clipped by a scroll or overflow container are drawn inside instead */
-.doc-toc a:focus-visible, .ex-code pre:focus-visible { outline-offset: -2px; }
-/* Shiki code blocks are focusable (scrollable); show where focus is. */
-.doc-main pre.astro-code:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: -2px; }
-
-/* Examples nest their own app shells: give them back the default viewport height (custom properties inherit). */
-.doc-app .ex-stage { --dd-app-shell-h: initial; }

@@ -240,3 +240,18 @@ test('touch at 375: tap opens, tap an option chooses', async ({ open, assert }) 
   const fits = await page.get(() => { const r = document.querySelector('#cbx-2').closest('.dd-combobox').getBoundingClientRect(); return r.right <= innerWidth; });
   assert.ok(fits, 'field fits the viewport');
 });
+
+test('icons it inserts (Create row, new option, chip ×) follow dd.iconSprite like the rest of the system', async ({ open, assert }) => {
+  const page = await open('components/combobox');
+  await page.get(() => { window.dd.iconSprite = '/assets/icons.svg'; });
+  await page.focus('#cbm-2');
+  await page.type('flaky-test');
+  assert.deepEqual(await page.get(() => [...document.querySelectorAll('#cbm-2-list .dd-combobox__create use')].map((u) => u.getAttribute('href'))), ['/assets/icons.svg#dd-i-plus']);
+  await page.press('Enter');
+  const hrefs = await page.get(() => [
+    ...document.querySelectorAll('#cbm-2-list [data-value="flaky-test"]:not([data-dd-create]) use'),
+    ...document.querySelectorAll('#cbm-2 ~ .dd-combobox__chip use, .dd-combobox__chip[data-value="flaky-test"] use'),
+  ].map((u) => u.getAttribute('href')));
+  assert.ok(hrefs.length >= 2, `option check and chip × inserted (${hrefs})`);
+  assert.ok(hrefs.every((h) => h.startsWith('/assets/icons.svg#dd-i-')), hrefs.join(' '));
+});

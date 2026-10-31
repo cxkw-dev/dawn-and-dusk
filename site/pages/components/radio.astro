@@ -76,12 +76,12 @@ const rows = `
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
     ['.dd-radio', 'The <code>&lt;label&gt;</code> wrapper: control + text.'],
-    ['.dd-radio__input', 'The native <code>&lt;input type="radio"&gt;</code>.'],
+    ['.dd-radio__input', 'The native <code>&lt;input type="radio"&gt;</code>. Uses <code>:checked</code>, <code>:disabled</code>, <code>[aria-invalid]</code>.'],
     ['.dd-radio__text · __label · __desc', 'Label stack with a muted description.'],
     ['.dd-radio-group', 'A <code>&lt;fieldset&gt;</code> of radios; <code>--inline</code> lays them in a row.'],
     ['.dd-radio-group__legend · __hint', 'Group legend and an optional hint under it.'],
     ['.dd-radio-cards', 'Radio box group: a responsive grid (min column <code>--_min</code>, default 11rem).'],
-    ['.dd-radio-card', 'One selectable card. Holds a hidden <code>.dd-radio__input</code>.'],
+    ['.dd-radio-card', 'One selectable card. Holds a visually hidden <code>.dd-radio__input</code>.'],
     ['.dd-radio-card__icon · __title · __desc · __meta', 'Card content: icon tile (accent when chosen), title, description, mono meta (wrap a price in <code>&lt;b&gt;</code>).'],
     ['.dd-radio-card__mark', 'Check badge, shown when chosen.'],
     ['.dd-radio-card--row', 'One-line card with the mark at the end.'],

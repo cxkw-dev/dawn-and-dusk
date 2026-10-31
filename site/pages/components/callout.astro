@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 const kinds = `
 <div class="dd-stack">
@@ -39,7 +40,7 @@ npm run dev   # rebuilds ds/ and starts Astro on :4321</pre>
     <li>Edit files in <code>ds/</code>, never the generated <code>dawn-and-dusk.css</code>.</li>
     <li>Each section of the sidebar is one file in <code>site/nav/</code>.</li>
   </ul>
-  <p>Stuck? Read the <a href="#build">build notes</a>.</p>
+  <p>Stuck? Read the <a href="#">build notes</a>.</p>
 </aside>`;
 
 const compact = `
@@ -47,6 +48,13 @@ const compact = `
   <p class="dd-callout dd-callout--compact dd-callout--note">${i('info')}<span>Available since dawn-and-dusk v0.2.</span></p>
   <p class="dd-callout dd-callout--compact dd-callout--warning">${i('alert')}<span>Deprecated — use <code>.dd-btn--ink</code> instead.</span></p>
 </div>`;
+
+const dismissible = `
+<aside class="dd-callout dd-callout--note">
+  <p class="dd-callout__title">${i('info')}Preview available</p>
+  <p>You can try the new workspace before switching your team.</p>
+  <button class="dd-callout__dismiss" type="button" data-dd-dismiss aria-label="Dismiss note">${i('x')}</button>
+</aside>`;
 
 const prose = `
 <article style="max-width: 62ch">
@@ -80,8 +88,14 @@ const prose = `
     ['.dd-callout--{kind}', 'Kind: <code>note</code> (info, the default) · <code>tip</code> (ok) · <code>important</code> (accent) · <code>warning</code> (warn) · <code>caution</code> (bad).'],
     ['.dd-callout__title', 'Icon and label row. Icons: <code>info</code>, <code>sparkle</code>, <code>flag</code>, <code>alert</code>, <code>danger</code>.'],
     ['.dd-callout > *', 'Any prose after the title: <code>p</code>, <code>ul</code>, <code>pre</code>, <code>code</code>, links.'],
+    ['.dd-callout__dismiss', 'Optional top-right button with <code>data-dd-dismiss</code> and an accessible label.'],
     ['.dd-callout--compact', 'Icon + one line, no title.'],
   ]} />
+
+  <h2 id="behaviour">Behaviour</h2>
+  <p>A button with <code>data-dd-dismiss</code> inside a callout removes it with the same fade-and-collapse as an <a href={`${docs}/components/alert#behaviour`}>alert</a>.</p>
+
+  <Example title="Dismissible" code={dismissible} />
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides

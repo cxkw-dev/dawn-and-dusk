@@ -119,3 +119,28 @@ test('375 by touch: each cue stays on screen and Next works', async ({ open, ass
   }
   assert.equal(await step(page), -1);
 });
+
+test('a cue with no target (or a missing one) is skipped; the tour still runs and scrolling stays quiet', async ({ open, assert }) => {
+  const page = await open('components/guide-cue');
+  await listen(page);
+  await page.get(() => {
+    const cue = (target, text) => {
+      const c = document.createElement('div');
+      c.className = 'dd-guide-cue'; c.setAttribute('popover', 'manual'); c.dataset.ddGuide = 'gaps';
+      if (target) c.dataset.ddGuideTarget = target;
+      c.innerHTML = `<p class="dd-guide-cue__text">${text}</p><button data-dd-guide-next>Next</button>`;
+      return c;
+    };
+    document.body.append(cue(null, 'no target'), cue('#not-on-this-page', 'gone'), cue('#tour-new', 'real'));
+  });
+  await page.get(() => dd.guide.start('gaps'));
+  await page.sleep(400); // the smooth scroll to the target settles
+  const shown = () => page.get(() => [...document.querySelectorAll('.dd-guide-cue[data-dd-guide="gaps"]')].findIndex((c) => c.matches(':popover-open')));
+  assert.equal(await shown(), 2, 'the first cue with a target shows');
+  assert.ok(await page.exists('#tour-new[data-dd-guide-active]'));
+  await page.get(() => window.scrollBy(0, 30)); // layout() runs on scroll
+  await page.sleep(100);
+  await page.click('.dd-guide-cue[data-dd-guide="gaps"]:popover-open [data-dd-guide-next]');
+  assert.equal(await shown(), -1);
+  assert.deepEqual(await page.get(() => window.__end), [true], 'it finishes as completed');
+});

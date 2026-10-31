@@ -277,7 +277,7 @@ const reference = `
   <Example code={terminal} title="A working session" description="Test, build, dev — the dawn &amp; dusk loop. Copy in the bar takes only the commands, one per line; hover a command for its own copy button (data-dd-terminal-line-copy)." />
 
   <h3 class="dd-h4">Playback</h3>
-  <p><code>data-dd-terminal-play</code> types the commands out when the terminal scrolls into view: a natural typing rhythm and a steady block cursor, output a beat later, then it rests on a blinking prompt. <code>data-dd-terminal-delay</code> on a line holds it back (a slow upload, a build). Click the terminal to skip to the end; with reduced motion it simply shows the final state.</p>
+  <p><code>data-dd-terminal-play</code> types the commands out when the terminal scrolls into view: a natural typing rhythm and a steady block cursor, output a beat later, then it rests on a blinking prompt. <code>data-dd-terminal-delay</code> on a line holds it back (a slow upload, a build). Click the terminal to skip to the end; with reduced motion it shows the final state at once.</p>
   <Example code={playback} description="Try it: press replay in the title bar." />
 
   <h3 class="dd-h4">Live</h3>
@@ -299,7 +299,7 @@ const reference = `
     ['.is-highlight / .is-add / .is-del', 'Line states: highlighted, added, removed.'],
     ['.dd-code--numbered', 'Line-number gutter (CSS counter, not copied).'],
     ['.dd-code--diff', '+/− gutter for diffs.'],
-    ['.dd-code__k / __s / __n / __c / __f / __p', 'Syntax tokens: keyword, string, number, comment, function, property. Prism (<code>.token.*</code>) and highlight.js (<code>.hljs-*</code>) classes map to the same colours.'],
+    ['.dd-code__k / __s / __n / __c / __f / __p / __t', 'Syntax tokens: keyword, string, number, comment, function, property, tag name. Prism (<code>.token.*</code>) and highlight.js (<code>.hljs-*</code>) classes map to the same colours.'],
     ['--dd-code-keyword … --dd-code-punct', 'Override the token colours on <code>.dd-code</code>.'],
     ['.dd-code-inline', 'Inline code in running text.'],
     ['.dd-code-field', 'Copyable value: <code>__label</code>, <code>__box</code>, <code>__prefix</code>, <code>__value</code>, <code>__btn</code>, <code>__hint</code>.'],
@@ -319,7 +319,7 @@ const reference = `
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <ClassTable head={['Attribute', 'What it does']} rows={[
+  <ClassTable head={['Attribute / API', 'What it does']} rows={[
     ['data-dd-copy-target="#id"', 'Copies the text of the element with that id (the <code>&lt;code&gt;</code>). From <code>copy.js</code>; the button gets <code>[data-copied]</code> for 1.6s.'],
     ['data-dd-copy="text"', 'Copies the given text — use it for secrets so the masked value is never copied.'],
     ['data-dd-code-secret="…"', 'On the field value: the real secret. The visible text is the masked form.'],

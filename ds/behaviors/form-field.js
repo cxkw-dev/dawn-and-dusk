@@ -21,6 +21,9 @@
     if (soft) field.querySelectorAll('[data-dd-counter-error]').forEach((err) => { err.hidden = n <= max; });
   };
 
+  // Every counter under root (a counter outside a .dd-field has nothing to count).
+  const recount = (root) => root.querySelectorAll('.dd-field__counter').forEach((c) => { const f = c.closest('.dd-field'); if (f) update(f); });
+
   document.addEventListener('input', (e) => {
     const field = e.target.closest?.('.dd-field');
     if (field && field.querySelector('.dd-field__counter')) update(field);
@@ -29,8 +32,8 @@
   document.addEventListener('reset', (e) => {
     const form = e.target;
     if (!(form instanceof HTMLFormElement)) return;
-    setTimeout(() => form.querySelectorAll('.dd-field__counter').forEach((c) => { const f = c.closest('.dd-field'); if (f) update(f); }));
+    setTimeout(() => recount(form));
   });
-  const init = () => document.querySelectorAll('.dd-field__counter').forEach((c) => update(c.closest('.dd-field')));
+  const init = () => recount(document);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

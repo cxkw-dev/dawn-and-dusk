@@ -8,7 +8,7 @@ Every snippet is the exact markup of a working docs example. Icons are `<svg cla
 
 ### Inline
 
-The default: a term column and a value, hairlines between rows. IDs and times are mono. Try it: hover a row, or Tab to it, and copy its value — the icon turns to a check.
+The default: a term column and a value, hairlines between rows. IDs and times are mono. Try it: hover a row (or Tab to its copy button) and copy its value — the icon turns to a check.
 
 ```html
 <dl class="dd-description-list" style="max-width: 620px">
@@ -183,7 +183,7 @@ Long sets of short facts. Falls back to one column when the container gets narro
 | `.dd-description-list__details` | The value (`<dd>`). Lays out inline pieces with a small gap. |
 | `.dd-description-list__mono` | Mono, tabular figures — IDs, SHAs, times, amounts. |
 | `.dd-description-list__muted` | Secondary text next to a value. |
-| `.dd-description-list__status` | Value with a status dot: `data-status="ok \| warn \| bad \| info"`. |
+| `.dd-description-list__status` | Value with a status dot: `data-status="ok \| warn \| bad \| info \| muted"`. |
 | `.dd-description-list__copy` | Icon button with `data-dd-copy`; holds the `copy` and `check` icons and swaps on `[data-copied]`. |
 | `.dd-description-list--stacked` | Term above value. |
 | `.dd-description-list--columns` | Two columns of stacked items; one column when narrow. |

@@ -14,11 +14,14 @@
   --_grain: var(--dd-data-table-grain, var(--dd-grain));
   --_line: var(--dd-border);
   --_head-line: var(--dd-border-strong);
-  --_hover: color-mix(in oklab, var(--dd-text) 4.5%, var(--_bg));
-  --_sel: color-mix(in oklab, var(--dd-accent) 11%, var(--_bg));
-  --_sel-hover: color-mix(in oklab, var(--dd-accent) 15%, var(--_bg));
-  --_detail: color-mix(in oklab, var(--dd-text) 2.5%, var(--_bg));
-  --_on: var(--dd-accent-soft); /* pressed chip, bulk bar */
+  /* Dusk (the second light-dark() value): the film grain on the page compresses small tone steps, so hover / selected /
+     expanded take bigger steps (hover stays clearly quieter than selected), and the accent tones are mixed from the
+     page rather than --dd-accent-soft, which sits barely a step off the grained page. */
+  --_hover: light-dark(color-mix(in oklab, var(--dd-text) 4.5%, var(--_bg)), color-mix(in oklab, var(--dd-text) 7%, var(--_bg)));
+  --_sel: light-dark(color-mix(in oklab, var(--dd-accent) 11%, var(--_bg)), color-mix(in oklab, var(--dd-accent) 15%, var(--_bg)));
+  --_sel-hover: light-dark(color-mix(in oklab, var(--dd-accent) 15%, var(--_bg)), color-mix(in oklab, var(--dd-accent) 20%, var(--_bg)));
+  --_detail: light-dark(color-mix(in oklab, var(--dd-text) 2.5%, var(--_bg)), color-mix(in oklab, var(--dd-text) 4%, var(--_bg)));
+  --_on: light-dark(var(--dd-accent-soft), color-mix(in oklab, var(--dd-accent) 16%, var(--dd-bg))); /* pressed chip, bulk bar */
   --_shade: color-mix(in oklab, var(--dd-text) 14%, transparent);
   --_py: calc(var(--dd-u) * 1.7);
   --_px: calc(var(--dd-u) * 2.5);
@@ -29,25 +32,6 @@
 }
 .dd-data-table:has(.dd-data-table__rownum) { --_rn-w: 44px; }
 .dd-data-table:has(.dd-data-table__select) { --_sel-w: 36px; }
-/* Dusk: the film grain on the page compresses small tone steps, so hover / selected / expanded take bigger steps
-   (hover stays clearly quieter than selected), and the accent tones are mixed from the page rather than
-   --dd-accent-soft, which sits barely a step off the grained page. */
-[data-theme="dusk"] .dd-data-table {
-  --_hover: color-mix(in oklab, var(--dd-text) 7%, var(--_bg));
-  --_sel: color-mix(in oklab, var(--dd-accent) 15%, var(--_bg));
-  --_sel-hover: color-mix(in oklab, var(--dd-accent) 20%, var(--_bg));
-  --_detail: color-mix(in oklab, var(--dd-text) 4%, var(--_bg));
-  --_on: color-mix(in oklab, var(--dd-accent) 16%, var(--dd-bg));
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .dd-data-table {
-    --_hover: color-mix(in oklab, var(--dd-text) 7%, var(--_bg));
-    --_sel: color-mix(in oklab, var(--dd-accent) 15%, var(--_bg));
-    --_sel-hover: color-mix(in oklab, var(--dd-accent) 20%, var(--_bg));
-    --_detail: color-mix(in oklab, var(--dd-text) 4%, var(--_bg));
-    --_on: color-mix(in oklab, var(--dd-accent) 16%, var(--dd-bg));
-  }
-}
 
 /* ---------- toolbar ---------- */
 .dd-data-table__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5); }

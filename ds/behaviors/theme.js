@@ -29,6 +29,11 @@
     sync();
   });
   // The script may load deferred or late: sync now if the DOM is already there. Follow OS changes while nothing is stored.
+  // A toggle rendered later gets aria-pressed the first time it takes focus.
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sync); else sync();
+  document.addEventListener('focusin', (e) => {
+    const t = e.target.closest?.('[data-dd-theme-toggle]');
+    if (t && !t.hasAttribute('aria-pressed')) t.setAttribute('aria-pressed', String(current() === 'dusk'));
+  });
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', sync);
 })();

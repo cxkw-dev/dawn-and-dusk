@@ -77,9 +77,10 @@ const block = `
   <p>Hover steps each fill one tone (ghost buttons take a translucent wash, so they show on the page, on cards and in menus alike); pressing nudges the button down a pixel; keyboard focus draws the ring. Use the native <code>disabled</code> attribute (or <code>aria-disabled="true"</code> on links) to fade a button and stop clicks. While work is in flight, add <code>is-loading</code> and swap the icon for a spinner.</p>
   <Example code={states} description="Try it: the faded buttons ignore clicks and Tab skips them; the busy ones ignore clicks and Enter too. Press “Redeploy” in the next example to see the busy state live." />
   <h2 id="on-a-surface">On a surface</h2>
-  <p>Every variant works on a <code>--dd-surface</code> card as well as on the page. Hover the ghost buttons in dusk: the wash still reads.</p>
+  <p>Every variant works on a <code>.dd-surface</code> card as well as on the page. Hover the ghost buttons in dusk: the wash still reads.</p>
   <Example code={onSurface} description="Try it: “Redeploy” goes busy while it works, then confirms with a toast; clicking it again meanwhile does nothing. The copy button confirms too." />
   <h2 id="block">Full width</h2>
+  <p><code>.dd-btn--block</code> stretches a button across its container, for stacked actions in narrow forms and on phones.</p>
   <Example code={block} />
   <h2 id="api">Classes</h2>
   <ClassTable rows={[

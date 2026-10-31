@@ -157,7 +157,7 @@ const context = `
   <h2 id="overflow">Overflow menu</h2>
   <p>A “more” button at the end of a row. <code>data-dd-placement="bottom-end"</code> aligns the menu’s right edge with the trigger. Every row’s button can share one menu: open it on one row, then click another row’s ⋯ and the menu moves there.</p>
   <p>To know which row the menu is for, listen for <code>dd:menuopen</code> on the menu: <code>event.detail.trigger</code> is the button that opened it, so <code>trigger.closest(…)</code> finds the row. The menu also keeps that button as <code>menu.ddTrigger</code> after it closes, which is what an item’s click handler needs: the menu closes as the item runs.</p>
-  <Example code={endAligned} description="Try it: open a ⋯ menu — its header names the row — then click the next row’s ⋯; View logs and Roll back say which deployment they act on; “Promote to” has a submenu." />
+  <Example code={endAligned} description="Try it: open a ⋯ menu — its header names the row — then click the next row’s ⋯; “View logs” and “Roll back” say which deployment they act on; “Promote to” has a submenu." />
   <h2 id="context">Context menu</h2>
   <p><code>data-dd-contextmenu="menu-id"</code> on an area opens the menu at the pointer on right-click. Make the area focusable so keyboard users can open it with Shift F10 or the Menu key.</p>
   <Example code={context} description="Try it: right-click the file, or Tab to it and press Shift F10 or the Menu key." />
@@ -176,16 +176,18 @@ const context = `
     ['.dd-menu__check', 'Check icon, visible when the item has <code>aria-checked="true"</code>.'],
     ['.dd-menu__sub', 'Chevron for an item that opens a submenu.'],
     ['.dd-menu__item--danger', 'Destructive item: red text, soft red highlight.'],
-    ['[aria-disabled="true"]', 'Disabled item: dimmed to <code>--dd-quiet</code> (still readable), no highlight, skipped by the arrow keys.'],
+    ['[aria-disabled="true"]', 'Disabled item (<code>disabled</code> works too): dimmed to <code>--dd-quiet</code> (still readable), no highlight, skipped by the arrow keys.'],
+    ['.dd-btn[data-dd-menu][aria-expanded="true"]', 'A button trigger keeps its variant’s hover tone while its menu is open.'],
+    ['--dd-menu-bg / --dd-menu-hover', 'Panel and highlight colours. Default to <code>--dd-float-bg</code> and <code>--dd-float-hover</code>; the command palette uses them too.'],
   ]} />
   <h2 id="behaviour">Behaviour</h2>
-  <p><code>ds/behaviors/menu.js</code>. It fills in <code>aria-haspopup</code>, <code>aria-expanded</code> and <code>aria-controls</code> on triggers if you leave them out.</p>
+  <p><code>ds/behaviors/menu.js</code> floats the menu next to its trigger, moves focus into it and closes it on a click outside. It fills in <code>aria-haspopup</code>, <code>aria-expanded</code> and <code>aria-controls</code> on triggers if you leave them out.</p>
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['data-dd-menu="id"', 'On a button: toggles the menu with that id. With an empty value, the next <code>.dd-menu</code> sibling. On an item inside a menu: opens a submenu to its side.'],
-    ['data-dd-placement', '<code>bottom-start</code> (default), <code>bottom-end</code>, <code>top-start</code>, <code>top-end</code>. Menus flip when they would leave the viewport.'],
+    ['data-dd-placement', 'On the trigger or the menu: <code>bottom-start</code> (default), <code>bottom-end</code>, <code>top-start</code>, <code>top-end</code>. Menus flip when they would leave the viewport.'],
     ['data-dd-contextmenu="id"', 'On an area: opens the menu at the pointer on right-click, Shift F10 or the Menu key.'],
     ['role="menuitemcheckbox"', 'Click toggles <code>aria-checked</code>; the menu stays open.'],
-    ['role="menuitemradio"', 'Click checks this item and unchecks the others in its <code>role="group"</code>; the menu stays open.'],
+    ['role="menuitemradio"', 'Click checks this item and unchecks the others in its <code>role="group"</code> (or the whole menu); the menu stays open.'],
   ]} />
   <ClassTable head={['Event / API', 'What it does']} rows={[
     ['dd:menuopen', 'Fired on the menu as it opens, before it is measured (so a listener can relabel or disable items). <code>detail.trigger</code> is the button that opened it — or the area, for a context menu. Bubbles.'],
@@ -197,8 +199,8 @@ const context = `
   ]} />
   <ClassTable head={['Key', 'What it does']} rows={[
     ['↓ / ↑ on the trigger', 'Opens the menu with the first / last item focused. Enter and Space open at the first item.'],
-    ['↓ ↑ · Home End', 'Move between items, wrapping at the ends; disabled items are skipped.'],
-    ['A letter', 'Jumps to the next item that starts with it.'],
+    ['↓ ↑ · Home End', 'Move between items, wrapping at the ends; disabled items are skipped. Page Up / Page Down act as Home / End.'],
+    ['A letter', 'Jumps to the next item that starts with it; type several letters quickly to match more of a label.'],
     ['Enter / Space', 'Runs the focused item, or opens its submenu.'],
     ['→ / ←', 'Opens a submenu / closes it and returns to its parent item.'],
     ['Esc', 'Closes the innermost menu and returns focus to its trigger.'],

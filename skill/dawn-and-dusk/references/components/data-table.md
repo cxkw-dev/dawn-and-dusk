@@ -402,7 +402,7 @@ Toolbar, bulk actions, sticky header, frozen service column, sortable figures, s
 
 - Toolbar: search on the left, filter chips, then the row count, column toggle and table-level actions on the right. It wraps on narrow screens; search takes the first line.
 - Bulk bar: appears under the toolbar while rows are selected, in the accent tone, with the count and the actions that apply to the selection.
-- Scroll container: `.dd-data-table__scroll` scrolls both ways. The header sticks to its top; the select and first data column stick to its left and cast a soft edge once you scroll. Its height caps at `--dd-data-table-height` (default `70vh`); see Height to drop the cap.
+- Scroll container: `.dd-data-table__scroll` scrolls both ways. The header sticks to its top; the row-number, select and first data columns stick to its left and cast a soft edge once you scroll. Its height caps at `--dd-data-table-height` (default `70vh`); see Height to drop the cap.
 - Footer: page size and the pagination range. Give it `data-dd-pagination` and the table pages its rows in the browser; leave it off when the server pages.
 
 ## Columns and cells
@@ -804,20 +804,20 @@ A --fill table in a 340px box. Created shows a short date but sorts by its ISO d
 | `.dd-data-table__toolbar` | Wrapping row. Holds `__search` (label + icon + input), `__chip`s and `__tools` (pushed right). |
 | `.dd-data-table__chip` | Filter chip. `aria-pressed="true"` or `.is-active` for an applied filter; `__chip-dot` adds a status dot (`--_c`). |
 | `.dd-data-table__count` | Row count, mono. |
-| `.dd-data-table__menu` | Column toggle built on `<details>`; `__menu-panel` floats, `__menu-title` heads it. |
+| `.dd-data-table__menu` | Dropdown built on `<details>` (column toggle, filter list); `__menu-panel` floats, `__menu-title` heads it. `__menu--start` opens the panel from its left edge, for a menu at the start of the toolbar. |
 | `.dd-data-table__bulk` | Bulk-action bar (`__bulk-count`, `__bulk-end`); hidden with the `hidden` attribute while nothing is selected. |
 | `.dd-data-table__scroll` | Scroll container (both axes). Give it `tabindex="0"`, `role="region"` and an `aria-label`. |
 | `.dd-data-table__table` | The `<table>`. |
 | `.dd-data-table__sort` | Button inside a sortable `<th aria-sort>`, with a `chevron-down` icon. |
-| `.dd-data-table__rownum` | Sticky columns, left to right: row numbers, then `__select` (checkbox), then the first data column marked `.is-frozen`. |
-| `.dd-data-table__check` | Restyled native checkbox (checked and indeterminate). |
+| `.dd-data-table__rownum · __select · .is-frozen` | Sticky columns, left to right: row numbers, the checkbox column, then the first data column. |
+| `.dd-data-table__check` | Restyled native checkbox (checked, indeterminate and disabled). |
 | `td.is-num · .is-mono` | Figures right-aligned in mono; IDs and hashes in mono. |
 | `td.is-muted · .is-faint · .is-strong` | Secondary text; a placeholder tone for empty values (the — dash), never for text people must read; emphasis. |
 | `td.is-shrink · .is-actions` | Shrink-to-fit column; a right-aligned cell of row actions. |
 | `td.is-warn · td.is-bad` | Tint a figure past its threshold. |
 | `.dd-data-table__status[data-status]` | Dot + label: `ok · warn · bad · info · muted`. |
 | `.dd-data-table__unit` | Muted unit after a figure (“ms”). |
-| `.dd-data-table__expand` | Row disclosure button (`aria-expanded`, `aria-controls`). |
+| `.dd-data-table__expand` | Row disclosure button (`aria-expanded`, `aria-controls`). `__expand-spacer` holds its place in rows that have no detail. |
 | `.dd-data-table__detail` | The detail row (`__detail-body`, `__facts`); its body stays in view while scrolling sideways. |
 | `.dd-data-table__group` | Group header row (`__group-label`, `__group-count`); put a `<th colspan scope="colgroup">` in it. |
 | `.dd-data-table__skeleton (--box)` | Shimmering placeholder bar; width via `--w`. |
@@ -827,20 +827,20 @@ A --fill table in a 340px box. Created shows a short date but sorts by its ISO d
 | `.dd-data-table--card` | The whole table on `--dd-surface`. |
 | `.dd-data-table--fill` | Fills the height its parent gives it (a flex column or a box with a set height); the scroll area takes the rest, uncapped, so it is the only scroller. |
 | `--dd-data-table-height` | Scroll height cap (default `70vh`). `none`: no cap, the table grows and the page scrolls. |
-| `--dd-data-table-bg` | The opaque colour behind sticky cells (default `--dd-bg`). |
+| `--dd-data-table-bg` | The opaque cell colour that keeps sticky cells solid (default `--dd-bg`). Set it when the table sits on something other than the page. |
 | `--dd-data-table-grain` | The texture on cells (default the page grain; `none` inside `.dd-app-shell` and on `--card`). |
 
 ## Behaviour
 
-Load `dawn-and-dusk.js` and add `data-dd-data-table` to the root. Everything is delegated, so rows added later just work.
+Load `dawn-and-dusk.js` and add `data-dd-data-table` to the root. Everything is delegated, so rows added later work too.
 
 | class / attribute | what it does |
 |---|---|
-| `th[aria-sort] .dd-data-table__sort` | Click cycles `none → ascending → descending → none` and sorts the rows by each cell’s `data-value`, else its text. Two values compare as numbers when both are fully numeric (`1,240`, `0.5%`, `-3`), as times when both are ISO dates (`2026-10-30`, `2026-10-30T09:41`), else as text with numbers in order (`v2` before `v10`). In an `.is-num` column, “84 ms” still reads as 84 and a dash counts as blank. Blanks sort last; groups and detail rows stay together. |
+| `th[aria-sort] .dd-data-table__sort` | Click cycles `none → ascending → descending → none` and sorts the rows by each cell’s `data-value`, else its text. Two values compare as numbers when both are fully numeric (`1,240`, `0.5%`, `-3`), as times when both are ISO dates (`2026-10-30`, `2026-10-30T09:41`), else as text with numbers in order (`v2` before `v10`). In an `.is-num` column (or a header with `data-type="number"`), “84 ms” still reads as 84 and a dash counts as blank. Blanks sort last; groups and detail rows stay together. |
 | `thead .dd-data-table__check` | Selects or clears every visible row; shows indeterminate when some are selected. Rows whose box is `disabled` are skipped and don’t count toward its state. |
 | `tbody .dd-data-table__check` | Selects the row (`.is-selected`). Shift-click selects a range (skipping disabled boxes). A `disabled` box is never changed by the table — select all, ranges and Clear leave it as it is. |
 | `[data-dd-data-table-selected]` | Receives the selected count. `.dd-data-table__bulk` is shown while it is above zero; if it hides with focus inside (a bulk action removed the rows), focus moves to the select-all box. |
-| `[data-dd-data-table-clear]` | Clears the selection. |
+| `[data-dd-data-table-clear]` | Clears the selection and moves focus to the select-all box. |
 | `.dd-data-table__expand` | Toggles `aria-expanded` and the `hidden` detail row named by `aria-controls`. |
 | `[data-dd-data-table-search]` | Filters rows by their text as you type. |
 | `[data-dd-data-table-filter="col=value"]` | Toggle chip (`aria-pressed`) or checkbox (e.g. in a `__menu`). Matches cells with `data-col="col"` by `data-value` or text. Same column = any, different columns = all. |
@@ -848,11 +848,12 @@ Load `dawn-and-dusk.js` and add `data-dd-data-table` to the root. Everything is 
 | `[data-dd-data-table-removable]` | On a filter chip: it disappears once cleared (focus moves to the search). |
 | `[data-dd-data-table-count="noun"]` | Shows “12 services”, or “3 of 12 services” while filtered. |
 | `[data-dd-data-table-query]` | Receives the quoted search text in the empty state. |
-| `[data-dd-data-table-reset]` | Clears search and chips, and returns focus to the search. |
+| `[data-dd-data-table-reset]` | Clears the search and every filter, and returns focus to the search. |
 | `[data-dd-pagination] inside the root` | Pages the matching rows in the browser (see pagination): `data-total` is kept in step, the page-size select and arrows move through the rows. Filtering goes back to page 1; sorting keeps the page. |
 | `[data-dd-data-table-column="col"]` | Checkbox that shows / hides the column whose header has `data-col="col"`. |
 | `Rows added or removed` | Picked up on their own (count, filters, empty row, pages and selection refresh on the next frame); `dd.dataTable.refresh(root)` does it by hand. |
 | `Focus on removed rows` | When the row holding focus is removed (a ⋯ menu’s Remove, a bulk action, a framework re-render), focus moves to the first control of the next shown row, else the previous one, else the select-all box, else the scroll region. A row that is only moved keeps its focus. Try it: a row’s ⋯ → Remove from fleet. |
+| `.is-scrolled-x · .is-scrolled-y` | Set on the root while the scroll area is scrolled sideways / down; they draw the frozen column’s edge and the header’s shadow. |
 | `Keyboard` | Every control is a native button, checkbox or input, so Tab, Enter and Space work throughout. The scroll region is focusable, so arrow keys scroll it. Esc closes a column or filter menu and returns focus to its button; a click outside closes it too. |
 | `Events` | `dd:sort` `{ column, direction, index }` after a header sorts; `dd:selectionchange` `{ count, rows }` after the selection changes; `dd:pagechange` (from the pager) `{ page, pages, pageSize, total, from, to }`. All bubble from the root, so a server-backed table can listen and fetch. |
 

@@ -73,7 +73,7 @@ const compact = `
 </dl>`;
 ---
 <Docs title="Description list" group="Data display" lead="Key-value pairs: the facts about a deploy, a service’s settings, the metadata of a key. Inline when there is room, stacked when there isn’t, two columns for long sets.">
-  <Example title="Inline" description="The default: a term column and a value, hairlines between rows. IDs and times are mono. Try it: hover a row, or Tab to it, and copy its value — the icon turns to a check." code={inline} />
+  <Example title="Inline" description="The default: a term column and a value, hairlines between rows. IDs and times are mono. Try it: hover a row (or Tab to its copy button) and copy its value — the icon turns to a check." code={inline} />
 
   <h2 id="card">On a card</h2>
   <p>Add <code>--card</code> to sit the list on a tonal surface — the usual home for a details panel.</p>
@@ -98,7 +98,7 @@ const compact = `
     ['.dd-description-list__details', 'The value (<code>&lt;dd&gt;</code>). Lays out inline pieces with a small gap.'],
     ['.dd-description-list__mono', 'Mono, tabular figures — IDs, SHAs, times, amounts.'],
     ['.dd-description-list__muted', 'Secondary text next to a value.'],
-    ['.dd-description-list__status', 'Value with a status dot: <code>data-status="ok | warn | bad | info"</code>.'],
+    ['.dd-description-list__status', 'Value with a status dot: <code>data-status="ok | warn | bad | info | muted"</code>.'],
     ['.dd-description-list__copy', 'Icon button with <code>data-dd-copy</code>; holds the <code>copy</code> and <code>check</code> icons and swaps on <code>[data-copied]</code>.'],
     ['.dd-description-list--stacked', 'Term above value.'],
     ['.dd-description-list--columns', 'Two columns of stacked items; one column when narrow.'],

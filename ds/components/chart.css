@@ -27,6 +27,7 @@
   display: flex; flex-direction: column; gap: calc(var(--dd-u) * 4); min-width: 0;
   margin: 0; padding: calc(var(--dd-u) * 5); border-radius: var(--dd-r-box);
   background: var(--_bg); color: var(--dd-text); font-size: var(--dd-fs-sm); line-height: var(--dd-lh-tight);
+  overflow-x: clip; /* closed tooltips beside the last marks never widen the page */
 }
 .dd-chart--bare { --_bg: var(--dd-bg); padding: 0; background: none; border-radius: 0; }
 
@@ -271,7 +272,6 @@
 /* The mark under the pointer, finger or keyboard is .is-active: it gets the same tooltip, band and dimming as hover.
    Esc adds .is-tip-off to hide the tooltip until the next move. */
 .dd-chart[data-dd-chart] { position: relative; }
-.dd-chart { overflow-x: clip; } /* closed tooltips beside the last marks never widen the page */
 :is(.dd-chart__slot, .dd-chart__hit).is-active > .dd-chart__tip { opacity: 1; visibility: visible; transform: none; }
 .dd-chart__slot.is-active { background: color-mix(in oklab, var(--dd-text) 5%, transparent); }
 .dd-chart__cols:has(> .is-active) .dd-chart__slot:not(.is-active) > :is(.dd-chart__col, .dd-chart__stackcol) { opacity: .45; }

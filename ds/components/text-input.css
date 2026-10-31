@@ -85,14 +85,14 @@
 .dd-input:has(.dd-input__control:placeholder-shown) [data-dd-clear] { visibility: hidden; opacity: 0; }
 
 /* States */
-.dd-input.is-invalid, .dd-input:has(.dd-input__control[aria-invalid='true']) {
+.dd-input[aria-invalid='true'], .dd-input.is-invalid, .dd-input:has(.dd-input__control[aria-invalid='true']) {
   --_fill: color-mix(in oklab, var(--dd-bad) 14%, var(--dd-surface-2));
   --_fill-hover: color-mix(in oklab, var(--dd-bad) 23%, var(--dd-surface-2));
 }
-.dd-input.is-invalid:focus-within, .dd-input:has(.dd-input__control[aria-invalid='true']):focus-within {
+.dd-input[aria-invalid='true']:focus-within, .dd-input.is-invalid:focus-within, .dd-input:has(.dd-input__control[aria-invalid='true']):focus-within {
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-bad) 55%, transparent), var(--dd-shadow-float);
 }
-.dd-input.is-invalid .dd-input__status, .dd-input:has(.dd-input__control[aria-invalid='true']) .dd-input__status { color: var(--dd-bad); }
+.dd-input[aria-invalid='true'] .dd-input__status, .dd-input.is-invalid .dd-input__status, .dd-input:has(.dd-input__control[aria-invalid='true']) .dd-input__status { color: var(--dd-bad); }
 
 /* Read-only: no fill, a hairline frame. Hover and focus tint it (it can still be focused and copied), but it never
    lifts like an editable box. */

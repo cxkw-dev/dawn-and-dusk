@@ -72,7 +72,7 @@ Try it: the faded buttons ignore clicks and Tab skips them; the busy ones ignore
 
 ## On a surface
 
-Every variant works on a `--dd-surface` card as well as on the page. Hover the ghost buttons in dusk: the wash still reads.
+Every variant works on a `.dd-surface` card as well as on the page. Hover the ghost buttons in dusk: the wash still reads.
 
 Try it: “Redeploy” goes busy while it works, then confirms with a toast; clicking it again meanwhile does nothing. The copy button confirms too.
 
@@ -90,6 +90,8 @@ Try it: “Redeploy” goes busy while it works, then confirms with a toast; cli
 ```
 
 ## Full width
+
+`.dd-btn--block` stretches a button across its container, for stacked actions in narrow forms and on phones.
 
 ```html
 <div class="dd-stack" style="max-width: 320px">

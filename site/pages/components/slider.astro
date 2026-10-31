@@ -82,10 +82,11 @@ const more = `
     ['.dd-slider--range + .dd-slider__fill', 'Two inputs on one rail; the fill spans between them.'],
     ['.dd-slider__bubble', 'Value label above a thumb (<code>data-for</code>, optional <code>data-unit</code>).'],
     ['.dd-slider__ticks', 'Evenly spaced tick marks with labels; children with <code>data-value</code> light up when in range.'],
-    ['.dd-slider--sm', 'Smaller thumb and track.'],
+    ['.dd-slider--sm', 'Smaller thumb (14px) and track (3px).'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/slider.js</code> keeps the fill, outputs, bubbles and ticks in step with the inputs.</p>
   <ClassTable head={['Attribute / event', 'What it does']} rows={[
     ['output[for="id"]', 'Shows the input’s value (grouped with commas). <code>data-unit</code> appends a unit.'],
     ['.dd-slider__bubble[data-for="id"]', 'Moves above that input’s thumb and shows its value.'],

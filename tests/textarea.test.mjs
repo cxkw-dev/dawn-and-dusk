@@ -98,3 +98,20 @@ test('labels focus their textarea, also by tap at 375', async ({ open, assert })
   assert.ok((await box(page, '#ta-2')).h > start.h + start.line * 1.5, 'auto-grow works at 375');
   assert.ok(await page.get(() => document.documentElement.scrollWidth <= innerWidth), 'no sideways scroll');
 });
+
+test('auto-grow: one that was hidden when fitted (a closed dialog, another tab) fits its text once it shows', async ({ open, assert }) => {
+  const page = await open('components/textarea');
+  await page.get(() => {
+    const form = document.createElement('form'); form.id = 'ta-hidden-form';
+    form.innerHTML = '<div class="dd-textarea" hidden><textarea class="dd-input__control" id="ta-hidden" data-dd-autogrow>one\ntwo\nthree\nfour\nfive</textarea></div>';
+    document.getElementById('ta-2').closest('form').after(form);
+    form.reset(); // refits every autogrow textarea in the form, this one while it is hidden
+  });
+  await page.sleep(100);
+  assert.notEqual(await page.get(() => document.getElementById('ta-hidden').style.height), '0px', 'not squashed to nothing while hidden');
+  await page.get(() => { document.querySelector('#ta-hidden-form .dd-textarea').hidden = false; });
+  await page.waitFor(() => { const t = document.getElementById('ta-hidden'); return t.style.height && t.scrollHeight <= t.clientHeight + 1; });
+  const b = await box(page, '#ta-hidden');
+  assert.ok(b.h > b.line * 4.5, `all five lines show once visible (${b.h}px)`);
+  assert.ok(!b.scrolls, 'nothing clipped');
+});

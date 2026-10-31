@@ -1,7 +1,13 @@
 /* Textarea auto-grow: textarea[data-dd-autogrow] resizes to its content on every input, up to its CSS max-height,
-   then scrolls. (Browsers with field-sizing: content do this natively; the script keeps the others in step.) */
+   then scrolls. One that is hidden at the time (a closed dialog, another tab) is fitted when it shows. (Browsers with
+   field-sizing: content do this natively; the script keeps the others in step.) */
 (() => {
+  // A textarea that isn't rendered (in a closed dialog, a hidden tab panel) measures 0: fit it once it shows instead.
+  const unseen = 'ResizeObserver' in window ? new ResizeObserver((entries) => entries.forEach(({ target }) => {
+    if (target.getClientRects().length) { unseen.unobserve(target); grow(target); }
+  })) : null;
   const grow = (el) => {
+    if (!el.getClientRects().length) { unseen?.observe(el); return; }
     el.style.height = 'auto';
     const max = parseFloat(getComputedStyle(el).maxHeight) || Infinity;
     el.style.height = `${Math.min(el.scrollHeight, max)}px`;

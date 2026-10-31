@@ -7,7 +7,7 @@
      from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes (a still, deeper
      tint under reduced motion) instead of being added twice; Backspace in an empty field removes the last chip.
      The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x).
-   When a chip goes, the chips after it glide into its place (not under reduced motion). 
+   When a chip goes, the chips after it glide into its place (not under reduced motion).
    Inside [data-dd-manual] (chips a framework renders from state) the script does nothing; listen for clicks yourself. */
 (() => {
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -49,7 +49,7 @@ npm run dev   # rebuilds ds/ and starts Astro on :4321</pre>
     <li>Edit files in <code>ds/</code>, never the generated <code>dawn-and-dusk.css</code>.</li>
     <li>Each section of the sidebar is one file in <code>site/nav/</code>.</li>
   </ul>
-  <p>Stuck? Read the <a href="#build">build notes</a>.</p>
+  <p>Stuck? Read the <a href="#">build notes</a>.</p>
 </aside>
 ```
 
@@ -88,7 +88,22 @@ Callouts sit in the flow of an article. Give them the same spacing as a paragrap
 | `.dd-callout--{kind}` | Kind: `note` (info, the default) · `tip` (ok) · `important` (accent) · `warning` (warn) · `caution` (bad). |
 | `.dd-callout__title` | Icon and label row. Icons: `info`, `sparkle`, `flag`, `alert`, `danger`. |
 | `.dd-callout > *` | Any prose after the title: `p`, `ul`, `pre`, `code`, links. |
+| `.dd-callout__dismiss` | Optional top-right button with `data-dd-dismiss` and an accessible label. |
 | `.dd-callout--compact` | Icon + one line, no title. |
+
+## Behaviour
+
+A button with `data-dd-dismiss` inside a callout removes it with the same fade-and-collapse as an alert.
+
+### Dismissible
+
+```html
+<aside class="dd-callout dd-callout--note">
+  <p class="dd-callout__title"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-info"/></svg>Preview available</p>
+  <p>You can try the new workspace before switching your team.</p>
+  <button class="dd-callout__dismiss" type="button" data-dd-dismiss aria-label="Dismiss note"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-x"/></svg></button>
+</aside>
+```
 
 ## Guidelines
 

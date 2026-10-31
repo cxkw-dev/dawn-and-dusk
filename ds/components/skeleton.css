@@ -1,6 +1,7 @@
 /* Skeleton — the shape of content that is on its way: text lines, avatars, cards and table rows in a flat tone with a
-   slow shimmer. The tone is a 9% tint of the text colour, so it reads the same on the page and on a surface. Wrap a loading region in aria-busy="true" (and say "Loading…" for screen readers); the skeleton
-   pieces themselves are decoration. Under reduced motion the shimmer stops and the shapes stay still.
+   slow shimmer. The tone is a 9% tint of the text colour, so it reads the same on the page and on a surface. Wrap a
+   loading region in aria-busy="true" (and say "Loading…" for screen readers); the skeleton pieces themselves are
+   decoration. Under reduced motion the shimmer stops and the shapes stay still.
    The shimmer is tuned to the same perceived strength in both themes (dusk's shine is a stronger text tint, because a
    step on a dark tone reads smaller than the same step on a light one). */
 :root, [data-theme="dawn"] {

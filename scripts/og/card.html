@@ -1,0 +1,35 @@
+<!doctype html>
+<!-- Source of site/public/og.png, the social-share card (1200×630). Re-render from the repo root:
+     "$CHROME" --headless=new --hide-scrollbars --window-size=1200,630 --virtual-time-budget=5000 --screenshot=site/public/og.png scripts/og/card.html -->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../release/dawn-and-dusk.css">
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+  .card { position: absolute; inset: 0; background: var(--dd-bg); color: var(--dd-text); }
+  .card--dusk { clip-path: polygon(64% 0, 100% 0, 100% 100%, 43% 100%); }
+  .sun { position: absolute; left: 700px; top: 330px; width: 500px; height: 500px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, var(--dd-set-1), var(--dd-set-3) 45%, var(--dd-set-5) 78%, var(--dd-set-6)); opacity: .95; }
+  .eyebrow { position: absolute; left: 72px; top: 64px; font-family: var(--dd-font-mono); font-size: 18px; letter-spacing: .1em; text-transform: uppercase; color: var(--dd-muted); }
+  .logo { position: absolute; left: 64px; top: 120px; --dd-logo-size: 176px; }
+  .lead { position: absolute; left: 72px; bottom: 74px; width: 470px; margin: 0; font-family: var(--dd-font-body); font-size: 27px; line-height: 1.35; color: var(--dd-muted); }
+  .facts { position: absolute; right: 64px; top: 104px; font-family: var(--dd-font-mono); font-size: 19px; letter-spacing: .04em; color: var(--dd-text); text-align: right; line-height: 1.6; }
+  .url { position: absolute; right: 64px; top: 64px; font-family: var(--dd-font-mono); font-size: 18px; color: var(--dd-muted); }
+</style></head>
+<body>
+  <div class="card card--dawn" data-theme="dawn">
+    <div class="sun"></div>
+    <div class="eyebrow">cxkw.dev · design system</div>
+    <span class="dd-logo dd-logo--stack logo" role="img" aria-label="dawn &amp; dusk"><span class="dd-logo__line">dawn</span><span class="dd-logo__line"><span class="dd-logo__amp">&amp;</span>dusk</span></span>
+    <p class="lead">Warm neutrals, golden-hour colour and a heavy lowercase voice — with an agent skill so AI builds it right.</p>
+    <div class="url">cxkw-dev.github.io/dawn-and-dusk</div>
+    <div class="facts">59 components<br>2 themes · 1 agent skill</div>
+  </div>
+  <div class="card card--dusk" data-theme="dusk">
+    <div class="sun"></div>
+    <div class="eyebrow">cxkw.dev · design system</div>
+    <span class="dd-logo dd-logo--stack logo" role="img" aria-hidden="true"><span class="dd-logo__line">dawn</span><span class="dd-logo__line"><span class="dd-logo__amp">&amp;</span>dusk</span></span>
+    <p class="lead">Warm neutrals, golden-hour colour and a heavy lowercase voice — with an agent skill so AI builds it right.</p>
+    <div class="url">cxkw-dev.github.io/dawn-and-dusk</div>
+    <div class="facts">59 components<br>2 themes · 1 agent skill</div>
+  </div>
+</body></html>

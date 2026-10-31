@@ -50,6 +50,12 @@
     next.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   });
 
+  // A control rendered after load gets its roving tabindex (and role) the first time focus reaches it.
+  document.addEventListener('focusin', (e) => {
+    const group = e.target.closest?.(ITEM)?.closest('[data-dd-segmented]');
+    if (group) sync(group);
+  });
+
   const init = () => document.querySelectorAll('[data-dd-segmented]').forEach(sync);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

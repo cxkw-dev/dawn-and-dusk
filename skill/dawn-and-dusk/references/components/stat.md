@@ -25,7 +25,7 @@ Label, value, delta and comparison. The sparkline is a de-emphasis tone so the f
 
 ## Stat grid
 
-Tiles flow into as many columns as fit — 210px minimum by default; set `--dd-stat-min` to change it (260px here) and stack on narrow screens. Tone, not lines, separates them.
+Tiles flow into as many columns as fit, 210px minimum by default; set `--dd-stat-min` to change it (260px here). They stack on narrow screens. Tone, not lines, separates them.
 
 ```html
 <div class="dd-stat-grid" style="--dd-stat-min: 260px">
@@ -180,7 +180,7 @@ Drop the surface when the stats already sit inside a card or panel.
 
 | class / attribute | what it does |
 |---|---|
-| `.dd-stat` | A tile on `--dd-surface`. Works on `<div>`, `<a>` and `<button>` (links and buttons get a hover tone). |
+| `.dd-stat` | A tile on `--dd-surface`. Works on `<div>`, `<a>` and `<button>` (links and buttons step a tone on hover and press). |
 | `.dd-stat__label` | Sentence-case label, no trailing colon. An icon may lead. |
 | `.dd-stat__main` | Row holding the value and the sparkline; the spark shrinks (to 48px) before anything wraps. |
 | `.dd-stat__value / __unit` | The figure in the display face (700, proportional figures). The unit is half size and muted. |
@@ -193,6 +193,7 @@ Drop the surface when the stats already sit inside a card or panel.
 | `.dd-stat--inline` | Label · value · delta on one baseline. Group with `.dd-stat-inline-group`. |
 | `.dd-stat-grid` | Auto-fit grid of tiles. `--dd-stat-min` sets the minimum tile width. |
 | `.dd-stat-grid--joined` | One surface split by 2px page-coloured gaps; outer corners only. |
+| `--dd-stat-hover / --dd-stat-press` | Fill of a linked tile on hover and press, set per theme. |
 
 ## Guidelines
 
@@ -200,7 +201,7 @@ Do:
 - Compact large values: 1,284 · 41.3K · $4.2M · 1.28B. Keep the full figure in a tooltip or table.
 - Name the comparison period in the compare text: “vs 36.7K last week”.
 - Colour a delta by whether the change is good for that metric, not by its sign.
-- Keep sparklines to ~12 points in the muted tone; they show shape, not values.
+- Keep sparklines to ~12 points in the de-emphasis tone; they show shape, not values.
 
 Don't:
 - Don’t put more than one hero figure on a view.

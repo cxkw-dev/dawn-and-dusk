@@ -3,6 +3,7 @@
    - button[data-dd-log-viewer-level="debug|info|warn|error"]: aria-pressed toggles that level.
    - button[data-dd-log-viewer-wrap]: aria-pressed toggles .is-wrapped (long messages wrap instead of scrolling).
    - [data-dd-log-viewer-count]: gets “18 of 24 lines”; [data-dd-log-viewer-empty] shows when nothing matches.
+   - button[data-dd-log-viewer-clear]: clears the search and turns every level back on.
    - button[data-dd-log-viewer-follow]: aria-pressed keeps the stream pinned to the newest line as lines arrive.
      Scrolling up to read pauses it; scrolling back to the bottom (or pressing it) resumes.
    Lines are .dd-log-viewer__line[data-level]; matches are highlighted inside .dd-log-viewer__msg. Append new

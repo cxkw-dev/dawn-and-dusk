@@ -15,7 +15,7 @@ const item = (title, body, { open = false, name = '', icon = '', meta = '' } = {
 const faq = `
 <div class="dd-accordion" style="max-width: 640px">${[
   item('Do I need a build step to use dawn &amp; dusk?', '<p>No. Link <code>dawn-and-dusk.css</code> and, if you want the behaviours, <code>dawn-and-dusk.js</code> with <code>defer</code>. Everything is plain CSS and one vanilla script.</p>', { open: true }),
-  item('How do I switch between dawn and dusk?', '<p>Set <code>data-theme="dawn"</code> or <code>"dusk"</code> on <code>&lt;html&gt;</code> — or on any element to theme just that part. With no attribute, the system follows the OS.</p>'),
+  item('How do I switch between dawn and dusk?', '<p>Set <code>data-theme="dawn"</code> or <code>"dusk"</code> on <code>&lt;html&gt;</code> — or on any element to theme only that part. With no attribute, the system follows the OS.</p>'),
   item('Can I change the accent colour?', '<p>Override <code>--dd-accent</code> and its siblings on <code>:root</code>. Components read tokens only, so the change carries everywhere.</p>'),
   item('Does it work without JavaScript?', '<p>Yes. Accordions, cards and dividers are pure CSS. Behaviours like dialogs and tabs enhance markup that already makes sense on its own.</p>'),
 ].join('')}
@@ -97,8 +97,8 @@ const expand = `
   </details>
 </div>`;
 ---
-<Docs title="Accordion" group="Layout" lead="Sections that fold away. Built on native details and summary, so it works with no JavaScript, opens with the keyboard and finds text inside closed sections.">
-  <Example title="Default" description="Hairlines between sections; the chevron turns when a section opens. Several can be open at once. Try it: click a question, or Tab to one and press Enter or Space." code={faq} />
+<Docs title="Accordion" group="Layout" lead="Sections that fold away. Built on native details and summary, so it works with no JavaScript, opens with the keyboard and lets find-in-page reach text in closed sections.">
+  <Example title="Default" description="Hairlines between sections; the chevron turns when a section opens, and the body eases open where the browser supports it. Several can be open at once. Try it: click a question, or Tab to one and press Enter or Space." code={faq} />
 
   <h2 id="exclusive">One open at a time</h2>
   <p>Give every <code>&lt;details&gt;</code> in the group the same <code>name</code> and the browser closes the others for you. Add <code>--icons</code> when summaries lead with an icon, so the body lines up with the text.</p>
@@ -119,13 +119,11 @@ const expand = `
     ['.dd-accordion__summary', 'The <code>&lt;summary&gt;</code> row. Holds an optional leading icon, <code>__title</code>, <code>__meta</code> and <code>__chevron</code>.'],
     ['.dd-accordion__body', 'The content under the summary.'],
     ['.dd-accordion--boxed', 'Tonal fill per item instead of hairlines. A closed item lifts a tone on hover (further in dusk, so it clears the grain page); an open one washes its summary row.'],
+    ['--dd-accordion-hover', 'The hover tone of boxed items and expand cards: <code>--dd-surface-2</code> in dawn, 14% toward ink on dusk’s grain page. <code>.dd-app-shell</code> (a plain page, no grain) uses <code>--dd-surface-2</code> in both.'],
     ['.dd-accordion--icons', 'Indents the body to line up with titles that follow an icon.'],
     ['.dd-expand', 'Expandable card (<code>&lt;details&gt;</code>). Parts: <code>__summary</code>, <code>__lead</code>, <code>__titles</code>, <code>__title</code>, <code>__meta</code>, <code>__side</code>, <code>__status</code>, <code>__chevron</code>, <code>__body</code>, <code>__dl</code>.'],
     ['.dd-expand__status', 'Status with a coloured dot: add <code>is-ok</code>, <code>is-warn</code>, <code>is-bad</code> or <code>is-info</code>.'],
   ]} />
-
-  <h2 id="behaviour">Behaviour</h2>
-  <p>No script. Enter or Space on a summary toggles it; closed content is still found by the browser’s find-in-page. Where <code>::details-content</code> is supported the body eases open; elsewhere it opens instantly.</p>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides

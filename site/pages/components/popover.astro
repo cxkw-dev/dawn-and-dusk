@@ -76,7 +76,7 @@ dd.popover.close(panel);
 panel.addEventListener('toggle', (e) => console.log(e.newState)); // 'open' | 'closed'`;
 ---
 <Docs title="Popover" group="Feedback & status" lead="A small panel that opens on click, next to the thing that opened it: a confirmation, a short explanation, a couple of settings. It closes on Esc, on a click outside, or from its own buttons.">
-  <Example title="Confirm in place" description="Try it: press Promote, then Tab into the panel, press Esc or click outside. Header with an eyebrow and a close button, a sentence of body, and actions. Built on the native popover attribute: the browser handles open, Esc and outside clicks, and the panel floats above everything." code={basic} />
+  <Example title="Confirm in place" description="Header with an eyebrow and a close button, a sentence of body, and actions. Built on the native popover attribute: the browser handles opening, Esc and outside clicks, and the panel floats above everything. Try it: press Promote, Tab into the panel, then press Esc or click outside." code={basic} />
 
   <h2 id="anatomy">Anatomy</h2>
   <p>A floating layer on <code>--dd-float-bg</code> with <code>--dd-shadow-float</code>: a shade lighter than the page in dawn, so it reads as raised paper, and a clear step up in dusk. 8px radius, 20px padding, an arrow aimed at the trigger. <code>--static</code> shows one in the flow.</p>
@@ -99,12 +99,13 @@ panel.addEventListener('toggle', (e) => console.log(e.newState)); // 'open' | 'c
     ['.dd-popover__actions', 'Buttons, right-aligned. A <code>.dd-popover__meta</code> span sits on the left.'],
     ['.dd-popover--wide', '400px instead of up to 340px.'],
     ['.dd-popover--static', 'In-flow rendering for docs and mockups (set <code>data-placement</code>).'],
+    ['--dd-popover-bg', 'Panel fill. Defaults to <code>--dd-float-bg</code>.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute / API', 'What it does']} rows={[
     ['popovertarget="id"', 'On the trigger button: opens and closes the popover (native). <code>popovertargetaction="hide"</code> on buttons inside closes it.'],
-    ['data-dd-placement', 'On the popover: preferred side, <code>bottom</code> by default.'],
+    ['data-dd-placement', 'On the popover: <code>bottom</code> (default) · <code>top</code> · <code>left</code> · <code>right</code>, optionally <code>-start</code> / <code>-end</code>. Flips when it doesn’t fit.'],
     ['aria-expanded', 'Kept in sync on the trigger by the JS.'],
     ['Esc · outside click', 'Close the popover (native light dismiss). Focus returns to the trigger when it was inside.'],
     ['Tab', 'From the trigger, Tab moves into the open popover.'],

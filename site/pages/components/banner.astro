@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 const page = `<div style="padding: var(--dd-space-6) var(--dd-space-6) var(--dd-space-8)">
     <p class="dd-eyebrow">cxkw.dev · deploys</p>
@@ -27,14 +28,14 @@ const intents = `
     <div class="dd-banner__inner">
       ${i('success')}
       <p class="dd-banner__text"><strong>All systems normal.</strong>auth-gateway recovered at 09:58 UTC.</p>
-      <div class="dd-banner__actions"><a class="dd-banner__action" href="#status">Status page</a></div>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#">Status page</a></div>
     </div>
   </div>
   <div class="dd-banner dd-banner--warn">
     <div class="dd-banner__inner">
       ${i('alert')}
       <p class="dd-banner__text"><strong>Scheduled maintenance.</strong>billing-worker is read-only Sat 02:00–02:30 UTC.</p>
-      <div class="dd-banner__actions"><a class="dd-banner__action" href="#details">Details</a></div>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#">Details</a></div>
     </div>
     <button class="dd-banner__dismiss" type="button" data-dd-dismiss aria-label="Dismiss">${i('x')}</button>
   </div>
@@ -42,14 +43,14 @@ const intents = `
     <div class="dd-banner__inner">
       ${i('danger')}
       <p class="dd-banner__text"><strong>Incident.</strong>Sign-ins are failing in sfo3. We’re on it.</p>
-      <div class="dd-banner__actions"><a class="dd-banner__action" href="#incident">Follow updates</a></div>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#">Follow updates</a></div>
     </div>
   </div>
   <div class="dd-banner dd-banner--neutral">
     <div class="dd-banner__inner">
       ${i('eye')}
       <p class="dd-banner__text">You’re viewing a read-only snapshot of <span class="dd-mono">ai-focus</span> from 12 Oct.</p>
-      <div class="dd-banner__actions"><a class="dd-banner__action" href="#latest">Back to live</a></div>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#">Back to live</a></div>
     </div>
   </div>
 </div>`;
@@ -60,7 +61,7 @@ const narrow = `
     <div class="dd-banner__inner">
       ${i('alert')}
       <p class="dd-banner__text"><strong>Scheduled maintenance.</strong>billing-worker is read-only Sat 02:00–02:30 UTC.</p>
-      <div class="dd-banner__actions"><a class="dd-banner__action" href="#details">Details</a><a class="dd-banner__action" href="#calendar">Add to calendar</a></div>
+      <div class="dd-banner__actions"><a class="dd-banner__action" href="#">Details</a><a class="dd-banner__action" href="#">Add to calendar</a></div>
     </div>
     <button class="dd-banner__dismiss" type="button" data-dd-dismiss aria-label="Dismiss">${i('x')}</button>
   </div>
@@ -86,7 +87,7 @@ const sticky = `
 </div>`;
 ---
 <Docs title="Banner" group="Feedback & status" lead="A message for the whole page — announcements, maintenance, incidents. Full width above the app, the same soft fill as the alert, and gone with one click.">
-  <Example title="Announcement" description="Centred icon, a bold lead-in and one action. Dismiss sits at the far right so it never crowds the message. Try it: press × — the banner fades, the page closes up under it, and keyboard focus stays where it was." code={announce} stage="flush" />
+  <Example title="Announcement" description="Centred content: an icon, a bold lead-in and one action. Dismiss sits at the far right so it never crowds the message. Try it: press × — the banner fades, the page closes up under it, and keyboard focus moves to the banner’s parent instead of the top of the page." code={announce} stage="flush" />
 
   <h2 id="intents">Intents</h2>
   <p>Info for news, ok for a recovery, warn for something planned, bad for an incident, neutral for a mode the page is in (a snapshot, an impersonation, a preview). Leave dismiss off while the condition is still true.</p>
@@ -112,12 +113,13 @@ const sticky = `
     ['.dd-banner__text', 'The message. Put a short lead-in in <code>&lt;strong&gt;</code>.'],
     ['.dd-banner__actions / __action', 'Dotted text actions, <code>&lt;a&gt;</code> or <code>&lt;button&gt;</code>.'],
     ['.dd-banner__dismiss', 'Icon button at the right edge. Add <code>data-dd-dismiss</code> and an <code>aria-label</code>.'],
+    ['--dd-banner-wash / -base', 'Theme-level knobs: 14% over <code>--dd-bg</code> in dawn, 30% over <code>--dd-surface</code> in dusk.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute / API', 'What it does']} rows={[
     ['data-dd-dismiss', 'Fades and collapses the banner, then removes it. Fires a cancelable <code>dd:dismiss</code> event first — listen for it to remember the choice.'],
-    ['dd.dismiss(el)', 'Dismiss from code, e.g. when the incident is resolved.'],
+    ['dd.dismiss(el)', `Dismiss from code, e.g. when the incident is resolved. The full dismiss API is on the <a href="${docs}/components/alert#behaviour">alert</a> page.`],
   ]} />
   <p>Use <code>role="alert"</code> only for an incident banner inserted while the page is open; a banner present at load needs no role, or <code>role="region"</code> with an <code>aria-label</code> if it should be a landmark.</p>
 

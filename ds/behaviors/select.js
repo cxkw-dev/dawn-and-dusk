@@ -2,7 +2,7 @@
    Markup: [data-dd-select] > button[aria-haspopup="listbox"] (.dd-select) + [role="listbox"] (.dd-listbox, hidden)
            > [role="option"][data-value] (aria-selected on the chosen one, aria-disabled to skip).
    The trigger's [data-dd-select-value] (or its .dd-input__control) shows the chosen option's label; an optional
-   <input type="hidden"> inside the root receives the value. Fires a bubbling "dd-select" event with
+   <input type="hidden"> inside the root receives the value. Fires bubbling "dd:select" and legacy "dd-select" events with
    detail { value, label, option, values, selected }, and "change" on the hidden input.
    Multiple: aria-multiselectable="true" on the listbox. Choosing toggles an option and keeps the list open; the
    trigger lists the chosen labels (or its placeholder when none), the hidden input gets the values joined by
@@ -83,7 +83,9 @@
     }
     const hidden = root.querySelector('input[type="hidden"]');
     if (hidden) { hidden.value = values.join(','); hidden.dispatchEvent(new Event('change', { bubbles: true })); }
-    root.dispatchEvent(new CustomEvent('dd-select', { bubbles: true, detail: { value, label, option: opt, values, selected } }));
+    const detail = { value, label, option: opt, values, selected };
+    root.dispatchEvent(new CustomEvent('dd-select', { bubbles: true, detail }));
+    root.dispatchEvent(new CustomEvent('dd:select', { bubbles: true, detail }));
     if (multi) setActive(list, opt); else close(root);
   };
 

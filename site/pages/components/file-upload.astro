@@ -88,7 +88,7 @@ const invalid = `
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
-    ['.dd-dropzone', 'A <code>&lt;label&gt;</code> around an <code>&lt;input type="file"&gt;</code> (visually hidden, still focusable).'],
+    ['.dd-dropzone', 'A <code>&lt;label&gt;</code> around an <code>&lt;input type="file"&gt;</code> (visually hidden, still focusable). A <code>disabled</code> input fades the zone and ignores drops.'],
     ['.dd-dropzone__icon · __title · __browse · __meta', 'Icon disc, title with a dotted “browse” link, mono constraints line.'],
     ['.dd-dropzone--compact · __text', 'One-row zone; wrap the title and meta in <code>__text</code>.'],
     ['.is-dragover · .is-invalid', 'Drag-hover state (added by the script) and error state.'],
@@ -101,11 +101,12 @@ const invalid = `
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/file-upload.js</code> adds the drag state, lists chosen files and checks them against the zone’s limits.</p>
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['data-dd-dropzone', 'Adds <code>.is-dragover</code> while files hover; dropped files go to the inner input, which fires <code>change</code>.'],
     ['data-dd-dropzone="#list"', 'Also appends a <code>.dd-file</code> row per chosen file to that list. A <code>multiple</code> input adds to the list and its files are everything listed; a single one replaces its row.'],
-    ['accept · data-dd-max-size', 'Files that don’t match the input’s <code>accept</code>, or are bigger than <code>data-dd-max-size</code> on the zone (<code>"20MB"</code>, <code>"500KB"</code>), are listed as errors with the reason and kept out of the input. Dropping skips the browser’s own <code>accept</code> filter, so this check matters.'],
-    ['data-dd-file-remove', 'On a button in a row: removes the row, moves focus to the next remove button (or back to the dropzone when the list is empty), fires <code>dd-file-remove</code> on the list with <code>{ name }</code>.'],
+    ['accept · data-dd-max-size', 'Files that don’t match the input’s <code>accept</code>, or are bigger than <code>data-dd-max-size</code> on the zone (<code>"20MB"</code>, <code>"500KB"</code> or bytes), are listed as errors with the reason and kept out of the input. Dropping skips the browser’s own <code>accept</code> filter, so this check matters.'],
+    ['data-dd-file-remove', 'On a button in a row: removes the row and its file from the input, moves focus to a neighbouring remove button (or back to the dropzone when the list is empty), and fires a bubbling <code>dd-file-remove</code> event on the list with <code>{ name }</code>.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

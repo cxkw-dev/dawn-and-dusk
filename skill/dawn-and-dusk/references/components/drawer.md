@@ -6,11 +6,11 @@ Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/draw
 
 Every snippet is the exact markup of a working docs example. Icons are `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-NAME"/></svg>` from the sprite.
 
-Every example opens the real drawer; under the trigger is a still of it, framed as if it covered a page.
+Every example opens the real drawer. The first two also show a still of it under the trigger, framed as if it covered a page.
 
 ### Details
 
-Eyebrow and title name the thing; meta, a key/value list and a log fill the body. The footer never scrolls away. Try it: Esc, the scrim or × close it; Redeploy and Promote close with a value.
+Eyebrow and title name the thing; meta, a key/value list and a log fill the body. The footer never scrolls away. Try it: Esc, the scrim or × close it; “Redeploy” and “Promote” close with a value.
 
 ```html
 <button class="dd-btn dd-btn--secondary" type="button" data-dd-dialog-open="#deploy-drawer"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-eye"/></svg><span>View deploy</span></button>
@@ -97,7 +97,7 @@ Try it: a click on the scrim does nothing here (static backdrop) — use Cancel 
 
 ## Sizes
 
-Small (360px) for a quick look, medium (480px) by default, large (720px) for wide content. Under 480px every drawer fills the screen.
+Small (360px) for a quick look, medium (480px) by default, large (720px) for wide content. On screens 480px wide or less every drawer fills the screen; once the drawer is 400px or narrower, the hint drops and the actions share the footer.
 
 Try it: on a phone-width window every size fills the screen.
 
@@ -130,6 +130,7 @@ Try it: on a phone-width window every size fills the screen.
 |---|---|
 | `dialog.dd-drawer` | The panel, pinned to the right edge at full height. Open with `showModal()` or `data-dd-dialog-open`. |
 | `.dd-drawer__head` | Top: the `__titles` column and a `__close` button. |
+| `.dd-drawer__titles` | Stacks the eyebrow, title and meta; takes the free width in the head. |
 | `.dd-drawer__eyebrow` | Mono caps context (deploy number, service, section). |
 | `.dd-drawer__title` | What the drawer is about, in the heading lockup. Point `aria-labelledby` at it. |
 | `.dd-drawer__meta` | A wrapping row of small facts; each child can lead with an icon. `is-ok` / `is-warn` / `is-bad` on a child tints its icon. |
@@ -138,15 +139,15 @@ Try it: on a phone-width window every size fills the screen.
 | `.dd-drawer__section / __section-title` | Groups inside the body, each with a mono caps title. |
 | `.dd-drawer__props` | A `<dl>` of key / value rows on hairlines. |
 | `.dd-drawer__log` | A mono excerpt (logs, payloads) that scrolls sideways. |
-| `.dd-drawer__form` | A `<form method="dialog">` wrapping head, body and foot; it doesn’t affect layout. |
-| `Fields` | Use the regular `.dd-field` and `.dd-input` (`.dd-textarea` for long values); add `dd-form__body` to the body to space them and `dd-mono` on the control for keys and secrets. |
+| `.dd-drawer__form` | A `<form method="dialog">` wrapping head, body and foot; it doesn’t affect layout. Inside, use the regular `.dd-field` and `.dd-input` (`.dd-textarea` for long values); add `dd-form__body` to the body to space them and `dd-mono` on the control for keys and secrets. |
 | `.dd-drawer__foot` | Actions, right-aligned. Outside the scroller, so always in view. |
 | `.dd-drawer__start / __hint` | Pushed to the left of the footer: a kept-apart action, or a mono hint. |
 | `.dd-drawer--sm / --lg` | Sizes: 360px and 720px. Medium (480px) has no modifier. |
+| `.is-closing` | Set by the script while the slide-out plays. |
 
 ## Behaviour
 
-The drawer shares its script with Dialog: `data-dd-dialog-open="#id"` opens it, `data-dd-dialog-close` (with an optional value) closes it, a click on the scrim or Esc closes it with the slide-out, and focus returns to the opener. `dd.dialog.open('#id')` does the same from script.
+The drawer shares `ds/behaviors/dialog.js` with Dialog: `data-dd-dialog-open="#id"` opens it, `data-dd-dialog-close` (with an optional value) closes it, a click on the scrim or Esc closes it with the slide-out, and focus returns to the opener. `data-dd-dialog-backdrop="static"` keeps a scrim click from closing it. From script: `dd.dialog.open('#id')` and `dd.dialog.close('#id', value)`.
 
 | class / attribute | what it does |
 |---|---|

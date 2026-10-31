@@ -5,47 +5,48 @@ import { Code } from 'astro:components';
 import { ddTheme } from '../lib/syntax';
 import skill from '../../skill/dawn-and-dusk/SKILL.md?raw';
 
-const install = `# Claude Code — for every project on this machine
-npx degit cxkw-dev/dawn-and-dusk/skill/dawn-and-dusk ~/.claude/skills/dawn-and-dusk
+const install = `# From a clone of this repository: install into one project
+npm run skill:install -- ~/code/my-app
+# → ~/code/my-app/.claude/skills/dawn-and-dusk (replaced if it's already there)
 
-# Claude Code — just this project (commit it so teammates get it too)
-npx degit cxkw-dev/dawn-and-dusk/skill/dawn-and-dusk .claude/skills/dawn-and-dusk
-
-# No degit? Clone once and copy the folder
-git clone --depth 1 https://github.com/cxkw-dev/dawn-and-dusk.git /tmp/dd && cp -r /tmp/dd/skill/dawn-and-dusk ~/.claude/skills/`;
+# Without a clone: run this inside the project
+npx degit cxkw-dev/dawn-and-dusk/skill/dawn-and-dusk .claude/skills/dawn-and-dusk`;
 
 const agentsMd = `## UI: dawn & dusk design system
-- Load /dawn-and-dusk.css and /dawn-and-dusk.js (from github.com/cxkw-dev/dawn-and-dusk/release).
+- Copy dawn-and-dusk.css, dawn-and-dusk.js and icons.svg from github.com/cxkw-dev/dawn-and-dusk/tree/main/release.
+  Load the CSS and JS once; paste icons.svg once after <body>.
 - Build with semantic HTML + dd- classes; style only with var(--dd-*) tokens. Never hard-code colours.
 - Tone, not borders: --dd-bg → --dd-surface → --dd-surface-2. Shadows only on floating layers.
 - One .dd-btn--primary per view. Headings: .dd-h1/.dd-h2 (lowercase lockup). Data in .dd-mono.
 - Component catalogue: https://cxkw-dev.github.io/dawn-and-dusk — check dawn and dusk before finishing.`;
 ---
-<Docs title="Agent skill" group="Getting started" lead="Hand dawn & dusk to an AI agent. The skill teaches it the tokens, the rules and every component, and ships the CSS, JS and icons it needs.">
+<Docs title="Agent skill" group="AI" lead="Hand dawn & dusk to an AI agent. The skill teaches it the tokens, the rules and every component, and ships the CSS, JS and icons it needs.">
   <h2 id="whats-inside">What’s inside</h2>
   <div class="doc-cards">
-    <div class="doc-card"><b>SKILL.md</b><span>When to use the system, how to install it into a project, and the ten rules that make it look right.</span></div>
-    <div class="doc-card"><b>references/components.md</b><span>Every component with its classes and behaviours — generated from the source on each build.</span></div>
-    <div class="doc-card"><b>references/tokens.md</b><span>Every token with its dawn and dusk value — generated from <code>ds/tokens.css</code>.</span></div>
-    <div class="doc-card"><b>references/patterns.md</b><span>Page recipes: dashboard, data explorer, settings, landing.</span></div>
-    <div class="doc-card"><b>assets/</b><span><code>dawn-and-dusk.css</code>, <code>dawn-and-dusk.js</code>, <code>tokens.css</code> and <code>icons.svg</code> — ready to copy into any project.</span></div>
+    <div class="doc-card"><b>SKILL.md</b><span>When to use the system, how to install it into a project, and the rules that make it look right.</span></div>
+    <div class="doc-card"><b>references/components/</b><span>One file per component with the exact markup of every docs example, its classes and guidelines. Generated from these docs.</span></div>
+    <div class="doc-card"><b>references/components.md</b><span>Every component’s classes, <code>data-dd-*</code> hooks and behaviours in one file. Generated from <code>ds/</code>.</span></div>
+    <div class="doc-card"><b>references/tokens.md</b><span>Every token with its dawn and dusk value, the base classes and every icon name. Generated from <code>ds/</code>.</span></div>
+    <div class="doc-card"><b>references/patterns.md</b><span>Page recipes: dashboard, data explorer, settings, landing and pricing.</span></div>
+    <div class="doc-card"><b>references/frameworks.md</b><span>React, Next.js, Vue, Svelte and Astro, theming without a flash, and living next to Tailwind.</span></div>
+    <div class="doc-card"><b>assets/</b><span><code>dawn-and-dusk.css</code>, <code>dawn-and-dusk.js</code>, <code>tokens.css</code> and <code>icons.svg</code>, ready to copy into a project.</span></div>
   </div>
 
   <h2 id="install">Install for Claude</h2>
-  <p>Skills live in a folder named after the skill. Claude Code picks it up automatically and uses it whenever you ask for UI — no prompt needed.</p>
+  <p>Install the skill into each project that uses dawn & dusk, never into your global <code>~/.claude/skills</code>: other projects, such as client work, keep their own design language. Claude Code finds it in the project’s <code>.claude/skills</code> folder and uses it whenever you ask for UI there. Commit the folder so teammates get it too.</p>
   <Code code={install} lang="bash" theme={ddTheme} wrap />
-  <p>For Claude apps, zip the <code>skill/dawn-and-dusk</code> folder and add it as a custom skill.</p>
+  <p>In the Claude apps, zip the <code>skill/dawn-and-dusk</code> folder and upload it as a custom skill. Its description limits it to dawn & dusk work.</p>
 
   <h2 id="other-agents">Other agents</h2>
-  <p>Agents without skill support (Cursor, Copilot, Codex…) get the same result from a short block in <code>AGENTS.md</code> or the system prompt, plus the release files:</p>
+  <p>Agents without skill support (Cursor, Copilot, Codex…) get most of the way with a short block in <code>AGENTS.md</code> or the system prompt, plus the release files:</p>
   <Code code={agentsMd} lang="markdown" theme={ddTheme} wrap />
 
   <h2 id="keeping-in-sync">Keeping it in sync</h2>
-  <p><code>npm run build:ds</code> regenerates the skill’s assets and references from <code>ds/</code>. Edit the system, rebuild, commit — the skill can never describe a component that doesn’t exist.</p>
+  <p>The references are generated, so the skill can’t describe a component that doesn’t exist. <code>npm run build:ds</code> refreshes the assets, <code>tokens.md</code> and <code>components.md</code> from <code>ds/</code>; <code>npm run build</code> also regenerates the per-component markup from the built docs. Run <code>npm run skill:install</code> again to update a project’s copy.</p>
 
   <h2 id="skill-md">SKILL.md</h2>
   <Code code={skill} lang="markdown" theme={ddTheme} wrap />
 
   <h2 id="guidelines">Prompting tips</h2>
-  <Guides do={['Name the page type: “a dawn & dusk dashboard for deploy health”.', 'Ask the agent to check dusk and a phone width before it finishes.', 'Point it at a component page when you want a specific variant.']} dont={['Don’t paste raw hex values into prompts — ask for tokens.', 'Don’t let it add a second CSS framework next to dawn & dusk.']} />
+  <Guides do={['Name the page type: “a dawn & dusk dashboard for deploy health”.', 'Ask the agent to check dusk and a phone width before it finishes.', 'Point it at a component page when you want a specific variant.']} dont={['Don’t paste raw hex values into prompts; ask for tokens.', 'Don’t let it add a second CSS framework next to dawn & dusk.']} />
 </Docs>

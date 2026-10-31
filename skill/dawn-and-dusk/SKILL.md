@@ -118,18 +118,20 @@ Each component file lists its hooks.
 panel that waits; `.dd-spinner` for small inline busy states and buttons (`components/loader.md`, `spinner.md`).
 
 Small global API: `dd.toast({ title, description, intent, action })`, `dd.dialog`, `dd.tabs`, `dd.popover`, `dd.chip`,
-`dd.dismiss`, `dd.guide`, `dd.jsonViewer(el, data)`, `dd.dataTable.refresh(table)`, `dd.terminal(el)`,
-`dd.menu.open(menu, trigger?, { focus })` / `dd.menu.close(menu?)` / `dd.menu.trigger(menu)`, and the `dd.iconSprite`
-setting. Data tables refresh themselves when you add or remove rows (focus moves to the next row); call `refresh` after
-editing a cell's value in place.
+`dd.dismiss`, `dd.guide`, `dd.jsonViewer(el, data)`, `dd.dataTable.refresh(table)`, `dd.pagination(el, state)`,
+`dd.terminal(el)`, `dd.menu.open(menu, trigger?, { focus })` / `dd.menu.close(menu?)` / `dd.menu.trigger(menu)`, and the
+`dd.iconSprite` setting. Data tables refresh themselves when you add or remove rows (focus moves to the next row);
+call `refresh` after editing a cell's value in place.
 - **One menu shared by many rows** (one ⋯ menu for a whole table): listen for `dd:menuopen` on the menu;
   `event.detail.trigger` (also `menu.ddTrigger`) is the button that opened it, so `trigger.closest('tr')` is the row.
   A dialog opened from a menu item returns focus to that menu's trigger when it closes.
 - **Validation messages per reason:** `data-dd-error-missing`, `-type`, `-pattern`, `-range`, `-length` on a control (then
   `data-dd-error`, then the browser's text); `setCustomValidity()` from your code wins.
 - **Dense table height:** it caps at 70vh and scrolls inside by default. Set `--dd-data-table-height: none` to let the
-  page scroll, or add `.dd-data-table--fill` to fill its parent (an app shell page). Components emit bubbling events such as `dd:change`,
-`dd:tabchange`, `dd:command`, `dd-select`, `dd-date` and `dd:dismiss`; listen for them instead of patching internals.
+  page scroll, or add `.dd-data-table--fill` to fill its parent (an app shell page).
+
+Components emit bubbling events such as `dd:change`, `dd:tabchange`, `dd:command`, `dd-select`, `dd-date` and
+`dd:dismiss`; listen for them instead of patching internals.
 
 ## 5. Your own CSS (page glue)
 

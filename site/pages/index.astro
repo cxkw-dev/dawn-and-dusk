@@ -5,7 +5,7 @@
 import Docs from '../layouts/Docs.astro';
 import HomeSplit from '../components/HomeSplit.astro';
 import { i } from '../lib/icon';
-import { dawn, dusk, setNames } from '../lib/tokens';
+import { setNames } from '../lib/tokens';
 import '../styles/home.css';
 
 const components = Object.keys(import.meta.glob('./components/*.astro')).length;
@@ -29,7 +29,8 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
       <p class="home-cap home-cover__tl"><span>cxkw.dev design system</span><Fragment set:html={when} /></p>
       <p class="home-cap home-cover__tr"><Fragment set:html={when} /><span>v0.1</span></p>
       <div class="home-cover__intro">
-        <p class="home-cover__lead">Warm greige neutrals, golden-hour colour and a heavy lowercase voice, in a light dawn and a dark dusk. Plain CSS and a little JavaScript, with an agent skill so AI builds it right.</p>
+        <p class="home-cover__lead">A warm, quiet design system. Two lights, one point of view.</p>
+        <p class="home-cover__note">Golden-hour colour, confident type and considered details. Plain CSS, a little JavaScript, and an agent skill to bring it together.</p>
         <div class="home-cover__ctas">
           <a class="dd-btn dd-btn--primary" href={href('foundations/colors')}><Fragment set:html={i('layers')} /><span>Start with foundations</span></a>
           <a class="dd-btn dd-btn--secondary" href={href('components/button')}><Fragment set:html={i('box')} /><span>Browse components</span></a>
@@ -37,15 +38,6 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
         </div>
       </div>
       <div class="home-sun" aria-hidden="true"></div>
-      <div class="home-cover__objects" inert aria-hidden="true">
-        <div class="dd-toast dd-toast--ok">
-          <Fragment set:html={i('success')} />
-          <div class="dd-toast__body"><p class="dd-toast__title">Deployed to edge-cache</p><p class="dd-toast__text">dawn-and-dusk v0.1 is live in 3 regions.</p></div>
-        </div>
-        <div class="dd-chip-group">
-          {sets.slice(0, 6).map((s) => <span class={`dd-chip dd-chip--${s}`}>{setNames[s]}</span>)}
-        </div>
-      </div>
       <span class="dd-logo dd-logo--stack home-mast" aria-hidden="true">
         <span class="dd-logo__line">dawn</span>
         <span class="dd-logo__line"><span class="dd-logo__amp">&amp;</span>dusk</span>
@@ -82,27 +74,29 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
     <section class="home-colour" aria-labelledby="home-colour-h">
       <div class="home-head">
         <h2 id="home-colour-h" class="dd-h2 home-head__h">golden hour</h2>
-        <p class="home-head__text">Eight warm colours for tags, avatars and charts, tuned for each light. Every swatch is cut on the seam: dawn above the line, dusk below it.</p>
+        <p class="home-head__text">A palette drawn from the last light of the day. Eight colours for the details that deserve your attention, resting on warm, quiet neutrals.</p>
+        <p class="home-head__aside">Each swatch holds both lights: dawn above the diagonal, dusk below.</p>
+        <p class="home-more"><a class="dd-btn dd-btn--link" href={href('foundations/colors')}><span>Colours</span><Fragment set:html={i('arrow-right')} /></a></p>
       </div>
-      <ol class="home-swatches" role="list">
-        {sets.map((s) => (
-          <li class="home-swatch">
-            <span class="home-swatch__chip" aria-hidden="true"><i data-theme="dawn" style={`background: var(--dd-${s})`}></i><i data-theme="dusk" style={`background: var(--dd-${s})`}></i></span>
-            <span class="home-swatch__name">{setNames[s]}</span>
-            <span class="home-swatch__meta"><span class="home-swatch__token">--dd-{s}</span><span><span class="dd-visually-hidden">dawn </span>{dawn[s]}</span><span><span class="dd-visually-hidden">dusk </span>{dusk[s]}</span></span>
-          </li>
-        ))}
-      </ol>
-      <ol class="home-swatches home-swatches--greige" role="list" aria-label="warm greige neutrals">
-        {greige.map(([t, name]) => (
-          <li class="home-swatch">
-            <span class="home-swatch__chip" aria-hidden="true"><i data-theme="dawn" style={`background: var(--dd-${t})`}></i><i data-theme="dusk" style={`background: var(--dd-${t})`}></i></span>
-            <span class="home-swatch__name">{name}</span>
-            <span class="home-swatch__meta"><span class="home-swatch__token">--dd-{t}</span></span>
-          </li>
-        ))}
-      </ol>
-      <p class="home-more"><a class="dd-btn dd-btn--link" href={href('foundations/colors')}><span>Colours</span><Fragment set:html={i('arrow-right')} /></a></p>
+      <div class="home-colour__palette">
+        <ol class="home-swatches" role="list">
+          {sets.map((s) => (
+            <li class="home-swatch">
+              <span class="home-swatch__chip" aria-hidden="true"><i data-theme="dawn" style={`background: var(--dd-${s})`}></i><i data-theme="dusk" style={`background: var(--dd-${s})`}></i></span>
+              <span class="home-swatch__name">{setNames[s]}</span>
+            </li>
+          ))}
+        </ol>
+        <p class="home-palette-note">Set against warm greige neutrals.</p>
+        <ol class="home-swatches home-swatches--greige" role="list" aria-label="warm greige neutrals">
+          {greige.map(([t, name]) => (
+            <li class="home-swatch">
+              <span class="home-swatch__chip" aria-hidden="true"><i data-theme="dawn" style={`background: var(--dd-${t})`}></i><i data-theme="dusk" style={`background: var(--dd-${t})`}></i></span>
+              <span class="home-swatch__name">{name}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
     </section>
 
     <!-- ── type ──────────────────────────────────────────────────────────────────────────────────────────── -->
@@ -129,7 +123,7 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
     <section class="home-parts" aria-labelledby="home-parts-h">
       <div class="home-head">
         <h2 id="home-parts-h" class="dd-h2 home-head__h">every part, both lights</h2>
-        <p class="home-head__text">The same components, rendered once in each theme and cut on the same line. Scroll, and the line moves with you.</p>
+        <p class="home-head__text">Familiar pieces, thoughtfully finished. A few favourites from the collection, seen in both lights as you scroll.</p>
       </div>
       <HomeSplit class="home-collage" art label="A lookbook of six real components, a stat, a toast, a progress bar, a segmented control with a switch, chips with avatars, and buttons, shown half in dawn and half in dusk.">
         <figure class="home-look">
@@ -143,7 +137,7 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
               <div class="dd-stat__foot"><span class="dd-stat__delta dd-stat__delta--ok"><Fragment set:html={i('arrow-up')} /><span class="dd-visually-hidden">Up</span>12.4%</span><span class="dd-stat__compare">vs <b>36.7K</b> last week</span></div>
             </div>
           </div>
-          <figcaption class="home-cap"><b>Stat</b><span>.dd-stat</span></figcaption>
+          <figcaption class="home-cap"><b>Stat</b><span>A clear view of the numbers</span></figcaption>
         </figure>
         <figure class="home-look">
           <div class="home-look__stage">
@@ -152,7 +146,7 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
               <div class="dd-toast__body"><p class="dd-toast__title">Invite sent</p><p class="dd-toast__text">mai@cxkw.dev can join ai-focus until Friday.</p></div>
             </div>
           </div>
-          <figcaption class="home-cap"><b>Toast</b><span>.dd-toast</span></figcaption>
+          <figcaption class="home-cap"><b>Toast</b><span>A little reassurance</span></figcaption>
         </figure>
         <figure class="home-look">
           <div class="home-look__stage">
@@ -162,7 +156,7 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
               <p class="dd-progress__hint">38 MB of 61 MB · about 12 s left</p>
             </div>
           </div>
-          <figcaption class="home-cap"><b>Progress</b><span>.dd-progress</span></figcaption>
+          <figcaption class="home-cap"><b>Progress</b><span>Every step accounted for</span></figcaption>
         </figure>
         <figure class="home-look">
           <div class="home-look__stage home-look__stage--stack">
@@ -173,7 +167,7 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
             </div>
             <label class="dd-switch"><input class="dd-switch__input" type="checkbox" role="switch" checked> Auto-deploy</label>
           </div>
-          <figcaption class="home-cap"><b>Controls</b><span>.dd-segmented .dd-switch</span></figcaption>
+          <figcaption class="home-cap"><b>Controls</b><span>Choices that feel natural</span></figcaption>
         </figure>
         <figure class="home-look">
           <div class="home-look__stage home-look__stage--stack">
@@ -189,7 +183,7 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
               <span class="dd-avatar dd-avatar--set-6">EV</span>
             </div>
           </div>
-          <figcaption class="home-cap"><b>Chips, avatars</b><span>.dd-chip .dd-avatar</span></figcaption>
+          <figcaption class="home-cap"><b>Chips, avatars</b><span>A place for everyone</span></figcaption>
         </figure>
         <figure class="home-look">
           <div class="home-look__stage">
@@ -198,7 +192,7 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
               <button class="dd-btn dd-btn--secondary" type="button"><Fragment set:html={i('eye')} /><span>Preview</span></button>
             </div>
           </div>
-          <figcaption class="home-cap"><b>Buttons</b><span>.dd-btn</span></figcaption>
+          <figcaption class="home-cap"><b>Buttons</b><span>One clear next move</span></figcaption>
         </figure>
       </HomeSplit>
       <p class="home-more"><a class="dd-btn dd-btn--link" href={href('components/button')}><span>All {components} components</span><Fragment set:html={i('arrow-right')} /></a></p>

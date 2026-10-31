@@ -121,7 +121,7 @@ const links = `
   <Example code={overflow} />
 
   <h2 id="links">As page navigation</h2>
-  <p>For tabs that change the URL, use links with <code>aria-current="page"</code> inside a <code>&lt;nav&gt;</code> — no <code>data-dd-tabs</code>, no tab roles. The script leaves them alone: they navigate like any link and the next page marks its own tab. (On this page the links go nowhere, so a click just moves <code>aria-current</code> to show the marker.)</p>
+  <p>For tabs that change the URL, use links with <code>aria-current="page"</code> inside a <code>&lt;nav&gt;</code> — no <code>data-dd-tabs</code>, no tab roles. The script leaves them alone: they navigate like any link and the next page marks its own tab. (On this page the links go nowhere, so a click only moves <code>aria-current</code> to show the marker.)</p>
   <Example code={links} />
 
   <h2 id="api">Classes</h2>
@@ -130,9 +130,10 @@ const links = `
     ['.dd-tabs__list', 'The row of tabs (<code>role="tablist"</code>). Scrolls sideways when it overflows.'],
     ['.dd-tabs__tab', 'A tab. Active with <code>aria-selected="true"</code>, <code>aria-current="page"</code> or <code>.is-active</code>.'],
     ['.dd-tabs__count', 'Mono count pill inside a tab.'],
+    ['.dd-tabs__dot', 'Small primary dot inside a tab, to flag something new.'],
     ['.dd-tabs__panel', 'A panel (<code>role="tabpanel"</code>). Hidden with the <code>hidden</code> attribute.'],
-    ['.dd-tabs--sm', 'Smaller tabs.'],
-    ['.dd-tabs--pill', 'Secondary pill tabs, no baseline.'],
+    ['.dd-tabs--sm', 'Smaller tabs. On the wrapper, or on a lone <code>__list</code> of links.'],
+    ['.dd-tabs--pill', 'Secondary pill tabs, no baseline. On the wrapper, or on a lone <code>__list</code> of links.'],
     ['.dd-tabs--vertical', 'List beside the panels; the current tab sits on a deeper tone. Wraps above the panels when narrow.'],
   ]} />
 

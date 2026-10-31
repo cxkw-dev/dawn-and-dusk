@@ -1,6 +1,6 @@
 # card — `card`
 
-A container for one thing — a project, a service, a stat. Cards lift off the page by tone alone: no border, no shadow. Interactive cards lift a tone toward ink on hover.
+A container for one thing — a project, a service, a stat. Cards lift off the page by tone alone, with no border or shadow, and interactive cards lift a tone toward ink on hover.
 
 Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/card
 
@@ -97,7 +97,7 @@ A tonal cover (or an `<img class="dd-card__media">`) sits on top. `--inset-media
     <div class="dd-card__body">
       <p class="dd-card__eyebrow"><span>Release</span><span class="dd-mono">v0.1</span></p>
       <h3 class="dd-card__title"><a class="dd-card__stretch" href="#">dawn &amp; dusk ships</a></h3>
-      <p class="dd-card__text">The first public cut: tokens, forty components and the docs you are reading.</p>
+      <p class="dd-card__text">The first public cut: tokens, nearly sixty components and the docs you are reading.</p>
       <div class="dd-card__foot"><span class="dd-card__meta">Oct 30</span><span class="dd-card__link">Changelog <svg class="dd-icon" aria-hidden="true"><use href="#dd-i-arrow-right"/></svg></span></div>
     </div>
   </article>
@@ -254,11 +254,12 @@ Less padding, a smaller title, no body text — for runbooks, shortcuts and dens
 | `.dd-card__foot` | Bottom row, pushed to the end: `.dd-card__meta` and `.dd-card__link` (as an `<a>` it underlines on hover; its arrow nudges with the card or the link). |
 | `.dd-card__media` | Cover panel or image. `.dd-card__media--warm` for the Golden hour gradient. |
 | `.dd-card--link` | Interactive card: lifts toward ink on hover and focus (`--dd-card-hover`). |
+| `.dd-card--link.is-hover` | Pins the hover tone on, for previews and docs. |
 | `--dd-card-hover` | The hover tone: 6% toward ink in dawn, 14% on dusk’s grain page. `.dd-app-shell` (a plain page, no grain) uses 6% in both. Set it yourself if cards sit on another surface. |
 | `.dd-card__stretch` | A link whose hit area covers the whole card. Other buttons and links in the card stay clickable above it. |
 | `.dd-card--inset-media` | Media inset with its own corners. |
 | `.dd-card--stat` | With `.dd-card__stat`, `.dd-card__label`, `.dd-card__delta` (`is-up` / `is-down`). |
-| `.dd-card--row` | Media beside the body; wraps to stacked when narrow. |
+| `.dd-card--row` | Media beside the body; wraps to stacked when narrow. Body text clamps to two lines. |
 | `.dd-card--compact` | Tighter padding, smaller title, hides body text. |
 | `.dd-card-grid` | Responsive auto-fill grid of cards (min 220px). |
 

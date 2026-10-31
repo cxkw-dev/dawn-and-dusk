@@ -1,10 +1,15 @@
+# dependencies and build output
 node_modules/
 dist/
 .astro/
+
+# local files
 .DS_Store
 *.log
+.env*
+.claude/settings.local.json
 
-# stray screenshots
+# stray screenshots (images that belong to the project live under these folders)
 *.png
 !ds/**/*.png
 !site/**/*.png

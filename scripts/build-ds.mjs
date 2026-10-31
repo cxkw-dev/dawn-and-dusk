@@ -1,14 +1,17 @@
-// Builds the distributable design system from ds/:
+// Builds the distributable design system from ds/ (npm run build:ds; also the first step of dev and build):
 //   ds/dawn-and-dusk.css|js   — source entry points (@import / import lists), regenerated from the folder contents
 //   release/dawn-and-dusk.css — one self-contained stylesheet (fonts, tokens, base, every component)
 //   release/dawn-and-dusk.js  — every behavior in one plain script (no modules, no dependencies)
 //   release/tokens.css        — tokens only
 //   release/icons.svg         — the Solar icon sprite (<use href="#dd-i-NAME"/>)
-// and copies the release files into the agent skill and the docs site's public folder.
+// copies the release files into the agent skill (skill/dawn-and-dusk/assets) and the docs (site/public/release), and
+// generates the skill's references/tokens.md and references/components.md. (references/components/*.md come from the
+// built docs: scripts/build-skill-examples.mjs.)
 import { readdir, readFile, writeFile, mkdir, copyFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = new URL('..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('..', import.meta.url));
 const ds = join(root, 'ds');
 const release = join(root, 'release');
 const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));

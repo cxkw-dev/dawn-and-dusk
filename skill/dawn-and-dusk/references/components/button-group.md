@@ -53,7 +53,7 @@ Try it: click the levels and columns on and off; each button flips on its own. E
 
 ## Split button
 
-A main action plus a narrow chevron (`.dd-btn-group__caret`) that opens a menu of variations. The seam is a soft line in the button’s own ink. Click a chevron to try it.
+A main action plus a narrow chevron (`.dd-btn-group__caret`) that opens a menu of variations. The seam is a soft line in the button’s own ink.
 
 Try it: the main half runs the action; the chevron (or ↓ on it) opens the alternatives, Esc closes them.
 
@@ -89,7 +89,7 @@ Try it: the main half runs the action; the chevron (or ↓ on it) opens the alte
 </div>
 ```
 
-Open, the chevron flips and keeps its pressed tone while the menu floats below, aligned to the end.
+While the menu is open, the chevron flips and keeps its hover tone; the menu floats below, aligned to the end.
 
 ```html
 <div class="dd-stack" style="--dd-gap: 5px; display: inline-flex; align-items: flex-end">
@@ -119,6 +119,8 @@ Size the buttons, not the group: `.dd-btn--sm` and `.dd-btn--lg` work as usual.
 
 ## Vertical
 
+`.dd-btn-group--vertical` stacks the buttons and aligns their labels to the start.
+
 ```html
 <div class="dd-btn-group dd-btn-group--vertical" role="group" aria-label="Zoom" style="width: 180px">
   <button class="dd-btn dd-btn--secondary"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-plus"/></svg><span>Zoom in</span></button>
@@ -129,7 +131,7 @@ Size the buttons, not the group: `.dd-btn--sm` and `.dd-btn--lg` work as usual.
 
 ## Full width
 
-On narrow screens, `--block` shares the row equally.
+`.dd-btn-group--block` fills its container and shares the width equally between the buttons. Useful on narrow screens and in dialog footers.
 
 ```html
 <div style="max-width: 360px">
@@ -149,8 +151,8 @@ On narrow screens, `--block` shares the row equally.
 | `[aria-pressed]` | Toggle buttons. `true` takes the pressed tone (plus a wash when hovered); `false` mutes the label and goes only half way on hover. Ghost toggles use the translucent `--dd-wash` / `--dd-wash-strong`, so they read on any background. |
 | `[data-dd-btn-toggle]` | On the group: clicking an `aria-pressed` button flips it (`ds/behaviors/button-group.js`). |
 | `.dd-btn-group--split` | Main action + chevron. The seam is drawn in the button’s own ink. |
-| `.dd-btn-group__caret` | The chevron half. Use with `.dd-btn--icon` and `data-dd-menu`; it flips when `aria-expanded="true"`. |
-| `.dd-btn-group--vertical` | Stacks the buttons; labels align left. |
+| `.dd-btn-group__caret` | The chevron half. Use with `.dd-btn--icon` and `data-dd-menu`; while `aria-expanded="true"` it flips and keeps its hover tone. |
+| `.dd-btn-group--vertical` | Stacks the buttons; labels align to the start. |
 | `.dd-btn-group--block` | Fills its container; buttons share the width. |
 
 ## Behaviour

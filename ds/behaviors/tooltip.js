@@ -115,6 +115,7 @@
 
   document.addEventListener('pointerover', (e) => {
     if (e.pointerType === 'touch') return;
+    if (current && !current.isConnected) hide(); // its trigger was removed under the pointer (a list re-rendered)
     const el = e.target.closest?.('[data-dd-tooltip]');
     if (!el) return;
     if (el === current) { clearTimeout(hideTimer); return; }

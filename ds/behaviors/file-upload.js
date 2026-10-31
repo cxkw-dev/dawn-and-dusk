@@ -4,13 +4,13 @@
    - data-dd-dropzone="#listId" lists the chosen files in that .dd-file-list (name, size, a remove button).
      A multiple input adds to the list (and its files are everything listed); a single one replaces it.
    - Files that don't match the input's accept="…" or exceed data-dd-max-size ("20MB", "500KB", bytes) are listed as
-     errors with the reason, and left out of the input's files.
+     errors with the reason, and left out of the input's files. File inputs outside a dropzone are left alone.
    - [data-dd-file-remove] inside a .dd-file removes that row (with a short exit animation) and its file, then fires
      a bubbling "dd-file-remove" event on the list with detail { name }. */
 (() => {
   const size = (b) => (b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(1)} MB`);
   const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const icon = (n) => `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-${n}"/></svg>`;
+  const icon = (n) => `<svg class="dd-icon" aria-hidden="true"><use href="${window.dd?.iconSprite || ''}#dd-i-${n}"/></svg>`;
   const kind = (name) => {
     const ext = (name.split('.').pop() || '').toLowerCase();
     if (/^(png|jpe?g|gif|webp|svg|avif)$/.test(ext)) return ['is-image', ext];
@@ -76,6 +76,7 @@
     const input = e.target;
     if (!(input instanceof HTMLInputElement) || input.type !== 'file') return;
     const zone = input.closest('[data-dd-dropzone]');
+    if (!zone) return; // a file input outside a dropzone is the page's own: leave its files alone
     const list = listFor(input);
     const chosen = [...input.files];
     // A single-file field holds one file: a new choice replaces the old row.
@@ -106,7 +107,6 @@
     const row = btn.closest('.dd-file');
     if (!row || row.classList.contains('is-removing')) return;
     const list = row.parentElement;
-    const next = row.nextElementSibling?.querySelector('[data-dd-file-remove]') || row.previousElementSibling?.querySelector('[data-dd-file-remove]');
     row.classList.add('is-removing');
     // Focus moves to the neighbouring remove button, or back to the list's dropzone once the list is empty.
     const input = list?.id ? document.querySelector(`[data-dd-dropzone="#${CSS.escape(list.id)}"] input[type="file"]`) : null;
@@ -118,6 +118,12 @@
       if (finished) return;
       finished = true;
       const hadFocus = row.contains(document.activeElement);
+      // The neighbour is picked now, past rows that are leaving too (several removed in quick succession).
+      const near = (step) => {
+        for (let n = row[step]; n; n = n[step]) if (!n.classList.contains('is-removing') && n.querySelector('[data-dd-file-remove]')) return n.querySelector('[data-dd-file-remove]');
+        return null;
+      };
+      const next = near('nextElementSibling') || near('previousElementSibling');
       row.remove();
       if (hadFocus || document.activeElement === document.body) (next || input)?.focus();
       list?.dispatchEvent(new CustomEvent('dd-file-remove', { bubbles: true, detail: { name } }));

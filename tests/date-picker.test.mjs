@@ -276,3 +276,34 @@ test('touch at 375: tap opens a popover that fits the screen, tap a day chooses'
   assert.equal(await value(page, '#dp-3'), 'Oct 31, 2026');
   assert.ok(!(await page.visible('#dp-3-pop')));
 });
+
+test('a calendar a framework renders without the hook is left alone: its keys throw nothing and move nothing', async ({ open, assert }) => {
+  const page = await open('components/date-picker');
+  await page.get(() => {
+    const c = document.createElement('div');
+    c.className = 'dd-calendar'; c.id = 'own-cal';
+    c.innerHTML = '<table class="dd-calendar__grid"><tbody><tr>'
+      + '<td><button class="dd-calendar__day" type="button" data-date="2026-10-01" tabindex="0">1</button></td>'
+      + '<td><button class="dd-calendar__day" type="button" data-date="2026-10-02" tabindex="-1">2</button></td></tr></tbody></table>';
+    document.querySelector('.doc-main').prepend(c);
+  });
+  await page.focus('#own-cal [data-date="2026-10-01"]');
+  await page.press('ArrowRight', 'PageDown', 'End');
+  assert.equal(await page.get(() => document.activeElement.dataset.date), '2026-10-01', 'focus is the framework’s to move');
+  assert.equal(await page.count('#own-cal .dd-calendar__day'), 2, 'nothing re-rendered');
+});
+
+test('namespaced date event preserves the legacy value and bubbles', async ({ open, assert }) => {
+  const page = await open('components/date-picker');
+  await nameCalendars(page);
+  await page.get(() => {
+    window.events = [];
+    for (const type of ['dd-date', 'dd:date']) document.addEventListener(type, (e) => window.events.push({ type, detail: e.detail, id: e.target.id }));
+  });
+  await page.click('#cal-a .dd-calendar__day:not([disabled])');
+  const events = await page.get(() => window.events);
+  assert.equal(events.length, 2);
+  assert.deepEqual(events.map((e) => e.type), ['dd-date', 'dd:date']);
+  assert.deepEqual(events[0].detail, events[1].detail);
+  assert.equal(events[1].id, 'cal-a');
+});

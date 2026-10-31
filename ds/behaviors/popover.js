@@ -50,31 +50,40 @@
     if (pop?.classList.contains('dd-popover') && !pop.contains(btn)) anchors.set(pop, btn);
   }, true);
 
+  const closed = (pop) => {
+    open.delete(pop);
+    if (!open.size) removal.disconnect();
+    const a = anchorOf(pop);
+    document.querySelectorAll(`[popovertarget="${CSS.escape(pop.id)}"]`).forEach((b) => { if (!pop.contains(b)) b.setAttribute('aria-expanded', 'false'); });
+    // An anchor passed to dd.popover.open() hears about the close too.
+    if (a && !pop.contains(a) && a.hasAttribute('aria-expanded')) a.setAttribute('aria-expanded', 'false');
+  };
+  // A panel removed from the page while open (a framework re-render) fires no toggle event: let it go all the same.
+  // Watched only while something is open.
+  const removal = new MutationObserver(() => open.forEach((pop) => { if (!pop.isConnected) closed(pop); }));
+
   document.addEventListener('toggle', (e) => {
     const pop = e.target;
     if (!(pop instanceof HTMLElement) || !pop.classList.contains('dd-popover')) return;
-    const a = anchorOf(pop);
-    if (e.newState === 'open') {
-      open.add(pop);
-      reposition(pop);
-      a?.setAttribute('aria-expanded', 'true');
-    } else {
-      open.delete(pop);
-      document.querySelectorAll(`[popovertarget="${CSS.escape(pop.id)}"]`).forEach((b) => { if (!pop.contains(b)) b.setAttribute('aria-expanded', 'false'); });
-      // An anchor passed to dd.popover.open() hears about the close too.
-      if (a && !pop.contains(a) && a.hasAttribute('aria-expanded')) a.setAttribute('aria-expanded', 'false');
-    }
+    if (e.newState !== 'open') { closed(pop); return; }
+    if (!open.size) removal.observe(document.documentElement, { childList: true, subtree: true });
+    open.add(pop);
+    reposition(pop);
+    anchorOf(pop)?.setAttribute('aria-expanded', 'true');
   }, true);
 
   const follow = () => open.forEach(reposition);
   window.addEventListener('scroll', follow, { capture: true, passive: true });
   window.addEventListener('resize', follow, { passive: true });
 
-  // Set the initial aria-expanded so the state is announced before the first click.
-  const init = () => document.querySelectorAll('[popovertarget]').forEach((b) => {
+  // Set the initial aria-expanded so the state is announced before the first click: on load, and for a button rendered
+  // later the first time it takes focus.
+  const fill = (b) => {
     const pop = document.getElementById(b.getAttribute('popovertarget'));
     if (pop?.classList.contains('dd-popover') && !pop.contains(b) && !b.hasAttribute('aria-expanded')) b.setAttribute('aria-expanded', 'false');
-  });
+  };
+  document.addEventListener('focusin', (e) => { const b = e.target.closest?.('[popovertarget]'); if (b) fill(b); });
+  const init = () => document.querySelectorAll('[popovertarget]').forEach(fill);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 

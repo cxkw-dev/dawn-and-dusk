@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 // Stand-in photos: tiny inline SVG portraits, so the docs need no image files.
 const photo = (a: string, b: string, skin: string, hair: string, top: string) =>
@@ -93,11 +94,11 @@ const interactive = `
     </div>
   </div>
   <div class="dd-avatar-group" role="group" aria-label="Reviewers">
-    <a class="dd-avatar dd-avatar--set-1" href="#people-andy" aria-label="Andy Nguyen" data-dd-tooltip="Andy Nguyen">AN</a>
-    <a class="dd-avatar" href="#people-mai" aria-label="Mai Kha" data-dd-tooltip="Mai Kha"><img src="${P1}" alt=""></a>
-    <a class="dd-avatar dd-avatar--set-4" href="#people-jonas" aria-label="Jonas Sauer" data-dd-tooltip="Jonas Sauer">JS</a>
-    <a class="dd-avatar" href="#people-rosa" aria-label="Rosa Lind" data-dd-tooltip="Rosa Lind"><img src="${P3}" alt=""></a>
-    <a class="dd-avatar dd-avatar--more" href="#reviewers" aria-label="3 more reviewers" data-dd-tooltip="Tomás Cruz, Elif Varol, Omar Bello">+3</a>
+    <a class="dd-avatar dd-avatar--set-1" href="#" aria-label="Andy Nguyen" data-dd-tooltip="Andy Nguyen">AN</a>
+    <a class="dd-avatar" href="#" aria-label="Mai Kha" data-dd-tooltip="Mai Kha"><img src="${P1}" alt=""></a>
+    <a class="dd-avatar dd-avatar--set-4" href="#" aria-label="Jonas Sauer" data-dd-tooltip="Jonas Sauer">JS</a>
+    <a class="dd-avatar" href="#" aria-label="Rosa Lind" data-dd-tooltip="Rosa Lind"><img src="${P3}" alt=""></a>
+    <a class="dd-avatar dd-avatar--more" href="#" aria-label="3 more reviewers" data-dd-tooltip="Tomás Cruz, Elif Varol, Omar Bello">+3</a>
   </div>
 </div>`;
 
@@ -129,7 +130,7 @@ const label = `
   <Example code={group} />
 
   <h2 id="status">Status</h2>
-  <p>Drop a <a href="status-dot">status dot</a> inside and it pins to the bottom-right, ringed like the group. Put the status in the label too.</p>
+  <p>Drop a <a href={`${docs}/components/status-dot`}>status dot</a> inside and it pins to the bottom-right, ringed like the group. Put the status in the label too.</p>
   <Example code={status} />
 
   <h2 id="interactive">Interactive</h2>

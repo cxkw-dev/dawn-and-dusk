@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 const chev = `<span class="dd-select__chevron">${i('chevron-down')}</span>`;
 const field = (id: string, label: string, control: string, extra = '', cls = '') => `
@@ -184,7 +185,7 @@ const panels = `
   <Example description="Try it: Create key confirms with a toast." code={panels} />
 
   <h2 id="settings">Settings page</h2>
-  <p>A full example. <code>.dd-form--divided</code> draws a hairline between sections; <code>--aside</code> sections put their title and description on the left once the form is 640px wide (a container query, so it works in any column). Everything here waits for Save, so the on / off choices are <a href="checkbox">checkboxes</a>: a <a href="switch">switch</a> applies the moment it flips, so it belongs outside a form with a Save button (a preferences list that saves as you go).</p>
+  <p>A full example. <code>.dd-form--divided</code> draws a hairline between sections; <code>--aside</code> sections put their title and description on the left once the form is 640px wide (a container query, so it works in any column). Everything here waits for Save, so the on / off choices are <a href={`${docs}/components/checkbox`}>checkboxes</a>; a <a href={`${docs}/components/switch`}>switch</a> applies the moment it flips, so it belongs in a list that saves as you go.</p>
   <Example description="Try it: change a few things, then Discard puts them all back (the counter re-counts)." code={settings} />
 
   <h2 id="api">Classes</h2>
@@ -198,12 +199,13 @@ const panels = `
     ['.dd-form__body', 'Field column of an aside section.'],
     ['.dd-form__grid · --3', 'Responsive grid: up to two (or three) columns, folding to one.'],
     ['.dd-form__span', 'Grid item that takes the full row.'],
-    ['.dd-form__row', 'Simple wrapping row of fields.'],
+    ['.dd-form__row', 'Wrapping row of fields, each at least 12rem wide.'],
     ['.dd-form__choices · --rows', 'Even stack of checkboxes (or of switches, in a list that applies each change at once); <code>--rows</code> adds hairlines.'],
     ['.dd-form__footer · --sticky · --plain', 'Action row. <code>.dd-form__meta</code> holds status on the left.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
+  <p><code>ds/behaviors/form-layout.js</code> adds validation on submit, in the form’s own style.</p>
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['form[data-dd-validate][novalidate]', 'Checks the form’s controls on submit with the browser’s constraints. Invalid ones get <code>aria-invalid="true"</code> and a <code>.dd-field__error</code> linked by <code>aria-describedby</code>; focus moves to the first, and the submit event stops before other listeners. Errors clear on input once valid, re-check on change, and all clear on reset.'],
     ['data-dd-error-missing="…"', 'On a control: the error when it is <code>required</code> and empty.'],

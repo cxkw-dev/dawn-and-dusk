@@ -1,6 +1,6 @@
 # logo — `logo`
 
-The dawn & dusk wordmark: Outfit 800, tracked in to -0.055em, always lowercase. One line is the default. The stacked lockup and the “d&” tile come from the same letters.
+The dawn & dusk wordmark: Outfit 800, tracked in to -0.055em, always lowercase. One line is the default; the stacked lockup and the “d&” tile come from the same letters.
 
 Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/logo
 
@@ -98,6 +98,8 @@ Leave at least one x — the height of the lowercase “a” — on every side. 
 
 ## In context
 
+The one-line mark in a site header, and the tile beside a project name.
+
 ```html
 <div class="dd-stack" style="--dd-gap: 16px">
   <div class="logo-ctx">
@@ -119,9 +121,9 @@ Leave at least one x — the height of the lowercase “a” — on every side. 
 | `.dd-logo--xs / --sm / --lg / --xl / --2xl` | 15 · 18 · 32 · 46 · 64px. Default is 22px. Or set `--dd-logo-size`. |
 | `.dd-logo--stack` | Stacked lockup. Two `.dd-logo__line` children; wrap the ampersand in `.dd-logo__amp`. Give it `role="img"` and an `aria-label`. |
 | `--dd-logo-bg` | The colour of the cut-out stroke on the second line. Defaults to `--dd-bg`. |
-| `.dd-logo--muted / --accent` | Quieter colourways for footers and credits. |
+| `.dd-logo--muted / --accent` | Muted or accent colourway, for footers and credits. |
 | `.dd-logo-block` | A padded block that sets the ground. `--surface`, `--ink`, `--primary`. |
-| `.dd-logo-tile` | “d&” tile, 40px. `--16 / --24 / --32 / --64 / --96`; `--primary`, `--paper`. |
+| `.dd-logo-tile` | “d&” tile, 40px. `--16 / --24 / --32 / --64 / --96`, or set `--dd-tile`; `--primary`, `--paper`. |
 
 ## Guidelines
 

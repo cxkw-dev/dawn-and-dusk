@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 // Service fleet: [id, name, status, label, region, version, owner, req/min, error %, p95 ms, cpu %, updated]
 const services = [
@@ -326,8 +327,8 @@ const fill = `
   <ul>
     <li><strong>Toolbar</strong>: search on the left, filter chips, then the row count, column toggle and table-level actions on the right. It wraps on narrow screens; search takes the first line.</li>
     <li><strong>Bulk bar</strong>: appears under the toolbar while rows are selected, in the accent tone, with the count and the actions that apply to the selection.</li>
-    <li><strong>Scroll container</strong>: <code>.dd-data-table__scroll</code> scrolls both ways. The header sticks to its top; the select and first data column stick to its left and cast a soft edge once you scroll. Its height caps at <code>--dd-data-table-height</code> (default <code>70vh</code>); see <a href="#height">Height</a> to drop the cap.</li>
-    <li><strong>Footer</strong>: page size and the <a href="pagination">pagination</a> range. Give it <code>data-dd-pagination</code> and the table pages its rows in the browser; leave it off when the server pages.</li>
+    <li><strong>Scroll container</strong>: <code>.dd-data-table__scroll</code> scrolls both ways. The header sticks to its top; the row-number, select and first data columns stick to its left and cast a soft edge once you scroll. Its height caps at <code>--dd-data-table-height</code> (default <code>70vh</code>); see <a href="#height">Height</a> to drop the cap.</li>
+    <li><strong>Footer</strong>: page size and the <a href={`${docs}/components/pagination`}>pagination</a> range. Give it <code>data-dd-pagination</code> and the table pages its rows in the browser; leave it off when the server pages.</li>
   </ul>
 
   <h2 id="columns">Columns and cells</h2>
@@ -351,7 +352,7 @@ const fill = `
   <p>By default the scroll area caps at <code>70vh</code> and scrolls inside the page, so the header stays pinned while the rows scroll. In an app, where the page already scrolls, that is a scroller inside a scroller. Two ways out:</p>
   <ul>
     <li><code>style="--dd-data-table-height: none"</code> drops the cap: the table grows with its rows and the page does all the scrolling (wide tables still scroll sideways). The header then scrolls away with the page, so page the rows.</li>
-    <li><code>.dd-data-table--fill</code> takes the height its parent gives it — a flex column, or a box with a set height — and the scroll area gets what the toolbar and footer leave. The table body is the only scroller and the header stays pinned. In an <a href="app-shell">app shell</a>, give the <code>.dd-app-shell__page</code> that holds it <code>height: 100%</code>, so the page fills the content area and the table fills the rest of the page.</li>
+    <li><code>.dd-data-table--fill</code> takes the height its parent gives it — a flex column, or a box with a set height — and the scroll area gets what the toolbar and footer leave. The table body is the only scroller and the header stays pinned. In an <a href={`${docs}/components/app-shell`}>app shell</a>, give the <code>.dd-app-shell__page</code> that holds it <code>height: 100%</code>, so the page fills the content area and the table fills the rest of the page.</li>
   </ul>
   <p>Inside <code>.dd-app-shell</code>, whose content area is a plain <code>--dd-bg</code>, the cells drop the page grain so the table reads as the same surface (in dusk the grain would make it a lighter, textured block). The shell does this by setting <code>--dd-data-table-grain: none</code>; set it to <code>var(--dd-grain)</code> on a shell that keeps the grained page behind it.</p>
   <Example code={fill} description="A --fill table in a 340px box. Created shows a short date but sorts by its ISO data-value, so last year’s deploy goes last; Build reads “18.2 s” as a number." />
@@ -362,20 +363,20 @@ const fill = `
     ['.dd-data-table__toolbar', 'Wrapping row. Holds <code>__search</code> (label + icon + input), <code>__chip</code>s and <code>__tools</code> (pushed right).'],
     ['.dd-data-table__chip', 'Filter chip. <code>aria-pressed="true"</code> or <code>.is-active</code> for an applied filter; <code>__chip-dot</code> adds a status dot (<code>--_c</code>).'],
     ['.dd-data-table__count', 'Row count, mono.'],
-    ['.dd-data-table__menu', 'Column toggle built on <code>&lt;details&gt;</code>; <code>__menu-panel</code> floats, <code>__menu-title</code> heads it.'],
+    ['.dd-data-table__menu', 'Dropdown built on <code>&lt;details&gt;</code> (column toggle, filter list); <code>__menu-panel</code> floats, <code>__menu-title</code> heads it. <code>__menu--start</code> opens the panel from its left edge, for a menu at the start of the toolbar.'],
     ['.dd-data-table__bulk', 'Bulk-action bar (<code>__bulk-count</code>, <code>__bulk-end</code>); hidden with the <code>hidden</code> attribute while nothing is selected.'],
     ['.dd-data-table__scroll', 'Scroll container (both axes). Give it <code>tabindex="0"</code>, <code>role="region"</code> and an <code>aria-label</code>.'],
     ['.dd-data-table__table', 'The <code>&lt;table&gt;</code>.'],
     ['.dd-data-table__sort', 'Button inside a sortable <code>&lt;th aria-sort&gt;</code>, with a <code>chevron-down</code> icon.'],
-    ['.dd-data-table__rownum', 'Sticky columns, left to right: row numbers, then <code>__select</code> (checkbox), then the first data column marked <code>.is-frozen</code>.'],
-    ['.dd-data-table__check', 'Restyled native checkbox (checked and indeterminate).'],
+    ['.dd-data-table__rownum · __select · .is-frozen', 'Sticky columns, left to right: row numbers, the checkbox column, then the first data column.'],
+    ['.dd-data-table__check', 'Restyled native checkbox (checked, indeterminate and disabled).'],
     ['td.is-num · .is-mono', 'Figures right-aligned in mono; IDs and hashes in mono.'],
     ['td.is-muted · .is-faint · .is-strong', 'Secondary text; a placeholder tone for empty values (the — dash), never for text people must read; emphasis.'],
     ['td.is-shrink · .is-actions', 'Shrink-to-fit column; a right-aligned cell of row actions.'],
     ['td.is-warn · td.is-bad', 'Tint a figure past its threshold.'],
     ['.dd-data-table__status[data-status]', 'Dot + label: <code>ok · warn · bad · info · muted</code>.'],
     ['.dd-data-table__unit', 'Muted unit after a figure (“ms”).'],
-    ['.dd-data-table__expand', 'Row disclosure button (<code>aria-expanded</code>, <code>aria-controls</code>).'],
+    ['.dd-data-table__expand', 'Row disclosure button (<code>aria-expanded</code>, <code>aria-controls</code>). <code>__expand-spacer</code> holds its place in rows that have no detail.'],
     ['.dd-data-table__detail', 'The detail row (<code>__detail-body</code>, <code>__facts</code>); its body stays in view while scrolling sideways.'],
     ['.dd-data-table__group', 'Group header row (<code>__group-label</code>, <code>__group-count</code>); put a <code>&lt;th colspan scope="colgroup"&gt;</code> in it.'],
     ['.dd-data-table__skeleton (--box)', 'Shimmering placeholder bar; width via <code>--w</code>.'],
@@ -385,18 +386,18 @@ const fill = `
     ['.dd-data-table--card', 'The whole table on <code>--dd-surface</code>.'],
     ['.dd-data-table--fill', 'Fills the height its parent gives it (a flex column or a box with a set height); the scroll area takes the rest, uncapped, so it is the only scroller.'],
     ['--dd-data-table-height', 'Scroll height cap (default <code>70vh</code>). <code>none</code>: no cap, the table grows and the page scrolls.'],
-    ['--dd-data-table-bg', 'The opaque colour behind sticky cells (default <code>--dd-bg</code>).'],
+    ['--dd-data-table-bg', 'The opaque cell colour that keeps sticky cells solid (default <code>--dd-bg</code>). Set it when the table sits on something other than the page.'],
     ['--dd-data-table-grain', 'The texture on cells (default the page grain; <code>none</code> inside <code>.dd-app-shell</code> and on <code>--card</code>).'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <p>Load <code>dawn-and-dusk.js</code> and add <code>data-dd-data-table</code> to the root. Everything is delegated, so rows added later just work.</p>
-  <ClassTable head={['Attribute / element', 'Behaviour']} rows={[
-    ['th[aria-sort] .dd-data-table__sort', 'Click cycles <code>none → ascending → descending → none</code> and sorts the rows by each cell’s <code>data-value</code>, else its text. Two values compare as numbers when both are fully numeric (<code>1,240</code>, <code>0.5%</code>, <code>-3</code>), as times when both are ISO dates (<code>2026-10-30</code>, <code>2026-10-30T09:41</code>), else as text with numbers in order (<code>v2</code> before <code>v10</code>). In an <code>.is-num</code> column, “84 ms” still reads as 84 and a dash counts as blank. Blanks sort last; groups and detail rows stay together.'],
+  <p>Load <code>dawn-and-dusk.js</code> and add <code>data-dd-data-table</code> to the root. Everything is delegated, so rows added later work too.</p>
+  <ClassTable head={['Attribute / element', 'What it does']} rows={[
+    ['th[aria-sort] .dd-data-table__sort', 'Click cycles <code>none → ascending → descending → none</code> and sorts the rows by each cell’s <code>data-value</code>, else its text. Two values compare as numbers when both are fully numeric (<code>1,240</code>, <code>0.5%</code>, <code>-3</code>), as times when both are ISO dates (<code>2026-10-30</code>, <code>2026-10-30T09:41</code>), else as text with numbers in order (<code>v2</code> before <code>v10</code>). In an <code>.is-num</code> column (or a header with <code>data-type="number"</code>), “84 ms” still reads as 84 and a dash counts as blank. Blanks sort last; groups and detail rows stay together.'],
     ['thead .dd-data-table__check', 'Selects or clears every visible row; shows indeterminate when some are selected. Rows whose box is <code>disabled</code> are skipped and don’t count toward its state.'],
     ['tbody .dd-data-table__check', 'Selects the row (<code>.is-selected</code>). Shift-click selects a range (skipping disabled boxes). A <code>disabled</code> box is never changed by the table — select all, ranges and Clear leave it as it is.'],
     ['[data-dd-data-table-selected]', 'Receives the selected count. <code>.dd-data-table__bulk</code> is shown while it is above zero; if it hides with focus inside (a bulk action removed the rows), focus moves to the select-all box.'],
-    ['[data-dd-data-table-clear]', 'Clears the selection.'],
+    ['[data-dd-data-table-clear]', 'Clears the selection and moves focus to the select-all box.'],
     ['.dd-data-table__expand', 'Toggles <code>aria-expanded</code> and the <code>hidden</code> detail row named by <code>aria-controls</code>.'],
     ['[data-dd-data-table-search]', 'Filters rows by their text as you type.'],
     ['[data-dd-data-table-filter="col=value"]', 'Toggle chip (<code>aria-pressed</code>) or checkbox (e.g. in a <code>__menu</code>). Matches cells with <code>data-col="col"</code> by <code>data-value</code> or text. Same column = any, different columns = all.'],
@@ -404,11 +405,12 @@ const fill = `
     ['[data-dd-data-table-removable]', 'On a filter chip: it disappears once cleared (focus moves to the search).'],
     ['[data-dd-data-table-count="noun"]', 'Shows “12 services”, or “3 of 12 services” while filtered.'],
     ['[data-dd-data-table-query]', 'Receives the quoted search text in the empty state.'],
-    ['[data-dd-data-table-reset]', 'Clears search and chips, and returns focus to the search.'],
-    ['[data-dd-pagination] inside the root', 'Pages the matching rows in the browser (see <a href="pagination">pagination</a>): <code>data-total</code> is kept in step, the page-size select and arrows move through the rows. Filtering goes back to page 1; sorting keeps the page.'],
+    ['[data-dd-data-table-reset]', 'Clears the search and every filter, and returns focus to the search.'],
+    ['[data-dd-pagination] inside the root', `Pages the matching rows in the browser (see <a href="${docs}/components/pagination">pagination</a>): <code>data-total</code> is kept in step, the page-size select and arrows move through the rows. Filtering goes back to page 1; sorting keeps the page.`],
     ['[data-dd-data-table-column="col"]', 'Checkbox that shows / hides the column whose header has <code>data-col="col"</code>.'],
     ['Rows added or removed', 'Picked up on their own (count, filters, empty row, pages and selection refresh on the next frame); <code>dd.dataTable.refresh(root)</code> does it by hand.'],
     ['Focus on removed rows', 'When the row holding focus is removed (a ⋯ menu’s Remove, a bulk action, a framework re-render), focus moves to the first control of the next shown row, else the previous one, else the select-all box, else the scroll region. A row that is only moved keeps its focus. Try it: a row’s ⋯ → Remove from fleet.'],
+    ['.is-scrolled-x · .is-scrolled-y', 'Set on the root while the scroll area is scrolled sideways / down; they draw the frozen column’s edge and the header’s shadow.'],
     ['Keyboard', 'Every control is a native button, checkbox or input, so <kbd>Tab</kbd>, <kbd>Enter</kbd> and <kbd>Space</kbd> work throughout. The scroll region is focusable, so arrow keys scroll it. <kbd>Esc</kbd> closes a column or filter menu and returns focus to its button; a click outside closes it too.'],
     ['Events', '<code>dd:sort</code> <code>{ column, direction, index }</code> after a header sorts; <code>dd:selectionchange</code> <code>{ count, rows }</code> after the selection changes; <code>dd:pagechange</code> (from the pager) <code>{ page, pages, pageSize, total, from, to }</code>. All bubble from the root, so a server-backed table can listen and fetch.'],
   ]} />

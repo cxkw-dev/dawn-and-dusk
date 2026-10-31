@@ -72,7 +72,7 @@ Static renderings, pinned open for reference — the live ones are in the exampl
 | class / attribute | what it does |
 |---|---|
 | `.dd-tooltip` | The tooltip. The JS creates one, `role="tooltip"`, at the end of `<body>`. |
-| `.is-open` | Visible (fades and slides 3px toward its trigger). |
+| `.is-open` | Visible: fades in and slides 3px out from its trigger. |
 | `[data-placement]` | The side it ended up on: `top`, `bottom`, `left`, `right` (+ `-start` / `-end`). Moves the arrow. |
 | `.dd-tooltip__keys > kbd` | Shortcut keys. |
 | `.dd-tooltip--static` | In-flow rendering for docs and mockups. |
@@ -86,7 +86,8 @@ Static renderings, pinned open for reference — the live ones are in the exampl
 | `data-dd-tooltip-placement` | `top` (default) · `bottom` · `left` · `right`, optionally `-start` / `-end`. |
 | `data-dd-tooltip-kbd` | Shortcut hint, keys separated by spaces: `"⌘ K"`. |
 | `aria-describedby` | Added to the trigger while the tooltip is open (unless its `aria-label` already says the same thing). |
-| `Esc · click · scroll` | Hide the tooltip. The pointer can move onto the tooltip without it closing. Touch taps don’t open tooltips. |
+| `Esc · click · scroll` | Hide the tooltip, as do resizing the window and moving the pointer away. The pointer can move onto the tooltip without it closing. Touch taps don’t open tooltips. |
+| `Theme` | The tooltip takes the dawn/dusk theme of its trigger. |
 | `Top layer` | The tooltip is a manual popover, so it shows above open dialogs, drawers and popovers — buttons inside them can have tooltips too. It fades in from the side it lands on, after any flip. |
 
 ## Guidelines

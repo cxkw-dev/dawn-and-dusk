@@ -23,7 +23,7 @@
   const labelOf = (opt) => (opt.dataset.label || labelEl(opt).dataset.text || labelEl(opt).textContent).trim();
   const valueOf = (opt) => opt.dataset.value ?? labelOf(opt);
   const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const icon = (name) => `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-${name}"/></svg>`;
+  const icon = (name) => `<svg class="dd-icon" aria-hidden="true"><use href="${window.dd?.iconSprite || ''}#dd-i-${name}"/></svg>`;
 
   const setActive = (root, opt) => {
     const { input, list } = parts(root);

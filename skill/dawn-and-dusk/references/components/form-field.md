@@ -135,15 +135,19 @@ The field works with every box-based control: text input, select, combobox, date
 | `.dd-field__error` | Error message in red, with an optional leading icon. |
 | `.dd-field__foot` | Row under the box: hint or error on the left, counter on the right. |
 | `.dd-field__counter` | Mono character counter. `.is-near` (90%), `.is-over`. |
-| `.is-invalid` | Force the invalid look on the field (prefer `aria-invalid` on the control). |
+| `.is-invalid` | Forces the invalid look on the field (prefer `aria-invalid` on the control). |
+| `[aria-invalid] · [disabled]` | Set on the control; the label follows (red when invalid, faded when disabled). |
 
 ## Behaviour
 
+`ds/behaviors/form-field.js` keeps every counter in step with its control.
+
 | class / attribute | what it does |
 |---|---|
-| `.dd-field__counter` | Counts the field’s input or textarea on every keystroke, and again after a form reset: `n / maxlength`. |
-| `data-dd-counter="280"` | Soft limit instead of `maxlength`: typing past it is allowed but marks the control invalid until it is back under. |
+| `.dd-field__counter` | Counts the field’s input or textarea on every keystroke, and again after a form reset: `n / maxlength`, or just `n` without a limit. `.is-near` at 90%, `.is-over` past the limit. |
+| `data-dd-counter="280"` | Soft limit instead of `maxlength`: typing past it is allowed but marks the control invalid until it is back under. It only clears an `aria-invalid` it set itself. |
 | `data-dd-counter-error` | On a `.dd-field__error` in the same field: shown only while the soft limit is passed. |
+| `data-dd-counter="manual"` | Leaves the counter alone, for one a framework renders. `data-dd-manual` on an ancestor does the same. |
 
 ## Guidelines
 

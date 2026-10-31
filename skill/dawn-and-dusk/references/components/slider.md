@@ -94,9 +94,11 @@ Try it: drag the thumb; the bubble follows in steps of 5%.
 | `.dd-slider--range + .dd-slider__fill` | Two inputs on one rail; the fill spans between them. |
 | `.dd-slider__bubble` | Value label above a thumb (`data-for`, optional `data-unit`). |
 | `.dd-slider__ticks` | Evenly spaced tick marks with labels; children with `data-value` light up when in range. |
-| `.dd-slider--sm` | Smaller thumb and track. |
+| `.dd-slider--sm` | Smaller thumb (14px) and track (3px). |
 
 ## Behaviour
+
+`ds/behaviors/slider.js` keeps the fill, outputs, bubbles and ticks in step with the inputs.
 
 | class / attribute | what it does |
 |---|---|

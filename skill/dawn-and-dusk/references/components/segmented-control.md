@@ -8,7 +8,7 @@ Every snippet is the exact markup of a working docs example. Icons are `<svg cla
 
 ### Default
 
-Two to five short options that switch a view or a filter. Click a segment, or tab in and use the arrow keys.
+Two to five short options that switch a view or a filter. Try it: click a segment, or Tab in and use the arrow keys.
 
 ```html
 <div class="dd-stack" style="--dd-gap: 15px; align-items: flex-start">
@@ -49,7 +49,7 @@ Small for toolbars and dense headers, medium by default, large for settings and 
 
 ## Icons
 
-Icon-only segments (`__item--icon`) are square; give each an `aria-label`. Icons can also lead a label.
+Icon-only segments (`.dd-segmented__item--icon`) are square; give each an `aria-label`. Icons can also lead a label.
 
 ```html
 <div class="dd-row" style="--dd-gap: 15px">
@@ -115,7 +115,7 @@ The same look from a `<fieldset>` of native radios: each `<label class="dd-segme
 
 ## Full width, on a surface
 
-`--block` shares the width equally. On a `--dd-surface` container add `--inset` so the track steps one tone deeper.
+`.dd-segmented--block` shares the width equally. On a `.dd-surface` card, add `.dd-segmented--inset` so the track steps one tone deeper.
 
 ```html
 <div class="dd-surface" style="max-width: 380px; padding: 20px">
@@ -131,15 +131,15 @@ The same look from a `<fieldset>` of native radios: each `<label class="dd-segme
 
 | class / attribute | what it does |
 |---|---|
-| `.dd-segmented` | The track. A `div[role="radiogroup"][data-dd-segmented]`, or a `<fieldset>` for the radio version. Scrolls sideways if it runs out of room. |
+| `.dd-segmented` | The track. A `div[role="radiogroup"][data-dd-segmented]`, or a `<fieldset>` for the radio version. Scrolls sideways if it runs out of room, with soft fades at the hidden edges where the browser supports them. |
 | `.dd-segmented__item` | A segment: `<button role="radio" aria-checked>`, or `<label>` wrapping an `<input type="radio">`. |
 | `[aria-checked="true"] / :checked` | The chosen segment: deeper tone, full-strength text. `.is-selected` also works for static markup. |
 | `.dd-segmented__item--icon` | Square, icon-only segment. Needs `aria-label`. |
 | `.dd-segmented__count` | A mono count or note beside the label. |
 | `.dd-segmented--sm / --lg` | Sizes. Medium has no modifier. |
-| `.dd-segmented--block` | Fills its container; segments share the width. |
-| `.dd-segmented--inset` | Track one tone deeper, for use on `--dd-surface`. |
-| `disabled / aria-disabled` | Faded and skipped by the keyboard. |
+| `.dd-segmented--block` | Fills its container; segments share the width but never squeeze below their labels (the track scrolls instead). |
+| `.dd-segmented--inset` | Track one tone deeper, for use on a `.dd-surface` card. |
+| `:disabled / [aria-disabled="true"]` | Faded to 45% and skipped by the keyboard. |
 
 ## Behaviour
 
@@ -147,10 +147,10 @@ The same look from a `<fieldset>` of native radios: each `<label class="dd-segme
 
 | class / attribute | what it does |
 |---|---|
-| `data-dd-segmented` | On the track: clicks choose a segment; only the chosen segment is in the tab order (roving tabindex). |
+| `data-dd-segmented` | On the track: clicks choose a segment; only the chosen segment is in the tab order (roving tabindex). Fills in `role="radiogroup"` and `aria-checked="false"` if you leave them out. |
 | `← → ↑ ↓` | Move to and choose the previous / next segment, wrapping at the ends. |
 | `Home / End` | Choose the first / last segment. |
-| `dd:change` | Bubbling event on the track; `detail.value` is the item’s `value` or `data-value` (else its label), `detail.item` the button. |
+| `dd:change` | Bubbling event on the track, fired only when the choice changes. `detail.value` is the item’s `value` or `data-value` (else its label); `detail.item` is the button. |
 
 ## Guidelines
 

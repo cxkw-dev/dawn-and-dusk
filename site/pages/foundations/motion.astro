@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import Guides from '../../components/Guides.astro';
 import { base } from '../../lib/tokens';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 // Durations side by side. A real switch plays them (no script): each dot travels its track with one token.
 const lanes = `
@@ -39,7 +40,7 @@ const lift = `
 </style>
 <div class="dd-row" style="--dd-gap: var(--dd-space-6); align-items: center">
   <button class="dd-btn dd-btn--primary" type="button">${i('bolt')}<span>Hover me</span></button>
-  <a class="dd-card motion-lift" href="../components/card" style="width: 260px">
+  <a class="dd-card motion-lift" href="${docs}/components/card" style="width: 260px">
     <div class="dd-card__body">
       <p class="dd-card__eyebrow"><code class="dd-mono">--dd-dur</code></p>
       <h3 class="dd-card__title">card lifts</h3>
@@ -48,7 +49,7 @@ const lift = `
   </a>
 </div>`;
 ---
-<Docs title="Motion" group="Foundations" lead="“Gentle”: a symmetric, unhurried ease. Motion confirms a change; it never performs.">
+<Docs title="Motion" group="Foundations" lead="One gentle, symmetric ease. Motion confirms a change; it never performs.">
   <h2 id="tokens">Tokens</h2>
   <ul>
     <li><code>--dd-dur</code> · {base.dur} — reveals, panels, lifts, expanding rows.</li>

@@ -78,3 +78,25 @@ test('a bulk action that removes the selected rows moves focus from the hidden b
   await focusOn(page, `${FL} thead .dd-data-table__check`, 'select-all');
   assert.equal(await page.text(`${FL} [data-dd-data-table-count]`), '10 services');
 });
+
+test('a table added after load is set up by its first dd.dataTable.refresh and then follows its rows on its own', async ({ open, assert }) => {
+  const page = await open('components/data-table');
+  await page.get(() => {
+    const src = [...document.querySelectorAll('.ex-stage [data-dd-data-table]')].find((t) => t.querySelector('[data-dd-data-table-count]'));
+    const late = src.cloneNode(true);
+    late.id = 'late-table';
+    late.querySelectorAll('[id]').forEach((el) => { el.id = `late-${el.id}`; });
+    document.querySelector('.doc-main').append(late);
+    window.dd.dataTable.refresh(late);
+  });
+  const count = () => page.get(() => Number((document.querySelector('#late-table [data-dd-data-table-count]').textContent.match(/\d+/g) || []).pop()));
+  const rows = () => page.get(() => [...document.querySelectorAll('#late-table tbody > tr')].filter((r) => !r.matches('.dd-data-table__empty-row, .dd-data-table__group, .dd-data-table__detail')).length);
+  const before = await count();
+  assert.equal(before, await rows(), 'counted on refresh');
+  await page.get(() => { const tb = document.querySelector('#late-table tbody'); const row = [...tb.rows].find((r) => !r.matches('.dd-data-table__empty-row, .dd-data-table__group, .dd-data-table__detail')); tb.append(row.cloneNode(true)); });
+  await page.waitFor((b) => Number((document.querySelector('#late-table [data-dd-data-table-count]').textContent.match(/\d+/g) || []).pop()) === b + 1, { args: [before] });
+  // A second refresh does not set it up twice (one observer: one refresh per batch, no loop).
+  await page.get(() => window.dd.dataTable.refresh('#late-table'));
+  const mutations = await page.get(async () => { let k = 0; const mo = new MutationObserver((l) => { k += l.length; }); mo.observe(document.getElementById('late-table'), { subtree: true, childList: true, attributes: true, characterData: true }); await new Promise((r) => setTimeout(r, 500)); mo.disconnect(); return k; });
+  assert.ok(mutations < 5, `idle table stays still (saw ${mutations} mutations)`);
+});

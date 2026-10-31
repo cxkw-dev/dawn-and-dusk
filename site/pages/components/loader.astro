@@ -3,6 +3,7 @@ import Docs from '../../layouts/Docs.astro';
 import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 // The ampersand from the logo: Outfit 800 "&" traced from the font (1000-unit em, baseline at y=0, y down), plus the
 // geometry the variants need. Every viewBox is the same, and ds/components/loader.css masks with the same glyph.
@@ -41,12 +42,12 @@ const loader = (v: string, { size = '', label = 'Loading', hidden = false, style
 const variants: [string, string, string][] = [
   ['ink', 'Ink', 'Written stroke by stroke with a broad pen — the main stroke, then the bowl — then lifted away the way it was written.'],
   ['trace', 'Trace', 'An apricot line traces the outline, ink floods in behind it, then the glyph fades back to its track.'],
-  ['sky', 'Sky', 'The golden-hour set drifts through the glyph along its leg: honey, apricot, rose, wine, and round to dawn again.'],
+  ['sky', 'Sky', 'The Golden hour set drifts through the glyph along its leg, honey through wine and round to honey again.'],
   ['sun', 'Sunrise', 'A big sun rises behind the & from the baseline and sets again. The & is cut out of it, like the logo’s second line.'],
   ['horizon', 'Horizon', 'Dawn light rises through the & from the baseline, then dusk ink rises over it, and again.'],
   ['weight', 'Breathe', 'The & breathes from Outfit Black down to Thin and back — the font’s own outlines, interpolated.'],
   ['firefly', 'Firefly', 'A small apricot light with a short tail runs round the outline of a faint &.'],
-  ['tones', 'Tones', 'The & turns through all eight golden-hour colours; the bowl follows the main stroke half a beat behind.'],
+  ['tones', 'Tones', 'The & turns through all eight Golden hour colours; the bowl follows the main stroke half a beat behind.'],
   ['cut', 'Cut', 'The logo’s knocked-out gap slides through the ink &, parallel to its leg. A real cut: the page shows through.'],
   ['join', 'Join', 'The two strokes drift in from opposite corners, lock into the glyph, hold, then drift apart.'],
 ];
@@ -122,9 +123,9 @@ const fullPage = `<div class="dd-page-loader dd-page-loader--fixed" role="status
   <p class="dd-page-loader__meta">cxkw.dev</p>
 </div>`;
 ---
-<Docs title="Loader" group="Feedback & status" lead="The ampersand from the logo, set moving — the brand’s own way to say “loading”. The default is #4 Sunrise — a sun rising behind the &, cut out like the logo’s second line — with nine alternatives, each the real Outfit 800 & from the wordmark. Use it wherever a page or a panel waits.">
+<Docs title="Loader" group="Feedback & status" lead="The ampersand from the logo, set moving — the brand’s own way to say “loading” wherever a page or a panel waits. Sunrise is the default (a sun rising behind the &, cut out like the logo’s second line), with nine alternatives, each the real Outfit 800 & from the wordmark.">
   <style is:global>
-    /* docs only: the numbered picker gallery — every variant in dawn and dusk side by side */
+    /* docs only: the numbered gallery — every variant in dawn and dusk side by side */
     .ldr-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: var(--dd-space-3); margin: var(--dd-space-6) 0 var(--dd-space-2); }
     .ldr-tile { display: flex; flex-direction: column; margin: 0; border-radius: var(--dd-r-box); background: var(--dd-surface); overflow: hidden; }
     .ldr-tile__stages { display: grid; grid-template-columns: 1fr 1fr; }
@@ -172,7 +173,7 @@ const fullPage = `<div class="dd-page-loader dd-page-loader--fixed" role="status
   <Example code={colours} stage="center" />
 
   <h2 id="page">Page and section loading</h2>
-  <p>Compose with the page loader from <a href="spinner#page">Spinner</a>: the loader goes where the spinner would, the container keeps <code>role="status"</code> and the words, and the loader itself is <code>aria-hidden</code>. <code>--overlay</code> lays it over content that is being recalculated (its parent needs <code>position: relative</code>).</p>
+  <p>Compose with the page loader from <a href={`${docs}/components/spinner#page`}>Spinner</a>: the loader goes where the spinner would, the container keeps <code>role="status"</code> and the words, and the loader itself is <code>aria-hidden</code>. <code>--overlay</code> lays it over content that is being recalculated (its parent needs <code>position: relative</code>).</p>
   <Example code={page} stage="flush" />
   <Example code={overlay} stage="flush" />
   <p>For a booting app, use the same markup with <code>dd-page-loader--fixed</code> instead of <code>--overlay</code> (it covers the viewport) and an <code>--xl</code> loader. <button class="dd-btn dd-btn--secondary dd-btn--sm" type="button" data-ldr-fullpage>Show the full-page loader</button></p>
@@ -183,7 +184,7 @@ const fullPage = `<div class="dd-page-loader dd-page-loader--fixed" role="status
   <Example code={card} />
 
   <h2 id="inline">Inline</h2>
-  <p>Beside text in a <code>.dd-loading</code> row the glyph sizes itself to the type. For loading buttons and very small waits, the ring <a href="spinner">Spinner</a> is still the better fit.</p>
+  <p>Beside text in a <code>.dd-loading</code> row the glyph sizes itself to the type. For loading buttons and very small waits, the ring <a href={`${docs}/components/spinner`}>Spinner</a> is still the better fit.</p>
   <Example code={inline} />
 
   <h2 id="api">Classes</h2>

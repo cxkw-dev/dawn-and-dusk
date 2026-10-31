@@ -1,13 +1,24 @@
 // Copy-ready markup for the agent skill, taken from the built docs (dist/), so every snippet is one that renders and is
 // covered by the behaviour tests. Writes skill/dawn-and-dusk/references/components/<name>.md and an index.
-// Runs after `astro build` (npm run build does both).
-import { readdir, readFile, writeFile, mkdir, rm } from 'node:fs/promises';
+// Runs after `astro build` (npm run build does both): node scripts/build-skill-examples.mjs
+import { readdir, readFile, writeFile, mkdir, rm, access } from 'node:fs/promises';
 import { join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const root = new URL('..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('..', import.meta.url));
 const dist = join(root, 'dist', 'components');
 const outDir = join(root, 'skill', 'dawn-and-dusk', 'references', 'components');
-const nav = await Promise.all((await readdir(join(root, 'site', 'nav'))).sort().map(async (f) => (await import(join(root, 'site', 'nav', f))).default));
+const navDir = join(root, 'site', 'nav');
+const nav = await Promise.all((await readdir(navDir)).filter((f) => f.endsWith('.mjs')).sort().map(async (f) => (await import(pathToFileURL(join(navDir, f)).href)).default));
+
+// Every component page in the nav must be built; check before touching the skill, so a missing build can't empty it.
+const pages = nav.flatMap((group) => group.items.filter((it) => it.href.startsWith('components/')).map((it) => it.href.split('/')[1]));
+const missing = [];
+for (const name of pages) await access(join(dist, name, 'index.html')).catch(() => missing.push(name));
+if (missing.length) {
+  console.error(`build-skill-examples: no built page for ${missing.length === pages.length ? 'any component' : missing.join(', ')} in dist/components/ — run \`npm run build\` (astro build) first.`);
+  process.exit(1);
+}
 
 const decode = (s) => s.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
 const text = (s) => decode(s.replace(/<code>(.*?)<\/code>/g, '`$1`').replace(/<a [^>]*>(.*?)<\/a>/g, '$1').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
@@ -21,8 +32,7 @@ for (const group of nav) {
   index.push(`**${group.group}:** ${items.map((it) => `[${it.title}](components/${it.href.split('/')[1]}.md)`).join(' · ')}`);
   for (const it of items) {
     const name = it.href.split('/')[1];
-    const html = await readFile(join(dist, name, 'index.html'), 'utf8').catch(() => null);
-    if (!html) continue;
+    const html = await readFile(join(dist, name, 'index.html'), 'utf8');
     const lead = text((html.match(/<p class="dd-lead">([\s\S]*?)<\/p>/) ?? [, ''])[1]);
     const md = [`# ${it.title.toLowerCase()} — \`${name}\``, '', lead, '', `Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/${name}`, '',
       'Every snippet is the exact markup of a working docs example. Icons are `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-NAME"/></svg>` from the sprite.', ''];

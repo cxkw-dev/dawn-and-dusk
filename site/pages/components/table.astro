@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 const projects = [
   ['dawn-and-dusk', 'ok', 'Live', '1,284', '2h ago'],
@@ -113,10 +114,10 @@ const mono = `
     ['.dd-table', 'The card: <code>--dd-surface</code>, rounded, and the horizontal scroll container. Put a plain <code>&lt;table&gt;</code> inside, with <code>scope="col"</code> on the header cells. Give it <code>tabindex="0"</code>, <code>role="region"</code> and a label (<code>aria-label</code>, or <code>aria-labelledby</code> pointing at the header title) so a wide table can be scrolled from the keyboard.'],
     ['th.is-num / td.is-num', 'Right-aligned figure column (tabular numbers).'],
     ['.is-muted · .is-strong · .is-mono · .is-shrink', 'Cell helpers: secondary text, emphasis, mono IDs/hashes, shrink-to-fit column.'],
-    ['.dd-table__status[data-status]', 'Dot + label. <code>ok · warn · bad · info · muted</code>.'],
+    ['.dd-table__status[data-status]', 'Dot + label: <code>ok · warn · bad · info · muted</code>. <code>bad</code> also colours the label; <code>muted</code> greys it.'],
     ['.dd-table--compact', 'Tighter rows and padding.'],
     ['.dd-table--mono', 'Numeric cells in DM Mono.'],
-    ['.dd-table--interactive', 'Rows get a pointer and a hover wash (a stronger one while pressed); a row also lights up while a link inside it has keyboard focus.'],
+    ['.dd-table--interactive', 'Rows get a pointer and a hover wash (a stronger one while pressed); a row also lights up while something inside it has focus.'],
     ['.dd-table__row-link', 'In an <code>--interactive</code> table: the row’s one link, stretched over the whole row. It keeps the cell’s text style; keyboard focus rings the row.'],
     ['.dd-table--plain', 'No card: hairlines on the page, flush to the text edge.'],
     ['.dd-table-header (+ __title, __meta, __action)', 'Title row above the card. A <code>.dd-btn</code> placed in it is pushed to the far edge.'],
@@ -126,6 +127,6 @@ const mono = `
   <h2 id="guidelines">Guidelines</h2>
   <Guides
     do={['Use it for up to ~10 rows that need no sorting or selection.', 'Right-align numbers and keep their units consistent within a column.', 'Keep cells to one line; truncate long text in the cell, not the column.']}
-    dont={['Don’t add vertical rules or zebra stripes; the hairline is enough.', 'Don’t use it for hundreds of rows. Reach for the <a href="data-table">data table</a> instead.', 'Don’t put more than one action in the header.']}
+    dont={['Don’t add vertical rules or zebra stripes; the hairline is enough.', `Don’t use it for hundreds of rows. Reach for the <a href="${docs}/components/data-table">data table</a> instead.`, 'Don’t put more than one action in the header.']}
   />
 </Docs>

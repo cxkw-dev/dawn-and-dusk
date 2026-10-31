@@ -46,7 +46,7 @@ A real <select> in the tonal box, with the label tucked in and a chevron. Option
 
 ## States
 
-Set `aria-invalid="true"` or `disabled` on the `<select>` (or the custom trigger); the box and the tucked label follow.
+Set `aria-invalid="true"` or `disabled` on the `<select>`; the box and the tucked label follow. A custom trigger takes `disabled` the same way; for the error look give it both `aria-invalid="true"` and `.is-invalid`.
 
 ```html
 <div class="dd-form__grid">
@@ -269,7 +269,7 @@ Try it: pick a sort order; the list floats over the table.
 | `.dd-input.dd-select` | Select box: native `<select class="dd-input__control">` inside, or the custom trigger `<button>` itself. |
 | `.dd-select__chevron` | Trailing chevron (wrap the icon). Flips while the custom menu is open. |
 | `.dd-select__placeholder` | Quiet text in the trigger before anything is chosen. |
-| `.dd-select-menu` | Wrapper for the custom select: anchors the listbox under the trigger. |
+| `.dd-select-menu` | Wrapper for the custom select: anchors the listbox under the trigger. `.is-open` while the list shows. |
 | `.dd-listbox` | Floating option list (`role="listbox"`). `--up` opens above, `--end` aligns right, `--static` renders in flow. |
 | `.dd-listbox__option` | An option (`role="option"`). `aria-selected` (check), `aria-disabled` (quiet, never highlights), `.is-active` (the one highlighted row — keyboard and pointer share it). |
 | `.dd-listbox__group · __sep` | Small-caps group label (`role="presentation"`) and hairline divider. |
@@ -280,16 +280,16 @@ Try it: pick a sort order; the list floats over the table.
 
 ## Behaviour
 
-Add `data-dd-select` to the `.dd-select-menu`. The script wires `aria-expanded`, `aria-controls` and `aria-activedescendant`, writes the chosen label into `[data-dd-select-value]`, sets an optional hidden input, and fires a bubbling `dd-select` event with `{ value, label, option, values, selected }` — `values` is every chosen value (one, unless the list is multiple) and `selected` says whether the option was turned on or off.
+Add `data-dd-select` to the `.dd-select-menu`. The script wires `aria-expanded`, `aria-controls` and `aria-activedescendant`, writes the chosen label into `[data-dd-select-value]`, puts the option’s `data-value` (or its label) into an optional hidden input and fires `change` on it, and fires a bubbling `dd:select` event (and the legacy `dd-select` event) with `{ value, label, option, values, selected }` — `values` is every chosen value (one, unless the list is multiple) and `selected` says whether the option was turned on or off.
 
 | class / attribute | what it does |
 |---|---|
 | `Enter · Space · ↓ · ↑` | On the trigger: open the list on the selected option (↑ opens on the last). |
 | `Home · End` | On the trigger: open on the first or last option. |
-| `↑ ↓ · Home · End` | Move through enabled options; disabled ones are skipped. |
+| `↑ ↓ · Home · End` | Move through enabled options; disabled ones are skipped. Page Up / Page Down jump like Home / End. |
 | `a–z` | Type to jump to the option that starts with the letters; the same letter again moves to the next one. Typing on the closed trigger opens it there. |
 | `Enter · Space` | Choose the active option and close. In a multiple list: toggle it and stay open. |
-| `Esc · Tab` | Close (Esc returns focus to the trigger). Clicking outside also closes. |
+| `Esc · Tab` | Close (Esc returns focus to the trigger). Clicking outside, or focus leaving the menu, also closes it. |
 
 ## Guidelines
 

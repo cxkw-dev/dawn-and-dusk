@@ -1,8 +1,7 @@
 /* Avatar — a person or project. Initials on a Color set wash (the same recipe as the Soft wash chips: 30% colour over
    the page, deep text in the same hue), or a photo. Sizes xs · sm · md (default) · lg · xl, round or square.
    Groups overlap with a ring in the page colour (set --dd-avatar-ring to the surface colour when they sit on one; the
-   initials wash mixes over it too) and end
-   in a "+3" overflow. A .dd-status-dot inside pins to the bottom-right corner. */
+   initials wash mixes over it too) and end in a "+3" overflow. A .dd-status-dot inside pins to the bottom-right corner. */
 .dd-avatar {
   --_c: var(--dd-avatar-color, var(--dd-tone-2));
   --_av: var(--dd-avatar-size, calc(var(--dd-u) * 7.2));

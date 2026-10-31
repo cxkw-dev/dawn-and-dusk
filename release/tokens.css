@@ -271,10 +271,10 @@
     --dd-set-8: #d6c29c; /* sand */
     --dd-ring: color-mix(in oklab, var(--dd-accent) 45%, transparent);
     --dd-overlay: rgb(0 0 0 / 0.55);
-  --dd-float-bg: var(--dd-surface-3);
-  --dd-float-hover: #3e3a36;
-  --dd-btn-secondary: var(--dd-surface-3);
-  --dd-btn-secondary-hover: color-mix(in oklab, var(--dd-text) 19%, var(--dd-bg));
+    --dd-float-bg: var(--dd-surface-3);
+    --dd-float-hover: #3e3a36;
+    --dd-btn-secondary: var(--dd-surface-3);
+    --dd-btn-secondary-hover: color-mix(in oklab, var(--dd-text) 19%, var(--dd-bg));
     --dd-shadow-float: 0 18px 40px -14px rgb(0 0 0 / 0.65), 0 2px 6px rgb(0 0 0 / 0.3);
     color-scheme: dark;
   }

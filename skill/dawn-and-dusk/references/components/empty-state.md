@@ -85,7 +85,7 @@ A whole empty screen, such as a new account. The title takes the heavy lowercase
 
 | class / attribute | what it does |
 |---|---|
-| `.dd-empty-state` | Centred column, default size for panels. |
+| `.dd-empty-state` | Centred column, default size for panels. Honours `hidden`, so you can toggle it with the data. |
 | `.dd-empty-state--compact` | Tighter: for table bodies, lists and narrow panels. |
 | `.dd-empty-state--page` | Whole screen; the title uses the heading lockup. |
 | `.dd-empty-state__icon` | Tonal tile holding one icon. |
@@ -96,7 +96,7 @@ A whole empty screen, such as a new account. The title takes the heavy lowercase
 ## Guidelines
 
 Do:
-- Say what will appear here, not just that it’s empty.
+- Say what will appear here, not only that it’s empty.
 - Offer the action that fills it, right there.
 - Tell no-results apart from no-data: “No logs match” with Clear filters.
 

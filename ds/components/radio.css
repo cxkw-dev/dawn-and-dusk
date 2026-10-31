@@ -79,11 +79,10 @@
 /* Compact: one line per option, mark on the right — good for 2–3 short choices. */
 .dd-radio-card--row { flex-direction: row; align-items: center; gap: calc(var(--dd-u) * 3); padding-block: calc(var(--dd-u) * 3); }
 .dd-radio-card--row .dd-radio-card__icon { margin: 0; flex: none; }
-.dd-radio-card--row .dd-radio-card__mark { position: static; flex: none; margin-left: auto; }
+.dd-radio-card--row .dd-radio-card__mark { position: static; flex: none; }
 .dd-radio-card--row > .dd-radio__text { flex: 1; }
 .dd-radio-card--row .dd-radio-card__title { padding-right: 0; }
 .dd-radio-card--row .dd-radio-card__meta { flex: none; margin: 0; padding: 0; }
-.dd-radio-card--row .dd-radio-card__mark { margin-left: 0; }
 
 /* Hover halo, as on the switch: a soft wash ring so hover reads on a 20px circle in both themes, chosen or not. */
 :is(.dd-radio__input:hover, .dd-radio:hover > .dd-radio__input):not(:disabled, [aria-invalid='true']) { box-shadow: 0 0 0 4px var(--dd-wash); }

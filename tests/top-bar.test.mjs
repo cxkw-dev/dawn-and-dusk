@@ -115,10 +115,10 @@ test('site header: links on wide; the narrow menu button opens a menu of the sam
   await page.click(btn);
   assert.equal(await page.attr(btn, 'aria-expanded'), 'true');
   assert.ok(await page.visible('#tb-site-menu-narrow'), 'menu opens');
-  assert.deepEqual(await page.get(() => [...document.querySelectorAll('#tb-site-menu-narrow [role=menuitem]')].map((a) => a.textContent.trim())), ['Components', 'Patterns', 'Changelog']);
+  assert.deepEqual(await page.get(() => [...document.querySelectorAll('#tb-site-menu-narrow [role=menuitem]')].map((a) => a.textContent.trim())), ['Components', 'Guides', 'Changelog']);
   assert.ok(await page.get(() => document.getElementById('tb-site-menu-narrow').contains(document.activeElement)), 'focus moved into the menu');
   await page.press('ArrowDown');
-  assert.equal(await page.text(':focus'), 'Patterns');
+  assert.equal(await page.text(':focus'), 'Guides');
   await page.press('Escape');
   assert.equal(await page.attr(btn, 'aria-expanded'), 'false');
   assert.ok(await page.get((s) => document.activeElement === document.querySelector(s), btn), 'focus back on the menu button');
@@ -174,4 +174,21 @@ test('inside the docs’ app shell, example bars keep their own width rules: the
   assert.ok(await wide.visible(`${nth(5)} .dd-top-bar__nav-btn`));
   assert.ok(await wide.visible(`${nth(5)} .dd-top-bar__narrow`), 'the narrow site header shows its icon-only theme button');
   assert.equal(await wide.visible(`${nth(5)} .dd-top-bar__wide`), false, 'and hides its __wide items');
+});
+
+test('avatar menu: Esc pressed elsewhere on the page closes an open menu without pulling focus to it', async ({ open, assert }) => {
+  const page = await open('components/top-bar');
+  const U = userOf(nth(2)); // shown open on load
+  assert.ok(await isOpen(page, U));
+  await page.focus('.doc-main a[href]:not(.dd-top-bar a)');
+  const before = await page.get(() => { document.activeElement.id ||= 'focus-here'; return document.activeElement.id; });
+  const y = await page.get(() => scrollY);
+  await page.press('Escape');
+  assert.ok(!(await isOpen(page, U)), 'it closes');
+  assert.equal(await page.active(), `#${before}`, 'focus stays where it was');
+  assert.equal(await page.get(() => scrollY), y, 'the page does not jump to the menu');
+  // From inside the menu, Esc still hands focus back to the avatar.
+  await page.focus(`${U} > summary`);
+  await page.press('ArrowDown', 'Escape');
+  assert.ok(await page.get((s) => document.activeElement === document.querySelector(s), `${U} > summary`));
 });

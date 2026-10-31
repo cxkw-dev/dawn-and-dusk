@@ -201,7 +201,7 @@ Inside the panel, section headings in mono caps divide the list, native `<detail
 
 ## Mobile · off-canvas
 
-On small screens the whole nav slides in from the left over a scrim, opened by the top bar’s menu button (`data-dd-nav-open`). Esc, the scrim, the chevron or following a link close it, and so does tabbing out of it; while it covers the window, the page behind it doesn’t scroll. Inside an app shell this happens automatically below the shell’s breakpoint (768px, or 900 / 1024px); on its own, or to keep it off-canvas at every width (also inside a shell), add `dd-side-nav--offcanvas`. It is fixed to the window — or, as here, to a frame that contains it. Shown open — try it: tap the scrim to close it, then the menu button to bring it back; press Esc or follow a link.
+On small screens the whole nav slides in from the left over a scrim, opened by the top bar’s menu button (`data-dd-nav-open`). Esc, the scrim, the chevron, a link or tabbing out closes it; while it covers the window, the page behind doesn’t scroll. Inside an app shell this happens below the shell’s breakpoint (768px, or 900 / 1024px); on its own, or to keep it off-canvas at every width (also inside a shell), add `dd-side-nav--offcanvas`. It is fixed to the window, or, as here, to a frame that contains it. Shown open — try it: tap the scrim to close it, then the menu button to bring it back; press Esc or follow a link.
 
 ```html
 <div class="sn-frame sn-frame--phone">
@@ -279,7 +279,7 @@ On small screens the whole nav slides in from the left over a scrim, opened by t
 | `__head / __title` | Pane heading in the lockup, with an optional `__count`. |
 | `__section` | Mono caps heading inside a pane. |
 | `__link` | A page link. Active with `aria-current="page"` or `.is-active` (ink on a 10% wash); hover is a lighter 4% wash, so it never reads as current. Wrap text in `__label` so it truncates. |
-| `__count / __badge / __dot` | Right-edge meta: mono count; pill badge (`--new`, `--solid`); dot (`--ok / --warn / --bad / --idle`). A dot inside a rail `__item` pins to its corner. |
+| `__count / __badge / __dot` | Right-edge meta: mono count; pill badge (`--new`, `--solid`); dot (`--ok / --warn / --bad / --idle`). A dot or badge inside a rail `__item` pins to its corner. |
 | `__group / __sub / __chev` | A `<details>` group: the `<summary>` is a `__link`, the children sit in `__sub`. |
 | `__foot / __note / __meter` | Bottom of a pane: a tonal note with a usage meter. |
 | `--dd-side-nav-rail / -panel` | Column widths: 60px and 224px. |
@@ -289,12 +289,12 @@ On small screens the whole nav slides in from the left over a scrim, opened by t
 | class / attribute | what it does |
 |---|---|
 | `data-dd-nav-toggle` | Folds / unfolds the panel of its nav (or of the nav in its value, e.g. `"#app-nav"`). Keeps `aria-expanded` and the tooltip in sync; persists to `localStorage` under `dd-side-nav:<id>`. |
-| `data-dd-nav-section="name"` | On a rail item: shows `[data-dd-nav-pane="name"]` and unfolds the panel. Pressing the active item again folds it. |
-| `data-dd-nav-open="#id"` | Opens an off-canvas nav (the top bar’s menu button). Focus moves to the current page link. |
+| `data-dd-nav-section="name"` | On a rail item: shows `[data-dd-nav-pane="name"]` and unfolds the panel. Pressing the active item again folds or unfolds it. |
+| `data-dd-nav-open="#id"` | Opens an off-canvas nav (the top bar’s menu button). Focus moves to the current page link (or the first rail item). |
 | `data-dd-nav-close` | Closes the off-canvas nav it sits in. |
 | `Esc · scrim · link · Tab out` | Close the off-canvas nav. After Esc, the scrim (mouse or touch), a link or the chevron, focus returns to the menu button. Tabbing out — past its last link, before its first, or onto the menu button — closes it and focus stays where it went. |
 | `html.dd-side-nav-lock` | Set while an open off-canvas nav covers the window: the page behind doesn’t scroll (the page’s scrollbar gutter stays reserved, so nothing shifts). A nav fixed to a frame (a demo, a frame-mode shell) doesn’t lock the page. |
-| `Resize` | If an open nav stops being off-canvas (the window widens past the breakpoint) it closes and is simply in view. |
+| `Resize` | If an open nav stops being off-canvas (the window widens past the breakpoint), it closes and stays in view. |
 
 ## Guidelines
 

@@ -25,7 +25,8 @@
    - Menus (.dd-data-table__menu, a <details>) close on Esc (focus returns to the summary) and on any click outside.
    - Scroll: adds .is-scrolled-x / .is-scrolled-y to the root so the frozen column and sticky header cast an edge.
    - Rows added or removed from script (or a framework) are picked up on their own: count, filters, empty row, pages and
-     selection refresh on the next frame. dd.dataTable.refresh(root) does it by hand.
+     selection refresh on the next frame. dd.dataTable.refresh(root) does it by hand; for a table added to the page after
+     load, its first call also sets the table up and starts watching its rows.
    - Focus: when a row that held focus is removed, focus moves to the first control of the next remaining visible row
      (else the previous one, else the select-all box, else the scroll region / table). A row that is only moved (re-sorted
      or re-inserted by a framework) gets its focus back. */
@@ -416,12 +417,23 @@
     root.querySelectorAll('tbody').forEach((tb) => mo.observe(tb, { childList: true }));
   };
 
-  const init = () => document.querySelectorAll(ROOT).forEach((root) => {
+  const ready = new WeakSet();
+  const setup = (root) => {
+    ready.add(root);
     root.querySelectorAll('[data-dd-data-table-column]').forEach((inp) => { if (!inp.checked) setColumn(root, inp.dataset.ddDataTableColumn, false); });
     update(root);
     watch(root);
-  });
+  };
+  const init = () => document.querySelectorAll(ROOT).forEach(setup);
   window.dd = window.dd || {};
-  window.dd.dataTable = { refresh: (root) => { const r = typeof root === 'string' ? document.querySelector(root) : root; if (r) update(r.closest(ROOT) || r); } };
+  window.dd.dataTable = {
+    // A table added after load is set up (and its rows watched from then on) by its first refresh.
+    refresh: (root) => {
+      const r = typeof root === 'string' ? document.querySelector(root) : root;
+      const t = r && (r.closest(ROOT) || r);
+      if (!t) return;
+      if (t.matches(ROOT) && !ready.has(t)) setup(t); else update(t);
+    },
+  };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

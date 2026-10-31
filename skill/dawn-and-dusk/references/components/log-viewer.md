@@ -182,9 +182,9 @@ Drop the bar for short, fixed output — a build step in a deploy page. No behav
 
 | class / attribute | what it does |
 |---|---|
-| `.dd-log-viewer` | Container on a tonal surface. `.is-wrapped` wraps messages. |
+| `.dd-log-viewer` | Container on a tonal surface. `.is-wrapped` wraps messages. A size container: under 520px the service column drops and the level toggles take their own row. |
 | `.dd-log-viewer__bar` | Toolbar: `__live`, `__search`, `__levels`, `__toggle`, `__count`. |
-| `.dd-log-viewer__toggle` | Pressable button (`aria-pressed`). `--wrap` for the wrap switch; `__n` holds a level count. |
+| `.dd-log-viewer__toggle` | Pressable button (`aria-pressed`). `--wrap` and `--follow` for those switches; a `__toggle-label` inside hides when the viewer is narrow. `__n` holds a level count, which follows the search. |
 | `.dd-log-viewer__scroll` | Scroll area. Height from `--dd-log-viewer-height` (default 420px). |
 | `.dd-log-viewer__lines` | The `role="log"` list; columns line up across lines (subgrid). |
 | `.dd-log-viewer__line[data-level]` | `debug` · `info` · `warn` · `error`. Error lines are tinted. |

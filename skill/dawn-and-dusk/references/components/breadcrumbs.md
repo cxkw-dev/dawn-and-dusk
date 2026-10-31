@@ -35,7 +35,7 @@ An icon on the root or a typed object helps scanning. Set IDs and hashes in mono
 
 ## Overflow
 
-For deep trails, keep the root and the last two levels and fold the rest into “…”. It opens a small menu of the skipped levels; Esc or a click outside closes it.
+For deep trails, keep the root and the last two levels and fold the rest into “…”. It opens a small menu of the skipped levels.
 
 Try it: click “…”, or Tab to it and press ↓, then ↑ ↓ through the levels; Esc or a click outside closes it.
 
@@ -85,7 +85,7 @@ The same menu shown open for reference — it is live too, and closes like the o
 
 ## Long labels and small
 
-Each crumb truncates at 24 characters with an ellipsis. Screen readers still get the full text; add a `title` if sighted users need it too. The small size fits inside a top bar.
+Each crumb truncates with an ellipsis at about 24 characters (`24ch`). Screen readers still get the full text; add a `title` if sighted users need it too. The small size fits inside a top bar.
 
 ```html
 <div class="dd-stack" style="--dd-gap: 20px">

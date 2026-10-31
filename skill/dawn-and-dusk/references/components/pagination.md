@@ -158,6 +158,7 @@ When each page has its own URL, render the same markup with links (`<a class="dd
 | `.dd-pagination__size + __select` | Label and native select for rows per page; the wrapper adds the chevron. |
 | `.dd-pagination--compact` | Range and arrows only. |
 | `.dd-pagination--spread` | Space-between, for a footer with two groups. |
+| `.dd-pagination__end` | Pushes a group to the far edge. |
 
 ## Behaviour
 
@@ -172,7 +173,7 @@ For pages that change in the browser, add `data-dd-pagination` to the pager, or 
 | `Page size` | Changing the select keeps the first visible row on screen. |
 | `Keyboard` | Tab to a page or arrow, Enter or Space to go. Focus stays on the page you chose, and on an arrow even when it disables. |
 | `dd:pagechange` | Bubbles after a user changes page or size: `{ page, pages, pageSize, total, from, to }`. Fetch the page here. |
-| `dd.pagination(el, { page, pages, total, pageSize })` | Set state from script (no event); returns the state. The data table uses it to page its rows. |
+| `dd.pagination(el, { page, pages, total, pageSize })` | Sets state from script (no event) and returns it. The data table uses it to page its rows. |
 
 ## Guidelines
 

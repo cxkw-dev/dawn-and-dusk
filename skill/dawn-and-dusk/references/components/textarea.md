@@ -94,15 +94,18 @@ LOG_LEVEL=info</textarea>
 | class / attribute | what it does |
 |---|---|
 | `.dd-input.dd-textarea` | The box. Carries the padding so scrolled text never slides under the tucked label. |
-| `.dd-input__control` | The `<textarea>`. Height follows `rows` (2, 3, 4 or 6); resizes vertically. |
+| `.dd-input__control` | The `<textarea>`. Height follows `rows` (2, 3, 4 or 6; 3 by default); resizes vertically, up to 24 lines. |
+| `.dd-input__control.dd-mono` | Mono text with a taller line height, for config, keys and logs. |
 | `[data-dd-autogrow]` | Grows with its content (2–10 lines). |
 | `.dd-field__counter` | Character counter in the field foot (see Form field). |
 
 ## Behaviour
 
+`ds/behaviors/textarea.js` handles auto-grow; the counter comes from `form-field.js`.
+
 | class / attribute | what it does |
 |---|---|
-| `textarea[data-dd-autogrow]` | Resizes to fit on every input, up to the CSS max-height, then scrolls. Also refits after its form is reset. |
+| `textarea[data-dd-autogrow]` | Resizes to fit on every input, up to the CSS max-height, then scrolls. Also refits after its form is reset, and once a hidden one (in a closed dialog or tab panel) shows. |
 | `.dd-field__counter` | Counts the field’s control: `n / maxlength`, or `n / data-dd-counter` as a soft limit. `.is-near` at 90%, `.is-over` past it. Re-counts when its form is reset. |
 | `[data-dd-counter-error]` | On a `.dd-field__error` in the field: shown only while the soft limit is passed. |
 
@@ -116,5 +119,5 @@ Do:
 Don't:
 - Don’t use a textarea for one-line answers.
 - Don’t cut pasted text silently at maxlength; prefer a soft limit.
-- Don’t disable resizing unless the layout truly depends on it.
+- Don’t turn off resizing unless the layout depends on it.
 

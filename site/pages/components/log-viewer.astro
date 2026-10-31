@@ -90,9 +90,9 @@ ${linesHTML(LOGS.slice(0, 6))}
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
-    ['.dd-log-viewer', 'Container on a tonal surface. <code>.is-wrapped</code> wraps messages.'],
+    ['.dd-log-viewer', 'Container on a tonal surface. <code>.is-wrapped</code> wraps messages. A size container: under 520px the service column drops and the level toggles take their own row.'],
     ['.dd-log-viewer__bar', 'Toolbar: <code>__live</code>, <code>__search</code>, <code>__levels</code>, <code>__toggle</code>, <code>__count</code>.'],
-    ['.dd-log-viewer__toggle', 'Pressable button (<code>aria-pressed</code>). <code>--wrap</code> for the wrap switch; <code>__n</code> holds a level count.'],
+    ['.dd-log-viewer__toggle', 'Pressable button (<code>aria-pressed</code>). <code>--wrap</code> and <code>--follow</code> for those switches; a <code>__toggle-label</code> inside hides when the viewer is narrow. <code>__n</code> holds a level count, which follows the search.'],
     ['.dd-log-viewer__scroll', 'Scroll area. Height from <code>--dd-log-viewer-height</code> (default 420px).'],
     ['.dd-log-viewer__lines', 'The <code>role="log"</code> list; columns line up across lines (subgrid).'],
     ['.dd-log-viewer__line[data-level]', '<code>debug</code> · <code>info</code> · <code>warn</code> · <code>error</code>. Error lines are tinted.'],

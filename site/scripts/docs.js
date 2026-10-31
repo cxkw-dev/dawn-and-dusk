@@ -1,32 +1,50 @@
-// Docs-only behavior: flip a single example between dawn and dusk, independent of the page theme.
-// The button label ("View in dusk / dawn") is pure CSS in docs.css, so it is right before this script runs.
-const pageTheme = () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dusk' : 'dawn');
+// Docs-only behaviour (not part of the design system), loaded by site/layouts/Docs.astro after dawn-and-dusk.js.
+//   exampleToolbar()  the bar under each live example: view in dawn / dusk, show the code (Copy HTML is copy.js)
+//   onThisPage()      the "On this page" column, built from the page's h2s
+//   navScrollMemory() the side nav's list keeps its scroll position per section, between pages too
+//   navSearch()       the search at the head of the side nav's panel
+// The side nav itself (rail, fold, off-canvas) is the system's own side-nav.js.
 
-document.addEventListener('click', (e) => {
-  // Placeholder links in examples (href="#") would otherwise jump the docs page to the top.
-  if (e.target.closest('.ex-stage a[href="#"]')) e.preventDefault();
-  // A theme toggle inside an example flips the page; drop the stage's own override so the example follows it.
-  const innerToggle = e.target.closest('.ex-stage [data-dd-theme-toggle]');
-  if (innerToggle) delete innerToggle.closest('.ex-stage').dataset.theme;
-  const codeBtn = e.target.closest('[data-ex-code]');
-  if (codeBtn) {
-    const panel = codeBtn.closest('.ex-frame')?.querySelector('.ex-code');
-    if (!panel) return;
-    panel.hidden = !panel.hidden;
-    codeBtn.setAttribute('aria-expanded', String(!panel.hidden));
-    return;
-  }
-  const btn = e.target.closest('[data-ex-theme]');
-  if (btn) {
-    const stage = btn.closest('.ex-frame')?.querySelector('.ex-stage');
-    if (!stage) return;
-    const next = (stage.dataset.theme || pageTheme()) === 'dusk' ? 'dawn' : 'dusk';
-    if (next === pageTheme()) delete stage.dataset.theme; else stage.dataset.theme = next;
-  }
-});
+const sideNav = { nav: document.getElementById('doc-nav'), list: document.getElementById('doc-nav-list') };
+const NAV_MEMO_KEY = 'dd-docs-nav'; // sessionStorage; the layout's before-paint script reads it too
+const RESTORE_EVENT = 'dd-docs-restore'; // navSearch → navScrollMemory: the query was cleared, put the list back
 
-// "On this page": built from the page's h2 sections, highlights the one you're reading.
-(() => {
+exampleToolbar();
+onThisPage();
+navScrollMemory(sideNav);
+navSearch(sideNav);
+
+// Flip a single example between dawn and dusk, independent of the page theme, and show or hide its source. The theme
+// button's label ("View in dusk / dawn") is pure CSS in docs.css, so it is right before this script runs.
+function exampleToolbar() {
+  const pageTheme = () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dusk' : 'dawn');
+  document.addEventListener('click', (e) => {
+    // Placeholder links in examples (href="#") would otherwise jump the docs page to the top.
+    if (e.target.closest('.ex-stage a[href="#"]')) e.preventDefault();
+    // A theme toggle inside an example flips the page; drop the stage's own override so the example follows it.
+    const innerToggle = e.target.closest('.ex-stage [data-dd-theme-toggle]');
+    if (innerToggle) delete innerToggle.closest('.ex-stage').dataset.theme;
+    const codeBtn = e.target.closest('[data-ex-code]');
+    if (codeBtn) {
+      const panel = codeBtn.closest('.ex-frame')?.querySelector('.ex-code');
+      if (!panel) return;
+      panel.hidden = !panel.hidden;
+      codeBtn.setAttribute('aria-expanded', String(!panel.hidden));
+      return;
+    }
+    const themeBtn = e.target.closest('[data-ex-theme]');
+    if (themeBtn) {
+      const stage = themeBtn.closest('.ex-frame')?.querySelector('.ex-stage');
+      if (!stage) return;
+      const next = (stage.dataset.theme || pageTheme()) === 'dusk' ? 'dawn' : 'dusk';
+      if (next === pageTheme()) delete stage.dataset.theme; else stage.dataset.theme = next;
+    }
+  });
+}
+
+// "On this page": built from the page's h2 sections; highlights the one you're reading. Pages with fewer than two
+// sections drop the column.
+function onThisPage() {
   const toc = document.querySelector('.doc-toc');
   const main = document.querySelector('.doc-main');
   if (!toc || !main) return;
@@ -44,7 +62,7 @@ document.addEventListener('click', (e) => {
     list.append(li);
   }
   toc.hidden = false;
-  
+
   const links = new Map([...list.querySelectorAll('a')].map((a) => [a.hash.slice(1), a]));
   const mark = (id) => links.forEach((a, k) => a.toggleAttribute('aria-current', k === id));
   // Current = the last heading that has scrolled above the top third; at the very bottom, the last one.
@@ -77,16 +95,15 @@ document.addEventListener('click', (e) => {
     history.replaceState(null, '', a.hash);
     mark(target.id);
   });
-})();
+}
 
-// Side nav (the docs' .dd-side-nav, #doc-nav): the panel's list keeps its scroll position per section, between pages
-// (restored before paint by the layout) and when the rail switches sections.
-const nav = document.getElementById('doc-nav');
-const list = document.getElementById('doc-nav-list');
-const activePane = () => nav?.querySelector('.dd-side-nav__pane:not([hidden])')?.dataset.ddNavPane;
-if (nav && list) {
+// The side nav's list keeps its scroll position per section: between pages (restored before paint by the layout) and
+// when the rail switches sections. Positions are kept while no search query filters the list.
+function navScrollMemory({ nav, list }) {
+  if (!nav || !list) return;
+  const activePane = () => nav.querySelector('.dd-side-nav__pane:not([hidden])')?.dataset.ddNavPane;
   let memo = {};
-  try { memo = JSON.parse(sessionStorage.getItem('dd-docs-nav') || '{}') || {}; } catch { memo = {}; }
+  try { memo = JSON.parse(sessionStorage.getItem(NAV_MEMO_KEY) || '{}') || {}; } catch { memo = {}; }
   let shown = activePane();
   memo[shown] = list.scrollTop;
   list.addEventListener('scroll', () => { if (!list.classList.contains('is-filtered') && activePane() === shown) memo[shown] = list.scrollTop; }, { passive: true });
@@ -98,18 +115,18 @@ if (nav && list) {
     shown = next;
     list.scrollTop = memo[shown] ?? 0;
   });
-  list.addEventListener('dd-docs-restore', () => { shown = activePane(); list.scrollTop = memo[shown] ?? 0; });
-  addEventListener('pagehide', () => { try { sessionStorage.setItem('dd-docs-nav', JSON.stringify(memo)); } catch { /* storage unavailable */ } });
+  list.addEventListener(RESTORE_EVENT, () => { shown = activePane(); list.scrollTop = memo[shown] ?? 0; });
+  addEventListener('pagehide', () => { try { sessionStorage.setItem(NAV_MEMO_KEY, JSON.stringify(memo)); } catch { /* storage unavailable */ } });
 }
 
 // Search, at the head of the side nav's panel. While a query is typed it searches every section (titles, section
 // names and other names, e.g. "modal" finds Dialog) and shows the matches under each section's heading; clearing it
 // brings back the section the rail is on. "/" focuses it from anywhere (opening the off-canvas nav or unfolding the
 // rail first), Esc clears, ↓ / ↑ walk the results, Enter opens the first match.
-(() => {
+function navSearch({ nav, list }) {
   const input = document.getElementById('doc-find');
   const status = document.getElementById('doc-find-status');
-  if (!input || !nav || !list) return;
+  if (!input || !status || !nav || !list) return;
   const links = [...list.querySelectorAll('a[data-find]')];
   const groups = [...list.querySelectorAll('.doc-nav-group')];
   const panes = [...list.querySelectorAll('.dd-side-nav__pane')];
@@ -128,8 +145,8 @@ if (nav && list) {
       // a word matches anywhere in the title, or at the start of a section name or another name for the page
       a.hidden = on && !words.every((w) => title.toLowerCase().includes(w) || tokens.some((t) => t.startsWith(w)));
       const w = on && words.find((x) => title.toLowerCase().includes(x));
-      const i = w ? title.toLowerCase().indexOf(w) : -1;
-      label(a).innerHTML = i >= 0 ? `${esc(title.slice(0, i))}<mark>${esc(title.slice(i, i + w.length))}</mark>${esc(title.slice(i + w.length))}` : esc(title);
+      const at = w ? title.toLowerCase().indexOf(w) : -1;
+      label(a).innerHTML = at >= 0 ? `${esc(title.slice(0, at))}<mark>${esc(title.slice(at, at + w.length))}</mark>${esc(title.slice(at + w.length))}` : esc(title);
     }
     for (const g of groups) g.hidden = !g.querySelector('a[data-find]:not([hidden])');
     let total = 0;
@@ -142,7 +159,7 @@ if (nav && list) {
     }
     list.classList.toggle('is-filtered', on);
     if (on) list.scrollTop = 0;
-    else if (filtering) list.dispatchEvent(new Event('dd-docs-restore'));
+    else if (filtering) list.dispatchEvent(new Event(RESTORE_EVENT));
     filtering = on;
     status.classList.toggle('is-none', on && !total);
     status.textContent = !on ? '' : total ? `${total} ${total === 1 ? 'page' : 'pages'}` : `Nothing matches “${raw}”.`;
@@ -156,11 +173,11 @@ if (nav && list) {
   });
   list.addEventListener('keydown', (e) => {
     if ((e.key !== 'ArrowDown' && e.key !== 'ArrowUp') || !list.classList.contains('is-filtered')) return;
-    const v = shown(); const i = v.indexOf(document.activeElement);
-    if (i < 0) return;
+    const v = shown(); const at = v.indexOf(document.activeElement);
+    if (at < 0) return;
     e.preventDefault();
-    if (e.key === 'ArrowUp' && i === 0) input.focus();
-    else v[Math.max(0, Math.min(v.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)))].focus();
+    if (e.key === 'ArrowUp' && at === 0) input.focus();
+    else v[Math.max(0, Math.min(v.length - 1, at + (e.key === 'ArrowDown' ? 1 : -1)))].focus();
   });
   document.addEventListener('keydown', (e) => {
     if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
@@ -179,4 +196,4 @@ if (nav && list) {
     }
     focus();
   });
-})();
+}

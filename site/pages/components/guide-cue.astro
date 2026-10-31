@@ -88,13 +88,14 @@ const tour = `
   <ClassTable rows={[
     ['.dd-guide-cue[popover="manual"]', 'One step. 300px wide; <code>role="dialog"</code> labelled by its title.'],
     ['.dd-guide-cue__arrow', 'Arrow toward the target (placed by the JS).'],
-    ['.dd-guide-cue__step', 'Mono step line. An empty <code>__count</code> inside gets “2 of 3”; empty <code>__pips</code> get one pip per step.'],
+    ['.dd-guide-cue__step', 'Mono step line. The JS writes “2 of 3” into an empty <code>__count</code> and one pip per step into <code>__pips</code>; in static markup, mark pips <code>.is-done</code> / <code>.is-current</code>.'],
     ['.dd-guide-cue__title / __text', 'Title and one or two sentences. <code>&lt;kbd&gt;</code> works inside.'],
     ['.dd-guide-cue__actions', 'Quiet action on the left (Skip on the first step, Back after), Next on the right. Focus rings inside use the cue’s own ink so they show on the dark dawn card.'],
     ['.dd-guide-cue__close', 'Top-right × with <code>data-dd-guide-dismiss</code>: ends the tour from any step. Give it an <code>aria-label</code>.'],
     ['.dd-guide-beacon', 'Pulsing apricot dot on the target. <code>--static</code> for mockups.'],
     ['[data-dd-guide-active]', 'Set on the current target: a soft apricot ring.'],
     ['.dd-guide-cue--static', 'In-flow cue for docs and mockups (set <code>data-placement</code>).'],
+    ['--dd-cue-bg / --dd-cue-fg / --dd-cue-muted', 'Colours: ink in dawn, surface-3 in dusk.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
@@ -106,8 +107,8 @@ const tour = `
     ['data-dd-guide-next / -back / -dismiss', 'Buttons inside a cue. Next on the last step finishes the tour.'],
     ['Esc · ×', 'End the tour from any step. Focus returns to the button that started it.'],
     ['Back', '<code>data-dd-guide-back</code> returns to the previous step; focus moves into that cue.'],
-    ['dd:guide-step / dd:guide-end', 'Events on <code>document</code>: <code>detail.index</code>; <code>detail.completed</code> — store it so the tour doesn’t come back.'],
-    ['dd.guide.start(name)', 'Start a tour from code, e.g. on first sign-in. Also <code>next()</code>, <code>back()</code> and <code>end()</code>.'],
+    ['dd:guide-step / dd:guide-end', 'Events on <code>document</code>. A step carries <code>detail.name</code>, <code>index</code> and <code>cue</code>; the end carries <code>name</code> and <code>completed</code> — store it so the tour doesn’t come back.'],
+    ['dd.guide.start(name, trigger)', 'Start a tour from code, e.g. on first sign-in; focus returns to <code>trigger</code> (default: whatever had focus) at the end. Also <code>next()</code>, <code>back()</code> and <code>end()</code>.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

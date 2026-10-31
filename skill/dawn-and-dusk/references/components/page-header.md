@@ -8,7 +8,7 @@ Every snippet is the exact markup of a working docs example. Icons are `<svg cla
 
 ### Full
 
-Breadcrumbs, title and actions on one row, then the description, meta facts and tabs. Actions wrap under the title when space runs out. Try it: press an action, or a tab — here a tab just moves aria-current; in an app it is a link to that view.
+Breadcrumbs, title and actions on one row, then the description, meta facts and tabs. Actions wrap under the title when space runs out. Try it: press an action, or a tab — here a tab only moves aria-current; in an app it is a link to that view.
 
 ```html
 <header class="dd-page-header">
@@ -136,9 +136,9 @@ For top-level areas: `--lg` title with a tonal icon mark, and pill tabs as filte
 | `__mark` | A tonal square with an icon, sized to the title. |
 | `__desc` | One or two lines of muted description. |
 | `__meta` | A list of small facts; `<b>` values are set in mono. |
-| `__status (--warn, --bad)` | Status dot for the meta row. |
+| `__status (--warn, --bad)` | Status dot for the meta row; green by default. |
 | `__actions` | Buttons. One primary at most. |
-| `--sm / --lg` | Title at 2xl / 4xl. Default is 3xl. |
+| `--sm / --lg` | Title at 2xl / 4xl (default 3xl); every size steps down one on screens under 600px. `--sm` also shrinks the description. |
 
 ## Guidelines
 

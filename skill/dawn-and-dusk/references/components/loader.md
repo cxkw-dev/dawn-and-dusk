@@ -1,6 +1,6 @@
 # loader — `loader`
 
-The ampersand from the logo, set moving — the brand’s own way to say “loading”. The default is #4 Sunrise — a sun rising behind the &, cut out like the logo’s second line — with nine alternatives, each the real Outfit 800 & from the wordmark. Use it wherever a page or a panel waits.
+The ampersand from the logo, set moving — the brand’s own way to say “loading” wherever a page or a panel waits. Sunrise is the default (a sun rising behind the &, cut out like the logo’s second line), with nine alternatives, each the real Outfit 800 & from the wordmark.
 
 Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/loader
 
@@ -32,7 +32,7 @@ An apricot line traces the outline, ink floods in behind it, then the glyph fade
 
 ### #3 Sky
 
-The golden-hour set drifts through the glyph along its leg: honey, apricot, rose, wine, and round to dawn again.
+The Golden hour set drifts through the glyph along its leg, honey through wine and round to honey again.
 
 ```html
 <span class="dd-loader dd-loader--sky dd-loader--xl" role="status" aria-label="Loading"><span class="dd-loader__glyph" aria-hidden="true"><i></i></span></span>
@@ -72,7 +72,7 @@ A small apricot light with a short tail runs round the outline of a faint &.
 
 ### #8 Tones
 
-The & turns through all eight golden-hour colours; the bowl follows the main stroke half a beat behind.
+The & turns through all eight Golden hour colours; the bowl follows the main stroke half a beat behind.
 
 ```html
 <span class="dd-loader dd-loader--tones dd-loader--xl" role="status" aria-label="Loading"><svg viewBox="-2 -755 740 800" aria-hidden="true" focusable="false"><path class="dd-loader__b" d="M272 11Q200 11 146.5 -18Q93 -47 63.5 -96.5Q34 -146 34 -207Q34 -274 68.5 -326.5Q103 -379 175 -412L248 -296Q221 -286 208 -265.5Q195 -245 195 -220Q195 -200 204.5 -183Q214 -166 232 -156Q250 -146 275 -146Q300 -146 320.5 -157.5Q341 -169 357 -194L477 -76Q461 -56 430.5 -36Q400 -16 359.5 -2.5Q319 11 272 11Z"/><path class="dd-loader__a" d="M499 0L179 -353Q142 -395 125.5 -433Q109 -471 109 -516Q109 -570 137 -616.5Q165 -663 214 -692Q263 -721 328 -721Q379 -721 418.5 -706.5Q458 -692 486 -670Q514 -648 528 -625L415 -514Q396 -540 376 -551Q356 -562 332 -562Q306 -562 289 -547Q272 -532 272 -511Q272 -494 280 -479.5Q288 -465 302 -448L702 0Z"/></svg></span>

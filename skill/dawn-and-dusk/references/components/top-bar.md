@@ -1,6 +1,6 @@
 # top bar — `top-bar`
 
-The app header. Logo and context on the left, then a search trigger, actions and the avatar menu. It sits on the page tone with a hairline underneath, and stays put while the page scrolls.
+The app header: logo and context on the left, then a search trigger, actions and the avatar menu. It sits on the page tone with a hairline underneath and stays put while the page scrolls.
 
 Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/top-bar
 
@@ -44,7 +44,7 @@ Logo, workspace / project switcher, search, Docs, notifications, the primary act
 
 ## Avatar menu
 
-A `<details data-dd-autoclose>`: it closes on a click outside, on Esc or after choosing an item, and ↓ ↑ move through the items. Who you are sits at the top in mono. Shown open; click anywhere else to close it, then the avatar to bring it back.
+A `<details data-dd-autoclose>`: it closes on a click outside, on Esc or after choosing an item, and ↓ ↑ move through the items. Your name and email sit at the top, the email in mono. Shown open; click anywhere else to close it, then the avatar to bring it back.
 
 ```html
 <div style="padding-bottom: 300px">
@@ -81,7 +81,7 @@ A `<details data-dd-autoclose>`: it closes on a click outside, on Esc or after c
 
 ## Narrow
 
-Below 640px of its own width the menu button appears (wire it to the side nav with `data-dd-nav-open="#app-nav"`), the search collapses to an icon, and the context plus anything marked `dd-top-bar__wide` step out. In an app shell the shell decides instead: the menu button and `__narrow` show while its side nav is off-canvas, and the context stays while the nav is in view. Only the shell’s own top bar follows it — top bars inside its content, like these examples, keep their own width rules.
+Below 640px of its own width the menu button appears (wire it to the side nav with `data-dd-nav-open="#app-nav"`), the search collapses to an icon, and the context, the links and anything marked `dd-top-bar__wide` step out. In an app shell the shell decides instead: the menu button and `__narrow` show while its side nav is off-canvas, and the context stays while the nav is in view. Only the shell’s own top bar follows it — top bars inside its content, like these examples, keep their own width rules.
 
 ```html
 <div class="tb-phone">
@@ -125,14 +125,14 @@ For docs and marketing pages: links instead of a context switcher. On narrow scr
   <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-menu="tb-site-menu" aria-haspopup="menu" aria-expanded="false" aria-controls="tb-site-menu" aria-label="Open menu"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-menu"/></svg></button>
   <div class="dd-menu" id="tb-site-menu" role="menu" aria-label="Sections" hidden>
     <a class="dd-menu__item" role="menuitem" href="#">Components</a>
-    <a class="dd-menu__item" role="menuitem" href="#">Patterns</a>
+    <a class="dd-menu__item" role="menuitem" href="#">Guides</a>
     <a class="dd-menu__item" role="menuitem" href="#">Changelog</a>
   </div>
   <a class="dd-top-bar__brand" href="#"><span class="dd-logo">dawn &amp; dusk</span></a>
   <nav aria-label="Sections">
     <ul class="dd-top-bar__links">
       <li><a class="dd-top-bar__link" href="#" aria-current="page">Components</a></li>
-      <li><a class="dd-top-bar__link" href="#">Patterns</a></li>
+      <li><a class="dd-top-bar__link" href="#">Guides</a></li>
       <li><a class="dd-top-bar__link" href="#">Changelog</a></li>
     </ul>
   </nav>
@@ -153,14 +153,14 @@ Narrow. Try it: open the menu button and pick a section with ↓ ↑ and Enter, 
   <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-menu="tb-site-menu-narrow" aria-haspopup="menu" aria-expanded="false" aria-controls="tb-site-menu-narrow" aria-label="Open menu"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-menu"/></svg></button>
   <div class="dd-menu" id="tb-site-menu-narrow" role="menu" aria-label="Sections" hidden>
     <a class="dd-menu__item" role="menuitem" href="#">Components</a>
-    <a class="dd-menu__item" role="menuitem" href="#">Patterns</a>
+    <a class="dd-menu__item" role="menuitem" href="#">Guides</a>
     <a class="dd-menu__item" role="menuitem" href="#">Changelog</a>
   </div>
   <a class="dd-top-bar__brand" href="#"><span class="dd-logo">dawn &amp; dusk</span></a>
   <nav aria-label="Sections">
     <ul class="dd-top-bar__links">
       <li><a class="dd-top-bar__link" href="#" aria-current="page">Components</a></li>
-      <li><a class="dd-top-bar__link" href="#">Patterns</a></li>
+      <li><a class="dd-top-bar__link" href="#">Guides</a></li>
       <li><a class="dd-top-bar__link" href="#">Changelog</a></li>
     </ul>
   </nav>
@@ -178,6 +178,7 @@ Narrow. Try it: open the menu button and pick a section with ↓ ↑ and Enter, 
 | class / attribute | what it does |
 |---|---|
 | `.dd-top-bar` | The `<header>`. Sticky, 60px min height, translucent page tone with a hairline. A size container: it adapts to its own width. |
+| `__inner` | Optional wrapper for the bar’s contents: a flex row with the bar’s gap that fills the bar. |
 | `__nav-btn` | Mobile menu button (a ghost icon `.dd-btn`). Hidden until the bar is narrow. |
 | `__brand` | Logo link. Holds a `.dd-logo` or a `.dd-logo-tile`. |
 | `__context / __sep / __switch / __mark` | Workspace and project after the logo: a hairline, switch buttons, a small coloured mark. |
@@ -194,7 +195,9 @@ Narrow. Try it: open the menu button and pick a section with ↓ ↑ and Enter, 
 | class / attribute | what it does |
 |---|---|
 | `data-dd-nav-open="#id"` | On `__nav-btn`: opens that side nav off-canvas (see Side nav). |
+| `data-dd-menu="id"` | On `__nav-btn` in a site header: opens a menu of the section links. |
 | `data-dd-autoclose` | On `__user`: outside click, Esc and choosing an item close the menu. |
+| `data-dd-theme-toggle` | On a button or menu item: flips dawn / dusk and keeps `aria-pressed` in sync. |
 | `↓ / ↑ · Esc` | Open and move through the avatar menu; Esc closes it and returns focus to the avatar. |
 
 ## Guidelines

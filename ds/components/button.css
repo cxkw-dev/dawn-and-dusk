@@ -1,5 +1,6 @@
 /* Button — "Solid · icon first". Primary is filled with --dd-primary (Golden hour apricot); secondary is a tonal
-   fill; ghost, danger and link cover the rest. Icons lead the label. Sizes: sm · md (default) · lg. */
+   fill; ink, ghost, danger and link cover the rest. Icons lead the label. Sizes: sm · md (default) · lg; plus
+   icon-only, block, disabled and loading (.is-loading + .dd-btn__spinner). */
 .dd-btn {
   --_py: 2.5; --_px: 4.5;
   appearance: none; position: relative; display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--dd-u) * 1.75);

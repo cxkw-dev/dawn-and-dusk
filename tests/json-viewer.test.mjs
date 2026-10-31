@@ -164,3 +164,31 @@ test('375px: tap a chevron to open a node, tap a row to select it', async ({ ope
   assert.equal(await pathShown(page, V2), '$[0].rpm');
   assert.ok(await page.get(() => document.documentElement.scrollWidth <= innerWidth), 'no sideways page scroll');
 });
+
+test('icons it inserts follow dd.iconSprite; a tree a framework renders from the same classes is left alone', async ({ open, assert }) => {
+  const page = await open('components/json-viewer');
+  const hrefs = await page.get(() => {
+    window.dd.iconSprite = '/assets/icons.svg';
+    const el = document.createElement('div');
+    document.querySelector('.doc-main').append(el);
+    dd.jsonViewer(el, { ok: true });
+    return [...el.querySelectorAll('use')].map((u) => u.getAttribute('href'));
+  });
+  assert.deepEqual(hrefs, ['/assets/icons.svg#dd-i-copy', '/assets/icons.svg#dd-i-check']);
+
+  // The framework guide says: own the json viewer yourself and leave the hook off. Its tree must not be rewritten.
+  await page.get(() => {
+    const own = document.createElement('div');
+    own.className = 'dd-json-viewer'; own.id = 'own-tree';
+    own.innerHTML = '<ul class="dd-json-viewer__tree" role="tree"><li class="dd-json-viewer__node" role="treeitem" aria-expanded="true" tabindex="0" data-path="$">'
+      + '<div class="dd-json-viewer__row"><span class="dd-json-viewer__toggle"></span>root</div>'
+      + '<ul class="dd-json-viewer__group" role="group"><li class="dd-json-viewer__node" role="treeitem" tabindex="-1" data-path="$.a"><div class="dd-json-viewer__row">a</div></li></ul></li></ul>';
+    document.querySelector('.doc-main').prepend(own);
+  });
+  await page.click('#own-tree .dd-json-viewer__toggle');
+  assert.equal(await page.attr('#own-tree [data-path="$"]', 'aria-expanded'), 'true', 'its toggle is not flipped');
+  await page.focus('#own-tree [data-path="$"]');
+  await page.press('ArrowLeft', 'ArrowDown');
+  assert.equal(await page.attr('#own-tree [data-path="$"]', 'aria-expanded'), 'true', 'its keys are not handled');
+  assert.equal(await page.get(() => document.activeElement.dataset.path), '$', 'focus stays where the framework put it');
+});

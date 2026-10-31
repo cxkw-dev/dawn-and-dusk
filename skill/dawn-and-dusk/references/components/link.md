@@ -28,7 +28,7 @@ A link on its own line, at the end of a card or section. A little heavier, with 
 
 ## External
 
-Leaves cxkw.dev. Use the `arrow-right` icon: `--external` tilts it to ↗ and lifts it on hover. Any other icon (such as `external`) is shown as is. Open in a new tab only when leaving would lose work.
+Leaves the site. Use the `arrow-right` icon: `.dd-link--external` tilts it to ↗ and lifts it on hover. Any other icon (such as `external`) keeps its shape and still lifts. Open in a new tab only when leaving would lose work.
 
 ```html
 <div class="dd-stack" style="--dd-gap: 15px">
@@ -56,7 +56,7 @@ Meta lines, footers and secondary references: muted text with faint dots.
 
 Top-level navigation. Muted with no underline at rest, dotted on hover, solid when it is the current page (`aria-current="page"`). Lay a row out with `.dd-link-nav`.
 
-Try it: click a link; it becomes the current page (the docs move aria-current for you here, as a new page load would).
+Try it: click a link; it becomes the current page (a docs script moves aria-current here, as loading the page would).
 
 ```html
 <nav class="dd-link-nav" aria-label="Site">
@@ -69,7 +69,7 @@ Try it: click a link; it becomes the current page (the docs move aria-current fo
 
 ## On ink
 
-On a panel filled with `--dd-text`, `--inverse` switches the dots to the background colour.
+On a panel filled with `--dd-text`, `.dd-link--inverse` draws the dots and the focus ring in the page colour.
 
 ```html
 <div style="background: var(--dd-text); color: var(--dd-bg); padding: 20px 25px; border-radius: var(--dd-r-box)">
@@ -98,9 +98,9 @@ Hover and focus forced on for reference. A link that can’t go anywhere yet get
 | `.dd-link--standalone` | Label + trailing arrow; the arrow nudges right on hover. Label goes in a `<span>`. |
 | `.dd-link--external` | Label + ↗. Tilts an `arrow-right` icon by −45° and lifts it on hover. |
 | `.dd-link--muted` | Muted text and faint dots, for meta lines and footers. |
-| `.dd-link--nav` | Navigation: no underline at rest, solid underline when `aria-current` or `.is-active`. |
+| `.dd-link--nav` | Navigation: muted with no underline at rest, dotted on hover, solid when `aria-current` or `.is-active`. |
 | `.dd-link-nav` | A wrapping row for nav links. |
-| `.dd-link--inverse` | For links on ink (`--dd-text`) surfaces. |
+| `.dd-link--inverse` | For links on ink (`--dd-text`) surfaces: dots and focus ring in the page colour. |
 | `[aria-disabled="true"]` | Dimmed to `--dd-quiet` with faint dots, and inert. |
 
 ## Guidelines
@@ -112,6 +112,6 @@ Do:
 
 Don't:
 - Don’t colour inline links; the dots are enough and keep paragraphs calm.
-- Don’t use `--nav` inside running text.
-- Don’t underline non-links with dots; that pattern now means “link”.
+- Don’t use `.dd-link--nav` inside running text.
+- Don’t underline non-links with dots; that pattern means “link”.
 

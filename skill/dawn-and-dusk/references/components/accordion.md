@@ -1,6 +1,6 @@
 # accordion — `accordion`
 
-Sections that fold away. Built on native details and summary, so it works with no JavaScript, opens with the keyboard and finds text inside closed sections.
+Sections that fold away. Built on native details and summary, so it works with no JavaScript, opens with the keyboard and lets find-in-page reach text in closed sections.
 
 Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/accordion
 
@@ -8,7 +8,7 @@ Every snippet is the exact markup of a working docs example. Icons are `<svg cla
 
 ### Default
 
-Hairlines between sections; the chevron turns when a section opens. Several can be open at once. Try it: click a question, or Tab to one and press Enter or Space.
+Hairlines between sections; the chevron turns when a section opens, and the body eases open where the browser supports it. Several can be open at once. Try it: click a question, or Tab to one and press Enter or Space.
 
 ```html
 <div class="dd-accordion" style="max-width: 640px">
@@ -18,7 +18,7 @@ Hairlines between sections; the chevron turns when a section opens. Several can 
   </details>
   <details class="dd-accordion__item">
     <summary class="dd-accordion__summary"><span class="dd-accordion__title">How do I switch between dawn and dusk?</span><svg class="dd-icon dd-accordion__chevron" aria-hidden="true"><use href="#dd-i-chevron-down"/></svg></summary>
-    <div class="dd-accordion__body"><p>Set <code>data-theme="dawn"</code> or <code>"dusk"</code> on <code>&lt;html&gt;</code> — or on any element to theme just that part. With no attribute, the system follows the OS.</p></div>
+    <div class="dd-accordion__body"><p>Set <code>data-theme="dawn"</code> or <code>"dusk"</code> on <code>&lt;html&gt;</code> — or on any element to theme only that part. With no attribute, the system follows the OS.</p></div>
   </details>
   <details class="dd-accordion__item">
     <summary class="dd-accordion__summary"><span class="dd-accordion__title">Can I change the accent colour?</span><svg class="dd-icon dd-accordion__chevron" aria-hidden="true"><use href="#dd-i-chevron-down"/></svg></summary>
@@ -152,13 +152,10 @@ Each section on its own tonal fill instead of hairlines — for settings pages a
 | `.dd-accordion__summary` | The `<summary>` row. Holds an optional leading icon, `__title`, `__meta` and `__chevron`. |
 | `.dd-accordion__body` | The content under the summary. |
 | `.dd-accordion--boxed` | Tonal fill per item instead of hairlines. A closed item lifts a tone on hover (further in dusk, so it clears the grain page); an open one washes its summary row. |
+| `--dd-accordion-hover` | The hover tone of boxed items and expand cards: `--dd-surface-2` in dawn, 14% toward ink on dusk’s grain page. `.dd-app-shell` (a plain page, no grain) uses `--dd-surface-2` in both. |
 | `.dd-accordion--icons` | Indents the body to line up with titles that follow an icon. |
 | `.dd-expand` | Expandable card (`<details>`). Parts: `__summary`, `__lead`, `__titles`, `__title`, `__meta`, `__side`, `__status`, `__chevron`, `__body`, `__dl`. |
 | `.dd-expand__status` | Status with a coloured dot: add `is-ok`, `is-warn`, `is-bad` or `is-info`. |
-
-## Behaviour
-
-No script. Enter or Space on a summary toggles it; closed content is still found by the browser’s find-in-page. Where `::details-content` is supported the body eases open; elsewhere it opens instantly.
 
 ## Guidelines
 

@@ -174,3 +174,30 @@ test('touch at 375: rows fit and tap removes', async ({ open, assert }) => {
   await page.tap('#fu-list-1 [data-dd-file-remove]');
   await page.waitFor(() => document.querySelectorAll('#fu-list-1 > .dd-file').length === 0);
 });
+
+test('removing rows in quick succession keeps focus in the list (on a row that stays)', async ({ open, assert }) => {
+  const page = await open('components/file-upload');
+  await drop(page, zone1, [{ name: 'a.csv', size: 10 }, { name: 'b.csv', size: 20 }, { name: 'c.csv', size: 30 }]);
+  await page.press('Shift'); // keyboard modality, like a keyboard user's Enter
+  await page.get(() => {
+    const btn = (n) => document.querySelector(`#fu-list-1 [aria-label="Remove ${n}"]`);
+    btn('b.csv').focus(); btn('b.csv').click();
+    btn('c.csv').focus(); btn('c.csv').click(); // the last row, while b is still leaving
+  });
+  await page.waitFor(() => document.querySelectorAll('#fu-list-1 > .dd-file').length === 1);
+  await page.sleep(100);
+  assert.equal(await page.get(() => document.activeElement.getAttribute('aria-label')), 'Remove a.csv', 'not dropped on <body>');
+  assert.deepEqual(await inputFiles(page, input1), ['a.csv']);
+});
+
+test('only dropzone inputs are managed: a plain file input elsewhere keeps what was picked; inserted icons follow dd.iconSprite', async ({ open, assert }) => {
+  const page = await open('components/file-upload');
+  await page.get(() => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.png'; i.id = 'plain-file'; document.querySelector('.doc-main').append(i); });
+  await browse(page, '#plain-file', [usage]); // a .csv the picker's "All files" let through
+  assert.deepEqual(await inputFiles(page, '#plain-file'), ['billing-usage.csv'], 'the page’s own input is left alone');
+
+  await page.get(() => { window.dd.iconSprite = '/assets/icons.svg'; });
+  await drop(page, zone1, [{ name: 'a.csv', size: 10 }]);
+  const hrefs = await page.get(() => [...document.querySelectorAll('#fu-list-1 > .dd-file use')].map((u) => u.getAttribute('href')));
+  assert.deepEqual(hrefs, ['/assets/icons.svg#dd-i-file', '/assets/icons.svg#dd-i-check', '/assets/icons.svg#dd-i-x']);
+});

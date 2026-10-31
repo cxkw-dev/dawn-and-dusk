@@ -25,7 +25,7 @@ const dots = `
     <span class="dd-chip dd-chip--set-2">${i('code')}TypeScript</span>
     <span class="dd-chip dd-chip--set-5">${i('database')}Postgres</span>
     <span class="dd-chip dd-chip--set-7">${i('cloud')}Edge</span>
-    <a class="dd-chip dd-chip--set-8" href="#tag-writing">${i('tag')}<span>writing</span></a>
+    <a class="dd-chip dd-chip--set-8" href="#">${i('tag')}<span>writing</span></a>
   </div>
 </div>`;
 
@@ -77,7 +77,7 @@ const people = `
   <Example title="The Color set" description="One chip per Golden hour colour, .dd-chip--set-1 to --set-8. In dusk the set lifts and the wash stays soft." code={set} />
 
   <h2 id="dot-icon">Dot, icon and link</h2>
-  <p>A neutral chip with a coloured dot names a category without colouring the whole row. Icons lead like they do in buttons. Chips that are links or buttons darken a step toward the text colour on hover, so even the palest hue answers the pointer.</p>
+  <p>A neutral chip with a coloured dot names a category without colouring the whole row. Icons lead like they do in buttons. Chips that are links or buttons step toward the text colour on hover, so even the palest hue answers the pointer.</p>
   <Example code={dots} />
 
   <h2 id="removable">Removable</h2>
@@ -116,7 +116,8 @@ const people = `
     ['dd:chip-remove', 'Cancelable event on the chip before it goes; <code>detail.value</code> is its <code>data-value</code> or text.'],
     ['button.dd-chip[aria-pressed]', 'Click toggles <code>aria-pressed</code> and fires <code>dd:chip-toggle</code> (<code>detail.pressed</code>).'],
     ['.dd-chip-input__field', 'Enter or comma adds a chip; a duplicate flashes the existing one instead. Backspace in the empty field removes the last one. The container fires <code>dd:chips-change</code> with <code>detail.values</code>.'],
-    ['dd.chip.create(text) / remove(chip)', 'Make or remove a chip from code.'],
+    ['dd.chip.create(text) / remove(chip)', 'From code: <code>create</code> returns a removable chip coloured by its text, ready to insert; <code>remove</code> takes one out the same way the × does.'],
+    ['data-dd-manual', 'On a container: the script leaves the chips inside alone — for chips a framework renders from state. Handle the clicks yourself.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

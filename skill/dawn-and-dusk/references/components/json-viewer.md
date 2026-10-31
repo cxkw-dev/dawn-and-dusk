@@ -128,9 +128,11 @@ dd.jsonViewer.init();
 | `.dd-json-viewer__tree` | The `role="tree"` list. Scrolls when `--dd-json-viewer-height` is set. |
 | `.dd-json-viewer__node` | A `treeitem`; containers carry `aria-expanded`, the selected node `aria-selected`. |
 | `.dd-json-viewer__row` | One line: toggle, key or index, value / brace, preview and count. |
+| `.dd-json-viewer__key / __index` | An object key (`--dd-json-key`) or a muted array index. |
 | `.dd-json-viewer__value--string / --number / --boolean / --null` | Type colours. Override with `--dd-json-string`, `--dd-json-number`, `--dd-json-boolean`, `--dd-json-null`. |
 | `.dd-json-viewer__count / __preview` | Child count (“3 items”, “6 keys”) and the `{…}` shown while collapsed. |
 | `.dd-json-viewer__group` | Nested `role="group"` list with a faint indent guide. |
+| `.dd-json-viewer__error` | Shown instead of the tree when the inline JSON can’t be parsed. |
 
 ## Behaviour
 
@@ -139,7 +141,8 @@ dd.jsonViewer.init();
 | `data-dd-json-viewer` | Renders the tree from the inline `<script type="application/json">` on load. |
 | `data-depth="2"` | Levels open at first (root is level 0). Default 2. |
 | `aria-label` | Names the tree for screen readers (“Deploy dpl_7Hq2xK9m”). |
-| `dd.jsonViewer(el, data, { depth, label })` | Renders a value programmatically. `dd.jsonViewer.init()` renders new viewers. |
+| `dd.jsonViewer(el, data, { depth, label })` | Renders a value into `el`, replacing its content. `dd.jsonViewer.init()` renders viewers added later. |
+| `Expand all / Collapse all` | Bar buttons: open every container, or close all but the root. |
 | `↑ / ↓` | Previous / next visible node. Selection follows focus and updates the path. |
 | `→ / ←` | Expand, or move to the first child · collapse, or move to the parent. |
 | `Enter / Space` | Toggle the focused container. |

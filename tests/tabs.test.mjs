@@ -202,3 +202,19 @@ test('dusk: the active tab has an ink marker, others none until hover; pill and 
   await page.click(tab('Settings', 2));
   await page.waitFor((s) => getComputedStyle(document.querySelector(s)).backgroundColor === 'rgba(0, 0, 0, 0)', { args: [tab('Settings', 1)] });
 });
+
+test('tabs rendered after load (a framework, a later route) are wired the first time focus reaches them', async ({ open, assert }) => {
+  const page = await open('components/tabs');
+  await page.send('Emulation.setFocusEmulationEnabled', { enabled: true }); // focus events, as in a focused window
+  await page.get(() => {
+    const d = document.createElement('div');
+    d.className = 'dd-tabs'; d.setAttribute('data-dd-tabs', '');
+    d.innerHTML = '<div class="dd-tabs__list" role="tablist" aria-label="Rendered later"><button class="dd-tabs__tab" role="tab" type="button">One</button><button class="dd-tabs__tab" role="tab" type="button" aria-selected="true">Two</button></div><div role="tabpanel" hidden>first</div><div role="tabpanel">second</div>';
+    document.querySelector('.doc-main').prepend(d);
+  });
+  await page.focus(tab('Rendered later', 2));
+  await expectSelected(page, assert, 'Rendered later', 1, { focused: true });
+  assert.ok((await page.get(state, 'Rendered later')).labelled, 'panels are labelled by their tabs');
+  await page.press('ArrowLeft');
+  await expectSelected(page, assert, 'Rendered later', 0, { focused: true });
+});

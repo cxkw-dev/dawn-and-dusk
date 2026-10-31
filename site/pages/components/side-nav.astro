@@ -4,6 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
+const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
 
 const railItem = (icon: string, label: string, o: { section?: string; on?: boolean; extra?: string } = {}) =>
   o.section
@@ -188,7 +189,7 @@ const mobile = `
   <Example code={groups} stage="flush" />
 
   <h2 id="mobile">Mobile · off-canvas</h2>
-  <p>On small screens the whole nav slides in from the left over a scrim, opened by the top bar’s menu button (<code>data-dd-nav-open</code>). Esc, the scrim, the chevron or following a link close it, and so does tabbing out of it; while it covers the window, the page behind it doesn’t scroll. Inside an <a href="../app-shell">app shell</a> this happens automatically below the shell’s breakpoint (768px, or <a href="../app-shell#breakpoints">900 / 1024px</a>); on its own, or to keep it off-canvas at every width (also inside a shell), add <code>dd-side-nav--offcanvas</code>. It is fixed to the window — or, as here, to a frame that contains it. Shown open — try it: tap the scrim to close it, then the menu button to bring it back; press Esc or follow a link.</p>
+  <p>On small screens the whole nav slides in from the left over a scrim, opened by the top bar’s menu button (<code>data-dd-nav-open</code>). Esc, the scrim, the chevron, a link or tabbing out closes it; while it covers the window, the page behind doesn’t scroll. Inside an <a href={`${docs}/components/app-shell`}>app shell</a> this happens below the shell’s breakpoint (768px, or <a href={`${docs}/components/app-shell#breakpoints`}>900 / 1024px</a>); on its own, or to keep it off-canvas at every width (also inside a shell), add <code>dd-side-nav--offcanvas</code>. It is fixed to the window, or, as here, to a frame that contains it. Shown open — try it: tap the scrim to close it, then the menu button to bring it back; press Esc or follow a link.</p>
   <Example code={mobile} stage="flush" />
 
   <h2 id="api">Classes</h2>
@@ -203,21 +204,21 @@ const mobile = `
     ['__head / __title', 'Pane heading in the lockup, with an optional <code>__count</code>.'],
     ['__section', 'Mono caps heading inside a pane.'],
     ['__link', 'A page link. Active with <code>aria-current="page"</code> or <code>.is-active</code> (ink on a 10% wash); hover is a lighter 4% wash, so it never reads as current. Wrap text in <code>__label</code> so it truncates.'],
-    ['__count / __badge / __dot', 'Right-edge meta: mono count; pill badge (<code>--new</code>, <code>--solid</code>); dot (<code>--ok / --warn / --bad / --idle</code>). A dot inside a rail <code>__item</code> pins to its corner.'],
+    ['__count / __badge / __dot', 'Right-edge meta: mono count; pill badge (<code>--new</code>, <code>--solid</code>); dot (<code>--ok / --warn / --bad / --idle</code>). A dot or badge inside a rail <code>__item</code> pins to its corner.'],
     ['__group / __sub / __chev', 'A <code>&lt;details&gt;</code> group: the <code>&lt;summary&gt;</code> is a <code>__link</code>, the children sit in <code>__sub</code>.'],
     ['__foot / __note / __meter', 'Bottom of a pane: a tonal note with a usage meter.'],
     ['--dd-side-nav-rail / -panel', 'Column widths: 60px and 224px.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <ClassTable head={['Attribute', 'What it does']} rows={[
+  <ClassTable head={['Attribute / key', 'What it does']} rows={[
     ['data-dd-nav-toggle', 'Folds / unfolds the panel of its nav (or of the nav in its value, e.g. <code>"#app-nav"</code>). Keeps <code>aria-expanded</code> and the tooltip in sync; persists to <code>localStorage</code> under <code>dd-side-nav:&lt;id&gt;</code>.'],
-    ['data-dd-nav-section="name"', 'On a rail item: shows <code>[data-dd-nav-pane="name"]</code> and unfolds the panel. Pressing the active item again folds it.'],
-    ['data-dd-nav-open="#id"', 'Opens an off-canvas nav (the top bar’s menu button). Focus moves to the current page link.'],
+    ['data-dd-nav-section="name"', 'On a rail item: shows <code>[data-dd-nav-pane="name"]</code> and unfolds the panel. Pressing the active item again folds or unfolds it.'],
+    ['data-dd-nav-open="#id"', 'Opens an off-canvas nav (the top bar’s menu button). Focus moves to the current page link (or the first rail item).'],
     ['data-dd-nav-close', 'Closes the off-canvas nav it sits in.'],
     ['Esc · scrim · link · Tab out', 'Close the off-canvas nav. After Esc, the scrim (mouse or touch), a link or the chevron, focus returns to the menu button. Tabbing out — past its last link, before its first, or onto the menu button — closes it and focus stays where it went.'],
     ['html.dd-side-nav-lock', 'Set while an open off-canvas nav covers the window: the page behind doesn’t scroll (the page’s scrollbar gutter stays reserved, so nothing shifts). A nav fixed to a frame (a demo, a frame-mode shell) doesn’t lock the page.'],
-    ['Resize', 'If an open nav stops being off-canvas (the window widens past the breakpoint) it closes and is simply in view.'],
+    ['Resize', 'If an open nav stops being off-canvas (the window widens past the breakpoint), it closes and stays in view.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

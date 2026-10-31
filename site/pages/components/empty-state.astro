@@ -78,7 +78,7 @@ const page = `
 
   <h2 id="api">Classes</h2>
   <ClassTable rows={[
-    ['.dd-empty-state', 'Centred column, default size for panels.'],
+    ['.dd-empty-state', 'Centred column, default size for panels. Honours <code>hidden</code>, so you can toggle it with the data.'],
     ['.dd-empty-state--compact', 'Tighter: for table bodies, lists and narrow panels.'],
     ['.dd-empty-state--page', 'Whole screen; the title uses the heading lockup.'],
     ['.dd-empty-state__icon', 'Tonal tile holding one icon.'],
@@ -89,7 +89,7 @@ const page = `
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides
-    do={['Say what will appear here, not just that it’s empty.', 'Offer the action that fills it, right there.', 'Tell no-results apart from no-data: “No logs match” with Clear filters.']}
+    do={['Say what will appear here, not only that it’s empty.', 'Offer the action that fills it, right there.', 'Tell no-results apart from no-data: “No logs match” with Clear filters.']}
     dont={['Don’t add illustrations or mascots.', 'Don’t show an empty state while data is still loading — use a skeleton.', 'Don’t blame the person: “You have no projects” → “Nothing here yet”.']}
   />
 </Docs>

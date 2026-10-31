@@ -312,3 +312,39 @@ test('a plain opener removed by a close listener hands focus to its neighbour', 
   await waitClosed(page, 'size-sm');
   await page.waitFor((s) => document.activeElement === document.querySelector(s), { args: [opener('size-md')] });
 });
+
+test('Tab wraps inside the top dialog even when it sits before the one below it in the page', async ({ open, assert }) => {
+  const page = await open('components/dialog');
+  await page.get(() => {
+    const make = (id, html) => { const d = document.createElement('dialog'); d.className = 'dd-dialog'; d.id = id; d.innerHTML = `<div class="dd-dialog__body">${html}</div>`; return d; };
+    document.body.prepend(make('stack-top', '<button id="top-1">One</button> <button id="top-2">Two</button>')); // earlier in the page…
+    document.body.append(make('stack-under', '<button id="under-1">Below</button>'));
+    dd.dialog.open('#stack-under');
+    dd.dialog.open('#stack-top'); // …but opened last, so on top
+  });
+  await waitOpen(page, 'stack-top');
+  await page.focus('#top-1');
+  const seen = [];
+  for (let k = 0; k < 3; k++) { await page.press('Tab'); seen.push(await page.active()); }
+  assert.deepEqual(seen, ['#top-2', '#top-1', '#top-2'], 'Tab moves and wraps in the top dialog');
+  await page.press({ key: 'Tab', shift: true });
+  assert.equal(await page.active(), '#top-1');
+});
+
+test('the scrollbar width is measured even when the script loads after the page (a late or injected script)', async ({ open, assert }) => {
+  const page = await open('components/dialog');
+  const observed = await page.get(async () => {
+    const frame = document.createElement('iframe');
+    document.body.append(frame);
+    await new Promise((r) => { frame.onload = r; frame.srcdoc = '<!doctype html><p>late</p>'; });
+    const w = frame.contentWindow;
+    const seen = [];
+    const observe = w.ResizeObserver.prototype.observe;
+    w.ResizeObserver.prototype.observe = function (t) { seen.push(t.tagName); return observe.call(this, t); };
+    const s = frame.contentDocument.createElement('script');
+    s.src = new URL('../release/dawn-and-dusk.js', location.href).href;
+    await new Promise((r, j) => { s.onload = r; s.onerror = j; frame.contentDocument.head.append(s); });
+    return seen;
+  });
+  assert.ok(observed.includes('BODY'), 'the body is watched for size changes');
+});

@@ -10,7 +10,7 @@
 .dd-empty-state__icon {
   display: grid; place-items: center; flex: none; width: calc(var(--dd-u) * 9.6); height: calc(var(--dd-u) * 9.6);
   margin-bottom: calc(var(--dd-u) * 2); border-radius: var(--dd-r-box);
-  background: color-mix(in oklab, var(--dd-text) 7%, transparent); color: var(--dd-muted);
+  background: var(--dd-wash); color: var(--dd-muted);
 }
 .dd-empty-state__icon > .dd-icon { width: 46%; height: 46%; }
 .dd-empty-state__title { margin: 0; font-size: var(--dd-fs-base); font-weight: 650; line-height: var(--dd-lh-tight); letter-spacing: -.005em; text-wrap: balance; }

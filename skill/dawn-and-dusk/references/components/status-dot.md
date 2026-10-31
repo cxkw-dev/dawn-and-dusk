@@ -87,9 +87,9 @@ Online, idle, error and unknown, plus offline and maintenance. Unknown is hollow
 | class / attribute | what it does |
 |---|---|
 | `.dd-status-dot` | The dot (its `::before`) plus any text inside as the label. |
-| `.dd-status-dot--{state}` | `online` (ok) · `idle` (warn) · `error` (bad) · `unknown` (hollow ring) · `offline` (greige) · `info` (maintenance). |
-| `.dd-status-dot--sm / --lg` | 6px and 10px dots (default 8px). Or set `--dd-status-size`. |
-| `.dd-status-dot--live` | Pulsing ring. |
+| `.dd-status-dot--{state}` | State: `online` (ok) · `idle` (warn) · `error` (bad) · `unknown` (hollow ring) · `offline` (greige) · `info` (maintenance). |
+| `.dd-status-dot--sm / --lg` | 6px and 10px dots (default 8px); `--sm` also takes smaller text. Or set `--dd-status-size`. |
+| `.dd-status-dot--live` | A soft ring pulsing out from the dot; dropped under reduced motion. |
 | `.dd-status-dot--muted` | Muted label colour. |
 
 ## Guidelines

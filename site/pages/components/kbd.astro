@@ -75,7 +75,7 @@ const list = `
   <p>Wrap keys pressed together in <code>.dd-kbd-combo</code>. Glyph combos need no separator; word keys read better with a <code>+</code>. Sequences (press G, release, press D) put <code>then</code> between keys.</p>
   <Example code={combos} />
   <h2 id="sizes">Sizes and variants</h2>
-  <p>Small for buttons and dense rows, medium (default) for running text, large for shortcut help and onboarding. <code>--quiet</code> drops the keycap for hints in menus and lists. <code>is-active</code> shows a held key.</p>
+  <p>Small for buttons and dense rows, medium (default) for running text, large for shortcut help and onboarding. <code>.dd-kbd--quiet</code> drops the keycap for hints in menus and lists. <code>.is-active</code> shows a held key.</p>
   <Example code={sizes} />
   <Example title="Held keys, live" description="Try it: press and hold ⌘, ⇧, ⌥, ⌃, K, /, Return or Esc on your keyboard. Each key lights with is-active while it is down (a few lines of page script; the class does the look)." code={live} />
   <h2 id="in-context">In text and buttons</h2>
@@ -88,11 +88,12 @@ const list = `
   <ClassTable rows={[
     ['.dd-kbd', 'One key. Use it on <code>&lt;kbd&gt;</code>.'],
     ['.dd-kbd--sm / --lg', 'Sizes. Medium has no modifier.'],
-    ['.dd-kbd--quiet', 'No keycap, just the glyphs in <code>--dd-quiet</code>. For hints inside menus and lists.'],
-    ['.dd-kbd.is-active', 'A held key, filled with the accent.'],
+    ['.dd-kbd--quiet', 'No keycap, only the glyphs in <code>--dd-quiet</code>. For hints inside menus and lists.'],
+    ['.dd-kbd.is-active', 'A held key: filled with the accent and pressed down a pixel.'],
     ['.dd-kbd-combo', 'Groups keys pressed together. Use an outer <code>&lt;kbd&gt;</code>, as HTML recommends for combos.'],
     ['.dd-kbd-combo__sep', 'A <code>+</code>, <code>then</code> or short note between keys.'],
     ['.dd-kbd-list', 'A <code>&lt;dl&gt;</code> of shortcuts: <code>&lt;dt&gt;</code> action, <code>&lt;dd&gt;</code> keys.'],
+    ['--dd-font-kbd', 'The key font: DM Mono, with the system UI font filling in the ⌘ ⇧ ⌥ ⌃ ↵ glyphs DM Mono lacks. Menu shortcut hints use it too.'],
   ]} />
   <h2 id="guidelines">Guidelines</h2>
   <Guides

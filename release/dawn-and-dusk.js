@@ -33,15 +33,20 @@
     sync();
   });
   // The script may load deferred or late: sync now if the DOM is already there. Follow OS changes while nothing is stored.
+  // A toggle rendered later gets aria-pressed the first time it takes focus.
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sync); else sync();
+  document.addEventListener('focusin', (e) => {
+    const t = e.target.closest?.('[data-dd-theme-toggle]');
+    if (t && !t.hasAttribute('aria-pressed')) t.setAttribute('aria-pressed', String(current() === 'dusk'));
+  });
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', sync);
 })();
 
 
 /* ===== behaviors/autoclose.js ===== */
 /* Dropdowns built on <details data-dd-autoclose> (the top-bar avatar menu, the breadcrumb overflow).
-   - Closes on a click outside, on Esc (focus returns to the <summary>), after choosing an item inside, and when another
-     autoclose dropdown opens.
+   - Closes on a click outside, on Esc (focus inside it returns to the <summary>; focus elsewhere stays put), after
+     choosing an item inside, and when another autoclose dropdown opens.
    - ↓ on the summary opens it and focuses the first item; ↑/↓ move between items while it is open. */
 (() => {
   const SEL = 'details[data-dd-autoclose]';
@@ -64,8 +69,11 @@
     if (e.key === 'Escape') {
       const open = d?.open ? d : document.querySelector(`${SEL}[open]`);
       if (!open) return;
+      // Focus goes back to the summary only from inside the dropdown (or from nowhere), never from elsewhere on the page.
+      const a = document.activeElement;
+      const back = !a || a === document.body || open.contains(a);
       open.open = false;
-      open.querySelector('summary')?.focus();
+      if (back) open.querySelector('summary')?.focus();
       return;
     }
     if (!d || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
@@ -350,7 +358,7 @@
      from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes (a still, deeper
      tint under reduced motion) instead of being added twice; Backspace in an empty field removes the last chip.
      The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x).
-   When a chip goes, the chips after it glide into its place (not under reduced motion). 
+   When a chip goes, the chips after it glide into its place (not under reduced motion).
    Inside [data-dd-manual] (chips a framework renders from state) the script does nothing; listen for clicks yourself. */
 (() => {
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -510,7 +518,7 @@
   const labelOf = (opt) => (opt.dataset.label || labelEl(opt).dataset.text || labelEl(opt).textContent).trim();
   const valueOf = (opt) => opt.dataset.value ?? labelOf(opt);
   const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const icon = (name) => `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-${name}"/></svg>`;
+  const icon = (name) => `<svg class="dd-icon" aria-hidden="true"><use href="${window.dd?.iconSprite || ''}#dd-i-${name}"/></svg>`;
 
   const setActive = (root, opt) => {
     const { input, list } = parts(root);
@@ -945,7 +953,8 @@
    - Menus (.dd-data-table__menu, a <details>) close on Esc (focus returns to the summary) and on any click outside.
    - Scroll: adds .is-scrolled-x / .is-scrolled-y to the root so the frozen column and sticky header cast an edge.
    - Rows added or removed from script (or a framework) are picked up on their own: count, filters, empty row, pages and
-     selection refresh on the next frame. dd.dataTable.refresh(root) does it by hand.
+     selection refresh on the next frame. dd.dataTable.refresh(root) does it by hand; for a table added to the page after
+     load, its first call also sets the table up and starts watching its rows.
    - Focus: when a row that held focus is removed, focus moves to the first control of the next remaining visible row
      (else the previous one, else the select-all box, else the scroll region / table). A row that is only moved (re-sorted
      or re-inserted by a framework) gets its focus back. */
@@ -1336,13 +1345,24 @@
     root.querySelectorAll('tbody').forEach((tb) => mo.observe(tb, { childList: true }));
   };
 
-  const init = () => document.querySelectorAll(ROOT).forEach((root) => {
+  const ready = new WeakSet();
+  const setup = (root) => {
+    ready.add(root);
     root.querySelectorAll('[data-dd-data-table-column]').forEach((inp) => { if (!inp.checked) setColumn(root, inp.dataset.ddDataTableColumn, false); });
     update(root);
     watch(root);
-  });
+  };
+  const init = () => document.querySelectorAll(ROOT).forEach(setup);
   window.dd = window.dd || {};
-  window.dd.dataTable = { refresh: (root) => { const r = typeof root === 'string' ? document.querySelector(root) : root; if (r) update(r.closest(ROOT) || r); } };
+  window.dd.dataTable = {
+    // A table added after load is set up (and its rows watched from then on) by its first refresh.
+    refresh: (root) => {
+      const r = typeof root === 'string' ? document.querySelector(root) : root;
+      const t = r && (r.closest(ROOT) || r);
+      if (!t) return;
+      if (t.matches(ROOT) && !ready.has(t)) setup(t); else update(t);
+    },
+  };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
@@ -1352,7 +1372,7 @@
    Calendar: [data-dd-calendar] on a .dd-calendar with data-month="YYYY-MM", data-today, data-week-start (1 = Monday,
    default; 0 = Sunday), data-min / data-max (YYYY-MM-DD), data-mode="single" (data-value) or "range"
    (data-start / data-end). The script renders the month body, moves months ([data-dd-cal-nav="-1|1"]), selects days
-   and supports ← → ↑ ↓, Page Up / Down (month), Home / End (week). Fires a bubbling "dd-date" event with
+   and supports ← → ↑ ↓, Page Up / Down (month), Home / End (week). Fires bubbling "dd:date" and legacy "dd-date" events with
    detail { value } or { start, end }.
    Date picker: [data-dd-date-picker] wraps a .dd-input (with a [data-dd-date-toggle] button) and a
    .dd-date-picker__popover holding a calendar. Choosing a day fills the input and closes; a range closes on its
@@ -1445,6 +1465,7 @@
     const s = state(cal);
     const detail = s.mode === 'range' ? { start: s.start, end: s.end } : { value: s.value };
     cal.dispatchEvent(new CustomEvent('dd-date', { bubbles: true, detail }));
+    cal.dispatchEvent(new CustomEvent('dd:date', { bubbles: true, detail }));
   };
 
   const pick = (cal, day) => {
@@ -1637,8 +1658,8 @@
       e.preventDefault(); openPicker(root); return;
     }
     const b = e.target.closest?.('.dd-calendar__day');
-    if (!b) return;
-    const cal = b.closest('[data-dd-calendar]');
+    const cal = b?.closest('[data-dd-calendar]');
+    if (!cal) return; // a calendar without the hook is the page's own (a framework renders it)
     const d = parse(b.dataset.date);
     const ws = Number(cal.dataset.weekStart ?? 1);
     const moves = {
@@ -1851,7 +1872,11 @@
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Tab' || e.altKey || e.ctrlKey || e.metaKey) return;
     const modal = (d) => { try { return d.matches(':modal'); } catch { return d.open; } };
-    const dlg = [...document.querySelectorAll(SEL)].reverse().find((d) => d.open && modal(d));
+    // The top modal is the one holding focus (the others are inert); only with focus nowhere, fall back to the last open
+    // one in the page. Another kind of modal on top (a command palette) is left to the browser.
+    const host = document.activeElement?.closest?.('dialog');
+    const dlg = host?.open && modal(host) ? (host.matches(SEL) ? host : null)
+      : [...document.querySelectorAll(SEL)].reverse().find((d) => d.open && modal(d));
     if (!dlg) return;
     const list = tabbables(dlg);
     if (!list.length) { e.preventDefault(); dlg.focus(); return; }
@@ -1968,13 +1993,13 @@
    - data-dd-dropzone="#listId" lists the chosen files in that .dd-file-list (name, size, a remove button).
      A multiple input adds to the list (and its files are everything listed); a single one replaces it.
    - Files that don't match the input's accept="…" or exceed data-dd-max-size ("20MB", "500KB", bytes) are listed as
-     errors with the reason, and left out of the input's files.
+     errors with the reason, and left out of the input's files. File inputs outside a dropzone are left alone.
    - [data-dd-file-remove] inside a .dd-file removes that row (with a short exit animation) and its file, then fires
      a bubbling "dd-file-remove" event on the list with detail { name }. */
 (() => {
   const size = (b) => (b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(1)} MB`);
   const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const icon = (n) => `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-${n}"/></svg>`;
+  const icon = (n) => `<svg class="dd-icon" aria-hidden="true"><use href="${window.dd?.iconSprite || ''}#dd-i-${n}"/></svg>`;
   const kind = (name) => {
     const ext = (name.split('.').pop() || '').toLowerCase();
     if (/^(png|jpe?g|gif|webp|svg|avif)$/.test(ext)) return ['is-image', ext];
@@ -2040,6 +2065,7 @@
     const input = e.target;
     if (!(input instanceof HTMLInputElement) || input.type !== 'file') return;
     const zone = input.closest('[data-dd-dropzone]');
+    if (!zone) return; // a file input outside a dropzone is the page's own: leave its files alone
     const list = listFor(input);
     const chosen = [...input.files];
     // A single-file field holds one file: a new choice replaces the old row.
@@ -2070,7 +2096,6 @@
     const row = btn.closest('.dd-file');
     if (!row || row.classList.contains('is-removing')) return;
     const list = row.parentElement;
-    const next = row.nextElementSibling?.querySelector('[data-dd-file-remove]') || row.previousElementSibling?.querySelector('[data-dd-file-remove]');
     row.classList.add('is-removing');
     // Focus moves to the neighbouring remove button, or back to the list's dropzone once the list is empty.
     const input = list?.id ? document.querySelector(`[data-dd-dropzone="#${CSS.escape(list.id)}"] input[type="file"]`) : null;
@@ -2082,6 +2107,12 @@
       if (finished) return;
       finished = true;
       const hadFocus = row.contains(document.activeElement);
+      // The neighbour is picked now, past rows that are leaving too (several removed in quick succession).
+      const near = (step) => {
+        for (let n = row[step]; n; n = n[step]) if (!n.classList.contains('is-removing') && n.querySelector('[data-dd-file-remove]')) return n.querySelector('[data-dd-file-remove]');
+        return null;
+      };
+      const next = near('nextElementSibling') || near('previousElementSibling');
       row.remove();
       if (hadFocus || document.activeElement === document.body) (next || input)?.focus();
       list?.dispatchEvent(new CustomEvent('dd-file-remove', { bubbles: true, detail: { name } }));
@@ -2119,6 +2150,9 @@
     if (soft) field.querySelectorAll('[data-dd-counter-error]').forEach((err) => { err.hidden = n <= max; });
   };
 
+  // Every counter under root (a counter outside a .dd-field has nothing to count).
+  const recount = (root) => root.querySelectorAll('.dd-field__counter').forEach((c) => { const f = c.closest('.dd-field'); if (f) update(f); });
+
   document.addEventListener('input', (e) => {
     const field = e.target.closest?.('.dd-field');
     if (field && field.querySelector('.dd-field__counter')) update(field);
@@ -2127,9 +2161,9 @@
   document.addEventListener('reset', (e) => {
     const form = e.target;
     if (!(form instanceof HTMLFormElement)) return;
-    setTimeout(() => form.querySelectorAll('.dd-field__counter').forEach((c) => { const f = c.closest('.dd-field'); if (f) update(f); }));
+    setTimeout(() => recount(form));
   });
-  const init = () => document.querySelectorAll('.dd-field__counter').forEach((c) => update(c.closest('.dd-field')));
+  const init = () => recount(document);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
@@ -2272,10 +2306,12 @@
        <h3 class="dd-guide-cue__title">…</h3> <p class="dd-guide-cue__text">…</p>
        <div class="dd-guide-cue__actions"><button data-dd-guide-dismiss>Skip tour</button><button data-dd-guide-next>Next</button></div>
      </div>
-   Steps run in document order. Next on the last step finishes the tour; Esc or [data-dd-guide-dismiss] ends it early.
+   Steps run in document order (a cue whose target isn't on the page is skipped). [data-dd-guide-back] goes back a step;
+   Next on the last step finishes the tour; Esc or [data-dd-guide-dismiss] ends it early.
    Each step scrolls its target into view, rings it, drops a beacon on it and points the arrow at it. Focus moves to
    the cue and returns to the start button at the end. Events on document: "dd:guide-step" (detail.index) and
-   "dd:guide-end" (detail.completed). From code: dd.guide.start(name, trigger) · dd.guide.next() · dd.guide.end(). */
+   "dd:guide-end" (detail.completed).
+   From code: dd.guide.start(name, trigger) · dd.guide.next() · dd.guide.back() · dd.guide.end(). */
 (() => {
   let tour = null;
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2311,7 +2347,8 @@
     el.dataset.placement = align === 'center' ? side : `${side}-${align}`;
   };
 
-  const targetOf = (cue) => document.querySelector(cue.dataset.ddGuideTarget || '');
+  // A cue without a target (or whose target is gone) is skipped.
+  const targetOf = (cue) => (cue.dataset.ddGuideTarget ? document.querySelector(cue.dataset.ddGuideTarget) : null);
   const showCue = (cue) => { if (cue.showPopover) { if (!cue.matches(':popover-open')) cue.showPopover(); } else cue.hidden = false; };
   const hideCue = (cue) => { if (cue.hidePopover) { if (cue.matches(':popover-open')) cue.hidePopover(); } else cue.hidden = true; };
 
@@ -2320,8 +2357,8 @@
     const cue = tour.steps[tour.i];
     const target = cue && targetOf(cue);
     if (!target) return;
+    const r = target.getBoundingClientRect(); // read before place() writes, so a scroll costs one layout, not two
     place(cue, target, cue.dataset.ddPlacement || 'bottom');
-    const r = target.getBoundingClientRect();
     tour.beacon.style.left = `${Math.round(r.right - 2)}px`;
     tour.beacon.style.top = `${Math.round(r.top + 2)}px`;
   };
@@ -2400,11 +2437,12 @@
    - data-depth="2" sets how many levels start expanded (root = level 0).
    - Click a row to select it: the bar shows its path ($.replicas[0].region) and the copy button copies it.
    - Keyboard (WAI-ARIA tree): ↑/↓ move, → expand / first child, ← collapse / parent, Enter/Space toggle, Home/End.
-   - dd.jsonViewer(el, data, { depth, label }) renders any value programmatically. */
+   - dd.jsonViewer(el, data, { depth, label }) renders any value programmatically.
+   Clicks and keys act only on trees rendered here; a tree a framework renders from the same classes is left to it. */
 (() => {
   const dd = (window.dd = window.dd || {});
   const C = 'dd-json-viewer';
-  const icon = (n) => `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-${n}"/></svg>`;
+  const icon = (n) => `<svg class="dd-icon" aria-hidden="true"><use href="${dd.iconSprite || ''}#dd-i-${n}"/></svg>`;
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const ident = /^[A-Za-z_$][\w$]*$/;
   const childPath = (path, key, isArr) => (isArr ? `${path}[${key}]` : ident.test(key) ? `${path}.${key}` : `${path}[${JSON.stringify(key)}]`);
@@ -2496,8 +2534,11 @@
     });
   }
 
+  // Only trees this script rendered: one a framework renders from the same classes is left to it.
+  const ROOT = `.${C}[data-dd-json-viewer-ready]`;
+
   document.addEventListener('click', (e) => {
-    const root = e.target.closest(`.${C}`);
+    const root = e.target.closest(ROOT);
     if (!root) return;
     if (e.target.closest('[data-dd-json-viewer-expand], [data-dd-json-viewer-collapse]')) {
       const open = !!e.target.closest('[data-dd-json-viewer-expand]');
@@ -2514,8 +2555,8 @@
 
   document.addEventListener('keydown', (e) => {
     const item = e.target;
-    if (!(item instanceof Element) || item.getAttribute('role') !== 'treeitem' || !item.closest(`.${C}`)) return;
-    const root = item.closest(`.${C}`);
+    const root = item instanceof Element && item.getAttribute('role') === 'treeitem' ? item.closest(ROOT) : null;
+    if (!root) return;
     const list = visible(item.closest('[role="tree"]'));
     const i = list.indexOf(item);
     const expandable = item.hasAttribute('aria-expanded');
@@ -2556,6 +2597,7 @@
    - button[data-dd-log-viewer-level="debug|info|warn|error"]: aria-pressed toggles that level.
    - button[data-dd-log-viewer-wrap]: aria-pressed toggles .is-wrapped (long messages wrap instead of scrolling).
    - [data-dd-log-viewer-count]: gets “18 of 24 lines”; [data-dd-log-viewer-empty] shows when nothing matches.
+   - button[data-dd-log-viewer-clear]: clears the search and turns every level back on.
    - button[data-dd-log-viewer-follow]: aria-pressed keeps the stream pinned to the newest line as lines arrive.
      Scrolling up to read pauses it; scrolling back to the bottom (or pressing it) resumes.
    Lines are .dd-log-viewer__line[data-level]; matches are highlighted inside .dd-log-viewer__msg. Append new
@@ -2749,6 +2791,7 @@
   const GAP = 5;
   const stack = []; // open floating menus, root first: { menu, trigger, side, align, at, ret }
   let hoverTimer = 0;
+  let hoverItem = null;
   let typed = '';
   let typedAt = 0;
 
@@ -2811,6 +2854,8 @@
   }
 
   function closeAbove(menu) { // close every open menu stacked above `menu` (null → all)
+    clearTimeout(hoverTimer);
+    hoverItem = null;
     while (stack.length && stack[stack.length - 1].menu !== menu) {
       const s = stack.pop();
       s.menu.hidden = true;
@@ -2916,13 +2961,16 @@
     openContext(c.area, c.menu, e.clientX, e.clientY);
   });
 
-  // Hover moves focus within floating menus and opens / closes submenus after a short pause.
-  document.addEventListener('pointerover', (e) => {
+  // Real pointer movement moves focus; opening a menu beneath a stationary pointer must not steal keyboard focus.
+  // Moving onto another item opens / closes its submenu after a short pause.
+  document.addEventListener('pointermove', (e) => {
     // Touch has no hover: a finger held past the delay would open a submenu that the tap's click then closes.
     if (e.pointerType === 'touch') return;
     const item = e.target.closest(ITEM);
     const menu = item?.closest('.dd-menu.is-floating');
-    if (!menu) return;
+    if (!menu) { hoverItem = null; return; }
+    if (item === hoverItem) return;
+    hoverItem = item;
     clearTimeout(hoverTimer);
     if (!disabled(item)) item.focus({ preventScroll: true });
     hoverTimer = setTimeout(() => {
@@ -2999,11 +3047,17 @@
     }
   });
 
-  // Keep anchored menus attached while the page scrolls or resizes.
+  // Keep anchored menus attached while the page scrolls or resizes. A menu whose trigger has left the page (its row was
+  // re-rendered) closes, with its submenus, instead of jumping to the corner.
   let raf = 0;
   const follow = () => {
     if (!stack.length || raf) return;
-    raf = requestAnimationFrame(() => { raf = 0; stack.forEach((s) => { if (!s.at) place(s); }); });
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const gone = stack.findIndex((s) => s.trigger && !s.trigger.isConnected);
+      if (gone >= 0) closeAbove(gone > 0 ? stack[gone - 1].menu : null);
+      stack.forEach((s) => { if (!s.at) place(s); });
+    });
   };
   window.addEventListener('resize', follow);
   window.addEventListener('scroll', (e) => { if (!e.target?.closest?.('.dd-menu')) follow(); }, true);
@@ -3030,13 +3084,15 @@
     trigger: (m) => resolveMenu(m)?.ddTrigger || null,
   };
 
-  // Fill in ARIA the markup left out.
-  const init = () => document.querySelectorAll('[data-dd-menu]').forEach((t) => {
+  // Fill in ARIA the markup left out: on load, and for a trigger rendered later the first time it takes focus.
+  const fill = (t) => {
     if (!t.hasAttribute('aria-haspopup')) t.setAttribute('aria-haspopup', 'menu');
     if (!t.hasAttribute('aria-expanded')) t.setAttribute('aria-expanded', 'false');
     const m = menuFor(t);
     if (m?.id && !t.hasAttribute('aria-controls')) t.setAttribute('aria-controls', m.id);
-  });
+  };
+  document.addEventListener('focusin', (e) => { const t = e.target.closest?.('[data-dd-menu]'); if (t) fill(t); });
+  const init = () => document.querySelectorAll('[data-dd-menu]').forEach(fill);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
@@ -3248,31 +3304,40 @@
     if (pop?.classList.contains('dd-popover') && !pop.contains(btn)) anchors.set(pop, btn);
   }, true);
 
+  const closed = (pop) => {
+    open.delete(pop);
+    if (!open.size) removal.disconnect();
+    const a = anchorOf(pop);
+    document.querySelectorAll(`[popovertarget="${CSS.escape(pop.id)}"]`).forEach((b) => { if (!pop.contains(b)) b.setAttribute('aria-expanded', 'false'); });
+    // An anchor passed to dd.popover.open() hears about the close too.
+    if (a && !pop.contains(a) && a.hasAttribute('aria-expanded')) a.setAttribute('aria-expanded', 'false');
+  };
+  // A panel removed from the page while open (a framework re-render) fires no toggle event: let it go all the same.
+  // Watched only while something is open.
+  const removal = new MutationObserver(() => open.forEach((pop) => { if (!pop.isConnected) closed(pop); }));
+
   document.addEventListener('toggle', (e) => {
     const pop = e.target;
     if (!(pop instanceof HTMLElement) || !pop.classList.contains('dd-popover')) return;
-    const a = anchorOf(pop);
-    if (e.newState === 'open') {
-      open.add(pop);
-      reposition(pop);
-      a?.setAttribute('aria-expanded', 'true');
-    } else {
-      open.delete(pop);
-      document.querySelectorAll(`[popovertarget="${CSS.escape(pop.id)}"]`).forEach((b) => { if (!pop.contains(b)) b.setAttribute('aria-expanded', 'false'); });
-      // An anchor passed to dd.popover.open() hears about the close too.
-      if (a && !pop.contains(a) && a.hasAttribute('aria-expanded')) a.setAttribute('aria-expanded', 'false');
-    }
+    if (e.newState !== 'open') { closed(pop); return; }
+    if (!open.size) removal.observe(document.documentElement, { childList: true, subtree: true });
+    open.add(pop);
+    reposition(pop);
+    anchorOf(pop)?.setAttribute('aria-expanded', 'true');
   }, true);
 
   const follow = () => open.forEach(reposition);
   window.addEventListener('scroll', follow, { capture: true, passive: true });
   window.addEventListener('resize', follow, { passive: true });
 
-  // Set the initial aria-expanded so the state is announced before the first click.
-  const init = () => document.querySelectorAll('[popovertarget]').forEach((b) => {
+  // Set the initial aria-expanded so the state is announced before the first click: on load, and for a button rendered
+  // later the first time it takes focus.
+  const fill = (b) => {
     const pop = document.getElementById(b.getAttribute('popovertarget'));
     if (pop?.classList.contains('dd-popover') && !pop.contains(b) && !b.hasAttribute('aria-expanded')) b.setAttribute('aria-expanded', 'false');
-  });
+  };
+  document.addEventListener('focusin', (e) => { const b = e.target.closest?.('[popovertarget]'); if (b) fill(b); });
+  const init = () => document.querySelectorAll('[popovertarget]').forEach(fill);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 
@@ -3300,7 +3365,8 @@
   addEventListener('resize', measure, { passive: true });
   addEventListener('load', measure);
   // Content can grow until the page scrolls (or shrink until it doesn't): re-measure when the body's size changes.
-  if ('ResizeObserver' in window) document.addEventListener('DOMContentLoaded', () => new ResizeObserver(measure).observe(document.body));
+  const watch = () => { if ('ResizeObserver' in window) new ResizeObserver(measure).observe(document.body); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch(); // loaded late too
 })();
 
 
@@ -3357,6 +3423,12 @@
     next.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   });
 
+  // A control rendered after load gets its roving tabindex (and role) the first time focus reaches it.
+  document.addEventListener('focusin', (e) => {
+    const group = e.target.closest?.(ITEM)?.closest('[data-dd-segmented]');
+    if (group) sync(group);
+  });
+
   const init = () => document.querySelectorAll('[data-dd-segmented]').forEach(sync);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
@@ -3367,7 +3439,7 @@
    Markup: [data-dd-select] > button[aria-haspopup="listbox"] (.dd-select) + [role="listbox"] (.dd-listbox, hidden)
            > [role="option"][data-value] (aria-selected on the chosen one, aria-disabled to skip).
    The trigger's [data-dd-select-value] (or its .dd-input__control) shows the chosen option's label; an optional
-   <input type="hidden"> inside the root receives the value. Fires a bubbling "dd-select" event with
+   <input type="hidden"> inside the root receives the value. Fires bubbling "dd:select" and legacy "dd-select" events with
    detail { value, label, option, values, selected }, and "change" on the hidden input.
    Multiple: aria-multiselectable="true" on the listbox. Choosing toggles an option and keeps the list open; the
    trigger lists the chosen labels (or its placeholder when none), the hidden input gets the values joined by
@@ -3448,7 +3520,9 @@
     }
     const hidden = root.querySelector('input[type="hidden"]');
     if (hidden) { hidden.value = values.join(','); hidden.dispatchEvent(new Event('change', { bubbles: true })); }
-    root.dispatchEvent(new CustomEvent('dd-select', { bubbles: true, detail: { value, label, option: opt, values, selected } }));
+    const detail = { value, label, option: opt, values, selected };
+    root.dispatchEvent(new CustomEvent('dd-select', { bubbles: true, detail }));
+    root.dispatchEvent(new CustomEvent('dd:select', { bubbles: true, detail }));
     if (multi) setActive(list, opt); else close(root);
   };
 
@@ -3756,7 +3830,8 @@
      the tab in one step, wrapping at the ends; disabled tabs are skipped.
    - Fires "dd:tabchange" on the [data-dd-tabs] element when the selection changes (not on load, not when the current
      tab is pressed again) with { detail: { tab, panel, previous } }.
-   - Global: dd.tabs.select(tabOrSelector) · dd.tabs.init() wires tabs added to the page later. */
+   - Global: dd.tabs.select(tabOrSelector) · dd.tabs.init() wires tabs added to the page later (left alone, they wire
+     themselves the first time focus, a click or a key reaches them). */
 (() => {
   let uid = 0;
   const own = (root, sel) => [...root.querySelectorAll(sel)].filter((el) => el.closest('[data-dd-tabs]') === root);
@@ -3835,6 +3910,12 @@
     else return;
     e.preventDefault();
     select(root, list[i], { focus: true });
+  });
+
+  // Tabs rendered after load are wired the first time focus reaches them (or on the first click / key, above).
+  document.addEventListener('focusin', (e) => {
+    const root = e.target.closest?.('[data-dd-tabs]');
+    if (root && e.target.matches('[role="tab"]')) init(root);
   });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAll); else initAll();
@@ -4474,9 +4555,15 @@
 
 /* ===== behaviors/textarea.js ===== */
 /* Textarea auto-grow: textarea[data-dd-autogrow] resizes to its content on every input, up to its CSS max-height,
-   then scrolls. (Browsers with field-sizing: content do this natively; the script keeps the others in step.) */
+   then scrolls. One that is hidden at the time (a closed dialog, another tab) is fitted when it shows. (Browsers with
+   field-sizing: content do this natively; the script keeps the others in step.) */
 (() => {
+  // A textarea that isn't rendered (in a closed dialog, a hidden tab panel) measures 0: fit it once it shows instead.
+  const unseen = 'ResizeObserver' in window ? new ResizeObserver((entries) => entries.forEach(({ target }) => {
+    if (target.getClientRects().length) { unseen.unobserve(target); grow(target); }
+  })) : null;
   const grow = (el) => {
+    if (!el.getClientRects().length) { unseen?.observe(el); return; }
     el.style.height = 'auto';
     const max = parseFloat(getComputedStyle(el).maxHeight) || Infinity;
     el.style.height = `${Math.min(el.scrollHeight, max)}px`;
@@ -4498,10 +4585,11 @@
      action    { label: 'Undo', onClick(toast) {} } — clicking it runs onClick, then dismisses the toast
      duration  ms before it leaves on its own (default 5000; 0 keeps it until dismissed). A hairline shows the time
                left; hovering or focusing the stack pauses every timer, and so does hiding the tab.
+     icon      any sprite name, to override the intent's icon
+     dismissible  false leaves out the × button (default true)
    Swipe a toast sideways (or drag it with the mouse) to dismiss it; Esc dismisses the toast that has focus, and focus
    then moves to the next toast or back to where it was before the stack. The stack is a manual popover (top layer),
    so toasts show above modal dialogs; while a modal is open the stack moves inside it so its buttons aren't inert.
-     icon      any sprite name, to override the intent's icon
    Returns { el, dismiss() }. dd.toast('Saved') works too, and dd.toast.clear() empties the stack.
    Declarative: <button data-dd-toast="Title" data-dd-toast-description="…" data-dd-toast-intent="ok"
    data-dd-toast-action="Undo" data-dd-toast-duration="8000">. The toast takes the dawn/dusk theme of the
@@ -4867,6 +4955,7 @@
 
   document.addEventListener('pointerover', (e) => {
     if (e.pointerType === 'touch') return;
+    if (current && !current.isConnected) hide(); // its trigger was removed under the pointer (a list re-rendered)
     const el = e.target.closest?.('[data-dd-tooltip]');
     if (!el) return;
     if (el === current) { clearTimeout(hideTimer); return; }
