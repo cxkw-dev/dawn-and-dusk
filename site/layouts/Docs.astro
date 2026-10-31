@@ -8,6 +8,7 @@ import DocsNav from '../components/DocsNav.astro';
 import { i } from '../lib/icon';
 import { base, hrefOf, locate, sections } from '../lib/nav';
 import { dawn, dusk } from '../lib/tokens';
+import { version } from '../lib/distribution';
 import sprite from '../../ds/icons/icons.svg?raw';
 
 interface Props {
@@ -120,7 +121,7 @@ const ogImage = absolute(`${base}/og.png`);
             </nav>
           </div>
           <div class="dd-top-bar__actions">
-            <span class="doc-ver dd-mono dd-top-bar__wide">v0.1</span>
+            <span class="doc-ver dd-mono dd-top-bar__wide">v{version}</span>
             <a class="dd-btn dd-btn--ghost dd-btn--icon" href="https://github.com/cxkw-dev/dawn-and-dusk" aria-label="GitHub"><Fragment set:html={i('code')} /></a>
             <button class="dd-btn dd-btn--secondary dd-btn--sm doc-theme" type="button" data-dd-theme-toggle aria-label="Toggle dawn / dusk">
               <svg class="dd-icon doc-theme-dawn" aria-hidden="true"><use href="#dd-i-sun" /></svg><svg class="dd-icon doc-theme-dusk" aria-hidden="true"><use href="#dd-i-moon" /></svg><span class="doc-theme-dawn">dawn</span><span class="doc-theme-dusk">dusk</span>

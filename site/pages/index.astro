@@ -5,6 +5,7 @@
 import Docs from '../layouts/Docs.astro';
 import HomeSplit from '../components/HomeSplit.astro';
 import { i } from '../lib/icon';
+import { version, installCommand } from '../lib/distribution';
 import { setNames } from '../lib/tokens';
 import '../styles/home.css';
 
@@ -27,7 +28,7 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
     <!-- ── cover ─────────────────────────────────────────────────────────────────────────────────────────── -->
     <HomeSplit class="home-cover" intro>
       <p class="home-cap home-cover__tl"><span>cxkw.dev design system</span><Fragment set:html={when} /></p>
-      <p class="home-cap home-cover__tr"><Fragment set:html={when} /><span>v0.1</span></p>
+      <p class="home-cap home-cover__tr"><Fragment set:html={when} /><span>v{version}</span></p>
       <div class="home-cover__intro">
         <p class="home-cover__lead">A warm, quiet design system. Two lights, one point of view.</p>
         <p class="home-cover__note">Golden-hour colour, confident type and considered details. Plain CSS, a little JavaScript, and an agent skill to bring it together.</p>
@@ -200,26 +201,25 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
 
     <!-- ── install ───────────────────────────────────────────────────────────────────────────────────────── -->
     <section class="home-install" aria-labelledby="home-install-h">
-      <h2 id="home-install-h" class="dd-h2 home-head__h">two lines to start</h2>
+      <h2 id="home-install-h" class="dd-h2 home-head__h">one command to start</h2>
       <div class="home-install__body">
         <figure class="dd-code">
           <figcaption class="dd-code__bar">
-            <span class="dd-code__title"><Fragment set:html={i('file')} />index.html</span>
-            <span class="dd-code__lang">html</span>
+            <span class="dd-code__title"><Fragment set:html={i('file')} />terminal</span>
+            <span class="dd-code__lang">bash</span>
             <button class="dd-code__copy" type="button" data-dd-copy-target="#home-install-code" aria-label="Copy code"><Fragment set:html={i('copy')} /><Fragment set:html={i('check')} /></button>
           </figcaption>
-          <pre class="dd-code__pre" tabindex="0"><code id="home-install-code"><span class="dd-code__line">&lt;<span class="dd-code__k">link</span> <span class="dd-code__p">rel</span>=<span class="dd-code__s">"stylesheet"</span> <span class="dd-code__p">href</span>=<span class="dd-code__s">"dawn-and-dusk.css"</span>&gt;</span>
-<span class="dd-code__line">&lt;<span class="dd-code__k">script</span> <span class="dd-code__p">src</span>=<span class="dd-code__s">"dawn-and-dusk.js"</span> <span class="dd-code__p">defer</span>&gt;&lt;/<span class="dd-code__k">script</span>&gt;</span></code></pre>
+          <pre class="dd-code__pre" tabindex="0"><code id="home-install-code">{installCommand}</code></pre>
         </figure>
-        <p class="home-install__text">Then write HTML with <code>dd-</code> classes. Put <code>data-theme="dawn"</code> or <code>"dusk"</code> on <code>&lt;html&gt;</code> to choose a light, or leave it off to follow the system. The files are in <code>release/</code>.</p>
-        <a class="dd-btn dd-btn--secondary" href={href('skill')}><Fragment set:html={i('ai')} /><span>Give the skill to your agent</span></a>
+        <p class="home-install__text">Import the stylesheet and start building with React components or HTML classes. No repository clone or npm account required.</p>
+        <a class="dd-btn dd-btn--secondary" href={href('getting-started')}><Fragment set:html={i('arrow-right')} /><span>Get started</span></a>
       </div>
     </section>
 
     <!-- ── colophon ──────────────────────────────────────────────────────────────────────────────────────── -->
     <footer class="home-colophon">
       <span class="home-colophon__amp"><Fragment set:html={amp} /></span>
-      <p class="home-cap"><span class="dd-logo dd-logo--sm">dawn &amp; dusk</span><span>Made for cxkw.dev. Version 0.1.</span></p>
+      <p class="home-cap"><span class="dd-logo dd-logo--sm">dawn &amp; dusk</span><span>Made for cxkw.dev. Version {version}.</span></p>
     </footer>
   </div>
 </Docs>

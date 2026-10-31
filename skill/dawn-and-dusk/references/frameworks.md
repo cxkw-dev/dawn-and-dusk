@@ -3,6 +3,16 @@
 The system is plain CSS + a small delegated script, so it works in any framework: render the documented markup
 (`components/<name>.md`) with your framework's syntax. This file covers what is different from static HTML.
 
+## Recommended: the consumer package
+
+Start at https://cxkw-dev.github.io/dawn-and-dusk/getting-started for the versioned install command and HTML, React, and Next.js starters. No repository clone or npm account is needed.
+
+Import `dawn-and-dusk/styles.css` once. React apps can import `Button`, `Input`, `Card`, `Badge`, `Icon`, and `ThemeToggle` from `dawn-and-dusk/react`; these support native props and refs and need no DOM runtime. For server-rendered layouts, `ThemeScript` from `dawn-and-dusk/theme` restores the saved theme before hydration.
+
+For HTML-owned markup, optionally import `dawn-and-dusk/auto` for interactions and automatic icons. Do not apply DOM-mutating widgets to React-owned markup. Complex widgets still use their documented HTML APIs.
+
+The manual asset setup below is available when a package does not fit your project.
+
 ## Contents
 - [Load it once](#load-it-once)
 - [Markup in JSX](#markup-in-jsx)
@@ -20,8 +30,8 @@ in the root layout (`app/layout.tsx`, `index.html`, `+layout.svelte`, `Layout.as
 <script src="/dawn-and-dusk.js" defer></script>
 ```
 
-Or import the CSS from your bundler (`import './dawn-and-dusk.css'`). Load the script once, at the root — its listeners are
-delegated from `document`, so components rendered later (routes, portals, lists) work without re-initialising anything.
+Or import the CSS from your bundler (`import './dawn-and-dusk.css'`). Load the script once, at the root — some listeners are
+delegated from `document`, but widgets with initialization-time setup require their markup to be present when the script runs. Do not assume every widget supports dynamically inserted markup.
 
 **Icons.** Served over http(s), reference the sprite file directly — no inlining needed:
 

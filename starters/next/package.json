@@ -1,0 +1,7 @@
+{
+  "name": "my-dawn-and-dusk-next-app",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "next dev", "build": "next build", "start": "next start" },
+  "dependencies": { "dawn-and-dusk": "__PACKAGE_URL__", "next": "^16.4.3", "react": "^19.3.1", "react-dom": "^19.3.1" }
+}

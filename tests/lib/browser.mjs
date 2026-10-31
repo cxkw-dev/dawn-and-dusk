@@ -36,7 +36,7 @@ export async function open(browser, path, { theme = 'dawn', width = 1280, height
   await send('Network.setBlockedURLs', { urls: ['*@vite/client*'] });
   await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile });
   if (mobile) await send('Emulation.setTouchEmulationEnabled', { enabled: true });
-  const url = /^https?:/.test(path) ? path : `${BASE}${path.replace(/^\//, '')}${path.includes('?') ? '&' : '?'}theme=${theme}`;
+  const url = /^(https?|file):/.test(path) ? path : `${BASE}${path.replace(/^\//, '')}${path.includes('?') ? '&' : '?'}theme=${theme}`;
   const loaded = new Promise((r) => ws.addEventListener('message', (m) => { if (JSON.parse(m.data).method === 'Page.loadEventFired') r(); }));
   await send('Page.navigate', { url });
   await loaded; await sleep(300);

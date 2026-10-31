@@ -1,0 +1,112 @@
+---
+import Docs from '../layouts/Docs.astro';
+import { Code } from 'astro:components';
+import { ddTheme } from '../lib/syntax';
+import { installCommand, starterUrl } from '../lib/distribution';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const react = `import 'dawn-and-dusk/styles.css';
+import { Button, Card, Input, Icon, ThemeToggle } from 'dawn-and-dusk/react';
+
+export default function App() {
+  return (
+    <Card>
+      <Input label="Project name" placeholder="My project" />
+      <Button variant="primary"><Icon name="plus" />Create project</Button>
+      <ThemeToggle />
+    </Card>
+  );
+}`;
+const next = `// app/layout.jsx — install styles and the saved theme once
+import 'dawn-and-dusk/styles.css';
+import { ThemeScript } from 'dawn-and-dusk/theme';
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head><ThemeScript /></head>
+      <body>{children}</body>
+    </html>
+  );
+}`;
+const nextPage = `// app/page.jsx
+import { Button, Card } from 'dawn-and-dusk/react';
+
+export default function Page() {
+  return <Card><Button variant="primary">Create project</Button></Card>;
+}
+// Put event handlers and React state in a component with 'use client'.`;
+const html = `<head>
+  <script src="./dd/theme.js"><\/script>
+  <link rel="stylesheet" href="./dd/styles.css">
+  <script src="./dd/auto.js" defer><\/script>
+</head>
+<body>
+  <button class="dd-btn dd-btn--primary">Create project</button>
+  <button class="dd-btn dd-btn--ghost" data-dd-theme-toggle>Switch theme</button>
+</body>`;
+---
+<Docs title="Getting started" group="Overview" lead="Use dawn & dusk in your own app, or begin with a working page. No repository clone or npm account required.">
+  <h2 id="install">Install in an existing app</h2>
+  <p>Run this in your project. It installs a versioned package from GitHub Releases, under the name <code>dawn-and-dusk</code>.</p>
+  <Code code={installCommand} lang="bash" theme={ddTheme} wrap />
+  <p>No account is needed to install it. The package is hosted on GitHub rather than the npm registry; keep your lockfile so the version and integrity stay pinned.</p>
+
+  <h2 id="choose">Choose your setup</h2>
+  <div class="dd-tabs" data-dd-tabs>
+    <div class="dd-tabs__list" role="tablist" aria-label="Project type">
+      <button class="dd-tabs__tab" type="button" role="tab" id="setup-react" aria-controls="panel-react" aria-selected="true">React</button>
+      <button class="dd-tabs__tab" type="button" role="tab" id="setup-next" aria-controls="panel-next" aria-selected="false">Next.js</button>
+      <button class="dd-tabs__tab" type="button" role="tab" id="setup-html" aria-controls="panel-html" aria-selected="false">HTML</button>
+    </div>
+    <div class="dd-tabs__panel" role="tabpanel" id="panel-react" aria-labelledby="setup-react">
+      <p>Import the stylesheet once, then use the components. React 18 and 19 are supported; no provider or icon setup is required.</p>
+      <Code code={react} lang="jsx" theme={ddTheme} wrap />
+      <p>Native props and events pass through. <code>Input</code> supports <code>value</code>, <code>onChange</code>, <code>defaultValue</code>, <code>hint</code> and <code>error</code>. Refs point to the native control.</p>
+      <p><a class="dd-btn dd-btn--secondary" href={starterUrl('react')}>Download React starter</a></p>
+    </div>
+    <div class="dd-tabs__panel" role="tabpanel" id="panel-next" aria-labelledby="setup-next" hidden>
+      <p id="next">Add the stylesheet and theme helper to your root layout. <code>ThemeScript</code> restores the saved theme before hydration and accepts a CSP <code>nonce</code>.</p>
+      <Code code={next} lang="jsx" theme={ddTheme} wrap />
+      <Code code={nextPage} lang="jsx" theme={ddTheme} wrap />
+      <p><a class="dd-btn dd-btn--secondary" href={starterUrl('next')}>Download Next.js starter</a></p>
+    </div>
+    <div class="dd-tabs__panel" role="tabpanel" id="panel-html" aria-labelledby="setup-html" hidden>
+      <p>The HTML starter includes everything shown below. Unzip it and open <code>index.html</code> to begin.</p>
+      <Code code={html} lang="html" theme={ddTheme} wrap />
+      <p>For a bundled client-side app, import <code>dawn-and-dusk/styles.css</code> and, for interactions, <code>dawn-and-dusk/auto</code>. The automatic runtime adds the icon sprite and initializes once.</p>
+      <p><a class="dd-btn dd-btn--secondary" href={starterUrl('html')}>Download HTML starter</a></p>
+    </div>
+  </div>
+
+  <h2 id="starter">Start from a working project</h2>
+  <p>Each starter has a working form or action, icons, and a theme switch.</p>
+  <div class="doc-cards">
+    <a class="doc-card" href={starterUrl('html')}><b>HTML</b><span>Unzip and open index.html. No install or build step.</span></a>
+    <a class="doc-card" href={starterUrl('react')}><b>React</b><span>Unzip, npm install, npm run dev.</span></a>
+    <a class="doc-card" href={starterUrl('next')}><b>Next.js</b><span>Unzip, npm install, npm run dev.</span></a>
+  </div>
+  <p>The React and Next.js starters use Node.js 22.12+ or 24+. Fonts load from Google Fonts when online.</p>
+
+  <h2 id="included">What is included</h2>
+  <p>All 59 components are available as HTML/CSS. The React entry provides <code>Button</code>, <code>Input</code>, <code>Card</code>, <code>Badge</code>, <code>Icon</code>, <code>ThemeToggle</code>, and <code>setTheme</code>.</p>
+  <p>For example, <code>&lt;Icon name="plus" /&gt;</code> draws an icon inline. Give a standalone icon a <code>label</code>; icons next to text are decorative by default. Button variants are primary, secondary, ghost, ink, danger and link, with sm, md and lg sizes.</p>
+  <p>Selects, date pickers and data tables currently use the <a href={`${base}/components/select`}>HTML/CSS APIs</a>. The optional <code>auto</code> runtime is for HTML-owned markup; React components manage their own state and do not load it.</p>
+
+  <h2 id="themes">Themes and fonts</h2>
+  <p>With no saved choice, the theme follows your system. Set <code>data-theme="dawn"</code> or <code>"dusk"</code> on <code>&lt;html&gt;</code> to choose explicitly. In React, <code>setTheme('system')</code> clears a saved choice.</p>
+  <p>Use <code>styles-no-fonts.css</code> instead of <code>styles.css</code> for self-hosted fonts or a restricted Content Security Policy. Use <code>tokens.css</code> for tokens alone. The full stylesheet includes a page reset and a 17px root font size.</p>
+
+  <h2 id="next-step">Build your first page</h2>
+  <p><a class="dd-btn dd-btn--primary" href={`${base}/components/button`}>Browse components</a></p>
+  <p>Working with an agent? The <a href={`${base}/skill`}>optional project skill</a> teaches it the system’s rules. You don’t need the skill to use any of the components.</p>
+</Docs>
+<script>
+  // A shared URL can open the matching setup directly, including the Next.js link from the README.
+  const showSetup = () => {
+    const hash = location.hash;
+    const key = hash === '#next' || hash === '#setup-next' ? 'next' : hash === '#setup-html' ? 'html' : hash === '#setup-react' ? 'react' : null;
+    if (key) document.getElementById(`setup-${key}`)?.click();
+  };
+  addEventListener('hashchange', showSetup);
+  showSetup();
+</script>

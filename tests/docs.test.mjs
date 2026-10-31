@@ -203,7 +203,7 @@ test('side nav: the rail marks the current section, its pane lists the pages, an
   assert.deepEqual(await shownPane(page), ['foundations']);
   assert.deepEqual(await railCurrent(page), ['foundations']);
   assert.equal(await page.get(() => location.href), url, 'no navigation');
-  assert.deepEqual(await titles(page), ['Introduction', 'Colors', 'Typography', 'Spacing & layout', 'Radius & depth', 'Motion', 'Icons', 'Brand']);
+  assert.deepEqual(await titles(page), ['Introduction', 'Getting started', 'Colors', 'Typography', 'Spacing & layout', 'Radius & depth', 'Motion', 'Icons', 'Brand']);
   await page.click(`${NAV} [data-dd-nav-section="foundations"]`);
   assert.deepEqual(await shownPane(page), ['foundations']);
   // Following a link lands on its page, with its section current.

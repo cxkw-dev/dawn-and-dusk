@@ -1,27 +1,35 @@
 {
   "name": "dawn-and-dusk",
-  "version": "0.1.0",
-  "description": "dawn & dusk — the cxkw.dev design system: tokens, components and an agent skill, in light (dawn) and dark (dusk).",
+  "version": "0.2.0",
+  "description": "dawn & dusk \u2014 the cxkw.dev design system: tokens, components and an agent skill, in light (dawn) and dark (dusk).",
   "homepage": "https://cxkw-dev.github.io/dawn-and-dusk",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cxkw-dev/dawn-and-dusk.git"
   },
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "private": true,
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "node scripts/build-ds.mjs && astro dev",
-    "build": "node scripts/build-ds.mjs && astro build && node scripts/build-skill-examples.mjs",
+    "build": "node scripts/build-ds.mjs && node scripts/build-package.mjs && astro build && node scripts/build-skill-examples.mjs",
     "build:ds": "node scripts/build-ds.mjs",
     "preview": "astro preview",
     "test": "node tests/run.mjs",
-    "skill:install": "node scripts/install-skill.mjs"
+    "skill:install": "node scripts/install-skill.mjs",
+    "build:package": "node scripts/build-ds.mjs && node scripts/build-package.mjs",
+    "test:package": "node tests/package-smoke.mjs"
   },
   "devDependencies": {
-    "astro": "^6.1.3"
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "astro": "^6.1.3",
+    "esbuild": "^0.28.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^7.0.2"
   }
 }
