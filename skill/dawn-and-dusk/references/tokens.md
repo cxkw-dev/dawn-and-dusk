@@ -1,4 +1,4 @@
-# dawn & dusk tokens (v0.3.0)
+# dawn & dusk tokens (v0.3.1)
 
 Generated from `ds/tokens.css`, `ds/base.css` and the icon sprite by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; never hard-code these values.
 

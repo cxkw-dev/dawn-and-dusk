@@ -27,7 +27,7 @@ markup is what makes the result look and behave right; invented structure is whe
 is not on the npm registry, so `npm install dawn-and-dusk` fails; use this exact command:
 
 ```sh
-npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.0/dawn-and-dusk-0.3.0.tgz
+npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.1/dawn-and-dusk-0.3.1.tgz
 ```
 
 Then follow `references/frameworks.md` for the imports. If `package.json` already lists `dawn-and-dusk`, don't install
