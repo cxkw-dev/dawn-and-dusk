@@ -1,4 +1,4 @@
-# dawn & dusk tokens (v0.2.0)
+# dawn & dusk tokens (v0.3.0)
 
 Generated from `ds/tokens.css`, `ds/base.css` and the icon sprite by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; never hard-code these values.
 
@@ -129,6 +129,81 @@ lowercase, tight) for page and section titles; `.dd-h4/.dd-h5` are UI titles in 
 | `.dd-scroll` | Thin tonal scrollbar that appears on hover/focus. |
 | `.dd-icon` | Sizes an inline SVG icon to the text (1.15em). |
 | `.dd-visually-hidden` | Hidden on screen, read by screen readers. |
+
+## Tailwind CSS v4 utilities (dawn-and-dusk/tailwind.css)
+
+In a Tailwind app these theme keys replace Tailwind's palette, fonts, radii and shadows, so utilities read the tokens and
+follow dawn / dusk on their own. Spacing is the 5px unit: `p-4` = `--dd-space-4` = 20px. Variants: `dusk:` (alias `dark:`)
+and `dawn:`. Prefer token utilities to `dusk:` overrides. See `references/frameworks.md`.
+
+| Tailwind theme key | token | e.g. |
+|---|---|---|
+| `--spacing` | `var(--dd-u)` | `p-4` `gap-2` `w-64` |
+| `--font-sans` | `var(--dd-font-body)` | `font-sans` |
+| `--font-body` | `var(--dd-font-body)` | `font-body` |
+| `--font-display` | `var(--dd-font-display)` | `font-display` |
+| `--font-mono` | `var(--dd-font-mono)` | `font-mono` |
+| `--text-xs` | `var(--dd-fs-xs)` | `text-xs` |
+| `--text-sm` | `var(--dd-fs-sm)` | `text-sm` |
+| `--text-base` | `var(--dd-fs-base)` | `text-base` |
+| `--text-lg` | `var(--dd-fs-lg)` | `text-lg` |
+| `--text-xl` | `var(--dd-fs-xl)` | `text-xl` |
+| `--text-2xl` | `var(--dd-fs-2xl)` | `text-2xl` |
+| `--text-3xl` | `var(--dd-fs-3xl)` | `text-3xl` |
+| `--text-4xl` | `var(--dd-fs-4xl)` | `text-4xl` |
+| `--leading-normal` | `var(--dd-lh)` | `leading-normal` |
+| `--leading-tight` | `var(--dd-lh-tight)` | `leading-tight` |
+| `--leading-heading` | `var(--dd-h-leading)` | `leading-heading` |
+| `--tracking-heading` | `var(--dd-h-tracking)` | `tracking-heading` |
+| `--radius-ctl` | `var(--dd-r-ctl)` | `rounded-ctl` |
+| `--radius-box` | `var(--dd-r-box)` | `rounded-box` |
+| `--radius-lg` | `var(--dd-r-lg)` | `rounded-lg` |
+| `--radius-pill` | `var(--dd-r-pill)` | `rounded-pill` |
+| `--shadow-float` | `var(--dd-shadow-float)` | `shadow-float` |
+| `--ease-gentle` | `var(--dd-ease)` | `ease-gentle` |
+| `--color-bg` | `var(--dd-bg)` | `bg-bg` `text-bg` `border-bg` |
+| `--color-surface` | `var(--dd-surface)` | `bg-surface` `text-surface` `border-surface` |
+| `--color-surface-2` | `var(--dd-surface-2)` | `bg-surface-2` `text-surface-2` `border-surface-2` |
+| `--color-surface-3` | `var(--dd-surface-3)` | `bg-surface-3` `text-surface-3` `border-surface-3` |
+| `--color-border` | `var(--dd-border)` | `bg-border` `text-border` `border-border` |
+| `--color-border-strong` | `var(--dd-border-strong)` | `bg-border-strong` `text-border-strong` `border-border-strong` |
+| `--color-text` | `var(--dd-text)` | `bg-text` `text-text` `border-text` |
+| `--color-muted` | `var(--dd-muted)` | `bg-muted` `text-muted` `border-muted` |
+| `--color-faint` | `var(--dd-faint)` | `bg-faint` `text-faint` `border-faint` |
+| `--color-quiet` | `var(--dd-quiet)` | `bg-quiet` `text-quiet` `border-quiet` |
+| `--color-wash` | `var(--dd-wash)` | `bg-wash` `text-wash` `border-wash` |
+| `--color-wash-strong` | `var(--dd-wash-strong)` | `bg-wash-strong` `text-wash-strong` `border-wash-strong` |
+| `--color-accent` | `var(--dd-accent)` | `bg-accent` `text-accent` `border-accent` |
+| `--color-accent-hover` | `var(--dd-accent-hover)` | `bg-accent-hover` `text-accent-hover` `border-accent-hover` |
+| `--color-accent-soft` | `var(--dd-accent-soft)` | `bg-accent-soft` `text-accent-soft` `border-accent-soft` |
+| `--color-on-accent` | `var(--dd-on-accent)` | `bg-on-accent` `text-on-accent` `border-on-accent` |
+| `--color-primary` | `var(--dd-primary)` | `bg-primary` `text-primary` `border-primary` |
+| `--color-primary-hover` | `var(--dd-primary-hover)` | `bg-primary-hover` `text-primary-hover` `border-primary-hover` |
+| `--color-primary-soft` | `var(--dd-primary-soft)` | `bg-primary-soft` `text-primary-soft` `border-primary-soft` |
+| `--color-on-primary` | `var(--dd-on-primary)` | `bg-on-primary` `text-on-primary` `border-on-primary` |
+| `--color-ok` | `var(--dd-ok)` | `bg-ok` `text-ok` `border-ok` |
+| `--color-warn` | `var(--dd-warn)` | `bg-warn` `text-warn` `border-warn` |
+| `--color-bad` | `var(--dd-bad)` | `bg-bad` `text-bad` `border-bad` |
+| `--color-info` | `var(--dd-info)` | `bg-info` `text-info` `border-info` |
+| `--color-ok-soft` | `var(--dd-ok-soft)` | `bg-ok-soft` `text-ok-soft` `border-ok-soft` |
+| `--color-warn-soft` | `var(--dd-warn-soft)` | `bg-warn-soft` `text-warn-soft` `border-warn-soft` |
+| `--color-bad-soft` | `var(--dd-bad-soft)` | `bg-bad-soft` `text-bad-soft` `border-bad-soft` |
+| `--color-info-soft` | `var(--dd-info-soft)` | `bg-info-soft` `text-info-soft` `border-info-soft` |
+| `--color-tone-1` | `var(--dd-tone-1)` | `bg-tone-1` `text-tone-1` `border-tone-1` |
+| `--color-tone-2` | `var(--dd-tone-2)` | `bg-tone-2` `text-tone-2` `border-tone-2` |
+| `--color-tone-3` | `var(--dd-tone-3)` | `bg-tone-3` `text-tone-3` `border-tone-3` |
+| `--color-set-1` | `var(--dd-set-1)` | `bg-set-1` `text-set-1` `border-set-1` |
+| `--color-set-2` | `var(--dd-set-2)` | `bg-set-2` `text-set-2` `border-set-2` |
+| `--color-set-3` | `var(--dd-set-3)` | `bg-set-3` `text-set-3` `border-set-3` |
+| `--color-set-4` | `var(--dd-set-4)` | `bg-set-4` `text-set-4` `border-set-4` |
+| `--color-set-5` | `var(--dd-set-5)` | `bg-set-5` `text-set-5` `border-set-5` |
+| `--color-set-6` | `var(--dd-set-6)` | `bg-set-6` `text-set-6` `border-set-6` |
+| `--color-set-7` | `var(--dd-set-7)` | `bg-set-7` `text-set-7` `border-set-7` |
+| `--color-set-8` | `var(--dd-set-8)` | `bg-set-8` `text-set-8` `border-set-8` |
+| `--color-ring` | `var(--dd-ring)` | `bg-ring` `text-ring` `border-ring` |
+| `--color-overlay` | `var(--dd-overlay)` | `bg-overlay` `text-overlay` `border-overlay` |
+| `--color-float` | `var(--dd-float-bg)` | `bg-float` `text-float` `border-float` |
+| `--color-float-hover` | `var(--dd-float-hover)` | `bg-float-hover` `text-float-hover` `border-float-hover` |
 
 ## Icons
 

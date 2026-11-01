@@ -44,6 +44,15 @@ const html = `<head>
   <button class="dd-btn dd-btn--primary">Create project</button>
   <button class="dd-btn dd-btn--ghost" data-dd-theme-toggle>Switch theme</button>
 </body>`;
+const tailwindCss = `/* your main stylesheet */
+@import "dawn-and-dusk/fonts.css"; /* optional: Google Fonts, must come first */
+@import "tailwindcss";
+@import "dawn-and-dusk/tailwind.css";`;
+const tailwindHtml = `<div class="bg-surface rounded-box p-6">
+  <h2 class="dd-h3">overview</h2>
+  <p class="text-muted text-sm">Utilities read the tokens.</p>
+  <button class="dd-btn dd-btn--primary w-full">Continue</button>
+</div>`;
 ---
 <Docs title="Getting started" group="Overview" lead="Use dawn & dusk in your own app, or begin with a working page. No repository clone or npm account required.">
   <h2 id="install">Install in an existing app</h2>
@@ -57,6 +66,7 @@ const html = `<head>
       <button class="dd-tabs__tab" type="button" role="tab" id="setup-react" aria-controls="panel-react" aria-selected="true">React</button>
       <button class="dd-tabs__tab" type="button" role="tab" id="setup-next" aria-controls="panel-next" aria-selected="false">Next.js</button>
       <button class="dd-tabs__tab" type="button" role="tab" id="setup-html" aria-controls="panel-html" aria-selected="false">HTML</button>
+      <button class="dd-tabs__tab" type="button" role="tab" id="setup-tailwind" aria-controls="panel-tailwind" aria-selected="false">Tailwind</button>
     </div>
     <div class="dd-tabs__panel" role="tabpanel" id="panel-react" aria-labelledby="setup-react">
       <p>Import the stylesheet once, then use the components. React 18 and 19 are supported; no provider or icon setup is required.</p>
@@ -75,6 +85,17 @@ const html = `<head>
       <Code code={html} lang="html" theme={ddTheme} wrap />
       <p>For a bundled client-side app, import <code>dawn-and-dusk/styles.css</code> and, for interactions, <code>dawn-and-dusk/auto</code>. The automatic runtime adds the icon sprite and initializes once.</p>
       <p><a class="dd-btn dd-btn--secondary" href={starterUrl('html')}>Download HTML starter</a></p>
+    </div>
+    <div class="dd-tabs__panel" role="tabpanel" id="panel-tailwind" aria-labelledby="setup-tailwind" hidden>
+      <p id="tailwind">With Tailwind CSS v4, import <code>tailwind.css</code> after Tailwind, instead of <code>styles.css</code>. Works with the React components and the <code>auto</code> runtime too.</p>
+      <Code code={tailwindCss} lang="css" theme={ddTheme} wrap />
+      <Code code={tailwindHtml} lang="html" theme={ddTheme} wrap />
+      <ul>
+        <li>Utilities read the tokens and follow dawn and dusk: <code>bg-surface</code>, <code>text-muted</code>, <code>border-border</code>, <code>bg-primary/20</code>, <code>rounded-box</code>, <code>shadow-float</code>, <code>font-display</code>. Tailwind’s own palette, radii and shadows are removed, so every value stays on-system.</li>
+        <li>Spacing uses the system’s 5px unit: <code>p-4</code> is 20px, the same as <code>--dd-space-4</code>.</li>
+        <li><code>dd-</code> components sit in Tailwind’s components layer, so a utility on the same element wins: <code>dd-btn w-full</code>.</li>
+        <li><code>dusk:</code> and <code>dawn:</code> follow <code>data-theme</code>, or the system setting when none is set. <code>dark:</code> is an alias of <code>dusk:</code>.</li>
+      </ul>
     </div>
   </div>
 
@@ -104,7 +125,7 @@ const html = `<head>
   // A shared URL can open the matching setup directly, including the Next.js link from the README.
   const showSetup = () => {
     const hash = location.hash;
-    const key = hash === '#next' || hash === '#setup-next' ? 'next' : hash === '#setup-html' ? 'html' : hash === '#setup-react' ? 'react' : null;
+    const key = hash === '#next' || hash === '#setup-next' ? 'next' : hash === '#tailwind' || hash === '#setup-tailwind' ? 'tailwind' : hash === '#setup-html' ? 'html' : hash === '#setup-react' ? 'react' : null;
     if (key) document.getElementById(`setup-${key}`)?.click();
   };
   addEventListener('hashchange', showSetup);

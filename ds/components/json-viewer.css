@@ -74,7 +74,7 @@
 }
 .dd-json-viewer__toggle:hover { color: var(--dd-text); background: var(--dd-wash-strong); }
 .dd-json-viewer__toggle::before {
-  content: ''; width: 5px; height: 5px; margin-left: -2px; border: solid currentColor; border-width: 0 1.5px 1.5px 0;
+  content: ''; box-sizing: content-box; width: 5px; height: 5px; margin-left: -2px; border: solid currentColor; border-width: 0 1.5px 1.5px 0;
   transform: rotate(-45deg); transition: transform var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-json-viewer__node[aria-expanded='true'] > .dd-json-viewer__row > .dd-json-viewer__toggle::before { transform: rotate(45deg); margin: -3px 0 0; }

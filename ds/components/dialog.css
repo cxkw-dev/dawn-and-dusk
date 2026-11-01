@@ -60,7 +60,7 @@
 .dd-dialog__body > :first-child { margin-top: 0; }
 .dd-dialog__body > :last-child { margin-bottom: 0; }
 .dd-dialog__body > :is(p, ul, ol) { margin: 0 0 0.75em; }
-.dd-dialog__body > :is(ul, ol) { padding-left: 1.15em; }
+.dd-dialog__body > :is(ul, ol) { list-style: revert; padding-left: 1.15em; }
 .dd-dialog__body > :is(ul, ol) > li + li { margin-top: 0.3em; }
 .dd-dialog__body > h3 { margin: 1.25em 0 0.35em; font-size: var(--dd-fs-sm); font-weight: 650; line-height: var(--dd-lh-tight); color: var(--dd-text); }
 .dd-dialog__body strong { font-weight: 600; color: var(--dd-text); }

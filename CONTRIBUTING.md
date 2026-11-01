@@ -19,6 +19,8 @@ site/                      the docs site (Astro): layouts, pages, docs-only comp
 scripts/
   build-ds.mjs             builds release/, the entry points and the skill's assets and references
   build-skill-examples.mjs writes the skill's per-component markup from the built docs
+  build-package.mjs        builds the consumer package (dist-package/) and the starter ZIPs
+  tailwind-entry.mjs       generates the package's Tailwind CSS v4 entry (tailwind.css) from ds/tokens.css
   fetch-icons.mjs          regenerates the icon sprite from Iconify
   install-skill.mjs        installs the skill into one project
 tests/                     behaviour tests in headless Chrome, one file per component (runner and harness in lib/)
@@ -62,7 +64,7 @@ The tests look for Chrome at its macOS path; set `CHROME=/path/to/chrome` elsewh
 `site/public/downloads/`. Source for the React entry and theme helper lives in `library/`; source starters live in
 `starters/`. The repository manifest stays private so maintainer dependencies can never be published accidentally.
 
-Run `npm run test:package` after building to install the packed artifact into fresh HTML, React and Next.js consumers.
+Run `npm run test:package` after building to install the packed artifact into fresh HTML, React, Next.js and Tailwind CSS v4 consumers.
 It checks production builds, server rendering, hydration, icons, theme persistence and controlled form behavior.
 The test fixtures are printed and retained under the OS temporary directory for inspection.
 

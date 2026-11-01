@@ -35,8 +35,9 @@
   flex: none; padding: 1px calc(var(--dd-u) * 1.25); border-radius: 4px; background: var(--dd-wash);
   font-family: var(--dd-font-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dd-muted);
 }
+/* Copy, action and field buttons spell out the browser's 1px 6px padding, which sizes their icons, so CSS resets can't grow them. */
 .dd-code__copy {
-  appearance: none; flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px; margin-left: auto;
+  appearance: none; flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px; margin-left: auto; padding: 1px 6px;
   border: 0; border-radius: var(--dd-r-ctl); background: transparent; color: var(--dd-muted); cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
@@ -123,7 +124,7 @@
 }
 .dd-code-field .dd-code-field__value[data-dd-code-secret]:not(.is-revealed) { letter-spacing: 0.04em; color: var(--dd-muted); }
 .dd-code-field__btn {
-  appearance: none; flex: none; display: inline-grid; place-items: center; width: 30px; height: 30px;
+  appearance: none; flex: none; display: inline-grid; place-items: center; width: 30px; height: 30px; padding: 1px 6px;
   border: 0; border-radius: calc(var(--dd-r-ctl) - 1px); background: transparent; color: var(--dd-muted); cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }
@@ -219,7 +220,7 @@
 .dd-code__actions { display: inline-flex; align-items: center; gap: 2px; }
 .dd-code__actions > .dd-code__copy { margin-left: 0; }
 .dd-code__action {
-  appearance: none; flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px;
+  appearance: none; flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 1px 6px;
   border: 0; border-radius: var(--dd-r-ctl); background: transparent; color: var(--dd-muted); cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease);
 }

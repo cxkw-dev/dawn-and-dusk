@@ -18,7 +18,7 @@ The manual asset setup below is available when a package does not fit your proje
 - [Markup in JSX](#markup-in-jsx)
 - [Which behaviours to keep, which to own](#which-behaviours-to-keep-which-to-own)
 - [Theme without a flash (SSR)](#theme-without-a-flash-ssr)
-- [Next to Tailwind (or during a migration off it)](#next-to-tailwind-or-during-a-migration-off-it)
+- [With Tailwind CSS](#with-tailwind-css)
 
 ## Load it once
 
@@ -106,20 +106,48 @@ paints, so a saved choice never flashes the other theme:
 In Next.js add `suppressHydrationWarning` to `<html>` (the attribute is set before hydration). A toggle is any element with
 `data-dd-theme-toggle`; it persists the choice to `localStorage['dd-theme']`.
 
-## Next to Tailwind (or during a migration off it)
+## With Tailwind CSS
+
+### Tailwind v4: use `dawn-and-dusk/tailwind.css`
+
+In a Tailwind v4 app, load the Tailwind entry **instead of** `styles.css`, in the main stylesheet:
+
+```css
+@import "dawn-and-dusk/fonts.css"; /* optional: Google Fonts; an @import url() must stay first */
+@import "tailwindcss";
+@import "dawn-and-dusk/tailwind.css";
+```
+
+- **Utilities are tokens.** Tailwind's palette, radii and shadows are cleared and replaced by the tokens, so `bg-surface`,
+  `text-muted`, `border-border`, `bg-primary/20`, `rounded-box`, `shadow-float`, `font-display`, `text-sm` all read
+  `var(--dd-*)` and switch with dawn / dusk on their own. `bg-blue-500` or `rounded-md` simply don't exist. The full key →
+  token table is in `references/tokens.md` ("Tailwind CSS v4 utilities"). Token utilities satisfy rule 1 (tokens only).
+- **Spacing is the 5px unit:** `p-4` = `--dd-space-4` = 20px, `gap-2` = 10px. Use the same steps as the space tokens.
+- **Components are still `dd-` classes.** Use them for every component, and utilities for layout glue (`flex`, `grid`,
+  `gap-*`, `w-full`, `max-w-*`) and small one-offs. `dd-` styles live in Tailwind's components layer, so a utility on the
+  same element wins (`class="dd-btn dd-btn--primary w-full"`). Don't rebuild a component out of utilities.
+- **Themes:** `dusk:` and `dawn:` follow `data-theme` (or the OS when none is set); `dark:` is an alias of `dusk:`. Prefer
+  token utilities, which switch by themselves; reach for `dusk:` only for a real per-theme difference.
+- **Preflight is fine.** Components don't depend on browser defaults. Plain elements behave as in any Tailwind app (no
+  heading sizes, paragraph margins or list bullets), so use the base classes: `dd-h1`…`dd-h5`, `dd-text`, `dd-lead`,
+  `dd-stack` / `dd-row` for rhythm.
+
+### Tailwind v3, or `styles.css` loaded next to Tailwind
 
 - **Preflight vs the system's base.** The base styles use `:where()` (zero specificity) so apps can override them.
   - **Tailwind v3** outputs preflight as ordinary CSS, so it beats the base (fonts, headings, buttons) whatever the load
     order. Turn it off while both are loaded: `corePlugins: { preflight: false }`.
-  - **Tailwind v4** puts preflight in a native `@layer base`. Unlayered CSS like `dawn-and-dusk.css` beats any layer, so
-    the system's base already wins. The same rule means Tailwind utilities can't override a `dd-` component, which is
-    what you want. If you'd rather drop preflight entirely, import `tailwindcss/theme` and `tailwindcss/utilities`.
+  - **Tailwind v4** puts preflight in a native `@layer base`, and unlayered `styles.css` beats every layer — but so it
+    beats every utility too. Prefer `tailwind.css` above.
 - **Don't mix on one element.** A `dd-` component class and a Tailwind colour/spacing utility on the same element fight by
   load order. Use the system's classes for components; keep utilities for layout glue only, if at all.
-- **Dark mode.** Tailwind's `dark:` should follow the system's attribute, not a `.dark` class:
-  v3: `darkMode: ['selector', '[data-theme="dusk"]']`; v4: `@custom-variant dark (&:where([data-theme=dusk], [data-theme=dusk] *));`.
-  With no saved choice the system follows the OS without setting the attribute, so Tailwind wouldn't know. While both
-  live side by side, have the head script always set it:
+- **Dark mode.** v3: `darkMode: ['selector', '[data-theme="dusk"]']`. With no saved choice the system follows the OS
+  without setting the attribute, so Tailwind wouldn't know. While both live side by side, have the head script always set it:
   `var t=localStorage.getItem('dd-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dusk':'dawn');document.documentElement.dataset.theme=t`.
 - **Colours and spacing.** Map any remaining utilities to tokens (`bg-[var(--dd-surface)]`, `p-[calc(var(--dd-u)*4)]`)
   rather than Tailwind's palette, so dawn / dusk keeps working.
+
+### Migrating off Tailwind
+
+When the user is moving a screen **onto** dawn & dusk (not keeping Tailwind), replace the utility classes with the
+documented `dd-` components and base classes, and keep the props, state and logic unchanged.

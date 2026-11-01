@@ -1,4 +1,4 @@
-# dawn & dusk components (v0.2.0)
+# dawn & dusk components (v0.3.0)
 
 Generated from `ds/components/*.css`: what each component is, its classes and its `data-dd-*` hooks. Every component is plain
 HTML + these classes; behaviours are opt-in `data-dd-*` attributes handled by `dawn-and-dusk.js`.

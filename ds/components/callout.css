@@ -24,7 +24,7 @@
 
 /* Prose inside: everything after the title lines up with the title text, not the icon. */
 .dd-callout > :not(.dd-callout__title, .dd-callout__dismiss) { margin: 0 0 0 calc(1.2em + var(--dd-u) * 2); text-wrap: pretty; }
-.dd-callout > :is(ul, ol) { padding-left: 1.1em; }
+.dd-callout > :is(ul, ol) { list-style: revert; padding-left: 1.1em; }
 .dd-callout :where(li + li) { margin-top: 2px; }
 .dd-callout :where(a:not([class])) { color: var(--dd-text); text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: .25em; }
 .dd-callout :where(a:not([class]):hover) { text-decoration-style: solid; }

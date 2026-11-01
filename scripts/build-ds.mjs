@@ -10,6 +10,7 @@
 import { readdir, readFile, writeFile, mkdir, copyFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tailwindTheme } from './tailwind-entry.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const ds = join(root, 'ds');
@@ -84,6 +85,16 @@ await writeFile(join(skillRef, 'tokens.md'), [
     ['.dd-icon', 'Sizes an inline SVG icon to the text (1.15em).'],
     ['.dd-visually-hidden', 'Hidden on screen, read by screen readers.'],
   ].map(([c, d]) => `| ${c.split(' ').map((x) => (x.startsWith('.') ? `\`${x}\`` : x)).join(' ')} | ${d} |`), '',
+  '## Tailwind CSS v4 utilities (dawn-and-dusk/tailwind.css)', '',
+  'In a Tailwind app these theme keys replace Tailwind\'s palette, fonts, radii and shadows, so utilities read the tokens and',
+  'follow dawn / dusk on their own. Spacing is the 5px unit: `p-4` = `--dd-space-4` = 20px. Variants: `dusk:` (alias `dark:`)',
+  'and `dawn:`. Prefer token utilities to `dusk:` overrides. See `references/frameworks.md`.', '',
+  '| Tailwind theme key | token | e.g. |', '|---|---|---|',
+  ...tailwindTheme(tokensSrc).filter(([k]) => !k.includes('--line-height') && !k.startsWith('--default')).map(([k, v]) => {
+    const [, ns, name] = k.match(/^--([a-z]+)-?(.*)$/);
+    const eg = { color: `bg-${name} text-${name} border-${name}`, font: `font-${name}`, text: `text-${name}`, leading: `leading-${name}`, tracking: `tracking-${name}`, radius: `rounded-${name}`, shadow: `shadow-${name}`, ease: `ease-${name}`, spacing: 'p-4 gap-2 w-64' }[ns] ?? '';
+    return `| \`${k}\` | \`${v}\` | ${eg.split(' ').map((x) => `\`${x}\``).join(' ')} |`;
+  }), '',
   '## Icons', '',
   'Solar Bold Duotone, as an SVG sprite (`assets/icons.svg`): inline the sprite once after `<body>`, then',
   '`<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-NAME"/></svg>`. These are ALL the names — pick the closest; never invent one:', '',

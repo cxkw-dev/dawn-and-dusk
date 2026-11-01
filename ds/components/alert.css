@@ -32,7 +32,7 @@
 .dd-alert__body { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
 .dd-alert__title { margin: 0; font-weight: 600; color: var(--dd-text); }
 .dd-alert__text { margin: 0; color: color-mix(in oklab, var(--dd-text) var(--dd-alert-desc), var(--_c)); text-wrap: pretty; }
-.dd-alert__body :where(ul, ol) { margin: calc(var(--dd-u) * 1) 0 0; padding-left: 1.15em; color: color-mix(in oklab, var(--dd-text) var(--dd-alert-desc), var(--_c)); }
+.dd-alert__body :where(ul, ol) { list-style: revert; margin: calc(var(--dd-u) * 1) 0 0; padding-left: 1.15em; color: color-mix(in oklab, var(--dd-text) var(--dd-alert-desc), var(--_c)); }
 .dd-alert__body :where(code) { font-family: var(--dd-font-mono); font-size: .92em; }
 
 /* Actions: dotted text links (or small buttons) on the right, vertically centred. */

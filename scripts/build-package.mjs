@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { build, transform } from 'esbuild';
 import { themeScript } from '../library/theme-source.mjs';
+import { tailwindEntry } from './tailwind-entry.mjs';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const at = (...parts) => join(root, ...parts);
 const pkg = JSON.parse(await readFile(at('package.json'), 'utf8'));
@@ -21,8 +22,20 @@ if (!Object.keys(icons).length) throw new Error('No icons extracted');
 await writeFile(at('library/generated/icons.ts'), `// Generated from ds/icons/icons.svg.\nexport type IconName = ${Object.keys(icons).map(JSON.stringify).join(' | ')};\nexport const icons: Record<IconName, { viewBox: string; body: string }> = ${JSON.stringify(icons)};\n`);
 const css = await readFile(at('release/dawn-and-dusk.css'), 'utf8');
 await writeFile(join(out, 'styles.css'), (await transform(css, { loader: 'css', minify: true })).code);
-await writeFile(join(out, 'styles-no-fonts.css'), (await transform(css.replace(/@import\s+url\([^;]+;/g, ''), { loader: 'css', minify: true })).code);
+// The font URL contains semicolons, so match up to the closing parenthesis, not the first ';'.
+const fontImport = /@import\s+url\([^)]*\)\s*;/g;
+const fonts = css.match(fontImport)?.[0];
+if (!fonts) throw new Error('No font @import found in the stylesheet');
+await writeFile(join(out, 'styles-no-fonts.css'), (await transform(css.replace(fontImport, ''), { loader: 'css', minify: true })).code);
 await copyFile(at('release/tokens.css'), join(out, 'tokens.css'));
+// Tailwind CSS v4: tailwind.css layers tokens.css and core.css (base + components, no fonts or tokens) and maps the tokens
+// to Tailwind's theme. fonts.css is separate because an @import url() must stay first in the app's compiled CSS.
+const dsFile = (p) => readFile(at('ds', p), 'utf8');
+const componentFiles = (await readdir(at('ds/components'))).filter((f) => f.endsWith('.css')).sort();
+const core = [await dsFile('base.css'), ...(await Promise.all(componentFiles.map((f) => dsFile(`components/${f}`))))].join('\n');
+await writeFile(join(out, 'core.css'), (await transform(core, { loader: 'css', minify: true })).code);
+await writeFile(join(out, 'fonts.css'), `/* dawn & dusk webfonts. In a Tailwind app, import this before "tailwindcss". */\n${fonts}\n`);
+await writeFile(join(out, 'tailwind.css'), tailwindEntry(await dsFile('tokens.css'), { version }));
 await copyFile(at('release/icons.svg'), join(out, 'icons.svg'));
 const runtime = await readFile(at('release/dawn-and-dusk.js'), 'utf8');
 const auto = `(() => {
@@ -54,6 +67,7 @@ await writeFile(join(out, 'package.json'), JSON.stringify({
   files: ['*.css', '*.js', '*.mjs', '*.d.ts', '*.d.mts', 'generated/*.d.ts', 'icons.svg', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md'],
   exports: {
     './styles.css': './styles.css', './styles-no-fonts.css': './styles-no-fonts.css', './tokens.css': './tokens.css',
+    './tailwind.css': './tailwind.css', './fonts.css': './fonts.css', './core.css': './core.css',
     './icons.svg': './icons.svg', './auto': { types: './auto.d.ts', default: './auto.js' }, './auto.js': './auto.js',
     './react': { types: './react.d.ts', default: './react.js' },
     './theme': { types: './theme.d.ts', default: './theme.js.mjs' }, './theme.js': './theme.js', './package.json': './package.json'

@@ -6,14 +6,14 @@
 
 A warm, quiet design system in two moods. **59 HTML/CSS components**, dawn and dusk themes, and a small typed React layer.
 
-[Getting started](https://cxkw-dev.github.io/dawn-and-dusk/getting-started/) · [Components](https://cxkw-dev.github.io/dawn-and-dusk/components/button/) · [Download an HTML starter](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.2.0/dawn-and-dusk-html-0.2.0.zip)
+[Getting started](https://cxkw-dev.github.io/dawn-and-dusk/getting-started/) · [Components](https://cxkw-dev.github.io/dawn-and-dusk/components/button/) · [Download an HTML starter](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.0/dawn-and-dusk-html-0.3.0.zip)
 
 ## Install in your app
 
 One command. No npm account or repository clone needed:
 
 ```sh
-npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.2.0/dawn-and-dusk-0.2.0.tgz
+npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.0/dawn-and-dusk-0.3.0.tgz
 ```
 
 This is a versioned npm package hosted on GitHub Releases. npm installs it as `dawn-and-dusk` and records its integrity
@@ -58,13 +58,37 @@ import 'dawn-and-dusk/auto'; // optional interactions; includes icons
 
 The CSS works on its own. Use `auto` for HTML-owned interactions; keep it out of stateful React markup.
 
+### Tailwind CSS
+
+```css
+/* your main stylesheet */
+@import "dawn-and-dusk/fonts.css"; /* optional: Google Fonts, must come first */
+@import "tailwindcss";
+@import "dawn-and-dusk/tailwind.css";
+```
+
+```html
+<div class="bg-surface rounded-box p-6">
+  <h2 class="dd-h3">overview</h2>
+  <p class="text-muted text-sm">Utilities read the tokens.</p>
+  <button class="dd-btn dd-btn--primary w-full">Continue</button>
+</div>
+```
+
+- Utilities read the tokens and follow dawn and dusk: `bg-surface`, `text-muted`, `border-border`, `bg-primary/20`,
+  `rounded-box`, `shadow-float`, `font-display`. Tailwind's own palette, radii and shadows are removed.
+- Spacing uses the system's 5px unit: `p-4` is 20px, the same as `--dd-space-4`.
+- `dd-` components sit in Tailwind's components layer, so a utility on the same element wins (`dd-btn w-full`).
+- `dusk:` and `dawn:` follow `data-theme`, or the OS when none is set. `dark:` is an alias of `dusk:`.
+- Requires Tailwind CSS v4. Use `tailwind.css` instead of `styles.css`, not with it.
+
 ## Start from a working page
 
 | Starter | Start it |
 |---|---|
-| [HTML](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.2.0/dawn-and-dusk-html-0.2.0.zip) | Unzip and open `index.html`. No build tools. |
-| [React](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.2.0/dawn-and-dusk-react-0.2.0.zip) | Unzip, run `npm install`, then `npm run dev`. |
-| [Next.js](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.2.0/dawn-and-dusk-next-0.2.0.zip) | Unzip, run `npm install`, then `npm run dev`. |
+| [HTML](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.0/dawn-and-dusk-html-0.3.0.zip) | Unzip and open `index.html`. No build tools. |
+| [React](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.0/dawn-and-dusk-react-0.3.0.zip) | Unzip, run `npm install`, then `npm run dev`. |
+| [Next.js](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.0/dawn-and-dusk-next-0.3.0.zip) | Unzip, run `npm install`, then `npm run dev`. |
 
 The app starters require Node.js 22.12+ or 24+. Each includes a working form, icons and a theme switch.
 

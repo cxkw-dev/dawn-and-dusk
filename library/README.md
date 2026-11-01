@@ -5,7 +5,7 @@ A warm design system in two lights. Plain HTML, or a small set of typed React co
 Install the versioned package directly—no npm account needed:
 
 ```sh
-npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.2.0/dawn-and-dusk-0.2.0.tgz
+npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.0/dawn-and-dusk-0.3.0.tgz
 ```
 
 ## React
@@ -45,6 +45,30 @@ The automatic runtime initializes once per page, when the DOM is ready. Use it f
 React subtrees. Tables added later need `dd.dataTable.refresh(root)`; render calendar markup before initialization.
 Do not also load the legacy `dawn-and-dusk.js` bundle.
 
+## Tailwind CSS v4
+
+```css
+/* your main stylesheet */
+@import "dawn-and-dusk/fonts.css"; /* optional: Google Fonts, must come first */
+@import "tailwindcss";
+@import "dawn-and-dusk/tailwind.css";
+```
+
+```html
+<div class="bg-surface rounded-box p-6">
+  <h2 class="dd-h3">overview</h2>
+  <p class="text-muted text-sm">Utilities read the tokens.</p>
+  <button class="dd-btn dd-btn--primary w-full">Continue</button>
+</div>
+```
+
+- Utilities read the tokens and follow dawn and dusk: `bg-surface`, `text-muted`, `border-border`, `bg-primary/20`,
+  `rounded-box`, `shadow-float`, `font-display`. Tailwind's own palette, radii and shadows are removed.
+- Spacing uses the system's 5px unit: `p-4` is 20px, the same as `--dd-space-4`.
+- `dd-` components sit in Tailwind's components layer, so a utility on the same element wins (`dd-btn w-full`).
+- `dusk:` and `dawn:` follow `data-theme`, or the OS when none is set. `dark:` is an alias of `dusk:`.
+- Requires Tailwind CSS v4. Use `tailwind.css` instead of `styles.css`, not with it.
+
 ## Entries
 
 | Entry | Purpose |
@@ -52,6 +76,9 @@ Do not also load the legacy `dawn-and-dusk.js` bundle.
 | `styles.css` | All components, tokens, base styles and Google Fonts |
 | `styles-no-fonts.css` | Same styles with no external font request |
 | `tokens.css` | Design tokens alone |
+| `tailwind.css` | Tailwind CSS v4 theme, variants and layered components; use instead of `styles.css` |
+| `fonts.css` | The Google Fonts import alone, for Tailwind apps |
+| `core.css` | Base and component styles with no tokens or fonts (loaded by `tailwind.css`) |
 | `auto` / `auto.js` | Optional HTML interactions; includes the inline icon sprite |
 | `react` | Button, Input, Card, Badge, Icon, ThemeToggle and setTheme |
 | `theme` | Server-safe ThemeScript and themeScript string |

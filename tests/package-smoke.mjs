@@ -90,6 +90,49 @@ try {
   finally { await filePage.close(); }
   console.log('HTML archive: works over HTTP and directly from disk; automatic icons and idempotent behaviors pass');
 
+  // Tailwind CSS v4: tokens drive the utilities, components sit under utilities and above preflight, variants follow theme.
+  const tw = join(temp, 'tailwind'); await mkdir(tw);
+  await writeFile(join(tw, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
+  console.log('Installing Tailwind consumer…');
+  run('npm', ['install', '--no-audit', '--no-fund', tarball, 'tailwindcss@4', '@tailwindcss/cli@4'], tw);
+  await writeFile(join(tw, 'app.css'), '@import "dawn-and-dusk/fonts.css";\n@import "tailwindcss";\n@import "dawn-and-dusk/tailwind.css";\n');
+  await writeFile(join(tw, 'index.html'), `<!doctype html><html data-theme="dawn"><head><link rel="stylesheet" href="./app.out.css"></head><body>
+    <div id="surface" class="bg-surface text-muted p-4 rounded-box border">Surface</div>
+    <button id="wide" class="dd-btn dd-btn--primary w-full" type="button">Wide</button>
+    <h1 id="title" class="dd-h1">Title</h1>
+    <p id="mode" class="dark:text-ok">Mode</p>
+    <section data-theme="dusk"><p id="scoped" class="bg-surface dusk:text-bad">Scoped</p></section>
+    <div id="offsystem" class="bg-blue-500 rounded-md shadow-lg">Off-system</div>
+  </body></html>`);
+  run('npx', ['@tailwindcss/cli', '-i', 'app.css', '-o', 'app.out.css'], tw);
+  const twCss = await readFile(join(tw, 'app.out.css'), 'utf8');
+  assert.match(twCss.replace(/^\/\*[^]*?\*\/\s*/, ''), /^@import url\('https:\/\/fonts\.googleapis\.com/, 'the font import stays first');
+  assert.ok(!/\.bg-blue-500|\.rounded-md|\.shadow-lg/.test(twCss), 'Tailwind palette, radii and shadows are cleared');
+  const twPage = await open(browser, await serve(tw));
+  try {
+    const style = (sel, prop) => twPage.get((s, p) => getComputedStyle(document.querySelector(s))[p], sel, prop);
+    const setTheme = (t) => twPage.get((v) => { if (v) document.documentElement.dataset.theme = v; else delete document.documentElement.dataset.theme; }, t);
+    assert.equal(await style('#surface', 'backgroundColor'), 'rgb(232, 227, 219)', 'bg-surface reads the dawn token');
+    assert.equal(await style('#surface', 'paddingTop'), '20px', 'p-4 is the 5px unit × 4');
+    assert.equal(await style('#surface', 'borderTopColor'), 'rgb(220, 210, 195)', 'bare border uses the hairline token');
+    assert.equal(await style('#title', 'fontSize'), '41.5px', 'dd-h1 survives preflight');
+    assert.match(await style('#title', 'fontFamily'), /Outfit/);
+    assert.equal(await twPage.get(() => document.querySelector('#wide').offsetWidth === document.body.clientWidth), true, 'a utility overrides a dd- component');
+    assert.equal(await style('#scoped', 'backgroundColor'), 'rgb(36, 33, 30)', 'a scoped data-theme section switches utilities');
+    assert.equal(await style('#scoped', 'color'), 'rgb(229, 135, 112)', 'dusk: applies inside a dusk section');
+    assert.notEqual(await style('#mode', 'color'), 'rgb(160, 187, 128)', 'dark: is off in dawn');
+    await setTheme('dusk');
+    assert.equal(await style('#surface', 'backgroundColor'), 'rgb(36, 33, 30)', 'bg-surface follows dusk');
+    assert.equal(await style('#mode', 'color'), 'rgb(160, 187, 128)', 'dark: follows data-theme="dusk"');
+    await setTheme(null);
+    await twPage.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
+    assert.equal(await style('#mode', 'color'), 'rgb(160, 187, 128)', 'dark: follows the OS when no theme is set');
+    await twPage.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
+    assert.notEqual(await style('#mode', 'color'), 'rgb(160, 187, 128)');
+    assert.deepEqual(twPage.errors, []);
+  } finally { await twPage.close(); }
+  console.log('Tailwind v4: token utilities, layer order, preflight, scoped themes and dawn/dusk/dark variants pass');
+
   for (const kind of ['react', 'next']) {
     const parent = join(temp, kind); await mkdir(parent);
     run('unzip', ['-q', join(root, `site/public/downloads/dawn-and-dusk-${kind}-${pkg.version}.zip`), '-d', parent], root);

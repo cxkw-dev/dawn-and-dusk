@@ -1,7 +1,7 @@
 {
   "name": "dawn-and-dusk",
-  "version": "0.2.0",
-  "description": "dawn & dusk \u2014 the cxkw.dev design system: tokens, components and an agent skill, in light (dawn) and dark (dusk).",
+  "version": "0.3.0",
+  "description": "dawn & dusk — the cxkw.dev design system: tokens, components and an agent skill, in light (dawn) and dark (dusk).",
   "homepage": "https://cxkw-dev.github.io/dawn-and-dusk",
   "repository": {
     "type": "git",

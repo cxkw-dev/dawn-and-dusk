@@ -1,6 +1,6 @@
 ---
 name: dawn-and-dusk
-description: Build UI in the dawn & dusk design system (cxkw.dev) — warm greige neutrals, golden-hour accents, heavy lowercase Outfit headings, light "dawn" and dark "dusk" themes, plain CSS classes (dd-*) plus a small JS layer. Use it only in projects that already use dawn & dusk (they load dawn-and-dusk.css or use dd- classes) or when the user asks for dawn & dusk by name — then use it for any page, app screen, dashboard, admin panel, data table, form, settings, landing or pricing page or single component, in static HTML, React, Next.js, Vue, Svelte or Astro, including moving a Tailwind UI onto it. Never apply it to other projects (e.g. client work with its own design language), even if they need UI.
+description: Build UI in the dawn & dusk design system (cxkw.dev) — warm greige neutrals, golden-hour accents, heavy lowercase Outfit headings, light "dawn" and dark "dusk" themes, plain CSS classes (dd-*) plus a small JS layer. Use it only in projects that already use dawn & dusk (they load dawn-and-dusk.css or dawn-and-dusk/tailwind.css, or use dd- classes) or when the user asks for dawn & dusk by name — then use it for any page, app screen, dashboard, admin panel, data table, form, settings, landing or pricing page or single component, in static HTML, React, Next.js, Vue, Svelte or Astro, with Tailwind CSS v4 utilities, or when moving a Tailwind UI onto it. Never apply it to other projects (e.g. client work with its own design language), even if they need UI.
 ---
 
 # dawn & dusk
@@ -49,8 +49,9 @@ projects that want the tokens without the components. If the project already has
   or under a strict Content-Security-Policy, self-host them and remove that line. The page then falls back to system fonts
   until they load.
 - **Theme toggle:** any element with `data-dd-theme-toggle` flips dawn ↔ dusk and remembers it.
-- **React, Next.js, Vue, Svelte, Astro, or alongside Tailwind:** read `references/frameworks.md` first. Some behaviours
-  must be owned by the framework, and Tailwind's preflight overrides the base styles.
+- **React, Next.js, Vue, Svelte, Astro, or Tailwind:** read `references/frameworks.md` first. Some behaviours must be
+  owned by the framework. Tailwind v4 apps load `dawn-and-dusk/tailwind.css`, which turns the tokens into utilities
+  (`bg-surface`, `text-muted`, `p-4` = 20px) and layers the components under them.
 
 ## 2. Rules that make it look right
 
@@ -100,7 +101,7 @@ projects that want the tokens without the components. If the project already has
 | `references/components.md` | searching all components at once: what each is, its classes, related components, `data-dd-*` hooks, every behaviour |
 | `references/tokens.md` | colours and other tokens, **base classes** (`.dd-h1…`, `.dd-lead`, `.dd-eyebrow`, `.dd-stack`, `.dd-row`, `.dd-mono`, `.dd-visually-hidden`…) and **every icon name** |
 | `references/patterns.md` | building a whole page: dashboard, data explorer, settings, landing, pricing; shared page rules |
-| `references/frameworks.md` | React, Next.js, Vue, Svelte or Astro; migrating from Tailwind; theme without a flash in SSR |
+| `references/frameworks.md` | React, Next.js, Vue, Svelte or Astro; Tailwind v4 setup and token utilities; migrating from Tailwind; theme without a flash in SSR |
 
 Live demos, every state: `https://cxkw-dev.github.io/dawn-and-dusk/components/<name>`. The reference files above already
 hold their markup, so you don't need web access.
