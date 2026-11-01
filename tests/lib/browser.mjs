@@ -11,7 +11,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export async function launch() {
   const dir = mkdtempSync(join(tmpdir(), 'dd-test-'));
-  const proc = spawn(CHROME, ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--remote-debugging-port=0', `--user-data-dir=${dir}`, 'about:blank'], { stdio: 'ignore' });
+  // A desktop with a mouse, whatever the machine: headless Chrome on a CI runner reports no hover-capable pointer, so
+  // (hover: hover) styles would never apply. Touch tests turn on touch emulation per page.
+  const desktop = '--blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4';
+  const proc = spawn(CHROME, ['--headless=new', '--disable-gpu', '--hide-scrollbars', desktop, '--remote-debugging-port=0', `--user-data-dir=${dir}`, 'about:blank'], { stdio: 'ignore' });
   let port;
   for (let k = 0; k < 100 && !port; k++) { try { port = readFileSync(join(dir, 'DevToolsActivePort'), 'utf8').split('\n')[0]; } catch { await sleep(100); } }
   if (!port) throw new Error('Chrome did not start (set CHROME=/path/to/chrome)');
