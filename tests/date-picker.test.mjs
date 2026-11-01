@@ -307,3 +307,54 @@ test('namespaced date event preserves the legacy value and bubbles', async ({ op
   assert.deepEqual(events[0].detail, events[1].detail);
   assert.equal(events[1].id, 'cal-a');
 });
+
+test('range picker: closing from the toggle or the read-only input drops unapplied days, so Cancel still restores', async ({ open, assert }) => {
+  const page = await open('components/date-picker');
+  const range = () => page.get(() => { const c = document.querySelector('#dp-r-pop [data-dd-calendar]'); return [c.dataset.start, c.dataset.end]; });
+  const pressed = () => page.get(() => [...document.querySelectorAll('#dp-r-pop .dd-date-picker__preset[aria-pressed="true"]')].map((b) => b.textContent.trim()));
+  const committed = await range();
+  assert.deepEqual(await pressed(), ['Last 14 days']);
+  // Shown open on load: two days picked, not applied, then the toggle closes it.
+  await page.click('#dp-r-pop [data-date="2026-10-05"]');
+  await page.click('#dp-r-pop [data-date="2026-10-08"]');
+  await page.click(toggleOf('dp-r'));
+  assert.ok(!(await page.visible('#dp-r-pop')));
+  assert.equal(await page.attr(toggleOf('dp-r'), 'aria-expanded'), 'false');
+  assert.deepEqual(await range(), committed, 'the toggle reverts like Esc');
+  await page.click(toggleOf('dp-r'));
+  assert.deepEqual(await pressed(), ['Last 14 days'], 'and puts the preset back');
+  assert.equal(await page.text('#dp-r-pop .dd-date-picker__summary'), 'Oct 17 – Oct 30, 2026 · 14 days');
+  // The read-only input toggles too, with the same result; Cancel afterwards still has the right baseline.
+  await page.click('#dp-r-pop [data-date="2026-10-02"]');
+  await page.click('#dp-r');
+  assert.ok(!(await page.visible('#dp-r-pop')));
+  await page.click('#dp-r');
+  assert.deepEqual(await range(), committed);
+  await page.click('#dp-r-pop [data-date="2026-10-03"]');
+  await page.click('#dp-r-pop [data-date="2026-10-04"]');
+  await page.click('#dp-r-pop [data-dd-date-cancel]');
+  assert.deepEqual(await range(), committed);
+  assert.equal(await value(page, '#dp-r'), 'Oct 17 – Oct 30, 2026');
+});
+
+test('typed dates: no year takes data-today’s, YYYY-MM is a local 1st, impossible days are invalid', async ({ open, assert }) => {
+  const page = await open('components/date-picker');
+  const today = await page.get(() => document.querySelector('#dp-3').closest('[data-dd-date-picker]').querySelector('[data-dd-calendar]').dataset.today);
+  assert.equal(today.slice(0, 4), '2026', 'the example has data-today in 2026');
+  const enter = async (text) => {
+    await page.get(() => { const i = document.querySelector('#dp-3'); i.focus(); i.select(); });
+    await page.type(text);
+    await page.press('Tab');
+    return page.get(() => { const i = document.querySelector('#dp-3'); return [i.value, i.closest('[data-dd-date-picker]').querySelector('[data-dd-calendar]').dataset.value ?? '', i.getAttribute('aria-invalid')]; });
+  };
+  assert.deepEqual(await enter('Oct 14'), ['Oct 14, 2026', '2026-10-14', null], 'not 2001');
+  assert.deepEqual(await enter('12/1'), ['Dec 1, 2026', '2026-12-01', null]);
+  assert.deepEqual(await enter('Jan 5, 2027'), ['Jan 5, 2027', '2027-01-05', null], 'a typed year still wins');
+  assert.deepEqual(await enter('2026-11'), ['Nov 1, 2026', '2026-11-01', null], 'the 1st, not Oct 31 (UTC parse)');
+  // A day the month doesn't have is invalid and keeps the last good value (not rolled into March).
+  for (const bad of ['2026-02-31', 'Feb 31, 2026', '2/30/2026', 'Feb 29']) {
+    const [text, v, invalid] = await enter(bad);
+    assert.deepEqual([text, v, invalid], [bad, '2026-11-01', 'true'], bad);
+  }
+  assert.deepEqual(await enter('2028-02-29'), ['Feb 29, 2028', '2028-02-29', null], 'a leap day is fine');
+});

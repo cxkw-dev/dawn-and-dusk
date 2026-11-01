@@ -3,7 +3,7 @@ import Docs from '../../layouts/Docs.astro';
 import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 // The ampersand from the logo: Outfit 800 "&" traced from the font (1000-unit em, baseline at y=0, y down), plus the
 // geometry the variants need. Every viewBox is the same, and ds/components/loader.css masks with the same glyph.
@@ -173,7 +173,7 @@ const fullPage = `<div class="dd-page-loader dd-page-loader--fixed" role="status
   <Example code={colours} stage="center" />
 
   <h2 id="page">Page and section loading</h2>
-  <p>Compose with the page loader from <a href={`${docs}/components/spinner#page`}>Spinner</a>: the loader goes where the spinner would, the container keeps <code>role="status"</code> and the words, and the loader itself is <code>aria-hidden</code>. <code>--overlay</code> lays it over content that is being recalculated (its parent needs <code>position: relative</code>).</p>
+  <p>Compose with the page loader from <a href={`${base}/components/spinner#page`}>Spinner</a>: the loader goes where the spinner would, the container keeps <code>role="status"</code> and the words, and the loader itself is <code>aria-hidden</code>. <code>--overlay</code> lays it over content that is being recalculated (its parent needs <code>position: relative</code>).</p>
   <Example code={page} stage="flush" />
   <Example code={overlay} stage="flush" />
   <p>For a booting app, use the same markup with <code>dd-page-loader--fixed</code> instead of <code>--overlay</code> (it covers the viewport) and an <code>--xl</code> loader. <button class="dd-btn dd-btn--secondary dd-btn--sm" type="button" data-ldr-fullpage>Show the full-page loader</button></p>
@@ -184,7 +184,7 @@ const fullPage = `<div class="dd-page-loader dd-page-loader--fixed" role="status
   <Example code={card} />
 
   <h2 id="inline">Inline</h2>
-  <p>Beside text in a <code>.dd-loading</code> row the glyph sizes itself to the type. For loading buttons and very small waits, the ring <a href={`${docs}/components/spinner`}>Spinner</a> is still the better fit.</p>
+  <p>Beside text in a <code>.dd-loading</code> row the glyph sizes itself to the type. For loading buttons and very small waits, the ring <a href={`${base}/components/spinner`}>Spinner</a> is still the better fit.</p>
   <Example code={inline} />
 
   <h2 id="api">Classes</h2>

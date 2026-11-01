@@ -86,7 +86,7 @@ Static renderings, pinned open for reference — the live ones are in the exampl
 | `data-dd-tooltip-placement` | `top` (default) · `bottom` · `left` · `right`, optionally `-start` / `-end`. |
 | `data-dd-tooltip-kbd` | Shortcut hint, keys separated by spaces: `"⌘ K"`. |
 | `aria-describedby` | Added to the trigger while the tooltip is open (unless its `aria-label` already says the same thing). |
-| `Esc · click · scroll` | Hide the tooltip, as do resizing the window and moving the pointer away. The pointer can move onto the tooltip without it closing. Touch taps don’t open tooltips. |
+| `Esc · click · scroll` | Hide the tooltip, as do resizing the window and moving the pointer away. The pointer can move onto the tooltip without it closing. Touch taps don’t open tooltips. Inside a dialog, Esc closes the tooltip first and the dialog on the next press. |
 | `Theme` | The tooltip takes the dawn/dusk theme of its trigger. |
 | `Top layer` | The tooltip is a manual popover, so it shows above open dialogs, drawers and popovers — buttons inside them can have tooltips too. It fades in from the side it lands on, after any flip. |
 

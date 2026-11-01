@@ -7,7 +7,10 @@
    Date picker: [data-dd-date-picker] wraps a .dd-input (with a [data-dd-date-toggle] button) and a
    .dd-date-picker__popover holding a calendar. Choosing a day fills the input and closes; a range closes on its
    second click unless the popover has [data-dd-date-apply]. [data-start][data-end] or [data-days="7"] buttons with
-   .dd-date-picker__preset set a range. Esc, a click outside or tabbing out closes. */
+   .dd-date-picker__preset set a range. Esc, the toggle, a click outside or tabbing out closes without changes (a range
+   picked but not applied goes back). Single mode parses a typed date on change: YYYY-MM-DD (or YYYY-MM, the 1st) is a
+   local day, anything else goes through Date.parse with data-today's year when none is typed ("Oct 14", "12/1"); a day
+   the month doesn't have ("2026-02-31") is invalid, not rolled over. */
 (() => {
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const DOW = ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa'];
@@ -43,7 +46,7 @@
     return day > a && day < b ? `is-in-range${preview}` : '';
   };
 
-  const render = (cal, hover) => {
+  const render = (cal) => {
     const s = state(cal);
     const first = new Date(s.month.getFullYear(), s.month.getMonth(), 1);
     const lead = (first.getDay() - s.ws + 7) % 7;
@@ -64,7 +67,7 @@
         const day = iso(d);
         const pressed = s.mode === 'range' ? day === s.start || day === s.end : day === s.value;
         const off = (s.min && day < s.min) || (s.max && day > s.max);
-        const cls = cellClass(s, day, hover);
+        const cls = cellClass(s, day);
         rows += `<td${cls ? ` class="${cls}"` : ''}><button class="dd-calendar__day${inMonth(d) ? '' : ' is-outside'}" type="button" data-date="${day}" tabindex="${day === focusDay ? 0 : -1}" aria-pressed="${pressed}"${day === s.today ? ' aria-current="date"' : ''}${off ? ' disabled' : ''}>${d.getDate()}</button></td>`;
       }
       rows += '</tr>';
@@ -195,7 +198,7 @@
   const openPicker = (root) => {
     const { toggle, pop, cal, input } = pickerParts(root);
     if (!pop || input?.disabled) return;
-    document.querySelectorAll('[data-dd-date-picker].is-open').forEach((r) => r !== root && closePicker(r, false));
+    document.querySelectorAll('[data-dd-date-picker].is-open').forEach((r) => r !== root && closePicker(r, false, true));
     pop.hidden = false;
     root.classList.add('is-open');
     toggle?.setAttribute('aria-expanded', 'true');
@@ -268,7 +271,8 @@
       return;
     }
     if (t.closest('[data-dd-date-toggle]') || (t.matches('.dd-input__control') && t.readOnly)) {
-      if (pickerParts(root).pop.hidden) openPicker(root); else closePicker(root);
+      // Closing from the toggle drops what wasn't applied, like Esc; otherwise it would become the next baseline.
+      if (pickerParts(root).pop.hidden) openPicker(root); else closePicker(root, true, true);
       return;
     }
     if (t.closest('[data-dd-date-apply]')) { if (commit(root)) closePicker(root); return; }
@@ -307,9 +311,28 @@
     if (root && e.relatedTarget && !root.contains(e.relatedTarget)) closePicker(root, false, true);
   });
 
-  // Typed dates: anything Date can parse ("2026-10-14", "Oct 14, 2026") moves the calendar. ISO dates are read as
-  // local days (Date.parse would take them as UTC midnight, the day before west of Greenwich). A date outside
-  // data-min / data-max marks the field invalid; clearing the field clears the value.
+  // Typed text → a local day ("YYYY-MM-DD"), or '' when it isn't a real date. YYYY-MM(-DD) is read as a local day
+  // (Date.parse would take it as UTC midnight, the day before west of Greenwich); anything else goes through Date.parse,
+  // with `year` added when none was typed ("Oct 14" alone would be 2001). A day past the month's end is refused rather
+  // than rolled into the next month ("2026-02-31", "Feb 31, 2026" are not Mar 3).
+  const readDate = (text, year) => {
+    const m = text.match(/^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?$/);
+    if (m) {
+      const [y, mo, d] = [+m[1], +m[2] - 1, +(m[3] || 1)];
+      const v = new Date(y, mo, d);
+      return v.getFullYear() === y && v.getMonth() === mo && v.getDate() === d ? iso(v) : '';
+    }
+    const hasYear = /\d{4}/.test(text) || /^\d{1,2}([/.-])\d{1,2}\1\d{2}$/.test(text); // or M/D/YY
+    const t = Date.parse(hasYear ? text : `${text} ${year}`);
+    if (Number.isNaN(t)) return '';
+    const v = new Date(t);
+    // Rolled over: the month it landed in is neither named nor numbered in what was typed.
+    const named = text.toLowerCase().includes(MONTHS[v.getMonth()].slice(0, 3).toLowerCase());
+    return named || (text.match(/\d+/g) || []).map(Number).includes(v.getMonth() + 1) ? iso(v) : '';
+  };
+
+  // Typed dates move the calendar (see readDate). A date outside data-min / data-max, or text that isn't a date, marks
+  // the field invalid; clearing the field clears the value.
   document.addEventListener('change', (e) => {
     const root = e.target.closest?.('[data-dd-date-picker]');
     if (!root || e.target !== pickerParts(root).input || !e.isTrusted) return;
@@ -325,9 +348,8 @@
       render(cal); emit(cal);
       return;
     }
-    const t = /^\d{4}-\d{1,2}-\d{1,2}$/.test(text) ? parse(text)?.getTime() : Date.parse(text);
-    if (t === undefined || Number.isNaN(t)) { e.target.setAttribute('aria-invalid', 'true'); return; }
-    const v = iso(new Date(t));
+    const v = readDate(text, (cal.dataset.today || iso(new Date())).slice(0, 4));
+    if (!v) { e.target.setAttribute('aria-invalid', 'true'); return; }
     const { min, max } = cal.dataset;
     if ((min && v < min) || (max && v > max)) { e.target.setAttribute('aria-invalid', 'true'); return; }
     e.target.removeAttribute('aria-invalid');

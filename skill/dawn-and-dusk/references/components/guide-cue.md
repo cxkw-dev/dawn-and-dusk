@@ -118,7 +118,7 @@ Try it: start the tour, then Next and Back to walk the three steps; × or Esc en
 |---|---|
 | `data-dd-guide-start="name"` | Starts the tour with that name. |
 | `data-dd-guide="name"` | On each cue: which tour it belongs to. |
-| `data-dd-guide-target="#selector"` | On each cue: what it points at. Steps whose target is missing are skipped. |
+| `data-dd-guide-target="#selector"` | On each cue: what it points at. Steps whose target is missing are skipped, going forward or back, and left out of the “1 of 3” count. |
 | `data-dd-placement` | On each cue: `bottom` (default), `top`, `left`, `right`, with `-start` / `-end`. Flips when it doesn’t fit. |
 | `data-dd-guide-next / -back / -dismiss` | Buttons inside a cue. Next on the last step finishes the tour. |
 | `Esc · ×` | End the tour from any step. Focus returns to the button that started it. |

@@ -144,3 +144,49 @@ test('a cue with no target (or a missing one) is skipped; the tour still runs an
   assert.equal(await shown(), -1);
   assert.deepEqual(await page.get(() => window.__end), [true], 'it finishes as completed');
 });
+
+test('skipped steps: Back walks past them, the count and pips leave them out, and the beacon drops a section’s theme', async ({ open, assert }) => {
+  const page = await open('components/guide-cue');
+  await listen(page);
+  await page.get(() => {
+    document.querySelector('.doc-main').insertAdjacentHTML('afterbegin', `
+      <div id="gs-wrap" style="display: flex; gap: 24px; padding: 40px">
+        <button class="dd-btn" id="gs-a">A</button>
+        <section data-theme="dusk" style="padding: 8px"><button class="dd-btn" id="gs-c">C</button></section>
+        <button class="dd-btn" id="gs-d">D</button>
+      </div>`);
+    for (const t of ['#gs-a', '#gs-missing', '#gs-c', '#gs-d']) {
+      const c = document.createElement('div');
+      c.className = 'dd-guide-cue'; c.setAttribute('popover', 'manual'); c.dataset.ddGuide = 'gaps'; c.dataset.ddGuideTarget = t;
+      c.innerHTML = `<p class="dd-guide-cue__step"></p><span class="dd-guide-cue__pips"></span><p class="dd-guide-cue__text">${t}</p>
+        <button data-dd-guide-back>Back</button><button data-dd-guide-next>Next</button>`;
+      document.body.append(c);
+    }
+  });
+  const now = () => page.get(() => {
+    const c = document.querySelector('.dd-guide-cue[data-dd-guide="gaps"]:popover-open');
+    return c && { target: c.dataset.ddGuideTarget, count: c.querySelector('.dd-guide-cue__step').textContent,
+      pips: [...c.querySelectorAll('.dd-guide-cue__pips i')].map((i) => i.className || '-').join(' '),
+      theme: document.querySelector('.dd-guide-beacon:not(.dd-guide-beacon--static)')?.dataset.theme ?? null };
+  });
+  const press = (b) => page.click(`.dd-guide-cue[data-dd-guide="gaps"]:popover-open [data-dd-guide-${b}]`);
+  await page.get(() => dd.guide.start('gaps'));
+  assert.deepEqual(await now(), { target: '#gs-a', count: '1 of 3', pips: 'is-current - -', theme: null });
+  await press('next');
+  assert.deepEqual(await now(), { target: '#gs-c', count: '2 of 3', pips: 'is-done is-current -', theme: 'dusk' }, 'the missing step is skipped and not counted');
+  await press('next');
+  assert.deepEqual(await now(), { target: '#gs-d', count: '3 of 3', pips: 'is-done is-done is-current', theme: null }, 'out of the dusk section, the beacon follows the page again');
+  await press('back');
+  assert.equal((await now()).target, '#gs-c');
+  await press('back');
+  assert.deepEqual(await now(), { target: '#gs-a', count: '1 of 3', pips: 'is-current - -', theme: null }, 'Back walks past the missing step');
+  await press('back');
+  assert.equal((await now()).target, '#gs-a', 'Back on the first step stays put');
+  // Esc that something inside already handled leaves the tour running; the next one ends it.
+  await page.get(() => document.querySelector('.dd-guide-cue[data-dd-guide="gaps"]:popover-open').addEventListener('keydown', (e) => e.preventDefault(), { once: true }));
+  await page.press('Escape');
+  assert.equal((await now())?.target, '#gs-a', 'a handled Esc is not the tour’s');
+  await page.press('Escape');
+  assert.equal(await now(), null);
+  assert.deepEqual(await page.get(() => window.__end), [false]);
+});

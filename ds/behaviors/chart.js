@@ -11,8 +11,11 @@
    <details class="dd-chart__data"> needs no script. Fires `dd:change` on the figure with { view: 'chart' | 'table' }.
    Expand: a button [data-dd-chart-expand] moves the figure into a large modal dialog (.dd-chart-dialog), leaving a
    placeholder of the same height, and moves it back when the dialog closes (Esc, backdrop, or the button again); focus
-   returns to the button. Fires `dd:change` with { expanded: true | false }. The figure itself moves, so keep it out of
-   framework-owned markup (render your own dialog there). */
+   returns to the button. Fires `dd:change` with { expanded: true | false }: expanded: true just before the figure
+   leaves the page, expanded: false once it is back, so both reach listeners on its container. In between the figure
+   sits in the dialog at the end of <body>: events from it then (a Table toggle) reach the figure itself and document,
+   not its old container. The figure itself moves, so keep it out of framework-owned markup (render your own dialog
+   there). */
 (() => {
   const MARK = '.dd-chart__slot, .dd-chart__hit, .dd-chart__seg, .dd-chart__arc, [data-dd-chart-point]';
   const chartOf = (el) => el.closest('[data-dd-chart]');
@@ -230,6 +233,9 @@
     spot.setAttribute('aria-hidden', 'true');
     spot.style.height = `${chart.offsetHeight}px`;
     deactivate(chart);
+    // Announced while the figure is still in place, so it reaches listeners on its container (collapse announces once
+    // it is back): in the dialog at the end of <body> it is out of their reach.
+    chart.dispatchEvent(new CustomEvent('dd:change', { bubbles: true, detail: { expanded: true } }));
     chart.replaceWith(spot);
     chart.ddPlaceholder = spot;
     chart.classList.add('is-expanded');
@@ -242,7 +248,6 @@
     dlg.replaceChildren(chart);
     if (window.dd?.dialog) window.dd.dialog.open(dlg); else dlg.showModal();
     btn.focus({ preventScroll: true });
-    chart.dispatchEvent(new CustomEvent('dd:change', { bubbles: true, detail: { expanded: true } }));
   });
   // Capture, so the figure is back in the page before the dialog behaviour returns focus to its button.
   document.addEventListener('close', (e) => { if (e.target === expandDialog) collapse(expandDialog); }, true);

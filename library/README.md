@@ -66,7 +66,7 @@ Do not also load the legacy `dawn-and-dusk.js` bundle.
   `rounded-box`, `shadow-float`, `font-display`. Tailwind's own palette, radii and shadows are removed.
 - Spacing uses the system's 5px unit: `p-4` is 20px, the same as `--dd-space-4`.
 - `dd-` components sit in Tailwind's components layer, so a utility on the same element wins (`dd-btn w-full`).
-- `dusk:` and `dawn:` follow `data-theme`, or the OS when none is set. `dark:` is an alias of `dusk:`.
+- `dusk:` and `dawn:` follow the nearest `data-theme` (so a dusk section in a dawn page gets `dusk:`), or the OS when none is set. `dark:` is an alias of `dusk:`.
 - Requires Tailwind CSS v4. Use `tailwind.css` instead of `styles.css`, not with it.
 
 ## Entries

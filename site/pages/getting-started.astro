@@ -3,7 +3,7 @@ import Docs from '../layouts/Docs.astro';
 import { Code } from 'astro:components';
 import { ddTheme } from '../lib/syntax';
 import { installCommand, starterUrl } from '../lib/distribution';
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+import { base } from '../lib/nav';
 const react = `import 'dawn-and-dusk/styles.css';
 import { Button, Card, Input, Icon, ThemeToggle } from 'dawn-and-dusk/react';
 
@@ -94,7 +94,7 @@ const tailwindHtml = `<div class="bg-surface rounded-box p-6">
         <li>Utilities read the tokens and follow dawn and dusk: <code>bg-surface</code>, <code>text-muted</code>, <code>border-border</code>, <code>bg-primary/20</code>, <code>rounded-box</code>, <code>shadow-float</code>, <code>font-display</code>. Tailwind’s own palette, radii and shadows are removed, so every value stays on-system.</li>
         <li>Spacing uses the system’s 5px unit: <code>p-4</code> is 20px, the same as <code>--dd-space-4</code>.</li>
         <li><code>dd-</code> components sit in Tailwind’s components layer, so a utility on the same element wins: <code>dd-btn w-full</code>.</li>
-        <li><code>dusk:</code> and <code>dawn:</code> follow <code>data-theme</code>, or the system setting when none is set. <code>dark:</code> is an alias of <code>dusk:</code>.</li>
+        <li><code>dusk:</code> and <code>dawn:</code> follow the nearest <code>data-theme</code> (so a dusk section in a dawn page gets <code>dusk:</code>), or the system setting when none is set. <code>dark:</code> is an alias of <code>dusk:</code>.</li>
       </ul>
     </div>
   </div>

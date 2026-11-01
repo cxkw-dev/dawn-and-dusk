@@ -2,8 +2,8 @@
 import Docs from '../../layouts/Docs.astro';
 import Example from '../../components/Example.astro';
 import Guides from '../../components/Guides.astro';
-import { base } from '../../lib/tokens';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base as shared } from '../../lib/tokens';
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const steps = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16];
 const stack = `
@@ -16,10 +16,10 @@ const stack = `
 ---
 <Docs title="Spacing & layout" group="Foundations" lead="One 5px unit drives every padding and gap. Multiply it; don’t invent values.">
   <h2 id="unit">The unit</h2>
-  <p><code>--dd-u: {base.u}</code>. Components use <code>calc(var(--dd-u) * N)</code> with half steps where needed (2.5 → 12.5px). Named steps exist for layout:</p>
+  <p><code>--dd-u: {shared.u}</code>. Components use <code>calc(var(--dd-u) * N)</code> with half steps where needed (2.5 → 12.5px). Named steps exist for layout:</p>
   <div class="doc-scale">
     {steps.map((n) => (
-      <div class="doc-scale-row"><code class="dd-mono">--dd-space-{n}</code><span class="dd-mono dd-muted">{base[`space-${n}`]}</span><i style={`width: ${base[`space-${n}`]}`} /></div>
+      <div class="doc-scale-row"><code class="dd-mono">--dd-space-{n}</code><span class="dd-mono dd-muted">{shared[`space-${n}`]}</span><i style={`width: ${shared[`space-${n}`]}`} /></div>
     ))}
   </div>
 
@@ -36,7 +36,7 @@ const stack = `
   <h2 id="layout">Layout</h2>
   <ul>
     <li><b>Width</b>: 68ch for prose. App pages (<code>.dd-app-shell__page</code>) stop at 1180px, narrow ones (<code>--narrow</code>) at 760px.</li>
-    <li><b>App shell</b>: side nav (a 60px icon rail plus a 224px page panel that folds away) and a fluid content area — see <a href={`${docs}/components/app-shell`}>App shell</a>.</li>
+    <li><b>App shell</b>: side nav (a 60px icon rail plus a 224px page panel that folds away) and a fluid content area — see <a href={`${base}/components/app-shell`}>App shell</a>.</li>
     <li><b>Grids</b>: <code>.dd-card-grid</code> (220px minimum) and <code>.dd-stat-grid</code> (210px, or <code>--dd-stat-min</code>) fill the row and reflow on their own.</li>
     <li><b>Breakpoints</b>: components respond to their own width with container queries, so they work in any column. The app shell sends the side nav off-canvas under 768px of its width (900px with <code>--offcanvas-md</code>, 1024px with <code>--offcanvas-lg</code>).</li>
   </ul>

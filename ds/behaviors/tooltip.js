@@ -2,10 +2,12 @@
    while moving between tooltips) and on keyboard focus. Esc, a click, scrolling or leaving hides it.
      data-dd-tooltip-placement  top (default) · bottom · left · right, optionally -start / -end. Flips when it doesn't fit.
      data-dd-tooltip-kbd        a key hint, keys separated by spaces: "⌘ K" → <kbd>⌘</kbd><kbd>K</kbd>
-   One shared .dd-tooltip (role="tooltip") lives at the end of <body>; while it is open the trigger points at it with
-   aria-describedby. It takes the dawn/dusk theme of its trigger. Pointer can move onto the tooltip without losing it.
-   Where the browser supports it the tooltip is a manual popover, so it shows in the top layer — above open dialogs,
-   drawers and popovers whose buttons it describes. */
+   One shared .dd-tooltip (role="tooltip") lives at the end of <body> — or, for a trigger inside an open modal dialog
+   (drawer, sheet), at the end of that dialog, since everything outside a modal is inert. While it is open the trigger
+   points at it with aria-describedby. It takes the dawn/dusk theme of its trigger. Pointer can move onto the tooltip
+   without losing it. Esc hides it and stops there (an Esc inside a dialog hides the tooltip, not the dialog); an Esc
+   something else already handled is left alone. Where the browser supports it the tooltip is a manual popover, so it
+   shows in the top layer — above open dialogs, drawers and popovers whose buttons it describes. */
 (() => {
   const DELAY = 450;
   const WARM = 500;
@@ -48,6 +50,10 @@
     el.dataset.placement = align === 'center' ? side : `${side}-${align}`;
   };
 
+  // Outside an open modal dialog everything is inert: a tooltip left in <body> couldn't be reached by the pointer, and
+  // moving onto it would close it. So it goes into the trigger's modal dialog while it describes something there.
+  const hostOf = (el) => { try { return el.closest('dialog:modal') || document.body; } catch { return document.body; } };
+
   const ensure = () => {
     if (tip?.isConnected) return tip;
     tip = document.createElement('div');
@@ -68,6 +74,8 @@
     if (!text || !el.isConnected) return;
     if (current && current !== el) release(current);
     const t = ensure();
+    const host = hostOf(el);
+    if (t.parentElement !== host) host.append(t); // leaving the top layer as it moves: it reopens just below
     t.replaceChildren(Object.assign(document.createElement('span'), { textContent: text }));
     const kbd = el.getAttribute('data-dd-tooltip-kbd');
     if (kbd) {
@@ -139,7 +147,11 @@
     if (el && el === current) hide();
   });
   document.addEventListener('pointerdown', (e) => { if (!tip?.contains(e.target)) hide(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && current) hide(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    clearTimeout(showTimer); // a tooltip on its way doesn't pop up after Esc
+    if (current && !e.defaultPrevented) { e.preventDefault(); hide(); }
+  });
   window.addEventListener('scroll', hide, { capture: true, passive: true });
   window.addEventListener('resize', hide, { passive: true });
 })();

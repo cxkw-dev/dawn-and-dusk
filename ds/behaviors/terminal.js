@@ -12,8 +12,11 @@
      inside the terminal; unknown commands get a friendly "command not found". Built in: help, clear (also Ctrl+L),
      Ctrl+C. ↑/↓ recall history, Tab completes known commands (only when there is something to complete — otherwise
      Tab moves focus as usual). Output is announced through a polite live region. data-dd-terminal-label names the input.
+     One command runs at a time: Enter while output is still printing runs next (type-ahead), and so does run().
+     A replay drops whatever was printing or waiting.
    The terminal reports data-dd-terminal-state="playing|done" and fires dd:terminalplayed and dd:terminalrun
-   (detail: { command, known }). API: dd.terminal(el) → { play(), finish(), run(command) }; dd.terminal.init(root). */
+   (detail: { command, known }). API: dd.terminal(el) → { play(), finish(), run(command) }; dd.terminal.init(root).
+   run() returns a promise for when its output has printed and leaves what the visitor is typing alone. */
 (() => {
   const C = 'dd-code';
   const dd = (window.dd = window.dd || {});
@@ -29,7 +32,7 @@
 
   const state = (term) => {
     let st = states.get(term);
-    if (!st) states.set(term, (st = { run: 0, history: [], hIndex: null, draft: '' }));
+    if (!st) states.set(term, (st = { run: 0, history: [], hIndex: null, draft: '', queue: [] }));
     return st;
   };
   const codeOf = (term) => term.querySelector(`.${C}__pre code`) || term.querySelector(`.${C}__pre`);
@@ -123,6 +126,9 @@
     const code = codeOf(term);
     code.replaceChildren(...st.snapshot.cloneNode(true).childNodes);
     st.live = null;
+    // Output still printing and commands waiting belonged to the old prompt: the new one starts idle.
+    st.busy = false;
+    st.queue.splice(0).forEach((q) => q.resolve());
     decorate(term);
   }
 
@@ -397,7 +403,7 @@
     const st = state(term);
     const f = st.field;
     if (e.isComposing) return;
-    if (e.key === 'Enter') { e.preventDefault(); if (st.busy) st.queued = true; else submit(term); } // type-ahead runs next
+    if (e.key === 'Enter') { e.preventDefault(); enqueue(term); }
     else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); recall(term, e.key === 'ArrowUp' ? -1 : 1); }
     else if (e.key === 'Tab' && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) { if (complete(term)) e.preventDefault(); }
     else if (e.ctrlKey && !e.metaKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); clear(term); }
@@ -457,14 +463,30 @@
     preOf(term).scrollTop = 0;
   }
 
+  // One command at a time: Enter or run() while output is still printing waits its turn, like type-ahead. A waiting
+  // Enter runs whatever the field holds when its turn comes, so pressing it again adds nothing.
+  function enqueue(term, cmd) {
+    const st = state(term);
+    if (cmd === undefined && st.queue.some((q) => q.cmd === undefined)) return;
+    const ran = new Promise((resolve) => st.queue.push({ cmd, resolve }));
+    if (!st.busy) drain(term);
+    return ran;
+  }
+  async function drain(term) {
+    const st = state(term);
+    const live = st.live;
+    st.busy = true;
+    for (let q; live === st.live && (q = st.queue.shift());) { await submit(term, q.cmd); q.resolve(); }
+    if (live === st.live) st.busy = false; // else a replay has reset it for the new prompt
+  }
+
   async function submit(term, given) {
     const st = state(term);
     const raw = given ?? st.field.value;
     const cmd = norm(raw);
     freeze(term, raw);
-    st.hIndex = null;
-    st.draft = '';
-    setValue(term, '');
+    // A command from run() leaves what the visitor is typing (and their place in history) alone.
+    if (given === undefined) { st.hIndex = null; st.draft = ''; setValue(term, ''); }
     if (!cmd) return;
     if (st.history[st.history.length - 1] !== cmd) st.history.push(cmd);
     const emit = (isKnown) => term.dispatchEvent(new CustomEvent('dd:terminalrun', { bubbles: true, detail: { command: cmd, known: isKnown } }));
@@ -476,21 +498,18 @@
     const out = outputFor(term, cmd);
     const live = st.live;
     const pre = preOf(term);
-    st.busy = true;
     live.classList.add('is-busy');
     for (const [i, l] of out.lines.entries()) {
       if (!still()) await sleep(Number(l.dataset.ddTerminalDelay) || (i ? 55 : 180));
-      if (!live.isConnected) break; // replayed meanwhile
+      if (live !== st.live) return emit(out.known); // replayed meanwhile: nothing more to print or announce
       live.before(l, '\n');
       enter(l);
       scrollEnd(pre);
     }
-    st.busy = false;
     live.classList.remove('is-busy');
     scrollEnd(pre);
     announce(term, out.lines.map((l) => l.textContent.trim()).filter(Boolean).join('\n'));
     emit(out.known);
-    if (st.queued && live.isConnected) { st.queued = false; submit(term); }
   }
 
   function announce(term, text) {
@@ -546,7 +565,7 @@
         }
       } else if (term.hasAttribute('data-dd-terminal-interactive')) goLive(term);
     }
-    return { play: () => { st.reveal?.(); return play(term); }, finish: () => finish(term), run: (cmd) => (st.live ? submit(term, cmd) : undefined) };
+    return { play: () => { st.reveal?.(); return play(term); }, finish: () => finish(term), run: (cmd) => (st.live ? enqueue(term, cmd) : undefined) };
   }
 
   const init = (root = document) => root.querySelectorAll(SEL).forEach(setup);

@@ -3,14 +3,15 @@ import Docs from '../layouts/Docs.astro';
 import Guides from '../components/Guides.astro';
 import { Code } from 'astro:components';
 import { ddTheme } from '../lib/syntax';
+import { base } from '../lib/nav';
 import skill from '../../skill/dawn-and-dusk/SKILL.md?raw';
 
 const install = `# From a clone of this repository: install into one project
 npm run skill:install -- ~/code/my-app
 # → ~/code/my-app/.claude/skills/dawn-and-dusk (replaced if it's already there)
 
-# Without a clone: run this inside the project
-npx degit cxkw-dev/dawn-and-dusk/skill/dawn-and-dusk .claude/skills/dawn-and-dusk`;
+# Without a clone: run this inside the project (evals/ is for developing the skill, so it goes)
+npx degit cxkw-dev/dawn-and-dusk/skill/dawn-and-dusk .claude/skills/dawn-and-dusk && rm -rf .claude/skills/dawn-and-dusk/evals`;
 
 const agentsMd = `## UI: dawn & dusk design system
 - Copy dawn-and-dusk.css, dawn-and-dusk.js and icons.svg from github.com/cxkw-dev/dawn-and-dusk/tree/main/release.
@@ -21,7 +22,7 @@ const agentsMd = `## UI: dawn & dusk design system
 - Component catalogue: https://cxkw-dev.github.io/dawn-and-dusk — check dawn and dusk before finishing.`;
 ---
 <Docs title="Agent skill" group="AI" lead="Hand dawn & dusk to an AI agent. The skill teaches it the tokens, the rules and every component, and ships the CSS, JS and icons it needs.">
-  <p>The skill is optional. To use the components in your app, start with the <a href={`${import.meta.env.BASE_URL}getting-started`}>installation guide and starters</a>.</p>
+  <p>The skill is optional. To use the components in your app, start with the <a href={`${base}/getting-started`}>installation guide and starters</a>.</p>
   <h2 id="whats-inside">What’s inside</h2>
   <div class="doc-cards">
     <div class="doc-card"><b>SKILL.md</b><span>When to use the system, how to install it into a project, and the rules that make it look right.</span></div>
@@ -36,7 +37,7 @@ const agentsMd = `## UI: dawn & dusk design system
   <h2 id="install">Install for Claude</h2>
   <p>Install the skill into each project that uses dawn & dusk, never into your global <code>~/.claude/skills</code>: other projects, such as client work, keep their own design language. Claude Code finds it in the project’s <code>.claude/skills</code> folder and uses it whenever you ask for UI there. Commit the folder so teammates get it too.</p>
   <Code code={install} lang="bash" theme={ddTheme} wrap />
-  <p>In the Claude apps, zip the <code>skill/dawn-and-dusk</code> folder and upload it as a custom skill. Its description limits it to dawn & dusk work.</p>
+  <p>In the Claude apps, zip the <code>skill/dawn-and-dusk</code> folder (leave out <code>evals/</code>) and upload it as a custom skill. Its description limits it to dawn & dusk work.</p>
 
   <h2 id="other-agents">Other agents</h2>
   <p>Agents without skill support (Cursor, Copilot, Codex…) get most of the way with a short block in <code>AGENTS.md</code> or the system prompt, plus the release files:</p>

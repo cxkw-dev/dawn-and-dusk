@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const close = `<button class="dd-dialog__close" type="button" data-dd-dialog-close aria-label="Close">${i('x')}</button>`;
 
@@ -199,7 +199,7 @@ ${members.map(([name, mail, role]) => `  <div class="dd-surface" data-member="${
   <Example code={destructive} description="Try it: focus starts on “Keep it”, so Enter is the safe answer." />
 
   <h2 id="form">Form</h2>
-  <p>Wrap the parts in <code>&lt;form method="dialog" class="dd-dialog__form"&gt;</code> and use the same fields as any form, with tucked labels. Native validation runs first; a valid submit closes the dialog with the button’s <code>value</code> as <code>returnValue</code>.</p>
+  <p>Wrap the parts in <code>&lt;form method="dialog" class="dd-dialog__form"&gt;</code> and use the same fields as any form, with tucked labels. Native validation runs first; a valid submit closes the dialog with the button’s <code>value</code> as <code>returnValue</code>. A button with its own <code>formmethod</code> wins: <code>formmethod="post"</code> posts instead.</p>
   <Example code={form} description="Try it: press “Add domain” with the field empty — validation holds the dialog open. Type a domain and press Enter." />
 
   <h2 id="long-content">Long content</h2>
@@ -226,19 +226,19 @@ ${members.map(([name, mail, role]) => `  <div class="dd-surface" data-member="${
     ['.dd-dialog__body', 'Content. Scrolls when long; muted text with <code>strong</code> in ink.'],
     ['.dd-dialog__foot', 'Actions, right-aligned, primary last. Split evenly when the dialog is 360px or narrower.'],
     ['.dd-dialog__hint', 'Mono note pushed to the left of the footer (“esc to cancel”). Hidden when the dialog is 360px or narrower.'],
-    ['.dd-dialog__form', `A <code>&lt;form method="dialog"&gt;</code> wrapping head, body and foot; it doesn’t affect layout. Inside, use the regular <a href="${docs}/components/form-field"><code>.dd-field</code></a> and <a href="${docs}/components/text-input"><code>.dd-input</code></a>; add <code>dd-form__body</code> to the body to space them.`],
+    ['.dd-dialog__form', `A <code>&lt;form method="dialog"&gt;</code> wrapping head, body and foot; it doesn’t affect layout. Inside, use the regular <a href="${base}/components/form-field"><code>.dd-field</code></a> and <a href="${base}/components/text-input"><code>.dd-input</code></a>; add <code>dd-form__body</code> to the body to space them.`],
     ['.dd-dialog--danger', 'Destructive: tints the icon tile with <code>--dd-bad</code>.'],
     ['.dd-dialog--sm / --lg', 'Sizes: 380px and 680px. Medium (460px) has no modifier.'],
     ['.is-closing', 'Set by the script while the exit animation plays.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <p><code>ds/behaviors/dialog.js</code> (loaded by <code>dawn-and-dusk.js</code>) wires openers, close buttons, the scrim and the exit motion; the same script drives <a href={`${docs}/components/drawer`}>Drawer</a> and <a href={`${docs}/components/sheet`}>Sheet</a>. A click on the scrim closes the dialog only when the press starts and ends outside it, so drag-selecting text never closes it.</p>
+  <p><code>ds/behaviors/dialog.js</code> (loaded by <code>dawn-and-dusk.js</code>) wires openers, close buttons, the scrim and the exit motion; the same script drives <a href={`${base}/components/drawer`}>Drawer</a> and <a href={`${base}/components/sheet`}>Sheet</a>. A click on the scrim closes the dialog only when the press starts and ends outside it, so drag-selecting text never closes it.</p>
   <ClassTable head={['Attribute / API', 'What it does']} rows={[
-    ['data-dd-dialog-open="#id"', `On any element: opens that dialog modally and remembers the element so focus returns to it on close. On an item of a floating <a href="${docs}/components/menu">menu</a>, it remembers the button that opened the menu instead (the item closes with its menu).`],
+    ['data-dd-dialog-open="#id"', `On any element: opens that dialog modally and remembers the element so focus returns to it on close. On an item of a floating <a href="${base}/components/menu">menu</a>, it remembers the button that opened the menu instead (the item closes with its menu).`],
     ['data-dd-dialog-close', 'On any element inside the dialog: closes it with the exit animation.'],
     ['data-dd-dialog-close="value"', 'Closes and sets <code>dialog.returnValue</code> to <code>value</code>; read it in the native <code>close</code> event.'],
-    ['form[method="dialog"]', 'A valid submit closes with the submit button’s <code>value</code>.'],
+    ['form[method="dialog"]', 'A valid submit closes with the submit button’s <code>value</code>, unless the button’s <code>formmethod</code> says otherwise.'],
     ['data-dd-dialog-backdrop="static"', 'On the dialog: clicking the scrim does nothing (for forms with unsaved input). Esc still closes.'],
     ['dd.dialog.open(sel) / dd.dialog.close(sel, value)', 'The same from script. <code>sel</code> is a selector or the element.'],
   ]} />

@@ -139,3 +139,44 @@ test('a trigger removed under the pointer (a list re-rendered) takes its tooltip
   await page.waitFor(isOpen, { timeout: 1500 });
   assert.equal(await page.text('#dd-tooltip'), 'Copy link');
 });
+
+test('inside a modal dialog: the tooltip lives in the dialog (so the pointer can reach it), looks the same, and Esc hides only it', async ({ open, assert }) => {
+  const page = await open('components/tooltip');
+  // How it looks outside a dialog first.
+  const look = () => page.get(() => { const cs = getComputedStyle(document.getElementById('dd-tooltip')); return ['backgroundColor', 'color', 'fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'padding', 'borderRadius', 'boxShadow', 'width', 'height'].map((k) => cs[k]).join(' | '); });
+  await page.get(() => document.querySelector('.doc-main').insertAdjacentHTML('afterbegin', `
+    <p style="padding: 60px"><button class="dd-btn" id="tt-out" data-dd-tooltip="Same words, either side">Out</button></p>
+    <dialog class="dd-dialog" id="tt-dlg" aria-label="Test"><div class="dd-dialog__body" style="padding: 60px">
+      <button class="dd-btn" id="tt-in" data-dd-tooltip="Same words, either side">In</button></div></dialog>`));
+  await page.hover('#tt-out');
+  await page.waitFor(isOpen, { timeout: 1500 });
+  const outside = await look();
+  await away(page);
+  await page.waitFor(() => !document.querySelector('.dd-tooltip.is-open'));
+
+  await page.get(() => dd.dialog.open('#tt-dlg'));
+  await page.sleep(300);
+  await page.hover('#tt-in');
+  await page.waitFor(isOpen, { timeout: 1500 });
+  assert.equal(await page.get(() => document.getElementById('dd-tooltip').parentElement.id), 'tt-dlg', 'moved into the dialog');
+  assert.equal(await look(), outside, 'looks exactly as it does outside');
+  // Glide from the trigger onto the tooltip: it stays.
+  const r = await page.get(() => { const t = document.getElementById('dd-tooltip').getBoundingClientRect(); const a = document.getElementById('tt-in').getBoundingClientRect(); return { ax: a.left + a.width / 2, ay: a.top + 2, tx: t.left + t.width / 2, ty: t.top + t.height / 2 }; });
+  assert.equal(await page.get((x, y) => document.elementFromPoint(x, y)?.closest('.dd-tooltip')?.id, r.tx, r.ty), 'dd-tooltip', 'not inert');
+  for (let k = 1; k <= 5; k++) await moveTo(page, r.ax + ((r.tx - r.ax) * k) / 5, r.ay + ((r.ty - r.ay) * k) / 5);
+  await page.sleep(400);
+  assert.ok(await page.get(isOpen), 'still open with the pointer on it');
+  // One Esc hides the tooltip and leaves the dialog open; the next closes the dialog.
+  await page.focus('#tt-in');
+  await page.press('Escape');
+  await page.sleep(300);
+  assert.equal(await page.get(isOpen), false, 'Esc hides the tooltip');
+  assert.ok(await page.get(() => document.getElementById('tt-dlg').open), 'and only the tooltip');
+  await page.press('Escape');
+  await page.waitFor(() => !document.getElementById('tt-dlg').open);
+  // Back outside, it moves back to <body>.
+  await page.hover('#tt-out');
+  await page.waitFor(isOpen, { timeout: 1500 });
+  assert.equal(await page.get(() => document.getElementById('dd-tooltip').parentElement === document.body), true);
+  assert.equal(await page.count('.dd-tooltip:not(.dd-tooltip--static)'), 1, 'still one shared tooltip');
+});

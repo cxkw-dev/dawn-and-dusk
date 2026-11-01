@@ -1,9 +1,11 @@
 # Behaviour tests: builds the docs, serves the build with `astro preview` and runs every tests/*.test.mjs in headless
-# Chrome against it (tests/lib/browser.mjs reads CHROME and DD_BASE). Runs on pull requests and on demand from the
-# Actions tab; the deploy workflow doesn't wait for it.
+# Chrome against it (tests/lib/browser.mjs reads CHROME and DD_BASE). Runs on pushes to main, on pull requests and on
+# demand from the Actions tab; the deploy workflow doesn't wait for it.
 name: Test
 
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 

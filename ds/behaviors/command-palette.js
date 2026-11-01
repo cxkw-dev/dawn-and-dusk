@@ -2,13 +2,15 @@
    ⌘K / Ctrl+K toggles the page's palette (the one marked [data-dd-hotkey], else the first). Typing filters
    .dd-command__item rows by their text and optional data-keywords; empty groups hide and .dd-command__empty shows
    (its .dd-command__query echoes the search). ↑ ↓ (or Ctrl+P / Ctrl+N) move the selected row, Enter runs it,
-   Esc clears the search and then closes, a click on the backdrop closes. Running a row clicks it (links navigate),
-   fires a bubbling `dd:command` event with detail { item, value } and closes the dialog. value = the row's data-value,
-   else its name (the first part of .dd-command__body), else its text. Works on inline palettes too. */
+   Esc clears the search and then closes, a click on the backdrop closes (only when the press started there too, so
+   drag-selecting the search text out of the box is safe). Running a row clicks it (links navigate), fires a bubbling
+   `dd:command` event with detail { item, value } and closes the dialog. value = the row's data-value, else its name
+   (the first part of .dd-command__body), else its text. Works on inline palettes too.
+   Closing returns focus to what had focus before the palette opened, kept on the dialog as dialog.ddReturn (dialog.js
+   uses it too: a row with data-dd-dialog-open hands focus back there when the dialog it opened closes). */
 (() => {
   const ITEM = '.dd-command__item';
   let uid = 0;
-  let lastFocus = null;
 
   const parts = (root) => ({ input: root.querySelector('.dd-command__input'), list: root.querySelector('.dd-command__list'), empty: root.querySelector('.dd-command__empty') });
   const visible = (root) => [...root.querySelectorAll(ITEM)].filter((el) => !el.closest('[hidden]') && el.getAttribute('aria-disabled') !== 'true');
@@ -54,7 +56,7 @@
 
   function open(dialog) {
     if (!dialog || dialog.open) return;
-    lastFocus = document.activeElement;
+    dialog.ddReturn = document.activeElement;
     const { input } = parts(dialog);
     if (input) { input.value = ''; input.setAttribute('role', input.getAttribute('role') || 'combobox'); input.setAttribute('aria-expanded', 'true'); }
     filter(dialog);
@@ -65,13 +67,23 @@
   const palette = (id) => (id ? document.getElementById(id.replace(/^#/, '')) : null)
     || document.querySelector('dialog.dd-command[data-dd-hotkey]') || document.querySelector('dialog.dd-command');
 
+  // Backdrop: the click lands on the <dialog> itself, outside its box. Only when the press started out there too: a
+  // drag-select from the search box released over the backdrop also clicks the dialog.
+  const onBackdrop = (e) => {
+    const d = e.target;
+    if (!(d instanceof HTMLDialogElement && d.classList.contains('dd-command'))) return null;
+    const r = d.getBoundingClientRect();
+    return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom ? d : null;
+  };
+  let pressed = null;
+  document.addEventListener('pointerdown', (e) => { pressed = onBackdrop(e); });
+
   document.addEventListener('click', (e) => {
     const t = e.target.closest('[data-dd-command]');
     if (t) { e.preventDefault(); open(palette(t.getAttribute('data-dd-command'))); return; }
-    // Backdrop: the click lands on the <dialog> itself, outside its content.
     if (e.target instanceof HTMLDialogElement && e.target.classList.contains('dd-command')) {
-      const r = e.target.getBoundingClientRect();
-      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) e.target.close();
+      if (pressed === e.target && onBackdrop(e)) e.target.close();
+      pressed = null;
       return;
     }
     const item = e.target.closest(ITEM);
@@ -119,8 +131,8 @@
     }
   });
 
-  // Hand focus back to whatever opened the palette.
+  // Hand focus back to whatever had it before the palette opened.
   document.addEventListener('close', (e) => {
-    if (e.target.classList?.contains('dd-command') && lastFocus?.isConnected) lastFocus.focus({ preventScroll: true });
+    if (e.target.classList?.contains('dd-command') && e.target.ddReturn?.isConnected) e.target.ddReturn.focus({ preventScroll: true });
   }, true);
 })();

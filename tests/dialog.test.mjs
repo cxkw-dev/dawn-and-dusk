@@ -348,3 +348,48 @@ test('the scrollbar width is measured even when the script loads after the page 
   });
   assert.ok(observed.includes('BODY'), 'the body is watched for size changes');
 });
+
+test('a menu inside a dialog: its checkbox and radio items toggle once (menu.js owns them, not the dialog)', async ({ open, assert }) => {
+  const page = await open('components/dialog');
+  await page.get(() => {
+    document.body.insertAdjacentHTML('beforeend', `<dialog class="dd-dialog" id="menu-dlg"><div class="dd-dialog__body">
+      <button class="dd-btn" id="menu-dlg-t" data-dd-menu="menu-dlg-m">Options</button>
+      <div class="dd-menu" id="menu-dlg-m" hidden>
+        <button class="dd-menu__item" id="menu-dlg-cb" role="menuitemcheckbox" aria-checked="false">Show dates</button>
+        <button class="dd-menu__item" role="menuitemradio" aria-checked="true">List</button>
+        <button class="dd-menu__item" id="menu-dlg-grid" role="menuitemradio" aria-checked="false">Grid</button>
+      </div></div></dialog>`);
+    dd.dialog.open('#menu-dlg');
+  });
+  await waitOpen(page, 'menu-dlg');
+  await page.click('#menu-dlg-t');
+  await page.click('#menu-dlg-cb');
+  assert.equal(await page.attr('#menu-dlg-cb', 'aria-checked'), 'true', 'one click checks it');
+  await page.click('#menu-dlg-cb');
+  assert.equal(await page.attr('#menu-dlg-cb', 'aria-checked'), 'false', 'a second click unchecks it');
+  await page.click('#menu-dlg-grid');
+  assert.deepEqual(await page.get(() => [...document.querySelectorAll('#menu-dlg-m [role="menuitemradio"]')].map((r) => r.getAttribute('aria-checked'))), ['false', 'true']);
+  assert.ok(await isOpen(page, 'menu-dlg'), 'the dialog stays open');
+});
+
+test('a submitter’s formmethod wins: formmethod="post" in a dialog form submits, formmethod="dialog" closes', async ({ open, assert }) => {
+  const page = await open('components/dialog');
+  await page.get(() => {
+    document.body.insertAdjacentHTML('beforeend', `<dialog class="dd-dialog" id="fm-dlg"><div class="dd-dialog__body">
+      <form method="dialog"><button id="fm-post" formmethod="post" formaction="#posted">Save to server</button></form>
+      <form method="post" action="#posted"><button id="fm-close" formmethod="dialog" value="later">Later</button></form>
+    </div></dialog>`);
+    // Registered after dialog.js: see whether it took the submit over, then keep the page from navigating.
+    window.__taken = [];
+    document.addEventListener('submit', (e) => { window.__taken.push(e.defaultPrevented); e.preventDefault(); });
+    dd.dialog.open('#fm-dlg');
+  });
+  await waitOpen(page, 'fm-dlg');
+  await page.click('#fm-post');
+  assert.deepEqual(await page.get(() => window.__taken), [false], 'the post submit is left to the browser');
+  assert.ok(await isOpen(page, 'fm-dlg'), 'and the dialog stays open');
+  await page.click('#fm-close');
+  await waitClosed(page, 'fm-dlg');
+  assert.deepEqual(await page.get(() => window.__taken), [false, true]);
+  assert.equal(await returnValue(page, 'fm-dlg'), 'later', 'closes with the submitter’s value');
+});

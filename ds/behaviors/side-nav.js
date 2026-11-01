@@ -1,13 +1,15 @@
 /* Side nav (.dd-side-nav): collapse, sections and the mobile off-canvas mode.
    - [data-dd-nav-toggle] folds / unfolds the page panel of its nav (or of the nav named by its value, e.g. "#app-nav").
-     A nav with an id remembers the choice in localStorage ("dd-side-nav:<id>").
+     A nav with an id remembers the choice in localStorage ("dd-side-nav:<id>"). aria-expanded follows; an aria-label /
+     data-label of "Collapse navigation" / "Collapse" swaps with "Expand …", any other label is the author's and stays.
    - [data-dd-nav-section="name"] on a rail item shows the pane [data-dd-nav-pane="name"]; pressing the active one again
      folds the panel, like the chevron.
-   - [data-dd-nav-open="#id"] opens a nav that is off-canvas (mobile); [data-dd-nav-close] closes it. Esc, a click on the
-     scrim, the chevron or following a link inside also close it, and focus returns to the opener. Tabbing out of it, onto
-     anything outside (the menu button too), closes it and focus stays where it went. While it covers the viewport the
-     page behind doesn't scroll (.dd-side-nav-lock on <html>). If it stops being off-canvas while open (the window
-     widens past the breakpoint) it is simply in view, and closes. */
+   - [data-dd-nav-open="#id"] opens a nav that is off-canvas (mobile); [data-dd-nav-close] closes it. Esc (unless
+     something inside already handled it), a click on the scrim, the chevron or following a link inside also close it,
+     and focus returns to the opener. Tabbing out of it, onto anything outside (the menu button too), closes it and
+     focus stays where it went. While it covers the viewport the page behind doesn't scroll (.dd-side-nav-lock on
+     <html>). If it stops being off-canvas while open (the window widens past the breakpoint) it is simply in view, and
+     closes. */
 (() => {
   const KEY = (id) => `dd-side-nav:${id}`;
   const store = {
@@ -36,12 +38,14 @@
     target.querySelectorAll(':scope > .dd-side-nav.is-mobile-open').forEach((nav) => { if (!offcanvas(nav)) setMobile(nav, false, { restore: false }); });
   }));
 
+  // The chevron's labels follow the state only while they are the script's own English pair; an author's label (another
+  // language, other words) is kept as written, and aria-expanded carries the state.
+  const LABELS = { 'data-label': ['Collapse', 'Expand'], 'aria-label': ['Collapse navigation', 'Expand navigation'] };
   const syncAria = (nav) => {
     const open = !nav.classList.contains('is-collapsed');
     toggles(nav).forEach((t) => {
       t.setAttribute('aria-expanded', String(open));
-      if (t.hasAttribute('data-label')) t.setAttribute('data-label', open ? 'Collapse' : 'Expand');
-      if (t.hasAttribute('aria-label')) t.setAttribute('aria-label', open ? 'Collapse navigation' : 'Expand navigation');
+      for (const [attr, pair] of Object.entries(LABELS)) if (pair.includes(t.getAttribute(attr))) t.setAttribute(attr, pair[open ? 0 : 1]);
     });
     const active = nav.querySelector('[data-dd-nav-section].is-active');
     if (active) active.setAttribute('aria-expanded', String(open));
@@ -130,8 +134,9 @@
     if (nav && to && !nav.contains(to) && to !== pressed) setMobile(nav, false, { restore: false });
   });
 
+  // An Esc something inside already handled (a menu, a select) isn't the nav's.
   document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
+    if (e.key !== 'Escape' || e.defaultPrevented) return;
     const nav = document.querySelector('.dd-side-nav.is-mobile-open');
     if (nav) { e.preventDefault(); setMobile(nav, false); }
   });

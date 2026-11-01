@@ -200,7 +200,7 @@ Try it: click the button or press ⌘K / Ctrl K, type to filter, Enter runs the 
 | `Typing` | Filters rows by their text and `data-keywords` (every word must match); selects the first match. |
 | `↑ ↓ · Ctrl P / Ctrl N` | Move the selected row, wrapping at the ends; the list scrolls to keep it in view. Hovering a row selects it too. |
 | `Enter / click` | Runs the row: clicks it (links navigate), fires a bubbling `dd:command` event with `detail.item` and `detail.value` (the row’s `data-value`, else its name), and closes the dialog. |
-| `Esc` | Clears the search; a second Esc closes. Clicking the backdrop closes too, and focus returns to the opener. |
+| `Esc` | Clears the search; a second Esc closes. Clicking the backdrop closes too (a press that starts in the search and ends outside doesn’t), and focus returns to the opener. When a command opens a dialog, closing that dialog returns focus there too. |
 
 ## Guidelines
 

@@ -196,7 +196,7 @@ test('side nav: the rail marks the current section, its pane lists the pages, an
   const sections = await page.get(() => [...document.querySelectorAll('#doc-nav [data-dd-nav-pane="components"] .dd-side-nav__section')].map((p) => p.textContent));
   assert.deepEqual(sections, ['Actions', 'Forms', 'Data display', 'Feedback & status', 'Navigation', 'Overlays', 'Layout'], 'components are grouped under micro-caps labels');
   assert.equal(await page.get(() => document.querySelectorAll('#doc-nav [data-dd-nav-pane="ai"] a[data-find]').length), 1, 'ai: the agent skill');
-  assert.match(await page.get(() => document.querySelector('#doc-nav [data-dd-nav-pane="foundations"] a[data-find]').getAttribute('href')), /\/dawn-and-dusk$/, 'the introduction opens foundations');
+  assert.match(await page.get(() => document.querySelector('#doc-nav [data-dd-nav-pane="foundations"] a[data-find]').getAttribute('href')), /\/dawn-and-dusk\/$/, 'the introduction opens foundations');
   // Another rail item switches the panel without navigating; the page stays current in its own pane.
   const url = await page.get(() => location.href);
   await page.click(`${NAV} [data-dd-nav-section="foundations"]`);

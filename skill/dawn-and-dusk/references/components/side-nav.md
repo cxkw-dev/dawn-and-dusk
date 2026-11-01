@@ -288,7 +288,7 @@ On small screens the whole nav slides in from the left over a scrim, opened by t
 
 | class / attribute | what it does |
 |---|---|
-| `data-dd-nav-toggle` | Folds / unfolds the panel of its nav (or of the nav in its value, e.g. `"#app-nav"`). Keeps `aria-expanded` and the tooltip in sync; persists to `localStorage` under `dd-side-nav:<id>`. |
+| `data-dd-nav-toggle` | Folds / unfolds the panel of its nav (or of the nav in its value, e.g. `"#app-nav"`). Keeps `aria-expanded` in sync, and swaps the default English label and tooltip (a label of your own is left as written); persists to `localStorage` under `dd-side-nav:<id>`. |
 | `data-dd-nav-section="name"` | On a rail item: shows `[data-dd-nav-pane="name"]` and unfolds the panel. Pressing the active item again folds or unfolds it. |
 | `data-dd-nav-open="#id"` | Opens an off-canvas nav (the top bar’s menu button). Focus moves to the current page link (or the first rail item). |
 | `data-dd-nav-close` | Closes the off-canvas nav it sits in. |

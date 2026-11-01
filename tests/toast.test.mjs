@@ -199,3 +199,35 @@ test('a toast raised while a modal dialog is open shows above its scrim and stay
   await page.evaluate(`void dd.toast({ title: 'After', duration: 0 })`);
   await page.waitFor(() => [...document.querySelectorAll('.dd-toaster > .dd-toast')].some((t) => t.textContent.includes('After') && t.getBoundingClientRect().height > 0));
 });
+
+test('a toast already showing when a modal opens moves above it, and its action stays clickable', async ({ open, assert }) => {
+  const page = await open('components/dialog');
+  await page.evaluate(`window.__undo = 0; void dd.toast({ title: 'Row deleted', duration: 0, action: { label: 'Undo', onClick() { window.__undo++; } } })`);
+  await page.waitFor((s) => !!document.querySelector(s), { args: [live] });
+  await page.sleep(400); // past the entrance
+  // Opened by plain script, not through dd: the stack still follows it.
+  await page.get(() => document.getElementById('publish-dialog').showModal());
+  await page.waitFor(() => document.getElementById('publish-dialog').contains(document.querySelector('.dd-toaster')));
+  const hit = await page.get((s) => {
+    const t = document.querySelector(s); const r = t.getBoundingClientRect();
+    return { inToast: t.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)), open: document.querySelector('.dd-toaster').matches(':popover-open') };
+  }, live);
+  assert.deepEqual(hit, { inToast: true, open: true }, 'on top of the modal and its scrim');
+  await page.click('.dd-toast__action');
+  assert.equal(await page.get(() => window.__undo), 1, 'Undo works over the modal');
+  assert.ok(await page.get(() => document.getElementById('publish-dialog').open), 'and the dialog stays open');
+});
+
+test('a toast into an empty stack that has shown before lands at once; a brand-new stack waits a frame, in order', async ({ open, assert }) => {
+  const page = await open('components/toast');
+  const first = await page.get(async () => {
+    const a = dd.toast({ title: 'one', duration: 0 }), b = dd.toast({ title: 'two', duration: 0 });
+    const sync = a.el.isConnected || b.el.isConnected;
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    return { sync, order: [...document.querySelectorAll('.dd-toaster > .dd-toast')].map((t) => t.textContent) };
+  });
+  assert.deepEqual(first, { sync: false, order: ['one', 'two'] }, 'the first toasts wait for the new live region, keeping their order');
+  await page.get(() => dd.toast.clear());
+  await page.waitFor(() => !document.querySelector('.dd-toaster > .dd-toast'));
+  assert.equal(await page.get(() => dd.toast({ title: 'three', duration: 0 }).el.isConnected), true, 'the region is ready: no extra frame');
+});

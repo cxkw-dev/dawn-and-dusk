@@ -16,8 +16,11 @@ const RAIL = [
 
 /** The site's base path without a trailing slash ('/dawn-and-dusk'). */
 export const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-/** A nav href ('components/button', '' for the introduction) as a site path, without a trailing slash. */
-export const hrefOf = (href: string) => `${base}/${href}`.replace(/\/$/, '');
+/** A nav href ('components/button', '' for the introduction) as a site path: no trailing slash, except the site root's
+ * own ('/dawn-and-dusk/'), which GitHub Pages would otherwise redirect to. */
+export const hrefOf = (href: string) => (href ? `${base}/${href}` : `${base}/`);
+/** A site path without its trailing slash, as pages compare them (Astro.url.pathname may or may not end in one). */
+export const pathOf = (href: string) => href.replace(/\/$/, '');
 
 const files = Object.values(import.meta.glob<{ default: NavFile }>('../nav/*.mjs', { eager: true }))
   .map((m) => m.default)
@@ -41,6 +44,6 @@ export const sections: RailSection[] = RAIL
 
 /** The section and nav item a page path (without a trailing slash) belongs to, if it is in the nav. */
 export function locate(path: string): { section?: RailSection; item?: NavItem } {
-  for (const section of sections) for (const g of section.groups) for (const item of g.items) if (hrefOf(item.href) === path) return { section, item };
+  for (const section of sections) for (const g of section.groups) for (const item of g.items) if (pathOf(hrefOf(item.href)) === path) return { section, item };
   return {};
 }

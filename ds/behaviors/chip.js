@@ -6,13 +6,14 @@
    - Input: .dd-chip-input with a .dd-chip-input__field. Enter or a comma turns the text into a chip (colour picked
      from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes (a still, deeper
      tint under reduced motion) instead of being added twice; Backspace in an empty field removes the last chip.
-     The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x).
+     The container fires "dd:chips-change" with detail.values (chips still playing their exit are left out). Icons
+     come from the inline sprite (#dd-i-x).
    When a chip goes, the chips after it glide into its place (not under reduced motion).
    Inside [data-dd-manual] (chips a framework renders from state) the script does nothing; listen for clicks yourself. */
 (() => {
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const valueOf = (chip) => chip.dataset.value || chip.textContent.trim();
-  const valuesIn = (box) => [...box.querySelectorAll('.dd-chip')].map(valueOf);
+  const valuesIn = (box) => [...box.querySelectorAll('.dd-chip:not(.is-leaving)')].map(valueOf); // a leaving chip is gone already
   const changed = (box) => box?.dispatchEvent(new CustomEvent('dd:chips-change', { bubbles: true, detail: { values: valuesIn(box) } }));
 
   const remove = (chip) => {

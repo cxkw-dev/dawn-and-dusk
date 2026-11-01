@@ -6,7 +6,8 @@
    - Files that don't match the input's accept="…" or exceed data-dd-max-size ("20MB", "500KB", bytes) are listed as
      errors with the reason, and left out of the input's files. File inputs outside a dropzone are left alone.
    - [data-dd-file-remove] inside a .dd-file removes that row (with a short exit animation) and its file, then fires
-     a bubbling "dd-file-remove" event on the list with detail { name }. */
+     a bubbling "dd-file-remove" event on the list with detail { name }.
+   - Resetting the form clears the rows the script listed (rows rendered by the page stay). */
 (() => {
   const size = (b) => (b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(1)} MB`);
   const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -99,6 +100,17 @@
     }
     // The input's files are the accepted ones the list shows; rejected files never reach the form.
     if (keep.length !== chosen.length || keep.some((f, n) => f !== chosen[n])) setFiles(input, keep);
+  });
+
+  // A form reset empties its file inputs: the rows listed for them go too (rows the page rendered stay), or the next
+  // pick would bring the old files back into a multiple input.
+  document.addEventListener('reset', (e) => {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement) || e.defaultPrevented) return;
+    [...form.elements].forEach((input) => {
+      if (input.type !== 'file' || !input.closest('[data-dd-dropzone]')) return;
+      listFor(input)?.querySelectorAll(':scope > .dd-file').forEach((row) => added.has(row) && row.remove());
+    });
   });
 
   document.addEventListener('click', (e) => {

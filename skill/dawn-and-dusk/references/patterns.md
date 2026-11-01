@@ -34,8 +34,9 @@ Reading the skeletons:
    (an ID as a title), and `<b>` inside `.dd-stat__compare` / `.dd-page-header__meta`. Units go in `.dd-stat__unit` /
    `.dd-data-table__unit`, not in the figure.
 4. **A status column.** Lists of things that can be healthy get a status column: `.dd-data-table__status` or
-   `.dd-table__status` with `data-status="ok|warn|bad|info|muted"` — a dot **and** a word. Mark a figure past its
-   threshold with `td.is-warn` / `td.is-bad`; never colour a row. Summarise once in the page header
+   `.dd-table__status` with `data-status="ok|warn|bad|info|muted"` — a dot **and** a word. In a `.dd-data-table`, mark a
+   figure past its threshold with `td.is-warn` / `td.is-bad` (data table only; `.dd-table` has no such cell states);
+   never colour a row. Summarise once in the page header
    (`.dd-page-header__status--warn|--bad`).
 5. **Density by job.** Many rows → `.dd-data-table` (default) or `--compact` (explorers, split panels). ≤ 10 rows, no
    sorting → `.dd-table` (`--compact` in narrow columns). Forms are roomy. Marketing sections breathe (60–100px,

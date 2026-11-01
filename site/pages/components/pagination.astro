@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 // Same window the behaviour draws: first, last, the current page and its neighbours, a gap for the rest (≤ 7 slots).
 const slots = (p, n) => n <= 7 ? Array.from({ length: n }, (_, k) => k + 1)
@@ -134,7 +134,7 @@ const full = `
     ['Page size', 'Changing the select keeps the first visible row on screen.'],
     ['Keyboard', '<kbd>Tab</kbd> to a page or arrow, <kbd>Enter</kbd> or <kbd>Space</kbd> to go. Focus stays on the page you chose, and on an arrow even when it disables.'],
     ['dd:pagechange', 'Bubbles after a user changes page or size: <code>{ page, pages, pageSize, total, from, to }</code>. Fetch the page here.'],
-    ['dd.pagination(el, { page, pages, total, pageSize })', `Sets state from script (no event) and returns it. The <a href="${docs}/components/data-table">data table</a> uses it to page its rows.`],
+    ['dd.pagination(el, { page, pages, total, pageSize })', `Sets state from script (no event) and returns it. The <a href="${base}/components/data-table">data table</a> uses it to page its rows.`],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

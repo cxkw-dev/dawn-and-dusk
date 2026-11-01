@@ -78,7 +78,7 @@ Try it: raise a few (Archive post has an Undo), hover the stack to pause it, swi
 
 ## JavaScript
 
-`dd.toast()` creates the stack on first use (a polite live region labelled “Notifications”), so there is nothing to put in your HTML. Text is set as text, never as HTML. The stack lives in the top layer, so a toast raised while a modal dialog is open shows above its scrim — and its action still works.
+`dd.toast()` creates the stack on first use (a polite live region labelled “Notifications”), so there is nothing to put in your HTML. Text is set as text, never as HTML. The stack lives in the top layer, so a toast shows above a modal dialog’s scrim, whether it was raised before or after the dialog opened — and its action still works.
 
 ```js
 // Anywhere after dawn-and-dusk.js has loaded:

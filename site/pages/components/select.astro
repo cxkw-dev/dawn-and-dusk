@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const chev = `<span class="dd-select__chevron">${i('chevron-down')}</span>`;
 
@@ -215,7 +215,7 @@ const toolbar = `
   <Example description="Rendered open to show the anatomy; it works like the others. Try it: End skips the disabled Singapore option; type “e” twice to step through the eu- regions." code={customOpen} minHeight="520px" />
 
   <h3 id="multiple">Multiple</h3>
-  <p>Add <code>aria-multiselectable="true"</code> to the listbox. Choosing toggles an option and keeps the list open; the trigger lists what is chosen (or its <code>data-dd-placeholder</code> when nothing is), and a hidden input gets the values joined by commas. Past a handful of options, or when people type to find them, use a multi-select <a href={`${docs}/components/combobox#multi`}>combobox</a> instead.</p>
+  <p>Add <code>aria-multiselectable="true"</code> to the listbox. Choosing toggles an option and keeps the list open; the trigger lists what is chosen (or its <code>data-dd-placeholder</code> when nothing is), and a hidden input gets the values joined by commas. Past a handful of options, or when people type to find them, use a multi-select <a href={`${base}/components/combobox#multi`}>combobox</a> instead.</p>
   <Example description="Try it: open the list, toggle a few with Space or a click, then Esc." code={multiple} minHeight="320px" />
 
   <h2 id="toolbar">In a toolbar</h2>

@@ -1,6 +1,6 @@
 ---
 import Docs from '../layouts/Docs.astro';
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+import { base } from '../lib/nav';
 ---
 <Docs title="not found" group="404" lead="Nothing lives at this address. The page may have moved.">
   <div class="dd-row">

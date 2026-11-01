@@ -7,6 +7,7 @@
   --_soft: color-mix(in oklab, var(--dd-text) 10%, transparent);
   --_solid: var(--dd-text); --_on: var(--dd-bg);
   --_py: calc(var(--dd-u) * 1.5); --_px: calc(var(--dd-u) * 2.25); --_ls: .12em;
+  --_k: initial; /* the intent hue: only an intent class sets it, never a parent (a switch's --_k is its knob size) */
   display: inline-flex; align-items: center; justify-content: center; gap: .5em; flex: none;
   padding: calc(var(--_py) - .15em) calc(var(--_px) - var(--_ls)) calc(var(--_py) - .15em) var(--_px);
   border: 0; border-radius: calc(var(--dd-r-ctl) * .6);

@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const projects = [
   ['dawn-and-dusk', 'ok', 'Live', '1,284', '2h ago'],
@@ -127,6 +127,6 @@ const mono = `
   <h2 id="guidelines">Guidelines</h2>
   <Guides
     do={['Use it for up to ~10 rows that need no sorting or selection.', 'Right-align numbers and keep their units consistent within a column.', 'Keep cells to one line; truncate long text in the cell, not the column.']}
-    dont={['Don’t add vertical rules or zebra stripes; the hairline is enough.', `Don’t use it for hundreds of rows. Reach for the <a href="${docs}/components/data-table">data table</a> instead.`, 'Don’t put more than one action in the header.']}
+    dont={['Don’t add vertical rules or zebra stripes; the hairline is enough.', `Don’t use it for hundreds of rows. Reach for the <a href="${base}/components/data-table">data table</a> instead.`, 'Don’t put more than one action in the header.']}
   />
 </Docs>

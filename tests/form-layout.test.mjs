@@ -240,3 +240,38 @@ test('pressing Save after breaking a valid field does not shift the button out f
   assert.ok(Math.abs(during - before) < 1, `Save stays put while it is being pressed (moved ${(during - before).toFixed(1)}px)`);
   assert.equal(await page.attr(email, 'aria-invalid'), 'true', 'the submit then flags the field');
 });
+
+test('a soft limit and the validator agree: past the limit after a failed submit stays aria-invalid, and never blocks the submit', async ({ open, assert }) => {
+  const page = await open('components/form-layout');
+  await page.get(() => {
+    document.querySelector('.doc-main').insertAdjacentHTML('afterbegin', `
+      <form id="sl-form" data-dd-validate novalidate>
+        <div class="dd-field"><label class="dd-field__label" for="sl-note">Note</label>
+          <div class="dd-input dd-textarea"><textarea class="dd-input__control" id="sl-note" rows="2" required></textarea></div>
+          <div class="dd-field__foot"><span class="dd-field__counter" data-dd-counter="10">0 / 10</span></div>
+        </div>
+        <button class="dd-btn" id="sl-save" type="submit">Save</button>
+      </form>`);
+    window._sl = 0;
+    document.getElementById('sl-form').addEventListener('submit', (e) => { e.preventDefault(); window._sl++; });
+  });
+  await page.click('#sl-save');
+  assert.equal(await page.attr('#sl-note', 'aria-invalid'), 'true', 'empty and required: flagged');
+  assert.equal(await page.get(() => window._sl), 0);
+  await page.focus('#sl-note');
+  await page.type('this text is well over ten');
+  assert.ok(await page.get(() => document.querySelector('#sl-form .dd-field__counter').classList.contains('is-over')));
+  assert.equal(await page.attr('#sl-note', 'aria-invalid'), 'true', 'the fix clears the error, but the soft limit still marks it');
+  assert.equal(await errorOf(page, '#sl-note'), null, 'the required error went');
+  await retype(page, '#sl-note', 'short');
+  assert.equal(await page.attr('#sl-note', 'aria-invalid'), null, 'under the limit and valid: clean');
+  await retype(page, '#sl-note', 'well over the limit again');
+  assert.equal(await page.attr('#sl-note', 'aria-invalid'), 'true');
+  await page.click('#sl-save');
+  assert.equal(await page.get(() => window._sl), 1, 'a soft limit never blocks the submit');
+  assert.equal(await page.attr('#sl-note', 'aria-invalid'), 'true', 'and the submit check leaves the over-limit mark alone');
+  // Reset: the validator and the counter both let go.
+  await page.get(() => document.getElementById('sl-form').reset());
+  await page.waitFor(() => document.querySelector('#sl-form .dd-field__counter').textContent === '0 / 10');
+  assert.equal(await page.attr('#sl-note', 'aria-invalid'), null);
+});

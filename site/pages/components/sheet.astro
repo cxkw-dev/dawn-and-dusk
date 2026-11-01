@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const close = `<button class="dd-sheet__close" type="button" data-dd-dialog-close aria-label="Close">${i('x')}</button>`;
 
@@ -104,7 +104,7 @@ ${regions.map(([code, city, on]) => `      <button class="dd-sheet__item" type="
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <p>The sheet shares <code>ds/behaviors/dialog.js</code> with <a href={`${docs}/components/dialog`}>Dialog</a>: <code>data-dd-dialog-open="#id"</code> opens it, <code>data-dd-dialog-close="value"</code> on a row or button closes it and sets <code>returnValue</code>, a tap on the scrim or Esc slides it away, and focus returns to the opener. Choosing a <code>role="menuitemradio"</code> row checks it and unchecks the others; a <code>menuitemcheckbox</code> row flips.</p>
+  <p>The sheet shares <code>ds/behaviors/dialog.js</code> with <a href={`${base}/components/dialog`}>Dialog</a>: <code>data-dd-dialog-open="#id"</code> opens it, <code>data-dd-dialog-close="value"</code> on a row or button closes it and sets <code>returnValue</code>, a tap on the scrim or Esc slides it away, and focus returns to the opener. Choosing a <code>role="menuitemradio"</code> row checks it and unchecks the others; a <code>menuitemcheckbox</code> row flips.</p>
   <ClassTable head={['Key', 'What it does']} rows={[
     ['Esc', 'Closes the sheet.'],
     ['Tab / Shift+Tab', 'Stays inside the sheet, wrapping at the ends; the page behind is inert.'],

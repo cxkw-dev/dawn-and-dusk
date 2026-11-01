@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const kinds = `
 <div class="dd-stack">
@@ -93,7 +93,7 @@ const prose = `
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <p>A button with <code>data-dd-dismiss</code> inside a callout removes it with the same fade-and-collapse as an <a href={`${docs}/components/alert#behaviour`}>alert</a>.</p>
+  <p>A button with <code>data-dd-dismiss</code> inside a callout removes it with the same fade-and-collapse as an <a href={`${base}/components/alert#behaviour`}>alert</a>.</p>
 
   <Example title="Dismissible" code={dismissible} />
 

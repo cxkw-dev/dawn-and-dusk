@@ -1,8 +1,9 @@
 /* Text input helpers, all opt-in and delegated from document:
-   - [data-dd-reveal]  on a button inside .dd-input toggles its control between password and text (aria-pressed).
-   - [data-dd-clear]   empties the control, fires input/change and puts focus back.
+   - [data-dd-reveal]  on a button inside .dd-input toggles its control between password and text (aria-pressed) and
+     swaps its aria-label; optional data-dd-reveal-label="Show password|Hide password" sets the pair.
+   - [data-dd-clear]   empties the control, fires input/change and puts focus back (not on a disabled or read-only one).
    - [data-dd-step="1"|"-1"] steps a number control (stepUp / stepDown honour min, max and step); the button is
-     disabled while the value sits on that end of the range. */
+     disabled while the value sits on that end of the range, re-checked when the form is reset. */
 (() => {
   const controlOf = (el) => el.closest('.dd-input')?.querySelector('.dd-input__control');
   const fire = (el) => {
@@ -18,13 +19,14 @@
       const show = input.type === 'password';
       input.type = show ? 'text' : 'password';
       reveal.setAttribute('aria-pressed', String(show));
-      reveal.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      const [showLabel, hideLabel] = (reveal.dataset.ddRevealLabel || 'Show password|Hide password').split('|');
+      reveal.setAttribute('aria-label', show ? hideLabel : showLabel);
       return;
     }
     const clear = e.target.closest('[data-dd-clear]');
     if (clear) {
       const input = controlOf(clear);
-      if (!input) return;
+      if (!input || input.disabled || input.readOnly) return;
       input.value = '';
       fire(input);
       input.focus();
@@ -54,6 +56,9 @@
     });
   };
   document.addEventListener('input', (e) => { if (e.target.matches?.('.dd-input__control[type="number"]')) limits(e.target); });
-  const init = () => document.querySelectorAll('.dd-input:has([data-dd-step]) .dd-input__control[type="number"]').forEach(limits);
+  const recheck = (root) => root.querySelectorAll('.dd-input:has([data-dd-step]) .dd-input__control[type="number"]').forEach(limits);
+  // A form reset restores values without firing input: re-check once the browser has put the defaults back.
+  document.addEventListener('reset', (e) => { if (e.target instanceof HTMLFormElement) setTimeout(() => recheck(e.target)); });
+  const init = () => recheck(document);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

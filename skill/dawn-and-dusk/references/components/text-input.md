@@ -129,7 +129,7 @@ Fixed text that is not part of the value sits in `.dd-input__unit` (mono, muted)
 
 ## Password with reveal
 
-A `data-dd-reveal` button flips the control between `password` and `text` and keeps `aria-pressed` and its label in sync.
+A `data-dd-reveal` button flips the control between `password` and `text` and keeps `aria-pressed` and its label in sync. For other words, give it `data-dd-reveal-label="Show password|Hide password"`.
 
 Try it: press the eye to show the secret, again to hide it. Each field toggles on its own.
 

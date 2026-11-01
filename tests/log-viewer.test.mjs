@@ -179,3 +179,24 @@ test('375px: tap a level and wrap; the bar fits', async ({ open, assert }) => {
   assert.ok(await page.get(() => document.documentElement.scrollWidth <= innerWidth), 'no sideways page scroll');
   assert.ok(await page.get((v) => { const r = document.querySelector(v); const b = r.getBoundingClientRect(); return [...r.querySelectorAll('.dd-log-viewer__bar > *')].every((c) => { const x = c.getBoundingClientRect(); return x.right <= b.right + 1 && x.left >= b.left - 1; }); }, LIVE), 'bar controls stay inside the viewer');
 });
+
+test('in a dialog, Esc in the search clears it and leaves the dialog open; Esc in an empty search closes the dialog', async ({ open, assert }) => {
+  const page = await open('components/log-viewer');
+  await page.get((s) => {
+    const dlg = document.createElement('dialog');
+    dlg.className = 'dd-dialog dd-dialog--lg'; dlg.id = 'lv-dlg'; dlg.setAttribute('aria-label', 'Logs');
+    dlg.append(document.querySelector(s));
+    document.body.append(dlg);
+    dd.dialog.open(dlg);
+  }, FILT);
+  await page.sleep(300);
+  const input = '#lv-dlg [data-dd-log-viewer-search]';
+  assert.equal(await page.get((s) => document.querySelector(s).value, input), 'idp');
+  await page.focus(input);
+  await page.press('Escape');
+  await page.sleep(300);
+  assert.equal(await page.get((s) => document.querySelector(s).value, input), '', 'Esc clears the search');
+  assert.ok(await page.get(() => document.getElementById('lv-dlg').open), 'and only the search');
+  await page.press('Escape');
+  await page.waitFor(() => !document.getElementById('lv-dlg').open);
+});

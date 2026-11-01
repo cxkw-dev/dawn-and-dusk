@@ -11,6 +11,11 @@ const returnValue = (page, id) => page.get((i) => document.getElementById(i).ret
 const focusInside = (page, id) => page.get((i) => document.getElementById(i).contains(document.activeElement), id);
 const focusIs = (page, sel) => page.get((s) => document.activeElement === document.querySelector(s), sel);
 const rect = (page, id) => page.get((i) => { const r = document.getElementById(i).getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height }; }, id);
+/** A toast still up moves above a drawer opened over it (bottom right, over the footer): clear it before clicking there. */
+async function clearToasts(page) {
+  await page.get(() => dd.toast.clear());
+  await page.waitFor(() => !document.querySelector('.dd-toaster > .dd-toast'));
+}
 async function clickAt(page, x, y) {
   for (const type of ['mouseMoved', 'mousePressed', 'mouseReleased']) await page.send('Input.dispatchMouseEvent', { type, x, y, button: type === 'mouseMoved' ? 'none' : 'left', clickCount: 1 });
   await page.sleep(120);
@@ -63,6 +68,7 @@ test('footer actions close with their value and the demo reports it', async ({ o
   await waitClosed(page, 'deploy-drawer');
   assert.equal(await returnValue(page, 'deploy-drawer'), 'redeploy');
   await page.waitFor(() => /redeploying auth-gateway/i.test(document.querySelector('.dd-toaster')?.textContent || ''));
+  await clearToasts(page);
   await page.click(opener('deploy-drawer'));
   await waitSettled(page, 'deploy-drawer');
   await page.click('#deploy-drawer [data-dd-dialog-close="promote"]');
@@ -101,6 +107,7 @@ test('editing: required fields block Save; Save closes with "save", Delete with 
   await waitClosed(page, 'env-drawer');
   assert.equal(await returnValue(page, 'env-drawer'), 'save');
   await page.waitFor(() => /STRIPE_WEBHOOK_SECRET saved/.test(document.querySelector('.dd-toaster')?.textContent || ''));
+  await clearToasts(page);
   await page.click(opener('env-drawer'));
   await waitSettled(page, 'env-drawer');
   await page.click('#env-drawer [data-dd-dialog-close="delete"]');

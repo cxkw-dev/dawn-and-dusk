@@ -138,3 +138,39 @@ test('touch at 375: tap reveal, clear and steppers', async ({ open, assert }) =>
   assert.equal(await page.get(() => document.querySelector('input[aria-label="Search deploys"]').value), '');
   assert.ok(await page.get(() => document.documentElement.scrollWidth <= innerWidth), 'no sideways scroll at 375');
 });
+
+test('form reset re-checks the steppers; clear leaves a disabled or read-only control alone; reveal labels can be translated', async ({ open, assert }) => {
+  const page = await open('components/text-input');
+  await page.get(() => document.querySelector('.doc-main').insertAdjacentHTML('afterbegin', `
+    <form id="ti-form">
+      <div class="dd-input"><input class="dd-input__control" id="ti-n" type="number" value="1" min="0" max="2">
+        <span class="dd-input__affix dd-input__steppers">
+          <button class="dd-input__btn" type="button" data-dd-step="-1" aria-label="Decrease">-</button>
+          <button class="dd-input__btn" type="button" data-dd-step="1" aria-label="Increase">+</button></span></div>
+      <div class="dd-input"><input class="dd-input__control" id="ti-off" value="locked" disabled>
+        <span class="dd-input__affix"><button class="dd-input__btn" type="button" data-dd-clear aria-label="Clear">x</button></span></div>
+      <div class="dd-input"><input class="dd-input__control" id="ti-ro" value="read only" readonly>
+        <span class="dd-input__affix"><button class="dd-input__btn" type="button" data-dd-clear aria-label="Clear">x</button></span></div>
+      <div class="dd-input"><input class="dd-input__control" id="ti-pw" type="password" value="hunter2">
+        <span class="dd-input__affix"><button class="dd-input__btn" type="button" data-dd-reveal aria-pressed="false" aria-label="Passwort zeigen" data-dd-reveal-label="Passwort zeigen|Passwort verbergen">o</button></span></div>
+    </form>`));
+  await page.click(step('ti-n', 1));
+  assert.equal(await page.get(() => document.querySelector('#ti-n').value), '2');
+  assert.equal(await page.get((s) => document.querySelector(s).disabled, step('ti-n', 1)), true, 'plus dims at max');
+  await page.get(() => document.getElementById('ti-form').reset());
+  await page.sleep(50);
+  assert.equal(await page.get(() => document.querySelector('#ti-n').value), '1');
+  assert.equal(await page.get((s) => document.querySelector(s).disabled, step('ti-n', 1)), false, 'plus comes back after the reset');
+
+  for (const id of ['#ti-off', '#ti-ro']) {
+    await listen(page, id);
+    await page.get((s) => document.querySelector(s).click(), clearBtn(id));
+    assert.equal(await page.get((s) => document.querySelector(s).value, id), id === '#ti-off' ? 'locked' : 'read only', `${id} keeps its value`);
+    assert.deepEqual(await events(page, id), [], `${id} fires nothing`);
+  }
+
+  await page.click(reveal('ti-pw'));
+  assert.equal(await page.attr(reveal('ti-pw'), 'aria-label'), 'Passwort verbergen');
+  await page.click(reveal('ti-pw'));
+  assert.equal(await page.attr(reveal('ti-pw'), 'aria-label'), 'Passwort zeigen');
+});

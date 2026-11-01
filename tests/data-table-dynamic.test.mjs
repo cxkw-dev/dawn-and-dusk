@@ -100,3 +100,77 @@ test('a table added after load is set up by its first dd.dataTable.refresh and t
   const mutations = await page.get(async () => { let k = 0; const mo = new MutationObserver((l) => { k += l.length; }); mo.observe(document.getElementById('late-table'), { subtree: true, childList: true, attributes: true, characterData: true }); await new Promise((r) => setTimeout(r, 500)); mo.disconnect(); return k; });
   assert.ok(mutations < 5, `idle table stays still (saw ${mutations} mutations)`);
 });
+
+test('a row removed once focus has left the table leaves focus and the scroll position alone', async ({ open, assert }) => {
+  const page = await focused(open);
+  // Scrolled to the bottom of the page, well past the table (scroll anchoring may shift a few pixels as rows go).
+  const toBottom = () => page.get(() => scrollTo(0, document.body.scrollHeight));
+  const state = () => page.get((r) => ({ onPage: document.activeElement === document.body, tableAbove: document.querySelector(r).getBoundingClientRect().bottom < 0 }), FL);
+  // Focus in a row, then a click on empty space: focus is on the page; a poll later removes that row.
+  await page.click(check('billing-worker'));
+  await page.click(check('billing-worker'));
+  await page.click('.doc-main h1', { dx: 400 });
+  await toBottom();
+  await removeRow(page, 'billing-worker');
+  await page.sleep(250);
+  assert.deepEqual(await state(), { onPage: true, tableAbove: true }, 'not pulled back into the table');
+  // The same after focus moved on to another control (here the search, outside any row) and then to the page.
+  await page.focus(check('search-indexer'));
+  await page.focus(`${FL} [data-dd-data-table-search]`);
+  await page.click('.doc-main h1', { dx: 400 });
+  await toBottom();
+  await removeRow(page, 'search-indexer');
+  await page.sleep(250);
+  assert.deepEqual(await state(), { onPage: true, tableAbove: true });
+  // Focus still in the row while the page scrolls away: it moves to the next row, without scrolling back.
+  await page.focus(check('edge-cache'));
+  await toBottom();
+  const next = await page.get((s) => { const tr = document.querySelector(s).closest('tr'); let n = tr.nextElementSibling; while (n && (n.hidden || n.matches('.dd-data-table__detail'))) n = n.nextElementSibling; return n.querySelector('.dd-data-table__select input').getAttribute('aria-label'); }, check('edge-cache'));
+  await removeRow(page, 'edge-cache');
+  await focusOn(page, `${FL} input[aria-label="${next}"]`, 'next row');
+  assert.equal((await state()).tableAbove, true, 'landing focus does not scroll back to the table');
+});
+
+test('hidden columns stay hidden in rows added later', async ({ open, assert }) => {
+  const page = await open('components/data-table');
+  const shown = (sel) => page.get((s) => [...document.querySelector(s).cells].filter((c) => !c.hidden).length, sel);
+  // Owner starts hidden; a row rendered afterwards (no hidden cells of its own) hides its owner cell too.
+  await page.get((r) => {
+    const tb = document.querySelector(`${r} tbody`);
+    const row = [...tb.rows].find((x) => !x.matches('.dd-data-table__empty-row, .dd-data-table__group, .dd-data-table__detail'));
+    const fresh = row.cloneNode(true);
+    fresh.id = 'fresh-row';
+    fresh.querySelectorAll('[hidden]').forEach((c) => { c.hidden = false; });
+    fresh.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+    tb.prepend(fresh);
+  }, FL);
+  await page.waitFor(() => !!document.querySelector('#fresh-row') && [...document.querySelector('#fresh-row').cells].some((c) => c.hidden));
+  assert.equal(await shown('#fresh-row'), await shown(`${FL} thead tr`), 'as many cells as the header shows');
+});
+
+test('a <tbody> swapped in by a framework is watched from then on', async ({ open }) => {
+  const page = await open('components/data-table');
+  // A framework swaps the whole body (two rows fewer): the count follows, and so does a later change in the new body.
+  const COUNT = `${FL} [data-dd-data-table-count]`;
+  const before = await page.get((s) => Number((document.querySelector(s).textContent.match(/\d+/g) || []).pop()), COUNT);
+  const settles = (n) => page.waitFor((s, k) => Number((document.querySelector(s).textContent.match(/\d+/g) || []).pop()) === k, { args: [COUNT, n] });
+  await page.get((r) => {
+    const old = document.querySelector(`${r} tbody`);
+    const fresh = old.cloneNode(true);
+    fresh.id = 'fresh-body';
+    const data = [...fresh.rows].filter((x) => !x.matches('.dd-data-table__empty-row, .dd-data-table__group, .dd-data-table__detail'));
+    data[0].remove(); data[1].remove();
+    old.replaceWith(fresh);
+  }, FL);
+  await settles(before - 2);
+  await page.get(() => { const b = document.querySelector('#fresh-body'); [...b.rows].find((x) => !x.matches('.dd-data-table__empty-row, .dd-data-table__detail')).remove(); });
+  await settles(before - 3);
+});
+
+test('a swapped <tbody> that held focus hands it to the new body’s first row', async ({ open, assert }) => {
+  const page = await focused(open);
+  await page.focus(check('ledger-sync'));
+  await page.get((r) => { const old = document.querySelector(`${r} tbody`); old.replaceWith(old.cloneNode(true)); }, FL);
+  await page.waitFor(() => document.activeElement !== document.body);
+  assert.ok(await page.get((r) => { const a = document.activeElement; const first = [...document.querySelectorAll(`${r} tbody > tr`)].find((t) => !t.hidden && !t.matches('.dd-data-table__detail, .dd-data-table__empty-row')); return first.contains(a); }, FL), 'first shown row');
+});

@@ -46,7 +46,8 @@
 /* ===== behaviors/autoclose.js ===== */
 /* Dropdowns built on <details data-dd-autoclose> (the top-bar avatar menu, the breadcrumb overflow).
    - Closes on a click outside, on Esc (focus inside it returns to the <summary>; focus elsewhere stays put), after
-     choosing an item inside, and when another autoclose dropdown opens.
+     choosing an item inside, and when another autoclose dropdown opens. That Esc goes no further (a dialog around it
+     stays open), and an Esc something else already handled leaves it open.
    - ↓ on the summary opens it and focuses the first item; ↑/↓ move between items while it is open. */
 (() => {
   const SEL = 'details[data-dd-autoclose]';
@@ -68,7 +69,8 @@
     const d = e.target.closest?.(SEL);
     if (e.key === 'Escape') {
       const open = d?.open ? d : document.querySelector(`${SEL}[open]`);
-      if (!open) return;
+      if (!open || e.defaultPrevented) return;
+      e.preventDefault(); // this Esc closes the dropdown only, not a dialog or drawer around it
       // Focus goes back to the summary only from inside the dropdown (or from nowhere), never from elsewhere on the page.
       const a = document.activeElement;
       const back = !a || a === document.body || open.contains(a);
@@ -128,8 +130,11 @@
    <details class="dd-chart__data"> needs no script. Fires `dd:change` on the figure with { view: 'chart' | 'table' }.
    Expand: a button [data-dd-chart-expand] moves the figure into a large modal dialog (.dd-chart-dialog), leaving a
    placeholder of the same height, and moves it back when the dialog closes (Esc, backdrop, or the button again); focus
-   returns to the button. Fires `dd:change` with { expanded: true | false }. The figure itself moves, so keep it out of
-   framework-owned markup (render your own dialog there). */
+   returns to the button. Fires `dd:change` with { expanded: true | false }: expanded: true just before the figure
+   leaves the page, expanded: false once it is back, so both reach listeners on its container. In between the figure
+   sits in the dialog at the end of <body>: events from it then (a Table toggle) reach the figure itself and document,
+   not its old container. The figure itself moves, so keep it out of framework-owned markup (render your own dialog
+   there). */
 (() => {
   const MARK = '.dd-chart__slot, .dd-chart__hit, .dd-chart__seg, .dd-chart__arc, [data-dd-chart-point]';
   const chartOf = (el) => el.closest('[data-dd-chart]');
@@ -347,6 +352,9 @@
     spot.setAttribute('aria-hidden', 'true');
     spot.style.height = `${chart.offsetHeight}px`;
     deactivate(chart);
+    // Announced while the figure is still in place, so it reaches listeners on its container (collapse announces once
+    // it is back): in the dialog at the end of <body> it is out of their reach.
+    chart.dispatchEvent(new CustomEvent('dd:change', { bubbles: true, detail: { expanded: true } }));
     chart.replaceWith(spot);
     chart.ddPlaceholder = spot;
     chart.classList.add('is-expanded');
@@ -359,7 +367,6 @@
     dlg.replaceChildren(chart);
     if (window.dd?.dialog) window.dd.dialog.open(dlg); else dlg.showModal();
     btn.focus({ preventScroll: true });
-    chart.dispatchEvent(new CustomEvent('dd:change', { bubbles: true, detail: { expanded: true } }));
   });
   // Capture, so the figure is back in the page before the dialog behaviour returns focus to its button.
   document.addEventListener('close', (e) => { if (e.target === expandDialog) collapse(expandDialog); }, true);
@@ -413,13 +420,14 @@
    - Input: .dd-chip-input with a .dd-chip-input__field. Enter or a comma turns the text into a chip (colour picked
      from the Color set by the text, so a tag keeps its colour); a tag that is already there flashes (a still, deeper
      tint under reduced motion) instead of being added twice; Backspace in an empty field removes the last chip.
-     The container fires "dd:chips-change" with detail.values. Icons come from the inline sprite (#dd-i-x).
+     The container fires "dd:chips-change" with detail.values (chips still playing their exit are left out). Icons
+     come from the inline sprite (#dd-i-x).
    When a chip goes, the chips after it glide into its place (not under reduced motion).
    Inside [data-dd-manual] (chips a framework renders from state) the script does nothing; listen for clicks yourself. */
 (() => {
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const valueOf = (chip) => chip.dataset.value || chip.textContent.trim();
-  const valuesIn = (box) => [...box.querySelectorAll('.dd-chip')].map(valueOf);
+  const valuesIn = (box) => [...box.querySelectorAll('.dd-chip:not(.is-leaving)')].map(valueOf); // a leaving chip is gone already
   const changed = (box) => box?.dispatchEvent(new CustomEvent('dd:chips-change', { bubbles: true, detail: { values: valuesIn(box) } }));
 
   const remove = (chip) => {
@@ -558,7 +566,9 @@
    Fires a bubbling "dd-combobox" event with detail { value, values, option } (+ created: true for a new value).
    data-dd-combobox-create on the wrapper allows new values: when the text matches no option exactly, a
    "Create “…”" row (.dd-combobox__create) ends the list; choosing it adds that option and selects it.
-   Keyboard: ↓ / ↑ open and move · Enter chooses · Esc closes, then clears · Backspace on empty removes the last chip. */
+   Keyboard: ↓ / ↑ open and move · Enter chooses · Esc closes, then clears · Backspace on empty removes the last chip.
+   Single, on blur: text that is exactly an option's label (any case) chooses it; anything else, an emptied field
+   included, puts back the chosen label (or empties the field when nothing is chosen). Esc twice is how to clear. */
 (() => {
   let uid = 0;
   const parts = (root) => ({
@@ -816,7 +826,8 @@
     }
   });
 
-  // Single: leaving the field restores the chosen label if the typed text matches nothing.
+  // Single: leaving the field restores the chosen label if the typed text matches nothing — an emptied field too, so
+  // the field never shows nothing while the option (and hidden input) still holds a value.
   document.addEventListener('focusout', (e) => {
     const root = e.target.closest?.('[data-dd-combobox]');
     if (!root || (e.relatedTarget && root.contains(e.relatedTarget))) return;
@@ -824,7 +835,7 @@
     if (multi(root)) return;
     const { input, list } = parts(root);
     const chosen = list.querySelector('[role="option"][aria-selected="true"]');
-    if (input.value && (!chosen || labelOf(chosen) !== input.value)) {
+    if (chosen ? labelOf(chosen) !== input.value : input.value) {
       const exact = options(list).find((o) => labelOf(o).toLowerCase() === input.value.trim().toLowerCase());
       if (exact) choose(root, exact); else input.value = chosen ? labelOf(chosen) : '';
     }
@@ -837,13 +848,15 @@
    ⌘K / Ctrl+K toggles the page's palette (the one marked [data-dd-hotkey], else the first). Typing filters
    .dd-command__item rows by their text and optional data-keywords; empty groups hide and .dd-command__empty shows
    (its .dd-command__query echoes the search). ↑ ↓ (or Ctrl+P / Ctrl+N) move the selected row, Enter runs it,
-   Esc clears the search and then closes, a click on the backdrop closes. Running a row clicks it (links navigate),
-   fires a bubbling `dd:command` event with detail { item, value } and closes the dialog. value = the row's data-value,
-   else its name (the first part of .dd-command__body), else its text. Works on inline palettes too. */
+   Esc clears the search and then closes, a click on the backdrop closes (only when the press started there too, so
+   drag-selecting the search text out of the box is safe). Running a row clicks it (links navigate), fires a bubbling
+   `dd:command` event with detail { item, value } and closes the dialog. value = the row's data-value, else its name
+   (the first part of .dd-command__body), else its text. Works on inline palettes too.
+   Closing returns focus to what had focus before the palette opened, kept on the dialog as dialog.ddReturn (dialog.js
+   uses it too: a row with data-dd-dialog-open hands focus back there when the dialog it opened closes). */
 (() => {
   const ITEM = '.dd-command__item';
   let uid = 0;
-  let lastFocus = null;
 
   const parts = (root) => ({ input: root.querySelector('.dd-command__input'), list: root.querySelector('.dd-command__list'), empty: root.querySelector('.dd-command__empty') });
   const visible = (root) => [...root.querySelectorAll(ITEM)].filter((el) => !el.closest('[hidden]') && el.getAttribute('aria-disabled') !== 'true');
@@ -889,7 +902,7 @@
 
   function open(dialog) {
     if (!dialog || dialog.open) return;
-    lastFocus = document.activeElement;
+    dialog.ddReturn = document.activeElement;
     const { input } = parts(dialog);
     if (input) { input.value = ''; input.setAttribute('role', input.getAttribute('role') || 'combobox'); input.setAttribute('aria-expanded', 'true'); }
     filter(dialog);
@@ -900,13 +913,23 @@
   const palette = (id) => (id ? document.getElementById(id.replace(/^#/, '')) : null)
     || document.querySelector('dialog.dd-command[data-dd-hotkey]') || document.querySelector('dialog.dd-command');
 
+  // Backdrop: the click lands on the <dialog> itself, outside its box. Only when the press started out there too: a
+  // drag-select from the search box released over the backdrop also clicks the dialog.
+  const onBackdrop = (e) => {
+    const d = e.target;
+    if (!(d instanceof HTMLDialogElement && d.classList.contains('dd-command'))) return null;
+    const r = d.getBoundingClientRect();
+    return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom ? d : null;
+  };
+  let pressed = null;
+  document.addEventListener('pointerdown', (e) => { pressed = onBackdrop(e); });
+
   document.addEventListener('click', (e) => {
     const t = e.target.closest('[data-dd-command]');
     if (t) { e.preventDefault(); open(palette(t.getAttribute('data-dd-command'))); return; }
-    // Backdrop: the click lands on the <dialog> itself, outside its content.
     if (e.target instanceof HTMLDialogElement && e.target.classList.contains('dd-command')) {
-      const r = e.target.getBoundingClientRect();
-      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) e.target.close();
+      if (pressed === e.target && onBackdrop(e)) e.target.close();
+      pressed = null;
       return;
     }
     const item = e.target.closest(ITEM);
@@ -954,9 +977,9 @@
     }
   });
 
-  // Hand focus back to whatever opened the palette.
+  // Hand focus back to whatever had it before the palette opened.
   document.addEventListener('close', (e) => {
-    if (e.target.classList?.contains('dd-command') && lastFocus?.isConnected) lastFocus.focus({ preventScroll: true });
+    if (e.target.classList?.contains('dd-command') && e.target.ddReturn?.isConnected) e.target.ddReturn.focus({ preventScroll: true });
   }, true);
 })();
 
@@ -985,10 +1008,10 @@
 /* Data table — opt in with [data-dd-data-table] on .dd-data-table.
    - Sort: <th aria-sort="none"><button class="dd-data-table__sort">…</button></th> cycles none → ascending → descending → none.
      Rows sort within each group; expanded detail rows travel with their row. A cell's data-value (if set) is used instead
-     of its text. Two values compare as numbers only when both are fully numeric ("1,240", "0.5%", "-3"), else as times
-     when both are ISO dates ("2026-10-30", "2026-10-30T09:41"), else as text (localeCompare, numeric: true, so "v2" < "v10").
-     In a figure column (.is-num) a value like "84 ms" still reads as its number and a dash counts as blank. Blanks sort
-     last both ways. Emits dd:sort { column, direction, index }.
+     of its text. Two values compare as numbers only when both are fully numeric ("1,240", "0.5%", "-3", "−3" with a
+     U+2212 minus), else as times when both are ISO dates ("2026-10-30", "2026-10-30T09:41"), else as text (localeCompare,
+     numeric: true, so "v2" < "v10"). In a figure column (.is-num) a value like "84 ms" or "2 of 12" still reads as its
+     first number and a dash counts as blank. Blanks sort last both ways. Emits dd:sort { column, direction, index }.
    - Select: .dd-data-table__check in the header selects every visible row (with indeterminate state); Shift-click selects a
      range. Disabled row boxes are never changed by the table (select all, range, clear) and don't count toward the
      header's checked / indeterminate state. Selected rows get .is-selected; .dd-data-table__bulk shows while anything is
@@ -1005,15 +1028,18 @@
      returns focus to the search.
    - Pages: a [data-dd-pagination] element inside the root (see pagination.js) pages the filtered rows in the browser.
      Filtering returns to page 1; sorting keeps the page.
-   - Columns: inputs [data-dd-data-table-column="col"] show/hide the column whose <th data-col="col">.
+   - Columns: inputs [data-dd-data-table-column="col"] show/hide the column whose <th data-col="col"> (rows added later too).
    - Menus (.dd-data-table__menu, a <details>) close on Esc (focus returns to the summary) and on any click outside.
    - Scroll: adds .is-scrolled-x / .is-scrolled-y to the root so the frozen column and sticky header cast an edge.
-   - Rows added or removed from script (or a framework) are picked up on their own: count, filters, empty row, pages and
-     selection refresh on the next frame. dd.dataTable.refresh(root) does it by hand; for a table added to the page after
-     load, its first call also sets the table up and starts watching its rows.
-   - Focus: when a row that held focus is removed, focus moves to the first control of the next remaining visible row
-     (else the previous one, else the select-all box, else the scroll region / table). A row that is only moved (re-sorted
-     or re-inserted by a framework) gets its focus back. */
+   - Rows added or removed from script (or a framework, even one that swaps the whole <tbody>) are picked up on their own:
+     count, filters, empty row, hidden columns, pages and selection refresh on the next frame. dd.dataTable.refresh(root)
+     does it by hand; for a table added to the page after load, its first call also sets the table up and starts watching
+     its rows.
+   - Focus: when a row that holds focus is removed, focus moves (without scrolling) to the first control of the next
+     remaining visible row (else the previous one, else the select-all box, else the scroll region / table); a replaced
+     <tbody> lands on its first row. A row that is only moved (re-sorted or re-inserted by a framework) gets its focus
+     back. Once focus has moved on (elsewhere on the page, or to the page itself) a removed row leaves it alone; a menu or
+     dialog opened from the row still counts as the row. */
 (() => {
   const ROOT = '[data-dd-data-table]';
   const SKIP = '.dd-data-table__group, .dd-data-table__detail, .dd-data-table__empty-row';
@@ -1063,8 +1089,9 @@
   // trailing %. Anything else ("84 ms", "v2.1", "2026-10-30") is not.
   const NUMBER = /^[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?$/i;
   const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+  const minus = (s) => s.replace(/\u2212/g, '-'); // typographic minus (U+2212), as in "−3.2%"
   const asNumber = (s) => {
-    const t = s.replace(/[\s,_\u00a0\u202f]/g, '').replace(/^[$€£¥]/, '').replace(/%$/, '');
+    const t = minus(s).replace(/[\s,_\u00a0\u202f]/g, '').replace(/^[$€£¥]/, '').replace(/%$/, '');
     return NUMBER.test(t) ? Number(t) : null;
   };
   const asTime = (s) => {
@@ -1081,9 +1108,11 @@
     let num = asNumber(raw);
     const time = num === null ? asTime(raw) : null;
     if (numeric && num === null && time === null) {
-      // A figure column: "84 ms" or "1.2 GB" still reads as its number; a dash or other text counts as blank.
-      num = parseFloat(raw.replace(/[^\d.\-]/g, ''));
-      if (Number.isNaN(num)) return null;
+      // A figure column: "84 ms", "1.2 GB" or "2 of 12" reads as its first number (not every digit run together: 212);
+      // a dash or other text counts as blank.
+      const m = minus(raw).match(/[-+]?(?:\d[\d,_\u00a0\u202f]*(?:\.\d+)?|\.\d+)/);
+      if (!m) return null;
+      num = Number(m[0].replace(/[,_\u00a0\u202f]/g, ''));
     }
     return { raw, num, time };
   };
@@ -1328,6 +1357,8 @@
   }, true);
 
   const update = (root) => {
+    // Hidden columns stay hidden in rows added since.
+    root.querySelectorAll('[data-dd-data-table-column]').forEach((inp) => { if (!inp.checked) setColumn(root, inp.dataset.ddDataTableColumn, false); });
     if (root.querySelector('[data-dd-data-table-search], [data-dd-data-table-filter], [data-dd-data-table-count], [data-dd-pagination]')) refresh(root);
     else syncSelection(root);
   };
@@ -1335,18 +1366,28 @@
   // ---------- focus that would be lost with a removed row ----------
   const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
   const firstFocusable = (el) => [...el.querySelectorAll(FOCUSABLE)].find((f) => f.getClientRects().length);
-  const lastFocus = new WeakMap(); // root → the last element focused inside one of its body rows
+  let held = null; // { root, el }: the control in a body row that has focus, until focus really moves on
   const lostFocus = new WeakMap(); // root → where to land once the rows settle
-  // Only focus in a row counts: moving on to a row's ⋯ menu (which may sit inside the root) must not forget the row.
-  document.addEventListener('focusin', (e) => {
-    const root = e.target.closest?.('tbody > tr')?.closest(ROOT);
-    if (root) lastFocus.set(root, e.target);
-  });
   // Focus is "lost" when it sits on the page itself, or on something that is gone or no longer shown.
   const focusLost = () => {
     const a = document.activeElement;
     return !a || a === document.body || a === document.documentElement || !a.isConnected || !a.getClientRects().length;
   };
+  // Focus in a row is remembered. Moving on to the row's ⋯ menu or a dialog it opened (which may sit inside the root or
+  // not) must not forget the row; focus moving anywhere else does, so a row removed later never pulls focus back.
+  const POPUP = '[role="menu"], [role="dialog"], [role="alertdialog"], dialog';
+  document.addEventListener('focusin', (e) => {
+    const root = e.target.closest?.('tbody > tr')?.closest(ROOT);
+    if (root) held = { root, el: e.target };
+    else if (!e.target.closest?.(POPUP)) held = null;
+  });
+  // So does focus dropping to the page (a click on empty space) while its element is still there and shown; one that was
+  // removed or hidden (the row going, a menu closing) is not someone moving on. Checked once the removal has settled.
+  document.addEventListener('focusout', (e) => {
+    if (!held || e.relatedTarget) return;
+    const el = e.target;
+    setTimeout(() => { if (focusLost() && el.isConnected && el.getClientRects().length) held = null; });
+  });
   // Lands focus on the first control of the nearest shown row after where the lost row was (else before it; else the
   // first shown row if every row was replaced), else on the select-all box, else on the scroll region (or the table).
   // With no `lost` (the bulk bar hid under the focus) it goes straight to the select-all box.
@@ -1364,18 +1405,21 @@
       target = root.querySelector('.dd-data-table__scroll[tabindex]') || root.querySelector('table');
       if (target && !target.hasAttribute('tabindex')) target.tabIndex = -1;
     }
-    target?.focus();
+    target?.focus({ preventScroll: true }); // the page stays where the reader left it
   }
   // From a batch of row mutations: did the row holding focus leave? Note where it was (its old neighbours, followed past
   // any that left in the same batch) so focus can land on the next row once paging and filters have caught up.
   function noteFocus(root, records) {
-    const el = lastFocus.get(root);
-    if (!el) return;
+    if (held?.root !== root) return;
+    const { el } = held;
     const next = new Map(); const prev = new Map();
     for (const rec of records) for (const n of rec.removedNodes) { next.set(n, rec.nextSibling); prev.set(n, rec.previousSibling); }
     const gone = [...next.keys()].find((n) => n.contains?.(el));
     if (!gone) return;
     if (el.isConnected) { lostFocus.set(root, { el }); return; } // only moved
+    held = null;
+    // A whole <tbody> swapped (a framework re-render): every row was replaced, so land on the first shown one.
+    if (gone.nodeName === 'TBODY') { lostFocus.set(root, {}); return; }
     const follow = (map, n) => { for (let k = 0; n && !n.isConnected && map.has(n) && k < 10000; k++) n = map.get(n); return n?.isConnected ? n : null; };
     lostFocus.set(root, { next: follow(next, next.get(gone)), prev: follow(prev, prev.get(gone)) });
   }
@@ -1389,22 +1433,23 @@
 
   // Rows added / removed later: refresh once per frame (sorting moves rows too; refreshing after it is harmless).
   const pending = new WeakSet();
-  // Only each tbody's own row list is watched: refresh() rewrites counts and labels elsewhere in the table, which must not
-  // trigger it again.
+  // Only each tbody's own row list (and the table's list of bodies) is watched: refresh() rewrites counts and labels
+  // elsewhere in the table, which must not trigger it again.
   const watch = (root) => {
     const mo = new MutationObserver((records) => {
+      // A body added later (a framework swapping the whole <tbody>) is watched from then on.
+      for (const rec of records) for (const n of rec.addedNodes) if (n.nodeName === 'TBODY') mo.observe(n, { childList: true });
       noteFocus(root, records);
       if (pending.has(root)) return;
       pending.add(root);
       requestAnimationFrame(() => { pending.delete(root); update(root); restoreFocus(root); });
     });
-    root.querySelectorAll('tbody').forEach((tb) => mo.observe(tb, { childList: true }));
+    root.querySelectorAll('table, tbody').forEach((el) => mo.observe(el, { childList: true }));
   };
 
   const ready = new WeakSet();
   const setup = (root) => {
     ready.add(root);
-    root.querySelectorAll('[data-dd-data-table-column]').forEach((inp) => { if (!inp.checked) setColumn(root, inp.dataset.ddDataTableColumn, false); });
     update(root);
     watch(root);
   };
@@ -1433,7 +1478,10 @@
    Date picker: [data-dd-date-picker] wraps a .dd-input (with a [data-dd-date-toggle] button) and a
    .dd-date-picker__popover holding a calendar. Choosing a day fills the input and closes; a range closes on its
    second click unless the popover has [data-dd-date-apply]. [data-start][data-end] or [data-days="7"] buttons with
-   .dd-date-picker__preset set a range. Esc, a click outside or tabbing out closes. */
+   .dd-date-picker__preset set a range. Esc, the toggle, a click outside or tabbing out closes without changes (a range
+   picked but not applied goes back). Single mode parses a typed date on change: YYYY-MM-DD (or YYYY-MM, the 1st) is a
+   local day, anything else goes through Date.parse with data-today's year when none is typed ("Oct 14", "12/1"); a day
+   the month doesn't have ("2026-02-31") is invalid, not rolled over. */
 (() => {
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const DOW = ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa'];
@@ -1469,7 +1517,7 @@
     return day > a && day < b ? `is-in-range${preview}` : '';
   };
 
-  const render = (cal, hover) => {
+  const render = (cal) => {
     const s = state(cal);
     const first = new Date(s.month.getFullYear(), s.month.getMonth(), 1);
     const lead = (first.getDay() - s.ws + 7) % 7;
@@ -1490,7 +1538,7 @@
         const day = iso(d);
         const pressed = s.mode === 'range' ? day === s.start || day === s.end : day === s.value;
         const off = (s.min && day < s.min) || (s.max && day > s.max);
-        const cls = cellClass(s, day, hover);
+        const cls = cellClass(s, day);
         rows += `<td${cls ? ` class="${cls}"` : ''}><button class="dd-calendar__day${inMonth(d) ? '' : ' is-outside'}" type="button" data-date="${day}" tabindex="${day === focusDay ? 0 : -1}" aria-pressed="${pressed}"${day === s.today ? ' aria-current="date"' : ''}${off ? ' disabled' : ''}>${d.getDate()}</button></td>`;
       }
       rows += '</tr>';
@@ -1621,7 +1669,7 @@
   const openPicker = (root) => {
     const { toggle, pop, cal, input } = pickerParts(root);
     if (!pop || input?.disabled) return;
-    document.querySelectorAll('[data-dd-date-picker].is-open').forEach((r) => r !== root && closePicker(r, false));
+    document.querySelectorAll('[data-dd-date-picker].is-open').forEach((r) => r !== root && closePicker(r, false, true));
     pop.hidden = false;
     root.classList.add('is-open');
     toggle?.setAttribute('aria-expanded', 'true');
@@ -1694,7 +1742,8 @@
       return;
     }
     if (t.closest('[data-dd-date-toggle]') || (t.matches('.dd-input__control') && t.readOnly)) {
-      if (pickerParts(root).pop.hidden) openPicker(root); else closePicker(root);
+      // Closing from the toggle drops what wasn't applied, like Esc; otherwise it would become the next baseline.
+      if (pickerParts(root).pop.hidden) openPicker(root); else closePicker(root, true, true);
       return;
     }
     if (t.closest('[data-dd-date-apply]')) { if (commit(root)) closePicker(root); return; }
@@ -1733,9 +1782,28 @@
     if (root && e.relatedTarget && !root.contains(e.relatedTarget)) closePicker(root, false, true);
   });
 
-  // Typed dates: anything Date can parse ("2026-10-14", "Oct 14, 2026") moves the calendar. ISO dates are read as
-  // local days (Date.parse would take them as UTC midnight, the day before west of Greenwich). A date outside
-  // data-min / data-max marks the field invalid; clearing the field clears the value.
+  // Typed text → a local day ("YYYY-MM-DD"), or '' when it isn't a real date. YYYY-MM(-DD) is read as a local day
+  // (Date.parse would take it as UTC midnight, the day before west of Greenwich); anything else goes through Date.parse,
+  // with `year` added when none was typed ("Oct 14" alone would be 2001). A day past the month's end is refused rather
+  // than rolled into the next month ("2026-02-31", "Feb 31, 2026" are not Mar 3).
+  const readDate = (text, year) => {
+    const m = text.match(/^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?$/);
+    if (m) {
+      const [y, mo, d] = [+m[1], +m[2] - 1, +(m[3] || 1)];
+      const v = new Date(y, mo, d);
+      return v.getFullYear() === y && v.getMonth() === mo && v.getDate() === d ? iso(v) : '';
+    }
+    const hasYear = /\d{4}/.test(text) || /^\d{1,2}([/.-])\d{1,2}\1\d{2}$/.test(text); // or M/D/YY
+    const t = Date.parse(hasYear ? text : `${text} ${year}`);
+    if (Number.isNaN(t)) return '';
+    const v = new Date(t);
+    // Rolled over: the month it landed in is neither named nor numbered in what was typed.
+    const named = text.toLowerCase().includes(MONTHS[v.getMonth()].slice(0, 3).toLowerCase());
+    return named || (text.match(/\d+/g) || []).map(Number).includes(v.getMonth() + 1) ? iso(v) : '';
+  };
+
+  // Typed dates move the calendar (see readDate). A date outside data-min / data-max, or text that isn't a date, marks
+  // the field invalid; clearing the field clears the value.
   document.addEventListener('change', (e) => {
     const root = e.target.closest?.('[data-dd-date-picker]');
     if (!root || e.target !== pickerParts(root).input || !e.isTrusted) return;
@@ -1751,9 +1819,8 @@
       render(cal); emit(cal);
       return;
     }
-    const t = /^\d{4}-\d{1,2}-\d{1,2}$/.test(text) ? parse(text)?.getTime() : Date.parse(text);
-    if (t === undefined || Number.isNaN(t)) { e.target.setAttribute('aria-invalid', 'true'); return; }
-    const v = iso(new Date(t));
+    const v = readDate(text, (cal.dataset.today || iso(new Date())).slice(0, 4));
+    if (!v) { e.target.setAttribute('aria-invalid', 'true'); return; }
     const { min, max } = cal.dataset;
     if ((min && v < min) || (max && v > max)) { e.target.setAttribute('aria-invalid', 'true'); return; }
     e.target.removeAttribute('aria-invalid');
@@ -1780,17 +1847,20 @@
 /* Dialog, drawer and sheet: native <dialog class="dd-dialog | dd-drawer | dd-sheet"> opened modally.
    - [data-dd-dialog-open="#id"] on any element opens that dialog with showModal() and remembers the opener.
    - [data-dd-dialog-close] inside a dialog closes it; a value (data-dd-dialog-close="delete") becomes dialog.returnValue.
-   - <form method="dialog"> inside closes it on submit (after native validation) with the submitter's value.
+   - <form method="dialog"> inside closes it on submit (after native validation) with the submitter's value. A submitter's
+     own formmethod wins: <button formmethod="post"> posts the form instead, <button formmethod="dialog"> closes.
    - A click on the backdrop closes it, unless the dialog has data-dd-dialog-backdrop="static". Esc closes (native).
    - Closing plays the exit animation (.is-closing), then calls close(); focus returns to the opener.
      An opener inside a floating menu (a .dd-menu__item with data-dd-dialog-open) has closed with its menu, so focus goes
-     to the button that opened that menu instead (menu.ddTrigger; for a submenu, the root menu's trigger). If that
-     element is gone by then — removed before the dialog closed, or by a "close" listener (the row the dialog deleted) —
-     focus lands on the nearest focusable where it was: the first control of the next element after it, else the one
-     before, else further up the page.
+     to the button that opened that menu instead (menu.ddTrigger; for a submenu, the root menu's trigger). Likewise a
+     command palette row (a .dd-command__item with data-dd-dialog-open) closes its palette as it runs, so focus goes to
+     what had focus before the palette opened (palette.ddReturn). If that element is gone by then — removed before the
+     dialog closed, or by a "close" listener (the row the dialog deleted) — focus lands on the nearest focusable where it
+     was: the first control of the next element after it, else the one before, else further up the page.
    - Tab / Shift+Tab wrap inside the open dialog instead of leaving for the browser's own UI.
    - Inside a role="menu" list (sheet actions / choices): ↑ ↓ move between rows, Home / End jump to the ends. Choosing a
-     role="menuitemradio" row marks it aria-checked (and unmarks the others); a menuitemcheckbox row flips.
+     role="menuitemradio" row marks it aria-checked (and unmarks the others); a menuitemcheckbox row flips. A .dd-menu
+     inside the dialog is left to menu.js, which does the same for its own items.
    - Reopening a dialog while it plays its exit animation cancels the exit.
    - Global: dd.dialog.open('#id'), dd.dialog.close('#id', value). Listen for the native "close" event for the result. */
 (() => {
@@ -1799,13 +1869,16 @@
   const pending = new WeakMap(); // dialog → cancels its in-flight exit animation
   const resolve = (target) => (typeof target === 'string' ? document.querySelector(target) : target);
 
-  // Where focus goes back to. A menu item closes with its menu, so use the menu's trigger (up through submenus).
+  // Where focus goes back to. A menu item closes with its menu, so use the menu's trigger (up through submenus); a
+  // palette row closes its palette as it runs, so use what had focus before the palette opened.
   const returnTarget = (el) => {
     let t = el;
     for (let k = 0; k < 10; k++) {
       const menu = t?.closest?.('.dd-menu');
-      if (!menu || !menu.ddTrigger || !(menu.hidden || menu.classList.contains('is-floating'))) break;
-      t = menu.ddTrigger;
+      const pal = t?.closest?.('dialog.dd-command');
+      if (menu?.ddTrigger && (menu.hidden || menu.classList.contains('is-floating'))) t = menu.ddTrigger;
+      else if (pal?.ddReturn && (!pal.open || t.matches('.dd-command__item'))) t = pal.ddReturn;
+      else break;
     }
     return t;
   };
@@ -1884,9 +1957,10 @@
       if (dlg) { e.preventDefault(); open(dlg, opener); }
       return;
     }
-    // Choices in a sheet / dialog list: a menuitemradio becomes the checked one, a menuitemcheckbox flips.
+    // Choices in a sheet / dialog list: a menuitemradio becomes the checked one, a menuitemcheckbox flips. Not in a
+    // .dd-menu: menu.js toggles those itself, and flipping twice would undo it.
     const choice = e.target.closest(`:is(${SEL}) :is([role="menuitemradio"], [role="menuitemcheckbox"])`);
-    if (choice && !choice.disabled && choice.getAttribute('aria-disabled') !== 'true') {
+    if (choice && !choice.closest('.dd-menu') && !choice.disabled && choice.getAttribute('aria-disabled') !== 'true') {
       if (choice.getAttribute('role') === 'menuitemcheckbox') choice.setAttribute('aria-checked', String(choice.getAttribute('aria-checked') !== 'true'));
       else (choice.closest('[role="group"], [role="menu"]') || choice.parentElement).querySelectorAll('[role="menuitemradio"]')
         .forEach((r) => r.setAttribute('aria-checked', String(r === choice)));
@@ -1911,10 +1985,10 @@
     close(dlg);
   }, true);
 
-  // <form method="dialog">: animate, keep the submitter's value.
+  // <form method="dialog">: animate, keep the submitter's value. The submitter's formmethod overrides the form's.
   document.addEventListener('submit', (e) => {
     const form = e.target;
-    if (!(form instanceof HTMLFormElement) || form.method !== 'dialog') return;
+    if (!(form instanceof HTMLFormElement) || (e.submitter?.formMethod || form.method) !== 'dialog') return;
     const dlg = form.closest(SEL);
     if (!dlg) return;
     e.preventDefault();
@@ -1942,12 +2016,12 @@
     else if (!e.shiftKey && (at === last || outside)) { e.preventDefault(); first.focus(); }
   });
 
-  // Arrow keys move through role="menu" rows inside an open dialog / sheet.
+  // Arrow keys move through role="menu" rows inside an open dialog / sheet (a .dd-menu's are menu.js's).
   document.addEventListener('keydown', (e) => {
     if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
     const item = e.target.closest?.('[role^="menuitem"]');
     const menu = item?.closest('[role="menu"]');
-    if (!menu || !item.closest(SEL)) return;
+    if (!menu || !item.closest(SEL) || item.closest('.dd-menu')) return;
     const rows = [...menu.querySelectorAll('[role^="menuitem"]')].filter((r) => !r.disabled && r.getAttribute('aria-disabled') !== 'true');
     let i = rows.indexOf(item);
     if (e.key === 'ArrowDown') i = (i + 1) % rows.length;
@@ -1985,7 +2059,8 @@
 /* ===== behaviors/dismiss.js ===== */
 /* Dismiss: a [data-dd-dismiss] button closes the alert, banner, callout or [data-dd-dismissible] element it sits in,
    or the element its value names (data-dd-dismiss="#promo"). The target first gets a cancelable "dd:dismiss" event
-   (call preventDefault() to keep it), then fades, collapses and is removed. dd.dismiss(el) does the same from code. */
+   (call preventDefault() to keep it), then fades, collapses and is removed. Focus still inside it at that point moves
+   to its parent; focus that went elsewhere meanwhile stays there. dd.dismiss(el) does the same from code. */
 (() => {
   const TARGETS = '.dd-alert, .dd-banner, .dd-callout, [data-dd-dismissible]';
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1994,10 +2069,11 @@
     if (!el || el.hasAttribute('data-dd-leaving')) return;
     if (!el.dispatchEvent(new CustomEvent('dd:dismiss', { bubbles: true, cancelable: true }))) return;
     el.setAttribute('data-dd-leaving', '');
-    // Keep keyboard users where they were: if focus was inside, hand it to the parent instead of dropping it on <body>.
-    const hadFocus = el.contains(document.activeElement);
+    // Keep keyboard users where they were: if focus is inside as it goes, hand it to the parent instead of dropping it
+    // on <body>. Checked at the end, not the start: focus moved elsewhere during the exit stays where it went.
     const done = () => {
       const parent = el.parentElement;
+      const hadFocus = el.contains(document.activeElement);
       el.remove();
       if (hadFocus && parent) {
         const temp = !parent.hasAttribute('tabindex');
@@ -2051,7 +2127,8 @@
    - Files that don't match the input's accept="…" or exceed data-dd-max-size ("20MB", "500KB", bytes) are listed as
      errors with the reason, and left out of the input's files. File inputs outside a dropzone are left alone.
    - [data-dd-file-remove] inside a .dd-file removes that row (with a short exit animation) and its file, then fires
-     a bubbling "dd-file-remove" event on the list with detail { name }. */
+     a bubbling "dd-file-remove" event on the list with detail { name }.
+   - Resetting the form clears the rows the script listed (rows rendered by the page stay). */
 (() => {
   const size = (b) => (b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(1)} MB`);
   const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -2146,6 +2223,17 @@
     if (keep.length !== chosen.length || keep.some((f, n) => f !== chosen[n])) setFiles(input, keep);
   });
 
+  // A form reset empties its file inputs: the rows listed for them go too (rows the page rendered stay), or the next
+  // pick would bring the old files back into a multiple input.
+  document.addEventListener('reset', (e) => {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement) || e.defaultPrevented) return;
+    [...form.elements].forEach((input) => {
+      if (input.type !== 'file' || !input.closest('[data-dd-dropzone]')) return;
+      listFor(input)?.querySelectorAll(':scope > .dd-file').forEach((row) => added.has(row) && row.remove());
+    });
+  });
+
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-dd-file-remove]');
     if (!btn) return;
@@ -2184,11 +2272,12 @@
 
 /* ===== behaviors/form-field.js ===== */
 /* Form field counter: a .dd-field__counter inside a .dd-field counts the characters of the field's control.
-   The limit comes from data-dd-counter="280" (a soft limit: typing past it marks the field invalid) or from the
-   control's maxlength (a hard limit). The counter gets .is-near at 90% and .is-over past the limit, and re-counts
-   when its form is reset. An error in the same field marked [data-dd-counter-error] shows only while a soft limit
-   is passed. Leave a counter alone (a framework renders it) with data-dd-counter="manual" or [data-dd-manual] on an
-   ancestor. */
+   The limit comes from data-dd-counter="280" (a soft limit: typing past it marks the field invalid, but doesn't stop a
+   submit) or from the control's maxlength (a hard limit). The counter gets .is-near at 90% and .is-over past the
+   limit, and re-counts when its form is reset. Form validation (form-layout.js) shares aria-invalid with the soft
+   limit: each leaves it in place while the other still needs it. An error in the same field marked
+   [data-dd-counter-error] shows only while a soft limit is passed. Leave a counter alone (a framework renders it) with
+   data-dd-counter="manual" or [data-dd-manual] on an ancestor. */
 (() => {
   const update = (field) => {
     const counter = field.querySelector('.dd-field__counter');
@@ -2200,9 +2289,10 @@
     counter.textContent = max ? `${n} / ${max}` : String(n);
     counter.classList.toggle('is-near', !!max && n >= max * 0.9 && n <= max);
     counter.classList.toggle('is-over', !!max && n > max);
-    // A soft limit marks the control invalid while it is over, and only clears what it set itself.
+    // A soft limit marks the control invalid while it is over, and only clears what it set itself — not while form
+    // validation (form-layout.js, data-dd-valid) still shows an error for it.
     if (soft && n > max) { control.setAttribute('aria-invalid', 'true'); control.dataset.ddOver = ''; }
-    else if ('ddOver' in control.dataset) { control.removeAttribute('aria-invalid'); delete control.dataset.ddOver; }
+    else if ('ddOver' in control.dataset) { if (!('ddValid' in control.dataset)) control.removeAttribute('aria-invalid'); delete control.dataset.ddOver; }
     if (soft) field.querySelectorAll('[data-dd-counter-error]').forEach((err) => { err.hidden = n <= max; });
   };
 
@@ -2240,6 +2330,8 @@
      while it is still showing (an emptied name that now breaks the pattern says so); a control is re-checked when it is
      committed (on change) — never while someone is typing a first value.
    - Resetting the form clears every error.
+   - A field's soft character limit (form-field.js) also sets aria-invalid; clearing an error leaves that mark alone
+     while the text is over the limit. The soft limit never stops the submit.
    A valid form submits as usual: handle "submit" yourself. A submit button with formnovalidate skips the check. */
 (() => {
   let uid = 0;
@@ -2259,7 +2351,8 @@
     const field = fieldOf(el);
     const hint = field && hintOf(field);
     if (hint && 'ddValidHid' in hint.dataset) { hint.hidden = false; delete hint.dataset.ddValidHid; }
-    el.removeAttribute('aria-invalid');
+    // A counter's soft limit (form-field.js, data-dd-over) marks the control too: leave its mark while it is over.
+    if (!('ddOver' in el.dataset)) el.removeAttribute('aria-invalid');
     delete el.dataset.ddValid;
   };
 
@@ -2362,11 +2455,13 @@
        <h3 class="dd-guide-cue__title">…</h3> <p class="dd-guide-cue__text">…</p>
        <div class="dd-guide-cue__actions"><button data-dd-guide-dismiss>Skip tour</button><button data-dd-guide-next>Next</button></div>
      </div>
-   Steps run in document order (a cue whose target isn't on the page is skipped). [data-dd-guide-back] goes back a step;
-   Next on the last step finishes the tour; Esc or [data-dd-guide-dismiss] ends it early.
-   Each step scrolls its target into view, rings it, drops a beacon on it and points the arrow at it. Focus moves to
-   the cue and returns to the start button at the end. Events on document: "dd:guide-step" (detail.index) and
-   "dd:guide-end" (detail.completed).
+   Steps run in document order; a cue whose target isn't on the page is skipped, both ways, and left out of the count
+   and pips. [data-dd-guide-back] goes back a step (on the first it stays); Next on the last step finishes the tour;
+   Esc (unless something inside already handled it) or [data-dd-guide-dismiss] ends it early.
+   Each step scrolls its target into view, rings it, drops a beacon on it (in the dawn/dusk theme of the target's
+   section) and points the arrow at it. Focus moves to the cue and returns to the start button at the end. Events on
+   document: "dd:guide-step" (detail.index: the cue's place among all the tour's cues) and "dd:guide-end"
+   (detail.completed).
    From code: dd.guide.start(name, trigger) · dd.guide.next() · dd.guide.back() · dd.guide.end(). */
 (() => {
   let tour = null;
@@ -2419,25 +2514,33 @@
     tour.beacon.style.top = `${Math.round(r.top + 2)}px`;
   };
 
-  const go = (i) => {
+  // Show step i, or the nearest one with a target in direction dir (1 forward, -1 back). Past the last step the tour is
+  // done; with nothing to go back to it stays where it is.
+  const go = (i, dir = 1) => {
     if (!tour) return;
+    while (tour.steps[i] && !targetOf(tour.steps[i])) i += dir;
+    if (i < 0) return;
     const prev = tour.steps[tour.i];
     if (prev) { hideCue(prev); targetOf(prev)?.removeAttribute('data-dd-guide-active'); }
     const cue = tour.steps[i];
     if (!cue) return end(true);
     tour.i = i;
     const target = targetOf(cue);
-    if (!target) return go(i + 1);
+    // The count and pips cover the steps the tour can reach: one whose target is missing isn't one of them.
+    const live = tour.steps.filter((c) => targetOf(c));
+    const n = live.indexOf(cue);
     const step = cue.querySelector('.dd-guide-cue__step');
     const count = cue.querySelector('.dd-guide-cue__count') || (step && !step.children.length ? step : null);
-    if (count) count.textContent = `${i + 1} of ${tour.steps.length}`;
+    if (count) count.textContent = `${n + 1} of ${live.length}`;
     const pips = cue.querySelector('.dd-guide-cue__pips');
-    if (pips) pips.replaceChildren(...tour.steps.map((_, k) => Object.assign(document.createElement('i'), { className: k < i ? 'is-done' : k === i ? 'is-current' : '' })));
+    if (pips) pips.replaceChildren(...live.map((_, k) => Object.assign(document.createElement('i'), { className: k < n ? 'is-done' : k === n ? 'is-current' : '' })));
     if (!cue.hasAttribute('tabindex')) cue.setAttribute('tabindex', '-1');
     target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: still() ? 'auto' : 'smooth' });
     target.setAttribute('data-dd-guide-active', '');
+    // The beacon takes the theme of a section the target sits in, and lets it go for a target outside one.
     const scope = target.closest('[data-theme]');
     if (scope && scope !== document.documentElement) tour.beacon.dataset.theme = scope.dataset.theme;
+    else delete tour.beacon.dataset.theme;
     showCue(cue);
     layout();
     // Smooth scrolling may still be moving the target; settle the position once it stops.
@@ -2476,15 +2579,16 @@
     if (s) { start(s.getAttribute('data-dd-guide-start'), s); return; }
     if (!tour) return;
     if (e.target.closest('[data-dd-guide-next]')) go(tour.i + 1);
-    else if (e.target.closest('[data-dd-guide-back]')) go(Math.max(0, tour.i - 1));
+    else if (e.target.closest('[data-dd-guide-back]')) go(tour.i - 1, -1);
     else if (e.target.closest('[data-dd-guide-dismiss]')) end(false);
   });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && tour) { e.preventDefault(); end(false); } });
+  // An Esc something inside already handled (a menu, a select) isn't the tour's.
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && tour && !e.defaultPrevented) { e.preventDefault(); end(false); } });
   window.addEventListener('scroll', layout, { capture: true, passive: true });
   window.addEventListener('resize', layout, { passive: true });
 
   window.dd = window.dd || {};
-  window.dd.guide = { start, next: () => tour && go(tour.i + 1), back: () => tour && go(Math.max(0, tour.i - 1)), end: () => end(false) };
+  window.dd.guide = { start, next: () => tour && go(tour.i + 1), back: () => tour && go(tour.i - 1, -1), end: () => end(false) };
 })();
 
 
@@ -2649,7 +2753,8 @@
 
 /* ===== behaviors/log-viewer.js ===== */
 /* Log viewer: [data-dd-log-viewer] wires up its bar.
-   - input[data-dd-log-viewer-search]: filters lines by text and highlights matches (service and message) with <mark>. Esc clears.
+   - input[data-dd-log-viewer-search]: filters lines by text and highlights matches (service and message) with <mark>.
+     Esc clears it, and goes no further (a dialog around it stays open); in an empty search Esc is left alone.
    - button[data-dd-log-viewer-level="debug|info|warn|error"]: aria-pressed toggles that level.
    - button[data-dd-log-viewer-wrap]: aria-pressed toggles .is-wrapped (long messages wrap instead of scrolling).
    - [data-dd-log-viewer-count]: gets “18 of 24 lines”; [data-dd-log-viewer-empty] shows when nothing matches.
@@ -2785,7 +2890,8 @@
     if (e.key !== 'Escape') return;
     const input = e.target.closest?.('[data-dd-log-viewer-search]');
     const root = input?.closest('[data-dd-log-viewer]');
-    if (!root || !input.value) return;
+    if (!root || !input.value || e.defaultPrevented) return;
+    e.preventDefault(); // this Esc clears the search only, not a dialog or drawer around it
     input.value = '';
     apply(root);
   });
@@ -2831,16 +2937,20 @@
 /* ===== behaviors/menu.js ===== */
 /* Menu: a trigger with [data-dd-menu="menu-id"] toggles that .dd-menu (an empty value means the next .dd-menu sibling).
    [data-dd-contextmenu="menu-id"] on an area opens the menu at the pointer on right-click, Shift+F10 or the Menu key.
-   An item inside a menu with [data-dd-menu] opens a submenu to its side. Optional [data-dd-placement] on the trigger:
+   An item inside a menu with [data-dd-menu] opens a submenu to its side, on hover or click (a click never closes it, as
+   hovering may have opened it a moment before). Optional [data-dd-placement] on the trigger:
    bottom-start (default) · bottom-end · top-start · top-end. Menus flip when they would leave the viewport.
    Several triggers may share one menu (a ⋯ button per row): clicking another one moves the open menu to it.
    Which trigger: the menu fires dd:menuopen and dd:menuclose (they bubble) with detail { trigger } — the button that
    opened it, or the area for a context menu — and keeps menu.ddTrigger set to that element after it closes, so an
    item's click handler can read the row it was opened from (moving to another trigger fires close, then open).
    Global: dd.menu.open(menu, trigger, { focus: 'first' | 'last' | 'none' }), dd.menu.close(menu) (or no argument for every
-   open menu; focus inside it goes back to its trigger), dd.menu.trigger(menu). `menu` is the element, its id or '#id'.
-   Keyboard: ↓ / ↑ on the trigger open at the first / last item; in the menu ↑ ↓ Home End move, a letter jumps,
-   → opens a submenu, ← closes it, Esc closes and returns focus, Tab closes. Clicking outside closes.
+   open menu), dd.menu.trigger(menu). `menu` is the element, its id or '#id'. Running an item closes every menu.
+   Both hand focus back to the trigger only while it is still in the menus (or was dropped on <body>): an item handler
+   that moved it elsewhere (into an inline rename field, a dialog) keeps it there.
+   Keyboard: ↓ / ↑ on the trigger open at the first / last item; in the menu ↑ ↓ Home End move, a letter jumps (to the
+   next item starting with it; letters typed quickly match a prefix, staying on the current item while it still
+   matches), → opens a submenu, ← closes it, Esc closes and returns focus, Tab closes. Clicking outside closes.
    role=menuitemcheckbox toggles aria-checked; role=menuitemradio checks one per group — both keep the menu open. */
 (() => {
   const ITEM = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]';
@@ -2920,10 +3030,17 @@
       emit(s.menu, 'dd:menuclose', s.source);
     }
   }
+  // Focus is still in the open menus from `i` up (or was dropped on <body>, e.g. with a removed item), so closing them
+  // should hand it back to their trigger. Anywhere else, something (an item's handler, a dialog) moved it on purpose.
+  const focusInMenus = (i = 0) => {
+    const a = document.activeElement;
+    return !a || a === document.body || stack.slice(i).some((x) => x.menu.contains(a));
+  };
   function closeAll(refocus) {
     const root = stack[0];
+    const back = refocus && root && focusInMenus();
     closeAbove(null);
-    if (refocus && root) (root.trigger || root.ret)?.focus?.({ preventScroll: true });
+    if (back) (root.trigger || root.ret)?.focus?.({ preventScroll: true });
   }
 
   function open(menu, trigger, { focus = 'first', at = null, ret = null } = {}) {
@@ -2952,10 +3069,10 @@
   const toggleFromTrigger = (t, focus) => {
     const menu = menuFor(t);
     if (!menu) return;
-    // Open from this trigger: close it. Open from another trigger sharing the menu (one menu for every row's
-    // ⋯ button): move it here instead.
-    if (entryOf(menu)?.trigger === t) { closeAbove(t.closest('.dd-menu.is-floating') || null); t.focus({ preventScroll: true }); }
-    else open(menu, t, { focus });
+    // Open from this trigger: close it — but a submenu item only opens, as hovering it may have opened it just before
+    // the click. Open from another trigger sharing the menu (one menu for every row's ⋯ button): move it here instead.
+    if (entryOf(menu)?.trigger !== t) open(menu, t, { focus });
+    else if (!t.closest('.dd-menu.is-floating')) { closeAbove(null); t.focus({ preventScroll: true }); }
   };
 
   const activate = (item) => {
@@ -3096,8 +3213,11 @@
         typed = now - typedAt > 600 ? e.key.toLowerCase() : typed + e.key.toLowerCase();
         typedAt = now;
         const label = (el) => (el.querySelector('.dd-menu__body')?.firstChild?.textContent || el.textContent).trim().toLowerCase();
-        const order = [...list.slice(i + 1), ...list.slice(0, i + 1)];
-        const hit = order.find((el) => label(el).startsWith(typed)) || order.find((el) => label(el).startsWith(typed[0]));
+        const from = (k) => { k = Math.max(0, k); return [...list.slice(k), ...list.slice(0, k)]; };
+        // A first letter moves on to the next match; a longer prefix may still match the current item ("de" on Delete),
+        // so it searches from there. The same letter again ("dd") falls back to the next item with that letter.
+        const hit = from(typed.length > 1 ? i : i + 1).find((el) => label(el).startsWith(typed))
+          || from(i + 1).find((el) => label(el).startsWith(typed[0]));
         if (hit) { e.preventDefault(); hit.focus(); }
       }
     }
@@ -3133,7 +3253,7 @@
       const s = m == null ? stack[0] : entryOf(resolveMenu(m));
       if (!s) return; // not open
       const i = stack.indexOf(s);
-      const hadFocus = stack.slice(i).some((x) => x.menu.contains(document.activeElement));
+      const hadFocus = focusInMenus(i);
       closeAbove(i > 0 ? stack[i - 1].menu : null);
       if (hadFocus) (s.trigger || s.ret)?.focus?.({ preventScroll: true });
     },
@@ -3159,7 +3279,8 @@
    .dd-pagination__size select inside sets the size when data-page-size is absent). The behaviour keeps the markup in step:
    numbered pages (first, last, the current page and its neighbours, a gap for the rest: never more than seven slots),
    aria-current="page", "Page 4 of 50", the range ("<b>151–200</b> of 2,481") and aria-disabled on the arrows at either end
-   (they stay focusable, so keyboard focus never drops). The first .dd-pagination__step goes back, the last goes forward.
+   (they stay focusable, so keyboard focus never drops). The first .dd-pagination__step goes back, the last goes forward,
+   counted within each list of pages (or pager): one root can hold the same pagination above and below a table.
    Clicking a page or an arrow, or changing the size, emits a bubbling dd:pagechange with
    { page, pages, pageSize, total, from, to }. dd.pagination(el, { page, pages, total, pageSize }) sets state from script
    (no event) and returns it. Without the attribute the markup is static: render links with real hrefs on the server. */
@@ -3170,6 +3291,10 @@
   const fmt = (n) => n.toLocaleString('en-US');
   const sizeSelect = (root) => root.querySelector('.dd-pagination__size select');
   const shown = new WeakMap(); // root → the state last rendered (a size change must start from the old size)
+  // The arrows that belong together: those in the same list of pages, else the same pager. One root can hold several
+  // pagers (above and below a table), so the first / last arrow is counted within its own.
+  const groupOf = (step, root) => { const g = step.closest('.dd-pagination__pages, .dd-pagination'); return g && root.contains(g) ? g : root; };
+  const stepsBeside = (step, root) => { const g = groupOf(step, root); return [...root.querySelectorAll('.dd-pagination__step')].filter((s) => groupOf(s, root) === g); };
 
   function state(root) {
     let size = num(root.dataset.pageSize);
@@ -3244,8 +3369,9 @@
       root.querySelectorAll('.dd-pagination__range').forEach((el) => { el.innerHTML = `<b>${range}</b> of ${fmt(s.total)}`; });
     }
     root.querySelectorAll('.dd-pagination__status').forEach((el) => { el.textContent = `Page ${s.page} of ${s.pages}`; });
-    const steps = [...root.querySelectorAll('.dd-pagination__step')];
-    steps.forEach((el, k) => {
+    root.querySelectorAll('.dd-pagination__step').forEach((el) => {
+      const steps = stepsBeside(el, root);
+      const k = steps.indexOf(el);
       const off = k === 0 ? s.page <= 1 : k === steps.length - 1 ? s.page >= s.pages : false;
       el.removeAttribute('disabled');
       if (off) el.setAttribute('aria-disabled', 'true'); else el.removeAttribute('aria-disabled');
@@ -3267,10 +3393,7 @@
     const s = state(root);
     let page = s.page;
     if (el.classList.contains('dd-pagination__page')) page = Number(el.textContent.trim()) || s.page;
-    else {
-      const steps = [...root.querySelectorAll('.dd-pagination__step')];
-      page += el === steps[0] ? -1 : 1;
-    }
+    else page += el === stepsBeside(el, root)[0] ? -1 : 1;
     if (page === s.page) return;
     root.dataset.page = String(page);
     render(root);
@@ -3665,14 +3788,16 @@
 /* ===== behaviors/side-nav.js ===== */
 /* Side nav (.dd-side-nav): collapse, sections and the mobile off-canvas mode.
    - [data-dd-nav-toggle] folds / unfolds the page panel of its nav (or of the nav named by its value, e.g. "#app-nav").
-     A nav with an id remembers the choice in localStorage ("dd-side-nav:<id>").
+     A nav with an id remembers the choice in localStorage ("dd-side-nav:<id>"). aria-expanded follows; an aria-label /
+     data-label of "Collapse navigation" / "Collapse" swaps with "Expand …", any other label is the author's and stays.
    - [data-dd-nav-section="name"] on a rail item shows the pane [data-dd-nav-pane="name"]; pressing the active one again
      folds the panel, like the chevron.
-   - [data-dd-nav-open="#id"] opens a nav that is off-canvas (mobile); [data-dd-nav-close] closes it. Esc, a click on the
-     scrim, the chevron or following a link inside also close it, and focus returns to the opener. Tabbing out of it, onto
-     anything outside (the menu button too), closes it and focus stays where it went. While it covers the viewport the
-     page behind doesn't scroll (.dd-side-nav-lock on <html>). If it stops being off-canvas while open (the window
-     widens past the breakpoint) it is simply in view, and closes. */
+   - [data-dd-nav-open="#id"] opens a nav that is off-canvas (mobile); [data-dd-nav-close] closes it. Esc (unless
+     something inside already handled it), a click on the scrim, the chevron or following a link inside also close it,
+     and focus returns to the opener. Tabbing out of it, onto anything outside (the menu button too), closes it and
+     focus stays where it went. While it covers the viewport the page behind doesn't scroll (.dd-side-nav-lock on
+     <html>). If it stops being off-canvas while open (the window widens past the breakpoint) it is simply in view, and
+     closes. */
 (() => {
   const KEY = (id) => `dd-side-nav:${id}`;
   const store = {
@@ -3701,12 +3826,14 @@
     target.querySelectorAll(':scope > .dd-side-nav.is-mobile-open').forEach((nav) => { if (!offcanvas(nav)) setMobile(nav, false, { restore: false }); });
   }));
 
+  // The chevron's labels follow the state only while they are the script's own English pair; an author's label (another
+  // language, other words) is kept as written, and aria-expanded carries the state.
+  const LABELS = { 'data-label': ['Collapse', 'Expand'], 'aria-label': ['Collapse navigation', 'Expand navigation'] };
   const syncAria = (nav) => {
     const open = !nav.classList.contains('is-collapsed');
     toggles(nav).forEach((t) => {
       t.setAttribute('aria-expanded', String(open));
-      if (t.hasAttribute('data-label')) t.setAttribute('data-label', open ? 'Collapse' : 'Expand');
-      if (t.hasAttribute('aria-label')) t.setAttribute('aria-label', open ? 'Collapse navigation' : 'Expand navigation');
+      for (const [attr, pair] of Object.entries(LABELS)) if (pair.includes(t.getAttribute(attr))) t.setAttribute(attr, pair[open ? 0 : 1]);
     });
     const active = nav.querySelector('[data-dd-nav-section].is-active');
     if (active) active.setAttribute('aria-expanded', String(open));
@@ -3795,8 +3922,9 @@
     if (nav && to && !nav.contains(to) && to !== pressed) setMobile(nav, false, { restore: false });
   });
 
+  // An Esc something inside already handled (a menu, a select) isn't the nav's.
   document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
+    if (e.key !== 'Escape' || e.defaultPrevented) return;
     const nav = document.querySelector('.dd-side-nav.is-mobile-open');
     if (nav) { e.preventDefault(); setMobile(nav, false); }
   });
@@ -4002,8 +4130,11 @@
      inside the terminal; unknown commands get a friendly "command not found". Built in: help, clear (also Ctrl+L),
      Ctrl+C. ↑/↓ recall history, Tab completes known commands (only when there is something to complete — otherwise
      Tab moves focus as usual). Output is announced through a polite live region. data-dd-terminal-label names the input.
+     One command runs at a time: Enter while output is still printing runs next (type-ahead), and so does run().
+     A replay drops whatever was printing or waiting.
    The terminal reports data-dd-terminal-state="playing|done" and fires dd:terminalplayed and dd:terminalrun
-   (detail: { command, known }). API: dd.terminal(el) → { play(), finish(), run(command) }; dd.terminal.init(root). */
+   (detail: { command, known }). API: dd.terminal(el) → { play(), finish(), run(command) }; dd.terminal.init(root).
+   run() returns a promise for when its output has printed and leaves what the visitor is typing alone. */
 (() => {
   const C = 'dd-code';
   const dd = (window.dd = window.dd || {});
@@ -4019,7 +4150,7 @@
 
   const state = (term) => {
     let st = states.get(term);
-    if (!st) states.set(term, (st = { run: 0, history: [], hIndex: null, draft: '' }));
+    if (!st) states.set(term, (st = { run: 0, history: [], hIndex: null, draft: '', queue: [] }));
     return st;
   };
   const codeOf = (term) => term.querySelector(`.${C}__pre code`) || term.querySelector(`.${C}__pre`);
@@ -4113,6 +4244,9 @@
     const code = codeOf(term);
     code.replaceChildren(...st.snapshot.cloneNode(true).childNodes);
     st.live = null;
+    // Output still printing and commands waiting belonged to the old prompt: the new one starts idle.
+    st.busy = false;
+    st.queue.splice(0).forEach((q) => q.resolve());
     decorate(term);
   }
 
@@ -4387,7 +4521,7 @@
     const st = state(term);
     const f = st.field;
     if (e.isComposing) return;
-    if (e.key === 'Enter') { e.preventDefault(); if (st.busy) st.queued = true; else submit(term); } // type-ahead runs next
+    if (e.key === 'Enter') { e.preventDefault(); enqueue(term); }
     else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); recall(term, e.key === 'ArrowUp' ? -1 : 1); }
     else if (e.key === 'Tab' && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) { if (complete(term)) e.preventDefault(); }
     else if (e.ctrlKey && !e.metaKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); clear(term); }
@@ -4447,14 +4581,30 @@
     preOf(term).scrollTop = 0;
   }
 
+  // One command at a time: Enter or run() while output is still printing waits its turn, like type-ahead. A waiting
+  // Enter runs whatever the field holds when its turn comes, so pressing it again adds nothing.
+  function enqueue(term, cmd) {
+    const st = state(term);
+    if (cmd === undefined && st.queue.some((q) => q.cmd === undefined)) return;
+    const ran = new Promise((resolve) => st.queue.push({ cmd, resolve }));
+    if (!st.busy) drain(term);
+    return ran;
+  }
+  async function drain(term) {
+    const st = state(term);
+    const live = st.live;
+    st.busy = true;
+    for (let q; live === st.live && (q = st.queue.shift());) { await submit(term, q.cmd); q.resolve(); }
+    if (live === st.live) st.busy = false; // else a replay has reset it for the new prompt
+  }
+
   async function submit(term, given) {
     const st = state(term);
     const raw = given ?? st.field.value;
     const cmd = norm(raw);
     freeze(term, raw);
-    st.hIndex = null;
-    st.draft = '';
-    setValue(term, '');
+    // A command from run() leaves what the visitor is typing (and their place in history) alone.
+    if (given === undefined) { st.hIndex = null; st.draft = ''; setValue(term, ''); }
     if (!cmd) return;
     if (st.history[st.history.length - 1] !== cmd) st.history.push(cmd);
     const emit = (isKnown) => term.dispatchEvent(new CustomEvent('dd:terminalrun', { bubbles: true, detail: { command: cmd, known: isKnown } }));
@@ -4466,21 +4616,18 @@
     const out = outputFor(term, cmd);
     const live = st.live;
     const pre = preOf(term);
-    st.busy = true;
     live.classList.add('is-busy');
     for (const [i, l] of out.lines.entries()) {
       if (!still()) await sleep(Number(l.dataset.ddTerminalDelay) || (i ? 55 : 180));
-      if (!live.isConnected) break; // replayed meanwhile
+      if (live !== st.live) return emit(out.known); // replayed meanwhile: nothing more to print or announce
       live.before(l, '\n');
       enter(l);
       scrollEnd(pre);
     }
-    st.busy = false;
     live.classList.remove('is-busy');
     scrollEnd(pre);
     announce(term, out.lines.map((l) => l.textContent.trim()).filter(Boolean).join('\n'));
     emit(out.known);
-    if (st.queued && live.isConnected) { st.queued = false; submit(term); }
   }
 
   function announce(term, text) {
@@ -4536,7 +4683,7 @@
         }
       } else if (term.hasAttribute('data-dd-terminal-interactive')) goLive(term);
     }
-    return { play: () => { st.reveal?.(); return play(term); }, finish: () => finish(term), run: (cmd) => (st.live ? submit(term, cmd) : undefined) };
+    return { play: () => { st.reveal?.(); return play(term); }, finish: () => finish(term), run: (cmd) => (st.live ? enqueue(term, cmd) : undefined) };
   }
 
   const init = (root = document) => root.querySelectorAll(SEL).forEach(setup);
@@ -4549,10 +4696,11 @@
 
 /* ===== behaviors/text-input.js ===== */
 /* Text input helpers, all opt-in and delegated from document:
-   - [data-dd-reveal]  on a button inside .dd-input toggles its control between password and text (aria-pressed).
-   - [data-dd-clear]   empties the control, fires input/change and puts focus back.
+   - [data-dd-reveal]  on a button inside .dd-input toggles its control between password and text (aria-pressed) and
+     swaps its aria-label; optional data-dd-reveal-label="Show password|Hide password" sets the pair.
+   - [data-dd-clear]   empties the control, fires input/change and puts focus back (not on a disabled or read-only one).
    - [data-dd-step="1"|"-1"] steps a number control (stepUp / stepDown honour min, max and step); the button is
-     disabled while the value sits on that end of the range. */
+     disabled while the value sits on that end of the range, re-checked when the form is reset. */
 (() => {
   const controlOf = (el) => el.closest('.dd-input')?.querySelector('.dd-input__control');
   const fire = (el) => {
@@ -4568,13 +4716,14 @@
       const show = input.type === 'password';
       input.type = show ? 'text' : 'password';
       reveal.setAttribute('aria-pressed', String(show));
-      reveal.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      const [showLabel, hideLabel] = (reveal.dataset.ddRevealLabel || 'Show password|Hide password').split('|');
+      reveal.setAttribute('aria-label', show ? hideLabel : showLabel);
       return;
     }
     const clear = e.target.closest('[data-dd-clear]');
     if (clear) {
       const input = controlOf(clear);
-      if (!input) return;
+      if (!input || input.disabled || input.readOnly) return;
       input.value = '';
       fire(input);
       input.focus();
@@ -4604,7 +4753,10 @@
     });
   };
   document.addEventListener('input', (e) => { if (e.target.matches?.('.dd-input__control[type="number"]')) limits(e.target); });
-  const init = () => document.querySelectorAll('.dd-input:has([data-dd-step]) .dd-input__control[type="number"]').forEach(limits);
+  const recheck = (root) => root.querySelectorAll('.dd-input:has([data-dd-step]) .dd-input__control[type="number"]').forEach(limits);
+  // A form reset restores values without firing input: re-check once the browser has put the defaults back.
+  document.addEventListener('reset', (e) => { if (e.target instanceof HTMLFormElement) setTimeout(() => recheck(e.target)); });
+  const init = () => recheck(document);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
@@ -4645,7 +4797,8 @@
      dismissible  false leaves out the × button (default true)
    Swipe a toast sideways (or drag it with the mouse) to dismiss it; Esc dismisses the toast that has focus, and focus
    then moves to the next toast or back to where it was before the stack. The stack is a manual popover (top layer),
-   so toasts show above modal dialogs; while a modal is open the stack moves inside it so its buttons aren't inert.
+   so toasts show above modal dialogs; while a modal is open the stack moves inside it so its buttons aren't inert —
+   also when the modal opens over toasts already showing (however it was opened: dd, the palette, showModal()).
    Returns { el, dismiss() }. dd.toast('Saved') works too, and dd.toast.clear() empties the stack.
    Declarative: <button data-dd-toast="Title" data-dd-toast-description="…" data-dd-toast-intent="ok"
    data-dd-toast-action="Undo" data-dd-toast-duration="8000">. The toast takes the dawn/dusk theme of the
@@ -4732,6 +4885,12 @@
     document.body.append(stack);
     if (stack.querySelector('.dd-toast')) raise();
   }, true);
+  // A modal opened over toasts already showing would cover them and make them inert (an Undo out of reach), so the
+  // stack follows it in. Watch [open] rather than an event: it is set however the modal was opened (dd, the palette,
+  // a plain showModal()), and focus events don't fire while the window is in the background.
+  new MutationObserver((records) => {
+    if (stack?.querySelector('.dd-toast') && records.some((r) => r.target.matches?.('dialog:modal'))) raise();
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['open'], subtree: true });
 
   // Toasts already in the stack glide to their new place instead of jumping when one is added (FLIP).
   const glide = (region, change) => {
@@ -4813,7 +4972,6 @@
     }
 
     const region = toaster();
-    // A brand-new live region needs a beat before content lands in it, or screen readers miss the first toast.
     const add = () => {
       if (gone) return; // dismissed before it was shown
       raise();
@@ -4831,8 +4989,13 @@
       }
     };
     el.ddToast = handle;
-    if (region.childElementCount || region.dataset.ready) add();
-    else { region.dataset.ready = ''; requestAnimationFrame(add); }
+    // A brand-new live region needs a beat before content lands in it, or screen readers miss the first toast. Toasts
+    // raised during that beat wait for it too, so they keep their order; after it, an empty stack takes one at once.
+    if (region.childElementCount || region.dataset.ready === 'true') add();
+    else {
+      if (!region.dataset.ready) { region.dataset.ready = 'false'; requestAnimationFrame(() => { region.dataset.ready = 'true'; }); }
+      requestAnimationFrame(add);
+    }
     return handle;
   };
   toast.clear = () => document.querySelectorAll('.dd-toaster > .dd-toast').forEach((t) => (t.ddToast ? t.ddToast.dismiss() : t.remove()));
@@ -4898,10 +5061,12 @@
    while moving between tooltips) and on keyboard focus. Esc, a click, scrolling or leaving hides it.
      data-dd-tooltip-placement  top (default) · bottom · left · right, optionally -start / -end. Flips when it doesn't fit.
      data-dd-tooltip-kbd        a key hint, keys separated by spaces: "⌘ K" → <kbd>⌘</kbd><kbd>K</kbd>
-   One shared .dd-tooltip (role="tooltip") lives at the end of <body>; while it is open the trigger points at it with
-   aria-describedby. It takes the dawn/dusk theme of its trigger. Pointer can move onto the tooltip without losing it.
-   Where the browser supports it the tooltip is a manual popover, so it shows in the top layer — above open dialogs,
-   drawers and popovers whose buttons it describes. */
+   One shared .dd-tooltip (role="tooltip") lives at the end of <body> — or, for a trigger inside an open modal dialog
+   (drawer, sheet), at the end of that dialog, since everything outside a modal is inert. While it is open the trigger
+   points at it with aria-describedby. It takes the dawn/dusk theme of its trigger. Pointer can move onto the tooltip
+   without losing it. Esc hides it and stops there (an Esc inside a dialog hides the tooltip, not the dialog); an Esc
+   something else already handled is left alone. Where the browser supports it the tooltip is a manual popover, so it
+   shows in the top layer — above open dialogs, drawers and popovers whose buttons it describes. */
 (() => {
   const DELAY = 450;
   const WARM = 500;
@@ -4944,6 +5109,10 @@
     el.dataset.placement = align === 'center' ? side : `${side}-${align}`;
   };
 
+  // Outside an open modal dialog everything is inert: a tooltip left in <body> couldn't be reached by the pointer, and
+  // moving onto it would close it. So it goes into the trigger's modal dialog while it describes something there.
+  const hostOf = (el) => { try { return el.closest('dialog:modal') || document.body; } catch { return document.body; } };
+
   const ensure = () => {
     if (tip?.isConnected) return tip;
     tip = document.createElement('div');
@@ -4964,6 +5133,8 @@
     if (!text || !el.isConnected) return;
     if (current && current !== el) release(current);
     const t = ensure();
+    const host = hostOf(el);
+    if (t.parentElement !== host) host.append(t); // leaving the top layer as it moves: it reopens just below
     t.replaceChildren(Object.assign(document.createElement('span'), { textContent: text }));
     const kbd = el.getAttribute('data-dd-tooltip-kbd');
     if (kbd) {
@@ -5035,7 +5206,11 @@
     if (el && el === current) hide();
   });
   document.addEventListener('pointerdown', (e) => { if (!tip?.contains(e.target)) hide(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && current) hide(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    clearTimeout(showTimer); // a tooltip on its way doesn't pop up after Esc
+    if (current && !e.defaultPrevented) { e.preventDefault(); hide(); }
+  });
   window.addEventListener('scroll', hide, { capture: true, passive: true });
   window.addEventListener('resize', hide, { passive: true });
 })();

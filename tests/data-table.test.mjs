@@ -482,3 +482,24 @@ test('height: --dd-data-table-height: none drops the cap, --fill fills its box (
   const back = await page.get(() => { const t = document.querySelector('#shell-host .dd-data-table'); t.style.setProperty('--dd-data-table-grain', 'var(--dd-grain)'); return getComputedStyle(t.querySelector('tbody td')).backgroundImage; });
   assert.match(back, /^url\(/);
 });
+
+test('sort: a typographic minus is a minus, and a figure column reads a cell’s first number', async ({ open, assert }) => {
+  const page = await open('components/data-table');
+  const FI = `${ex(6)} .dd-data-table`;
+  const idx = await page.get((r) => { const th = document.querySelector(`${r} th[data-col="build"]`); return [...th.parentElement.cells].indexOf(th); }, FI);
+  const values = () => page.get((r, i) => [...document.querySelectorAll(`${r} tbody > tr`)].map((tr) => tr.cells[i].dataset.value), FI, idx);
+  await page.get((r, i, v) => [...document.querySelectorAll(`${r} tbody > tr`)].forEach((tr, n) => { tr.cells[i].dataset.value = v[n]; }), FI, idx,
+    ['+1.5%', '−3.2%', '−0.4%', '2 of 12', '84 ms', '1,240 ms', '—', '−12', '0', '3 of 4', '−0.5 GB']);
+  await page.click(sortBtn('build', FI));
+  assert.deepEqual(await values(), ['−12', '−3.2%', '−0.5 GB', '−0.4%', '0', '+1.5%', '2 of 12', '3 of 4', '84 ms', '1,240 ms', '—']);
+  await page.click(sortBtn('build', FI));
+  assert.deepEqual(await values(), ['1,240 ms', '84 ms', '3 of 4', '2 of 12', '+1.5%', '0', '−0.4%', '−0.5 GB', '−3.2%', '−12', '—'], 'blank still last');
+  // Outside a figure column, "−3" is as numeric as "-3".
+  await page.click(sortBtn('build', FI));
+  const svc = await page.get((r) => { const th = document.querySelector(`${r} th[data-col="service"]`); return [...th.parentElement.cells].indexOf(th); }, FI);
+  await page.get((r, i, v) => [...document.querySelectorAll(`${r} tbody > tr`)].forEach((tr, n) => { tr.cells[i].dataset.value = v[n]; }), FI, svc,
+    ['10', '−3', '2.5', '-1', '−20', '7', '0', '100', '−0.5', '3', '1,000']);
+  await page.click(sortBtn('service', FI));
+  assert.deepEqual(await page.get((r, i) => [...document.querySelectorAll(`${r} tbody > tr`)].map((tr) => tr.cells[i].dataset.value), FI, svc),
+    ['−20', '−3', '-1', '−0.5', '0', '2.5', '3', '7', '10', '100', '1,000']);
+});

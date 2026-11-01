@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import 'dawn-and-dusk/styles.css';
-import 'dawn-and-dusk/theme.js';
 import { Button, Card, Input, Icon, Badge, ThemeToggle } from 'dawn-and-dusk/react';
 
 function App() {

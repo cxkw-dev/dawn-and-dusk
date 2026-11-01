@@ -171,9 +171,8 @@
 .dd-side-nav--offcanvas.is-mobile-open::before { opacity: 1; pointer-events: auto; }
 
 /* While an open off-canvas nav covers the viewport, the page behind it stays put: side-nav.js sets .dd-side-nav-lock on
-   <html>. (base.css pads <html> by the scrollbar's width, kept in --dd-scrollbar-w by behaviors/scrollbar.js, so nothing
-   shifts sideways as the scrollbar goes.) */
-:root.dd-side-nav-lock { overflow: hidden; }
+   <html>, and base.css locks the scroll and pads <html> by the scrollbar's width (kept in --dd-scrollbar-w by
+   behaviors/scrollbar.js), so nothing shifts sideways as the scrollbar goes. */
 
 /* Restoring a persisted state on load: no animation. */
 .dd-side-nav.is-restoring, .dd-side-nav.is-restoring * { transition: none !important; }

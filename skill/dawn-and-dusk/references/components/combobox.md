@@ -12,14 +12,14 @@ Shown open on the current choice: groups, a description and mono metadata per ro
 
 ```html
 <div class="dd-field" style="max-width: 380px">
-  <label class="dd-field__label" for="cbx-1">Service</label>
+  <label class="dd-field__label" id="cbx-1-label" for="cbx-1">Service</label>
   <div class="dd-combobox is-open" data-dd-combobox>
     <div class="dd-input">
       <span class="dd-input__affix"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-server"/></svg></span>
       <input class="dd-input__control" id="cbx-1" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="cbx-1-list" autocomplete="off" placeholder="Search services" value="billing-worker">
       <span class="dd-input__affix"><button class="dd-input__btn dd-combobox__toggle" type="button" tabindex="-1" data-dd-combobox-toggle aria-label="Show services"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-chevron-down"/></svg></button></span>
     </div>
-    <ul class="dd-listbox" role="listbox" id="cbx-1-list">
+    <ul class="dd-listbox" role="listbox" id="cbx-1-list" aria-labelledby="cbx-1-label">
       <li class="dd-listbox__group" role="presentation">Edge</li>
       <li class="dd-listbox__option" role="option" data-value="auth-gateway" aria-selected="false">
         <span class="dd-listbox__text"><span class="dd-listbox__label">auth-gateway</span><span class="dd-listbox__desc">Sessions, tokens, SSO</span></span>
@@ -72,14 +72,14 @@ Try it: type more letters, press ↓ ↑ to move and Enter to choose; Esc closes
 
 ```html
 <div class="dd-field" style="max-width: 380px">
-  <label class="dd-field__label" for="cbx-2">Service</label>
+  <label class="dd-field__label" id="cbx-2-label" for="cbx-2">Service</label>
   <div class="dd-combobox is-open" data-dd-combobox>
     <div class="dd-input">
       <span class="dd-input__affix"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-server"/></svg></span>
       <input class="dd-input__control" id="cbx-2" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="cbx-2-list" autocomplete="off" placeholder="Search services" value="er">
       <span class="dd-input__affix"><button class="dd-input__btn dd-combobox__toggle" type="button" tabindex="-1" data-dd-combobox-toggle aria-label="Show services"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-chevron-down"/></svg></button></span>
     </div>
-    <ul class="dd-listbox" role="listbox" id="cbx-2-list">
+    <ul class="dd-listbox" role="listbox" id="cbx-2-list" aria-labelledby="cbx-2-label">
       <li class="dd-listbox__group" role="presentation" hidden>Edge</li>
       <li class="dd-listbox__option" role="option" data-value="auth-gateway" aria-selected="false" hidden>
         <span class="dd-listbox__text"><span class="dd-listbox__label">auth-gateway</span><span class="dd-listbox__desc">Sessions, tokens, SSO</span></span>
@@ -130,14 +130,14 @@ Try it: delete a few letters and the matches come back.
 
 ```html
 <div class="dd-field" style="max-width: 380px">
-  <label class="dd-field__label" for="cbx-3">Service</label>
+  <label class="dd-field__label" id="cbx-3-label" for="cbx-3">Service</label>
   <div class="dd-combobox is-open" data-dd-combobox>
     <div class="dd-input">
       <span class="dd-input__affix"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-server"/></svg></span>
       <input class="dd-input__control" id="cbx-3" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="cbx-3-list" autocomplete="off" placeholder="Search services" value="redis">
       <span class="dd-input__affix"><button class="dd-input__btn dd-combobox__toggle" type="button" tabindex="-1" data-dd-combobox-toggle aria-label="Show services"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-chevron-down"/></svg></button></span>
     </div>
-    <ul class="dd-listbox" role="listbox" id="cbx-3-list">
+    <ul class="dd-listbox" role="listbox" id="cbx-3-list" aria-labelledby="cbx-3-label">
       <li class="dd-listbox__group" role="presentation" hidden>Edge</li>
       <li class="dd-listbox__option" role="option" data-value="auth-gateway" aria-selected="false" hidden>
         <span class="dd-listbox__text"><span class="dd-listbox__label">auth-gateway</span><span class="dd-listbox__desc">Sessions, tokens, SSO</span></span>
@@ -190,7 +190,7 @@ Try it: click labels to add or remove them, type to filter, or press Backspace i
 
 ```html
 <div class="dd-field" style="max-width: 420px">
-  <label class="dd-field__label" for="cbm-1">Labels</label>
+  <label class="dd-field__label" id="cbm-1-label" for="cbm-1">Labels</label>
   <div class="dd-combobox dd-combobox--multi is-open" data-dd-combobox="multi">
     <div class="dd-input">
       <span class="dd-combobox__chip" style="--dd-chip: var(--dd-set-1)" data-value="frontend"><span>frontend</span><button class="dd-combobox__remove" type="button" aria-label="Remove frontend"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-x"/></svg></button></span>
@@ -199,7 +199,7 @@ Try it: click labels to add or remove them, type to filter, or press Backspace i
       <input class="dd-input__control" id="cbm-1" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="cbm-1-list" autocomplete="off" placeholder="Add a label">
       <span class="dd-input__affix"><button class="dd-input__btn dd-combobox__toggle" type="button" tabindex="-1" data-dd-combobox-toggle aria-label="Show labels"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-chevron-down"/></svg></button></span>
     </div>
-    <ul class="dd-listbox" role="listbox" id="cbm-1-list" aria-multiselectable="true">
+    <ul class="dd-listbox" role="listbox" id="cbm-1-list" aria-labelledby="cbm-1-label" aria-multiselectable="true">
       <li class="dd-listbox__option is-active" role="option" data-value="frontend" data-set="1" aria-selected="true">
         <span class="dd-listbox__swatch" style="--dd-chip: var(--dd-set-1)"></span>
         <span class="dd-listbox__text"><span class="dd-listbox__label">frontend</span></span>
@@ -253,7 +253,7 @@ Try it: type a label that isn’t in the list, like “flaky-test”, and press 
 
 ```html
 <div class="dd-field" style="max-width: 420px">
-  <label class="dd-field__label" for="cbm-2">Labels</label>
+  <label class="dd-field__label" id="cbm-2-label" for="cbm-2">Labels</label>
   <div class="dd-combobox dd-combobox--multi" data-dd-combobox="multi" data-dd-combobox-create>
     <div class="dd-input">
       <span class="dd-combobox__chip" style="--dd-chip: var(--dd-set-2)" data-value="infra"><span>infra</span><button class="dd-combobox__remove" type="button" aria-label="Remove infra"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-x"/></svg></button></span>
@@ -261,7 +261,7 @@ Try it: type a label that isn’t in the list, like “flaky-test”, and press 
       <input class="dd-input__control" id="cbm-2" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="cbm-2-list" autocomplete="off" placeholder="Add a label">
       <span class="dd-input__affix"><button class="dd-input__btn dd-combobox__toggle" type="button" tabindex="-1" data-dd-combobox-toggle aria-label="Show labels"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-chevron-down"/></svg></button></span>
     </div>
-    <ul class="dd-listbox" role="listbox" id="cbm-2-list" aria-multiselectable="true" hidden>
+    <ul class="dd-listbox" role="listbox" id="cbm-2-list" aria-labelledby="cbm-2-label" aria-multiselectable="true" hidden>
       <li class="dd-listbox__option" role="option" data-value="frontend" data-set="1" aria-selected="false">
         <span class="dd-listbox__swatch" style="--dd-chip: var(--dd-set-1)"></span>
         <span class="dd-listbox__text"><span class="dd-listbox__label">frontend</span></span>
@@ -335,13 +335,13 @@ Invalid: the text matches no team; open the list and pick one. Disabled: the fie
 ```html
 <div class="dd-form__grid">
   <div class="dd-field">
-    <label class="dd-field__label" for="cbs-1">Owner team</label>
+    <label class="dd-field__label" id="cbs-1-label" for="cbs-1">Owner team</label>
     <div class="dd-combobox" data-dd-combobox>
       <div class="dd-input">
-        <input class="dd-input__control" id="cbs-1" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-invalid="true" aria-describedby="cbs-1-err" autocomplete="off" value="platfrom">
+        <input class="dd-input__control" id="cbs-1" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="cbs-1-list" aria-invalid="true" aria-describedby="cbs-1-err" autocomplete="off" value="platfrom">
         <span class="dd-input__affix"><button class="dd-input__btn dd-combobox__toggle" type="button" tabindex="-1" data-dd-combobox-toggle aria-label="Show services"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-chevron-down"/></svg></button></span>
       </div>
-      <ul class="dd-listbox" role="listbox" hidden>
+      <ul class="dd-listbox" role="listbox" id="cbs-1-list" aria-labelledby="cbs-1-label" hidden>
         <li class="dd-listbox__option" role="option" aria-selected="false"><span class="dd-listbox__text"><span class="dd-listbox__label">platform</span></span><span class="dd-listbox__check"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-check"/></svg></span></li>
         <li class="dd-listbox__option" role="option" aria-selected="false"><span class="dd-listbox__text"><span class="dd-listbox__label">product</span></span><span class="dd-listbox__check"><svg class="dd-icon" aria-hidden="true"><use href="#dd-i-check"/></svg></span></li>
       </ul>
@@ -385,7 +385,7 @@ Add `data-dd-combobox` (or `="multi"`) to the wrapper and `role="combobox"` to t
 | `Enter` | Choose the active option (multi: toggle it), or create the typed value. |
 | `Esc` | Close; pressed again in single mode, clear the field. |
 | `Backspace` | Multi, empty input: remove the last chip. |
-| `Tab · blur` | Close. Single mode picks an option whose label matches the text exactly; otherwise it puts back the chosen label, or empties the field. |
+| `Tab · blur` | Close. Single mode picks an option whose label matches the text exactly; otherwise it puts back the chosen label (an emptied field included), or empties the field when nothing is chosen. Esc twice clears the choice. |
 
 ## Guidelines
 

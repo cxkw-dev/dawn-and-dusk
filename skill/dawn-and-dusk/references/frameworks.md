@@ -1,11 +1,18 @@
 # Using dawn & dusk in React, Vue, Svelte, Next.js, Astro…
 
-The system is plain CSS + a small delegated script, so it works in any framework: render the documented markup
+The system is plain CSS + a small script, so it works in any framework: render the documented markup
 (`components/<name>.md`) with your framework's syntax. This file covers what is different from static HTML.
 
 ## Recommended: the consumer package
 
-Start at https://cxkw-dev.github.io/dawn-and-dusk/getting-started for the versioned install command and HTML, React, and Next.js starters. No repository clone or npm account is needed.
+Install it from the versioned GitHub release. It is not on the npm registry (`npm install dawn-and-dusk` fails), and no
+repository clone or npm account is needed:
+
+```sh
+npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.0/dawn-and-dusk-0.3.0.tgz
+```
+
+HTML, React and Next.js starters: https://cxkw-dev.github.io/dawn-and-dusk/getting-started
 
 Import `dawn-and-dusk/styles.css` once. React apps can import `Button`, `Input`, `Card`, `Badge`, `Icon`, and `ThemeToggle` from `dawn-and-dusk/react`; these support native props and refs and need no DOM runtime. For server-rendered layouts, `ThemeScript` from `dawn-and-dusk/theme` restores the saved theme before hydration.
 
@@ -126,7 +133,7 @@ In a Tailwind v4 app, load the Tailwind entry **instead of** `styles.css`, in th
 - **Components are still `dd-` classes.** Use them for every component, and utilities for layout glue (`flex`, `grid`,
   `gap-*`, `w-full`, `max-w-*`) and small one-offs. `dd-` styles live in Tailwind's components layer, so a utility on the
   same element wins (`class="dd-btn dd-btn--primary w-full"`). Don't rebuild a component out of utilities.
-- **Themes:** `dusk:` and `dawn:` follow `data-theme` (or the OS when none is set); `dark:` is an alias of `dusk:`. Prefer
+- **Themes:** `dusk:` and `dawn:` follow the nearest `data-theme` (or the OS when none is set); `dark:` is an alias of `dusk:`. Prefer
   token utilities, which switch by themselves; reach for `dusk:` only for a real per-theme difference.
 - **Preflight is fine.** Components don't depend on browser defaults. Plain elements behave as in any Tailwind app (no
   heading sizes, paragraph margins or list bullets), so use the base classes: `dd-h1`…`dd-h5`, `dd-text`, `dd-lead`,

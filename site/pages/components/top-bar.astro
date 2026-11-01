@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const userMenu = (open = false) => `
     <details class="dd-top-bar__user" data-dd-autoclose${open ? ' open' : ''}>
@@ -106,11 +106,11 @@ const siteNarrow = `<div class="tb-phone tb-phone--short">${site('tb-site-menu-n
   <Example code={menuOpen} stage="flush" />
 
   <h2 id="narrow">Narrow</h2>
-  <p>Below 640px of its own width the menu button appears (wire it to the side nav with <code>data-dd-nav-open="#app-nav"</code>), the search collapses to an icon, and the context, the links and anything marked <code>dd-top-bar__wide</code> step out. In an <a href={`${docs}/components/app-shell`}>app shell</a> the shell decides instead: the menu button and <code>__narrow</code> show while its side nav is off-canvas, and the context stays while the nav is in view. Only the shell’s own top bar follows it — top bars inside its content, like these examples, keep their own width rules.</p>
+  <p>Below 640px of its own width the menu button appears (wire it to the side nav with <code>data-dd-nav-open="#app-nav"</code>), the search collapses to an icon, and the context, the links and anything marked <code>dd-top-bar__wide</code> step out. In an <a href={`${base}/components/app-shell`}>app shell</a> the shell decides instead: the menu button and <code>__narrow</code> show while its side nav is off-canvas, and the context stays while the nav is in view. Only the shell’s own top bar follows it — top bars inside its content, like these examples, keep their own width rules.</p>
   <Example code={narrow} stage="flush" />
 
   <h2 id="site">Site header</h2>
-  <p>For docs and marketing pages: links instead of a context switcher. On narrow screens the links fold into the menu button — here a <a href={`${docs}/components/menu`}>menu</a> (<code>data-dd-menu</code>) with the same links; a sheet or the side nav work too.</p>
+  <p>For docs and marketing pages: links instead of a context switcher. On narrow screens the links fold into the menu button — here a <a href={`${base}/components/menu`}>menu</a> (<code>data-dd-menu</code>) with the same links; a sheet or the side nav work too.</p>
   <Example code={siteWide} stage="flush" />
   <Example description="Narrow. Try it: open the menu button and pick a section with ↓ ↑ and Enter, or flip dusk from the moon." code={siteNarrow} stage="flush" />
 
@@ -132,8 +132,8 @@ const siteNarrow = `<div class="tb-phone tb-phone--short">${site('tb-site-menu-n
 
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute / key', 'What it does']} rows={[
-    ['data-dd-nav-open="#id"', `On <code>__nav-btn</code>: opens that side nav off-canvas (see <a href="${docs}/components/side-nav">Side nav</a>).`],
-    ['data-dd-menu="id"', `On <code>__nav-btn</code> in a site header: opens a <a href="${docs}/components/menu">menu</a> of the section links.`],
+    ['data-dd-nav-open="#id"', `On <code>__nav-btn</code>: opens that side nav off-canvas (see <a href="${base}/components/side-nav">Side nav</a>).`],
+    ['data-dd-menu="id"', `On <code>__nav-btn</code> in a site header: opens a <a href="${base}/components/menu">menu</a> of the section links.`],
     ['data-dd-autoclose', 'On <code>__user</code>: outside click, Esc and choosing an item close the menu.'],
     ['data-dd-theme-toggle', 'On a button or menu item: flips dawn / dusk and keeps <code>aria-pressed</code> in sync.'],
     ['↓ / ↑ · Esc', 'Open and move through the avatar menu; Esc closes it and returns focus to the avatar.'],

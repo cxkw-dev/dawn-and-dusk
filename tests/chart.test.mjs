@@ -199,3 +199,15 @@ test('expand: a chart in a dusk example keeps dusk in the dialog', async ({ open
   assert.ok(donut > 168, `the donut grows (${donut}px)`);
   await page.press('Escape');
 });
+
+test('expand: dd:change { expanded } reaches listeners on the chart’s own container, both ways', async ({ open, assert }) => {
+  const page = await open('components/chart');
+  await tagExamples(page);
+  await page.get(() => { window.__ex = []; document.getElementById('ex0').addEventListener('dd:change', (e) => window.__ex.push({ ...e.detail, figure: e.target.matches('.dd-chart') })); });
+  await page.click('#ex0 [data-dd-chart-expand]');
+  await page.sleep(450);
+  assert.ok(await page.get(() => document.querySelector('dialog.dd-chart-dialog').open));
+  await page.press('Escape');
+  await page.sleep(450);
+  assert.deepEqual(await page.get(() => window.__ex), [{ expanded: true, figure: true }, { expanded: false, figure: true }]);
+});

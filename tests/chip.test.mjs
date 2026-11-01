@@ -166,3 +166,16 @@ test('375px: tap removes a chip and toggles a filter', async ({ open, assert }) 
   assert.equal(await page.attr(`${STATUS} .dd-chip:nth-child(4)`, 'aria-pressed'), 'true');
   assert.ok(await page.get(() => document.documentElement.scrollWidth <= innerWidth), 'no sideways page scroll');
 });
+
+test('two quick Backspaces: dd:chips-change never reports a chip that is already leaving', async ({ open, assert }) => {
+  const page = await open('components/chip');
+  await listen(page);
+  await page.focus(FIELD);
+  const before = await chipsIn(page, BOX);
+  await page.press('Backspace', 'Backspace');
+  await page.waitFor((s, n) => document.querySelectorAll(`${s} .dd-chip`).length === n, { args: [BOX, before.length - 2] });
+  await page.sleep(100);
+  const reported = (await events(page, 'dd:chips-change')).map((e) => e.detail.values);
+  assert.ok(reported.length >= 1);
+  for (const v of reported) assert.deepEqual(v, before.slice(0, -2), 'every report leaves both leaving chips out');
+});

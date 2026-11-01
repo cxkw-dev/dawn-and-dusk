@@ -87,3 +87,16 @@ test('alert actions give feedback', async ({ open, assert }) => {
   await page.waitFor(() => !!document.querySelector('.dd-toaster > .dd-toast'));
   assert.match(await page.text('.dd-toaster > .dd-toast .dd-toast__title'), /retry/i);
 });
+
+test('focus moved on during the exit animation stays where the user put it', async ({ open, assert }) => {
+  const page = await open('components/alert');
+  await tag(page, dismissable, 0, 'a1');
+  await page.get(() => document.querySelector('.doc-main').insertAdjacentHTML('beforeend', '<button class="dd-btn" id="elsewhere">Elsewhere</button>'));
+  await page.focus('[data-t="a1"] .dd-alert__dismiss');
+  await page.press('Enter');
+  assert.ok(await page.exists('[data-t="a1"][data-dd-leaving]'), 'still leaving');
+  await page.focus('#elsewhere');
+  await gone(page, '[data-t="a1"]');
+  await page.sleep(50);
+  assert.equal(await page.active(), '#elsewhere', 'not pulled back to the alert’s parent');
+});

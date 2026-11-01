@@ -1,4 +1,6 @@
-# Builds the docs site and publishes it to GitHub Pages on every push to main.
+# Builds the docs site and publishes it to GitHub Pages on every push to main. The build also regenerates the committed
+# files (release/, ds/dawn-and-dusk.css|js, site/public/release, the skill's assets and generated references, the
+# versioned URLs in the READMEs and the skill); if any differs from what is committed, the job fails before publishing.
 # One-time setup: repo Settings → Pages → Source: "GitHub Actions".
 name: Deploy docs
 
@@ -27,6 +29,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - name: Generated files match the commit
+        # --intent-to-add makes new generated files (e.g. a new component's skill reference) show in the diff too.
+        run: |
+          git add --intent-to-add .
+          git diff --exit-code --stat || { echo "::error::Generated files are stale: run npm run build and commit the result."; exit 1; }
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

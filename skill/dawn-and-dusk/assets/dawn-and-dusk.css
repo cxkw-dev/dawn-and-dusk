@@ -303,8 +303,11 @@
 :where(body) { margin: 0; }
 /* Modal layers (dialogs, drawers, sheets, the off-canvas nav) lock the page scroll. behaviors/scrollbar.js keeps
    --dd-scrollbar-w up to date, so the page is padded by the scrollbar it loses: nothing shifts sideways, and overlays
-   still reach the window's edge. */
+   still reach the window's edge. The system's own layers lock with component specificity too, so a page's own
+   `html { overflow-y: scroll }` can't unlock them (side-nav.js sets .dd-side-nav-lock while the off-canvas nav is open). */
 :where(html):has(dialog:modal), :where(html.dd-side-nav-lock) { overflow: hidden; padding-inline-end: var(--dd-scrollbar-w, 0px); }
+:root:has(.dd-dialog:modal, .dd-drawer:modal, .dd-sheet:modal) { overflow: hidden; }
+:root.dd-side-nav-lock { overflow: hidden; } /* its own rule: a browser without :has() still drops only the one above */
 :where(button, input, select, textarea) { font: inherit; color: inherit; }
 :where(img, svg, video) { display: block; max-width: 100%; }
 ::selection { background: var(--dd-text); color: var(--dd-bg); }
@@ -352,8 +355,9 @@
 .dd-stack { display: flex; flex-direction: column; gap: var(--dd-gap, var(--dd-space-3)); }
 .dd-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--dd-gap, var(--dd-space-2)); }
 
+/* Plain selectors, not :where(): :where() can't take pseudo-elements, so ::before / ::after motion would keep running. */
 @media (prefers-reduced-motion: reduce) {
-  :where(*, *::before, *::after) { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
 
 /* ---------- scroll areas ---------- */
@@ -783,6 +787,7 @@ details[open] > summary :is(.dd-accordion__chevron, .dd-expand__chevron) { trans
   --_soft: color-mix(in oklab, var(--dd-text) 10%, transparent);
   --_solid: var(--dd-text); --_on: var(--dd-bg);
   --_py: calc(var(--dd-u) * 1.5); --_px: calc(var(--dd-u) * 2.25); --_ls: .12em;
+  --_k: initial; /* the intent hue: only an intent class sets it, never a parent (a switch's --_k is its knob size) */
   display: inline-flex; align-items: center; justify-content: center; gap: .5em; flex: none;
   padding: calc(var(--_py) - .15em) calc(var(--_px) - var(--_ls)) calc(var(--_py) - .15em) var(--_px);
   border: 0; border-radius: calc(var(--dd-r-ctl) * .6);
@@ -1167,11 +1172,15 @@ a.dd-breadcrumbs__link[href]:active { background: var(--dd-wash-strong); }
 
 .dd-card {
   --_pad: calc(var(--dd-u) * 5);
-  position: relative; display: flex; flex-direction: column; min-width: 0;
-  background: var(--dd-surface); color: var(--dd-text); border-radius: var(--dd-r-box); overflow: hidden;
+  position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  background: var(--dd-surface); color: var(--dd-text); border-radius: var(--dd-r-box);
   text-decoration: none;
   transition: background-color var(--dd-dur-fast) var(--dd-ease);
 }
+/* Only a card with full-bleed media clips to its corners, so popups inside other cards (a select's listbox, a date
+   picker, a menu) can leave it. (min-height: 0 above keeps the size the clipping used to give every card in a flex or
+   grid layout.) */
+.dd-card:has(> .dd-card__media) { overflow: hidden; }
 .dd-card__body { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 2); flex: 1; min-width: 0; padding: var(--_pad); }
 .dd-card__eyebrow {
   display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 2); margin: 0;
@@ -1221,8 +1230,9 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 .dd-card__stretch::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
 .dd-card__stretch:focus-visible { outline: none; }
 .dd-card:has(.dd-card__stretch:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
-/* Controls inside a stretched-link card sit above the link's hit area, so they keep their own click. */
-.dd-card:has(.dd-card__stretch) :is(a[href], button, input, select, textarea, label, summary, [tabindex]):not(.dd-card__stretch) { position: relative; z-index: 1; }
+/* Controls inside a stretched-link card sit above the link's hit area, so they keep their own click. No specificity, so
+   a control that positions itself (a segmented control's radio, a code block's copy button) keeps its own position. */
+:where(.dd-card:has(.dd-card__stretch) :is(a[href], button, input, select, textarea, label, summary, [tabindex]):not(.dd-card__stretch)) { position: relative; z-index: 1; }
 
 /* Stat: a big display figure, its label and a delta. */
 .dd-card__stat {
@@ -1490,6 +1500,11 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 /* ---------- donut (SVG) ---------- */
 .dd-chart__pie { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 5) calc(var(--dd-u) * 8); }
 .dd-chart__pie > .dd-chart__legend { flex: 1 1 200px; max-width: 380px; }
+/* A stacked legend that wraps under the donut can shrink to a narrow chart's width, its labels wrapping. Its basis is its
+   one-line width and its floor 200px, so it moves under the donut at exactly the widths it always did. */
+.dd-chart__pie > .dd-chart__legend--stack { flex-basis: auto; min-width: min(200px, 100%); }
+.dd-chart__pie > .dd-chart__legend--stack > .dd-chart__key { white-space: normal; overflow-wrap: anywhere; }
+.dd-chart__pie > .dd-chart__legend--stack :is(.dd-chart__key-value, .dd-chart__key-share) { white-space: nowrap; }
 .dd-chart__donut { position: relative; flex: none; width: var(--dd-chart-donut, 168px); aspect-ratio: 1; }
 .dd-chart__donut > svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
 .dd-chart__arc {
@@ -2281,9 +2296,9 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 }
 .dd-data-table__chip:is([aria-pressed="true"], .is-active):hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
 .dd-data-table__chip[hidden] { display: none; }
-.dd-data-table__chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint)); }
+.dd-data-table__chip-dot { --_c: var(--dd-faint); width: 6px; height: 6px; border-radius: 50%; background: var(--_c); } /* colour: style="--_c: …" on the dot */
 
-.dd-data-table__tools { display: flex; align-items: center; gap: calc(var(--dd-u) * 1); margin-left: auto; }
+.dd-data-table__tools { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1); margin-left: auto; }
 .dd-data-table__count { margin-right: calc(var(--dd-u) * 1); font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); white-space: nowrap; }
 
 /* column toggle: <details class="dd-data-table__menu"><summary>…</summary><div class="dd-data-table__menu-panel">… */
@@ -2575,7 +2590,8 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   .dd-date-picker__popover { flex-direction: column; }
   /* The preset row scrolls and the footer wraps inside the calendar's width instead of widening the panel past
      a phone screen (contain: inline-size drops their intrinsic width from the panel's max-content). */
-  .dd-date-picker__presets { flex-direction: row; min-width: 0; padding: 0 0 calc(var(--dd-u) * 2); overflow-x: auto; scrollbar-width: none;
+  /* (2px of top padding, taken back by the margin, keeps a focused preset's ring inside the scroller.) */
+  .dd-date-picker__presets { flex-direction: row; min-width: 0; margin-top: -2px; padding: 2px 0 calc(var(--dd-u) * 2); overflow-x: auto; scrollbar-width: none;
     box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--dd-text) 9%, transparent); contain: inline-size; }
   .dd-date-picker__foot { contain: inline-size; }
   .dd-date-picker__summary { flex-basis: 100%; }
@@ -2712,7 +2728,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 
 /* Two columns of stacked items. Rules are drawn on every item and the first row's are clipped. */
 .dd-description-list--columns {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(max(220px, calc(50% - var(--dd-space-8))), 1fr));
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, max(220px, calc(50% - var(--dd-space-8)))), 1fr));
   column-gap: var(--dd-space-8); overflow: hidden;
 }
 .dd-description-list--columns .dd-description-list__item {
@@ -2834,9 +2850,6 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   .dd-dialog__hint { display: none; }
   .dd-dialog__foot > .dd-btn { flex: 1 1 0; }
 }
-
-/* lock the page behind an open modal */
-:root:has(.dd-dialog:modal) { overflow: hidden; }
 
 @keyframes dd-dialog-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
 @keyframes dd-dialog-out { to { opacity: 0; transform: translateY(4px) scale(0.985); } }
@@ -2986,8 +2999,6 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   .dd-drawer__foot > .dd-btn { flex: 1 1 auto; }
   .dd-drawer__hint { display: none; }
 }
-
-:root:has(.dd-drawer:modal) { overflow: hidden; }
 
 @keyframes dd-drawer-in { from { transform: translateX(100%); } }
 @keyframes dd-drawer-out { to { transform: translateX(100%); } }
@@ -3825,6 +3836,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
   border-radius: var(--dd-r-ctl); background: var(--dd-surface-2);
 }
 .dd-log-viewer__toggle {
+  --_c: var(--dd-faint); /* a level toggle's dot; [data-dd-log-viewer-level] sets it below */
   appearance: none; display: inline-flex; align-items: center; gap: calc(var(--dd-u) * 1); height: 26px;
   padding: 0 calc(var(--dd-u) * 2); border: 0; border-radius: calc(var(--dd-r-ctl) - 1px); background: transparent;
   font: inherit; font-size: var(--dd-fs-xs); font-weight: 500; color: var(--dd-muted); cursor: pointer; white-space: nowrap;
@@ -3840,7 +3852,7 @@ dialog.dd-command::backdrop { background: var(--dd-overlay); animation: dd-comma
 .dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='true'] { background-color: light-dark(var(--dd-surface), color-mix(in oklab, var(--dd-text) 12%, var(--dd-surface))); }
 .dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='false'] { text-decoration: line-through; text-decoration-color: color-mix(in oklab, currentColor 70%, transparent); }
 .dd-log-viewer__levels .dd-log-viewer__toggle::before {
-  content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint));
+  content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--_c);
 }
 .dd-log-viewer__levels .dd-log-viewer__toggle[aria-pressed='false']::before { opacity: .35; }
 .dd-log-viewer__toggle:is(.dd-log-viewer__toggle--wrap, .dd-log-viewer__toggle--follow) { height: 30px; background-color: var(--dd-surface-2); }
@@ -4245,9 +4257,11 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
    thresholds, rings, segmented steps and usage quotas. The unfilled track is a lighter step of the fill colour,
    so the state reads across the whole bar. Values come from --dd-value (0–100) on the track. */
 
+/* The bar's colour and height (--_progress-c, --_progress-h) have names of their own: a bare track reads them with a
+   fallback, and a generic --_c or --_h set by a component around it (a chart, an alert) must not reach it. */
 .dd-progress {
-  --_c: var(--dd-accent);
-  --_h: 6px;
+  --_progress-c: var(--dd-accent);
+  --_progress-h: 6px;
   display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1.5); min-width: 0;
   font-size: var(--dd-fs-sm); color: var(--dd-text);
 }
@@ -4259,15 +4273,15 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
 }
 .dd-progress__value b { font-weight: 500; color: var(--dd-text); }
 .dd-progress__hint { margin: 0; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
-.dd-progress__hint .dd-icon { color: var(--_c, var(--dd-accent)); }
+.dd-progress__hint .dd-icon { color: var(--_progress-c, var(--dd-accent)); }
 
 .dd-progress__track {
-  position: relative; display: flex; width: 100%; height: var(--_h, 6px); border-radius: var(--dd-r-pill);
-  background: color-mix(in oklab, var(--_c, var(--dd-accent)) 16%, transparent);
+  position: relative; display: flex; width: 100%; height: var(--_progress-h, 6px); border-radius: var(--dd-r-pill);
+  background: color-mix(in oklab, var(--_progress-c, var(--dd-accent)) 16%, transparent);
 }
 .dd-progress__fill {
   width: calc(var(--dd-value, 0) * 1%); max-width: 100%; height: 100%; border-radius: inherit;
-  background: var(--_c, var(--dd-accent));
+  background: var(--_progress-c, var(--dd-accent));
   transition: width var(--dd-dur) var(--dd-ease), background-color var(--dd-dur) var(--dd-ease);
 }
 
@@ -4286,15 +4300,15 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
 }
 
 /* Sizes */
-.dd-progress--sm { --_h: 4px; }
-.dd-progress--lg { --_h: 10px; }
+.dd-progress--sm { --_progress-h: 4px; }
+.dd-progress--lg { --_progress-h: 10px; }
 
 /* Tones — set on .dd-progress, or directly on a track or ring */
-.dd-progress--ok { --_c: var(--dd-ok); }
-.dd-progress--warn { --_c: var(--dd-warn); }
-.dd-progress--bad { --_c: var(--dd-bad); }
-.dd-progress--info { --_c: var(--dd-info); }
-.dd-progress--primary { --_c: var(--dd-primary); }
+.dd-progress--ok { --_progress-c: var(--dd-ok); }
+.dd-progress--warn { --_progress-c: var(--dd-warn); }
+.dd-progress--bad { --_progress-c: var(--dd-bad); }
+.dd-progress--info { --_progress-c: var(--dd-info); }
+.dd-progress--primary { --_progress-c: var(--dd-primary); }
 
 /* Meter thresholds: a tick that reaches just past the track, and an optional scale of labels under it. */
 .dd-progress__mark {
@@ -4346,6 +4360,10 @@ a.dd-logo-tile:focus-visible { outline: 2px solid var(--dd-ring); outline-offset
 .dd-progress-ring.is-indeterminate .dd-progress-ring__fill { stroke-dasharray: 28 100; }
 .dd-progress-ring.is-indeterminate > svg { animation: dd-progress-turn 1s linear infinite; }
 @keyframes dd-progress-turn { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+/* Reduced motion: it turns slowly instead of stopping, so it never reads as a fixed 28% (as spinner.css does). */
+@media (prefers-reduced-motion: reduce) {
+  .dd-progress-ring.is-indeterminate > svg { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
+}
 
 /* ---------- segmented steps ---------- */
 .dd-progress-steps {
@@ -4773,8 +4791,6 @@ button.dd-select:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--dd-ring
 .dd-sheet__foot--stack { flex-direction: column-reverse; }
 .dd-sheet__foot--stack > .dd-btn { flex: none; }
 
-:root:has(.dd-sheet:modal) { overflow: hidden; }
-
 @keyframes dd-sheet-in { from { transform: translateY(100%); } }
 @keyframes dd-sheet-out { to { transform: translateY(100%); } }
 
@@ -4953,9 +4969,8 @@ button.dd-select:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--dd-ring
 .dd-side-nav--offcanvas.is-mobile-open::before { opacity: 1; pointer-events: auto; }
 
 /* While an open off-canvas nav covers the viewport, the page behind it stays put: side-nav.js sets .dd-side-nav-lock on
-   <html>. (base.css pads <html> by the scrollbar's width, kept in --dd-scrollbar-w by behaviors/scrollbar.js, so nothing
-   shifts sideways as the scrollbar goes.) */
-:root.dd-side-nav-lock { overflow: hidden; }
+   <html>, and base.css locks the scroll and pads <html> by the scrollbar's width (kept in --dd-scrollbar-w by
+   behaviors/scrollbar.js), so nothing shifts sideways as the scrollbar goes. */
 
 /* Restoring a persisted state on load: no animation. */
 .dd-side-nav.is-restoring, .dd-side-nav.is-restoring * { transition: none !important; }
@@ -5401,6 +5416,10 @@ button.dd-select:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--dd-ring
   width: 80%; height: 80%; border-radius: 50%;
   border: 2px solid color-mix(in oklab, currentColor 28%, transparent); border-top-color: currentColor;
   animation: dd-spin .8s linear infinite;
+}
+/* Reduced motion: it turns slowly instead of stopping, so a running step never looks stuck (as spinner.css does). */
+@media (prefers-reduced-motion: reduce) {
+  .dd-stepper__spinner { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
 }
 /* passed */
 .dd-stepper--pipeline .is-done .dd-stepper__marker { color: var(--dd-ok); }

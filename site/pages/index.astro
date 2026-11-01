@@ -10,7 +10,7 @@ import { setNames } from '../lib/tokens';
 import '../styles/home.css';
 
 const components = Object.keys(import.meta.glob('./components/*.astro')).length;
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+import { base } from '../lib/nav';
 const href = (p: string) => `${base}/${p}`;
 
 // A face's own theme, spelled out: each face shows only the name that matches its data-theme, so a caption always

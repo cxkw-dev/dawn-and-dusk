@@ -201,3 +201,24 @@ test('only dropzone inputs are managed: a plain file input elsewhere keeps what 
   const hrefs = await page.get(() => [...document.querySelectorAll('#fu-list-1 > .dd-file use')].map((u) => u.getAttribute('href')));
   assert.deepEqual(hrefs, ['/assets/icons.svg#dd-i-file', '/assets/icons.svg#dd-i-check', '/assets/icons.svg#dd-i-x']);
 });
+
+test('form reset: the rows the script listed go with the input’s files, so the next pick starts fresh (page rows stay)', async ({ open, assert }) => {
+  const page = await open('components/file-upload');
+  await page.get(() => document.querySelector('.doc-main').insertAdjacentHTML('afterbegin', `
+    <form id="fr-form">
+      <label class="dd-dropzone" data-dd-dropzone="#fr-list"><input type="file" multiple><span class="dd-dropzone__title">Drop files</span></label>
+      <ul class="dd-file-list" id="fr-list"><li class="dd-file"><span class="dd-file__name">from-the-server.pdf</span></li></ul>
+    </form>`));
+  const names = () => page.get(() => [...document.querySelectorAll('#fr-list > .dd-file .dd-file__name')].map((n) => n.textContent));
+  await browse(page, '#fr-form input', [usage]);
+  assert.deepEqual(await names(), ['from-the-server.pdf', 'billing-usage.csv']);
+  await page.get(() => document.getElementById('fr-form').reset());
+  assert.deepEqual(await inputFiles(page, '#fr-form input'), []);
+  assert.deepEqual(await names(), ['from-the-server.pdf'], 'the picked row went with the reset; the page’s own row stays');
+  await browse(page, '#fr-form input', [config]);
+  assert.deepEqual(await inputFiles(page, '#fr-form input'), ['edge-cache.json'], 'the old file does not come back');
+  assert.deepEqual(await names(), ['from-the-server.pdf', 'edge-cache.json']);
+  // A reset someone cancels changes nothing.
+  await page.get(() => { const f = document.getElementById('fr-form'); f.addEventListener('reset', (e) => e.preventDefault(), { once: true }); f.reset(); });
+  assert.deepEqual(await names(), ['from-the-server.pdf', 'edge-cache.json']);
+});

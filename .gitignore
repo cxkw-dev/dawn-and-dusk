@@ -22,5 +22,4 @@ skill/dawn-and-dusk-workspace/
 # consumer distribution and generated icon data
 dist-package/
 library/generated/
-site/public/downloads/
 .playwright-cli/

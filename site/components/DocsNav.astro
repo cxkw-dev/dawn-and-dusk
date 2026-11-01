@@ -5,7 +5,7 @@
 // The search sits at the head of the panel and, while a query is typed, searches every section at once
 // (site/scripts/docs.js).
 import { i } from '../lib/icon';
-import { base, hrefOf, sections, type RailSection } from '../lib/nav';
+import { base, hrefOf, pathOf, sections, type RailSection } from '../lib/nav';
 
 interface Props {
   /** The rail section whose pane is open. */
@@ -66,7 +66,7 @@ const pages = (s: RailSection) => s.groups.reduce((n, g) => n + g.items.length, 
               {g.items.map((it) => {
                 const href = hrefOf(it.href);
                 return (
-                  <a class="dd-side-nav__link" href={href} aria-current={href === here ? 'page' : undefined}
+                  <a class="dd-side-nav__link" href={href} aria-current={pathOf(href) === here ? 'page' : undefined}
                     data-find={`${it.title} ${g.keywords} ${aka[it.href.split('/').pop() ?? ''] ?? ''}`.toLowerCase()}>
                     <span class="dd-side-nav__label">{it.title}</span>
                   </a>

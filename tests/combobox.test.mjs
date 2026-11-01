@@ -255,3 +255,21 @@ test('icons it inserts (Create row, new option, chip ×) follow dd.iconSprite li
   assert.ok(hrefs.length >= 2, `option check and chip × inserted (${hrefs})`);
   assert.ok(hrefs.every((h) => h.startsWith('/assets/icons.svg#dd-i-')), hrefs.join(' '));
 });
+
+test('single: emptying the field and leaving it puts the chosen label back (Esc twice is what clears)', async ({ open, assert }) => {
+  const page = await open('components/combobox');
+  await listen(page);
+  await outside(page);
+  const state = () => page.get(() => [document.querySelector('#cbx-1').value, [...document.querySelectorAll('#cbx-1-list [aria-selected="true"]')].map((o) => o.dataset.value)]);
+  assert.deepEqual(await state(), ['billing-worker', ['billing-worker']]);
+  await page.get(() => { const i = document.querySelector('#cbx-1'); i.focus(); i.select(); });
+  await page.press('Backspace');
+  assert.equal(await page.get(() => document.querySelector('#cbx-1').value), '');
+  await page.press('Tab');
+  assert.deepEqual(await state(), ['billing-worker', ['billing-worker']], 'Tab away');
+  await page.get(() => { const i = document.querySelector('#cbx-1'); i.focus(); i.select(); });
+  await page.press('Backspace');
+  await outside(page);
+  assert.deepEqual(await state(), ['billing-worker', ['billing-worker']], 'click away');
+  assert.deepEqual(await events(page), [], 'the value never changed');
+});

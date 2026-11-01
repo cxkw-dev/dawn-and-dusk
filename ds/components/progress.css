@@ -2,9 +2,11 @@
    thresholds, rings, segmented steps and usage quotas. The unfilled track is a lighter step of the fill colour,
    so the state reads across the whole bar. Values come from --dd-value (0–100) on the track. */
 
+/* The bar's colour and height (--_progress-c, --_progress-h) have names of their own: a bare track reads them with a
+   fallback, and a generic --_c or --_h set by a component around it (a chart, an alert) must not reach it. */
 .dd-progress {
-  --_c: var(--dd-accent);
-  --_h: 6px;
+  --_progress-c: var(--dd-accent);
+  --_progress-h: 6px;
   display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1.5); min-width: 0;
   font-size: var(--dd-fs-sm); color: var(--dd-text);
 }
@@ -16,15 +18,15 @@
 }
 .dd-progress__value b { font-weight: 500; color: var(--dd-text); }
 .dd-progress__hint { margin: 0; font-size: var(--dd-fs-xs); color: var(--dd-muted); }
-.dd-progress__hint .dd-icon { color: var(--_c, var(--dd-accent)); }
+.dd-progress__hint .dd-icon { color: var(--_progress-c, var(--dd-accent)); }
 
 .dd-progress__track {
-  position: relative; display: flex; width: 100%; height: var(--_h, 6px); border-radius: var(--dd-r-pill);
-  background: color-mix(in oklab, var(--_c, var(--dd-accent)) 16%, transparent);
+  position: relative; display: flex; width: 100%; height: var(--_progress-h, 6px); border-radius: var(--dd-r-pill);
+  background: color-mix(in oklab, var(--_progress-c, var(--dd-accent)) 16%, transparent);
 }
 .dd-progress__fill {
   width: calc(var(--dd-value, 0) * 1%); max-width: 100%; height: 100%; border-radius: inherit;
-  background: var(--_c, var(--dd-accent));
+  background: var(--_progress-c, var(--dd-accent));
   transition: width var(--dd-dur) var(--dd-ease), background-color var(--dd-dur) var(--dd-ease);
 }
 
@@ -43,15 +45,15 @@
 }
 
 /* Sizes */
-.dd-progress--sm { --_h: 4px; }
-.dd-progress--lg { --_h: 10px; }
+.dd-progress--sm { --_progress-h: 4px; }
+.dd-progress--lg { --_progress-h: 10px; }
 
 /* Tones — set on .dd-progress, or directly on a track or ring */
-.dd-progress--ok { --_c: var(--dd-ok); }
-.dd-progress--warn { --_c: var(--dd-warn); }
-.dd-progress--bad { --_c: var(--dd-bad); }
-.dd-progress--info { --_c: var(--dd-info); }
-.dd-progress--primary { --_c: var(--dd-primary); }
+.dd-progress--ok { --_progress-c: var(--dd-ok); }
+.dd-progress--warn { --_progress-c: var(--dd-warn); }
+.dd-progress--bad { --_progress-c: var(--dd-bad); }
+.dd-progress--info { --_progress-c: var(--dd-info); }
+.dd-progress--primary { --_progress-c: var(--dd-primary); }
 
 /* Meter thresholds: a tick that reaches just past the track, and an optional scale of labels under it. */
 .dd-progress__mark {
@@ -103,6 +105,10 @@
 .dd-progress-ring.is-indeterminate .dd-progress-ring__fill { stroke-dasharray: 28 100; }
 .dd-progress-ring.is-indeterminate > svg { animation: dd-progress-turn 1s linear infinite; }
 @keyframes dd-progress-turn { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+/* Reduced motion: it turns slowly instead of stopping, so it never reads as a fixed 28% (as spinner.css does). */
+@media (prefers-reduced-motion: reduce) {
+  .dd-progress-ring.is-indeterminate > svg { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
+}
 
 /* ---------- segmented steps ---------- */
 .dd-progress-steps {

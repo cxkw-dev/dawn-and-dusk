@@ -1,6 +1,7 @@
 /* Dismiss: a [data-dd-dismiss] button closes the alert, banner, callout or [data-dd-dismissible] element it sits in,
    or the element its value names (data-dd-dismiss="#promo"). The target first gets a cancelable "dd:dismiss" event
-   (call preventDefault() to keep it), then fades, collapses and is removed. dd.dismiss(el) does the same from code. */
+   (call preventDefault() to keep it), then fades, collapses and is removed. Focus still inside it at that point moves
+   to its parent; focus that went elsewhere meanwhile stays there. dd.dismiss(el) does the same from code. */
 (() => {
   const TARGETS = '.dd-alert, .dd-banner, .dd-callout, [data-dd-dismissible]';
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -9,10 +10,11 @@
     if (!el || el.hasAttribute('data-dd-leaving')) return;
     if (!el.dispatchEvent(new CustomEvent('dd:dismiss', { bubbles: true, cancelable: true }))) return;
     el.setAttribute('data-dd-leaving', '');
-    // Keep keyboard users where they were: if focus was inside, hand it to the parent instead of dropping it on <body>.
-    const hadFocus = el.contains(document.activeElement);
+    // Keep keyboard users where they were: if focus is inside as it goes, hand it to the parent instead of dropping it
+    // on <body>. Checked at the end, not the start: focus moved elsewhere during the exit stays where it went.
     const done = () => {
       const parent = el.parentElement;
+      const hadFocus = el.contains(document.activeElement);
       el.remove();
       if (hadFocus && parent) {
         const temp = !parent.hasAttribute('tabindex');

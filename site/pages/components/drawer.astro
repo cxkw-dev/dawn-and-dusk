@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const close = `<button class="dd-drawer__close" type="button" data-dd-dialog-close aria-label="Close">${i('x')}</button>`;
 
@@ -130,7 +130,7 @@ const sizes = `
     ['.dd-drawer__section / __section-title', 'Groups inside the body, each with a mono caps title.'],
     ['.dd-drawer__props', 'A <code>&lt;dl&gt;</code> of key / value rows on hairlines.'],
     ['.dd-drawer__log', 'A mono excerpt (logs, payloads) that scrolls sideways.'],
-    ['.dd-drawer__form', `A <code>&lt;form method="dialog"&gt;</code> wrapping head, body and foot; it doesn’t affect layout. Inside, use the regular <a href="${docs}/components/form-field"><code>.dd-field</code></a> and <a href="${docs}/components/text-input"><code>.dd-input</code></a> (<code>.dd-textarea</code> for long values); add <code>dd-form__body</code> to the body to space them and <code>dd-mono</code> on the control for keys and secrets.`],
+    ['.dd-drawer__form', `A <code>&lt;form method="dialog"&gt;</code> wrapping head, body and foot; it doesn’t affect layout. Inside, use the regular <a href="${base}/components/form-field"><code>.dd-field</code></a> and <a href="${base}/components/text-input"><code>.dd-input</code></a> (<code>.dd-textarea</code> for long values); add <code>dd-form__body</code> to the body to space them and <code>dd-mono</code> on the control for keys and secrets.`],
     ['.dd-drawer__foot', 'Actions, right-aligned. Outside the scroller, so always in view.'],
     ['.dd-drawer__start / __hint', 'Pushed to the left of the footer: a kept-apart action, or a mono hint.'],
     ['.dd-drawer--sm / --lg', 'Sizes: 360px and 720px. Medium (480px) has no modifier.'],
@@ -138,7 +138,7 @@ const sizes = `
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
-  <p>The drawer shares <code>ds/behaviors/dialog.js</code> with <a href={`${docs}/components/dialog`}>Dialog</a>: <code>data-dd-dialog-open="#id"</code> opens it, <code>data-dd-dialog-close</code> (with an optional value) closes it, a click on the scrim or Esc closes it with the slide-out, and focus returns to the opener. <code>data-dd-dialog-backdrop="static"</code> keeps a scrim click from closing it. From script: <code>dd.dialog.open('#id')</code> and <code>dd.dialog.close('#id', value)</code>.</p>
+  <p>The drawer shares <code>ds/behaviors/dialog.js</code> with <a href={`${base}/components/dialog`}>Dialog</a>: <code>data-dd-dialog-open="#id"</code> opens it, <code>data-dd-dialog-close</code> (with an optional value) closes it, a click on the scrim or Esc closes it with the slide-out, and focus returns to the opener. <code>data-dd-dialog-backdrop="static"</code> keeps a scrim click from closing it. From script: <code>dd.dialog.open('#id')</code> and <code>dd.dialog.close('#id', value)</code>.</p>
   <ClassTable head={['Key', 'What it does']} rows={[
     ['Esc', 'Closes the drawer.'],
     ['Tab / Shift+Tab', 'Stays inside the drawer, wrapping at the ends; the page behind is inert.'],

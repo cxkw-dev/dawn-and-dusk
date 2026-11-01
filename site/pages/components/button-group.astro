@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const attached = `
 <div class="dd-stack" style="--dd-gap: 15px">
@@ -109,10 +109,10 @@ const block = `
 <Docs title="Button group" group="Actions" lead="Attached buttons that act as one control, and the split button: a main action with a chevron that opens the alternatives. Built from the same .dd-btn styles.">
   <Example title="Attached" description="Related actions that share a seam. The 1px gap lets the surface behind draw the line, so there are no borders." code={attached} />
   <h2 id="toggles">Toggle buttons</h2>
-  <p>For independent on/off options, such as which log levels to show, give each button <code>aria-pressed</code>. Pressed buttons take the deeper tone and full-strength text. For a single choice, use a <a href={`${docs}/components/segmented-control`}>segmented control</a> instead.</p>
+  <p>For independent on/off options, such as which log levels to show, give each button <code>aria-pressed</code>. Pressed buttons take the deeper tone and full-strength text. For a single choice, use a <a href={`${base}/components/segmented-control`}>segmented control</a> instead.</p>
   <Example code={toggles} description="Try it: click the levels and columns on and off; each button flips on its own. Enter and Space work too." />
   <h2 id="split">Split button</h2>
-  <p>A main action plus a narrow chevron (<code>.dd-btn-group__caret</code>) that opens a <a href={`${docs}/components/menu`}>menu</a> of variations. The seam is a soft line in the button’s own ink.</p>
+  <p>A main action plus a narrow chevron (<code>.dd-btn-group__caret</code>) that opens a <a href={`${base}/components/menu`}>menu</a> of variations. The seam is a soft line in the button’s own ink.</p>
   <Example code={split} description="Try it: the main half runs the action; the chevron (or ↓ on it) opens the alternatives, Esc closes them." />
   <p>While the menu is open, the chevron flips and keeps its hover tone; the menu floats below, aligned to the end.</p>
   <Example code={splitOpen} />
@@ -136,7 +136,7 @@ const block = `
     ['.dd-btn-group--block', 'Fills its container; buttons share the width.'],
   ]} />
   <h2 id="behaviour">Behaviour</h2>
-  <p>Groups are plain CSS. The split button’s chevron uses the <a href={`${docs}/components/menu`}>menu</a> behaviour: <code>data-dd-menu="menu-id"</code> opens the menu, <code>data-dd-placement="bottom-end"</code> aligns it to the chevron, and Esc returns focus to the chevron. Add <code>data-dd-btn-toggle</code> to a group and each <code>aria-pressed</code> button in it flips on click (Enter and Space work too, as they are buttons).</p>
+  <p>Groups are plain CSS. The split button’s chevron uses the <a href={`${base}/components/menu`}>menu</a> behaviour: <code>data-dd-menu="menu-id"</code> opens the menu, <code>data-dd-placement="bottom-end"</code> aligns it to the chevron, and Esc returns focus to the chevron. Add <code>data-dd-btn-toggle</code> to a group and each <code>aria-pressed</code> button in it flips on click (Enter and Space work too, as they are buttons).</p>
   <h2 id="guidelines">Guidelines</h2>
   <Guides
     do={['Group two to four closely related actions.', 'Make the split button’s main half the action people want most of the time.', 'Label icon-only buttons with <code>aria-label</code>.']}

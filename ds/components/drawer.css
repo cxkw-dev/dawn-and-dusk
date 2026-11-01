@@ -112,7 +112,5 @@
   .dd-drawer__hint { display: none; }
 }
 
-:root:has(.dd-drawer:modal) { overflow: hidden; }
-
 @keyframes dd-drawer-in { from { transform: translateX(100%); } }
 @keyframes dd-drawer-out { to { transform: translateX(100%); } }

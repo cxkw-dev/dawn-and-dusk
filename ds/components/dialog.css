@@ -92,9 +92,6 @@
   .dd-dialog__foot > .dd-btn { flex: 1 1 0; }
 }
 
-/* lock the page behind an open modal */
-:root:has(.dd-dialog:modal) { overflow: hidden; }
-
 @keyframes dd-dialog-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
 @keyframes dd-dialog-out { to { opacity: 0; transform: translateY(4px) scale(0.985); } }
 @keyframes dd-dialog-fade { from { opacity: 0; } }

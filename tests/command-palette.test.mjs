@@ -183,3 +183,46 @@ test('phone: tap opens the palette and a tapped row runs', async ({ open, assert
   assert.equal((await state(page, live)).open, false);
   assert.equal((await cmds(page))[0].value, 'ai-focus');
 });
+
+test('drag-selecting the search text out onto the backdrop keeps it open; a click there still closes', async ({ open, assert }) => {
+  const page = await open('components/command-palette');
+  await page.click(opener);
+  await page.type('deploy');
+  const [from, to] = await page.get((s) => {
+    const i = document.querySelector(`${s} .dd-command__input`).getBoundingClientRect(), b = document.querySelector(s).getBoundingClientRect();
+    return [{ x: i.left + 16, y: i.top + i.height / 2 }, { x: 20, y: b.bottom + 40 }];
+  }, live);
+  await page.send('Input.dispatchMouseEvent', { type: 'mousePressed', ...from, button: 'left', clickCount: 1 });
+  await page.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...to, button: 'left', buttons: 1 });
+  await page.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...to, button: 'left', clickCount: 1 });
+  await page.sleep(150);
+  const s = await state(page, live);
+  assert.equal(s.open, true, 'a press that started in the search box does not close it');
+  assert.equal(s.query, 'deploy');
+  await page.send('Input.dispatchMouseEvent', { type: 'mousePressed', ...to, button: 'left', clickCount: 1 });
+  await page.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...to, button: 'left', clickCount: 1 });
+  await page.waitFor((x) => !document.querySelector(x).open, { args: [live] });
+});
+
+test('a row that opens a dialog: when the dialog closes, focus goes back to what had it before the palette', async ({ open, assert }) => {
+  const page = await open('components/command-palette');
+  await page.get((s) => {
+    document.querySelector('.doc-main').insertAdjacentHTML('afterbegin', '<button class="dd-btn" id="cp-start">I had focus</button>');
+    document.querySelector(`${s} .dd-command__group`).insertAdjacentHTML('afterbegin', '<button class="dd-command__item" type="button" data-dd-dialog-open="#cp-new-dlg"><span class="dd-command__body"><span>Start a sandbox…</span></span></button>');
+    // Right after the palette, where focus used to land when the row it remembered had closed with the palette.
+    document.querySelector(s).insertAdjacentHTML('afterend', '<button class="dd-btn" id="cp-after">After the palette</button><dialog class="dd-dialog" id="cp-new-dlg"><div class="dd-dialog__body"><button class="dd-btn" data-dd-dialog-close>Done</button></div></dialog>');
+  }, live);
+  await page.focus('#cp-start');
+  await page.press({ key: 'k', meta: true });
+  await page.waitFor((s) => document.querySelector(s).open, { args: [live] });
+  assert.equal(await page.get((s) => document.querySelector(s).ddReturn?.id, live), 'cp-start', 'the palette keeps what had focus as ddReturn');
+  await page.type('sandbox');
+  await page.press('Enter');
+  await page.waitFor(() => document.getElementById('cp-new-dlg').matches(':modal'));
+  assert.equal((await state(page, live)).open, false, 'the palette closed as the row ran');
+  await page.press('Escape');
+  await page.waitFor(() => !document.getElementById('cp-new-dlg').open);
+  await page.waitFor(() => document.activeElement?.id === 'cp-start');
+  await page.sleep(100);
+  assert.equal(await page.active(), '#cp-start', 'and stays there');
+});

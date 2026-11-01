@@ -1,19 +1,22 @@
 // Consumer-only distribution. The repository's Astro dependencies never enter the published manifest.
+// Writes the package to dist-package/ and the release downloads (the packed tarball and three starter ZIPs) to
+// dist-package/downloads/, outside the docs' public folder: they are published as GitHub release assets, not on Pages.
+// Needs `zip` on the PATH.
 import { readFile, writeFile, mkdir, rm, copyFile, cp, readdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { build, transform } from 'esbuild';
 import { themeScript } from '../library/theme-source.mjs';
 import { tailwindEntry } from './tailwind-entry.mjs';
+import { releaseAsset, stylesheetParts } from './ds-source.mjs';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const at = (...parts) => join(root, ...parts);
 const pkg = JSON.parse(await readFile(at('package.json'), 'utf8'));
 const out = at('dist-package');
-const downloads = at('site/public/downloads');
+const downloads = join(out, 'downloads');
 const version = pkg.version;
 await rm(out, { recursive: true, force: true });
-await mkdir(out, { recursive: true });
 await mkdir(downloads, { recursive: true });
 await mkdir(at('library/generated'), { recursive: true });
 const sprite = await readFile(at('release/icons.svg'), 'utf8');
@@ -28,14 +31,13 @@ const fonts = css.match(fontImport)?.[0];
 if (!fonts) throw new Error('No font @import found in the stylesheet');
 await writeFile(join(out, 'styles-no-fonts.css'), (await transform(css.replace(fontImport, ''), { loader: 'css', minify: true })).code);
 await copyFile(at('release/tokens.css'), join(out, 'tokens.css'));
-// Tailwind CSS v4: tailwind.css layers tokens.css and core.css (base + components, no fonts or tokens) and maps the tokens
-// to Tailwind's theme. fonts.css is separate because an @import url() must stay first in the app's compiled CSS.
-const dsFile = (p) => readFile(at('ds', p), 'utf8');
-const componentFiles = (await readdir(at('ds/components'))).filter((f) => f.endsWith('.css')).sort();
-const core = [await dsFile('base.css'), ...(await Promise.all(componentFiles.map((f) => dsFile(`components/${f}`))))].join('\n');
+// Tailwind CSS v4: tailwind.css layers tokens.css and core.css (base + components, no fonts or tokens: the same sources
+// as the release stylesheet) and maps the tokens to Tailwind's theme. fonts.css is separate because an @import url()
+// must stay first in the app's compiled CSS.
+const { core, tokens } = await stylesheetParts();
 await writeFile(join(out, 'core.css'), (await transform(core, { loader: 'css', minify: true })).code);
 await writeFile(join(out, 'fonts.css'), `/* dawn & dusk webfonts. In a Tailwind app, import this before "tailwindcss". */\n${fonts}\n`);
-await writeFile(join(out, 'tailwind.css'), tailwindEntry(await dsFile('tokens.css'), { version }));
+await writeFile(join(out, 'tailwind.css'), tailwindEntry(tokens, { version }));
 await copyFile(at('release/icons.svg'), join(out, 'icons.svg'));
 const runtime = await readFile(at('release/dawn-and-dusk.js'), 'utf8');
 const auto = `(() => {
@@ -77,9 +79,16 @@ await writeFile(join(out, 'package.json'), JSON.stringify({
 }, null, 2) + '\n');
 for (const file of ['LICENSE', 'THIRD_PARTY_NOTICES.md']) await copyFile(at(file), join(out, file));
 await copyFile(at('library/README.md'), join(out, 'README.md'));
-const packed = JSON.parse(execFileSync('npm', ['pack', out, '--pack-destination', downloads, '--json'], { cwd: root, encoding: 'utf8' }))[0];
-const url = `https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v${version}/${packed.filename}`;
-// Build three standalone starters. Source uses a placeholder so every archive gets the exact release URL.
+// npm is npm.cmd on Windows, which Node only runs through a shell; quote the arguments there, as paths may hold spaces.
+const npm = (args) => process.platform === 'win32'
+  ? execSync(['npm', ...args].map((a) => `"${a}"`).join(' '), { cwd: root, encoding: 'utf8' })
+  : execFileSync('npm', args, { cwd: root, encoding: 'utf8' });
+const packed = JSON.parse(npm(['pack', out, '--pack-destination', downloads, '--json']))[0];
+if (packed.files.some((f) => f.path.startsWith('downloads/'))) throw new Error('build-package: the package must not contain downloads/');
+const url = releaseAsset(version);
+if (basename(url) !== packed.filename) throw new Error(`build-package: npm packed ${packed.filename}, but the release URL names ${basename(url)}`);
+// Build three standalone starters. Source uses placeholders so every archive gets the exact release URL and the
+// pre-paint theme script.
 const staging = at('.astro/starter-build');
 await rm(staging, { recursive: true, force: true });
 await mkdir(staging, { recursive: true });
@@ -87,7 +96,7 @@ async function replaceTokens(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const file = join(dir, entry.name);
     if (entry.isDirectory()) await replaceTokens(file);
-    else await writeFile(file, (await readFile(file, 'utf8')).replaceAll('__PACKAGE_URL__', url));
+    else await writeFile(file, (await readFile(file, 'utf8')).replaceAll('__PACKAGE_URL__', url).replaceAll('__THEME_SCRIPT__', themeScript));
   }
 }
 for (const kind of ['html', 'react', 'next']) {

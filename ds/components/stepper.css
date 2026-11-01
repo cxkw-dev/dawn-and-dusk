@@ -94,6 +94,10 @@
   border: 2px solid color-mix(in oklab, currentColor 28%, transparent); border-top-color: currentColor;
   animation: dd-spin .8s linear infinite;
 }
+/* Reduced motion: it turns slowly instead of stopping, so a running step never looks stuck (as spinner.css does). */
+@media (prefers-reduced-motion: reduce) {
+  .dd-stepper__spinner { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
+}
 /* passed */
 .dd-stepper--pipeline .is-done .dd-stepper__marker { color: var(--dd-ok); }
 .dd-stepper--pipeline .is-done + .dd-stepper__step::before { background: var(--dd-ok); }

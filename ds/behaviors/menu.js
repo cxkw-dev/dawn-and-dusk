@@ -1,15 +1,19 @@
 /* Menu: a trigger with [data-dd-menu="menu-id"] toggles that .dd-menu (an empty value means the next .dd-menu sibling).
    [data-dd-contextmenu="menu-id"] on an area opens the menu at the pointer on right-click, Shift+F10 or the Menu key.
-   An item inside a menu with [data-dd-menu] opens a submenu to its side. Optional [data-dd-placement] on the trigger:
+   An item inside a menu with [data-dd-menu] opens a submenu to its side, on hover or click (a click never closes it, as
+   hovering may have opened it a moment before). Optional [data-dd-placement] on the trigger:
    bottom-start (default) · bottom-end · top-start · top-end. Menus flip when they would leave the viewport.
    Several triggers may share one menu (a ⋯ button per row): clicking another one moves the open menu to it.
    Which trigger: the menu fires dd:menuopen and dd:menuclose (they bubble) with detail { trigger } — the button that
    opened it, or the area for a context menu — and keeps menu.ddTrigger set to that element after it closes, so an
    item's click handler can read the row it was opened from (moving to another trigger fires close, then open).
    Global: dd.menu.open(menu, trigger, { focus: 'first' | 'last' | 'none' }), dd.menu.close(menu) (or no argument for every
-   open menu; focus inside it goes back to its trigger), dd.menu.trigger(menu). `menu` is the element, its id or '#id'.
-   Keyboard: ↓ / ↑ on the trigger open at the first / last item; in the menu ↑ ↓ Home End move, a letter jumps,
-   → opens a submenu, ← closes it, Esc closes and returns focus, Tab closes. Clicking outside closes.
+   open menu), dd.menu.trigger(menu). `menu` is the element, its id or '#id'. Running an item closes every menu.
+   Both hand focus back to the trigger only while it is still in the menus (or was dropped on <body>): an item handler
+   that moved it elsewhere (into an inline rename field, a dialog) keeps it there.
+   Keyboard: ↓ / ↑ on the trigger open at the first / last item; in the menu ↑ ↓ Home End move, a letter jumps (to the
+   next item starting with it; letters typed quickly match a prefix, staying on the current item while it still
+   matches), → opens a submenu, ← closes it, Esc closes and returns focus, Tab closes. Clicking outside closes.
    role=menuitemcheckbox toggles aria-checked; role=menuitemradio checks one per group — both keep the menu open. */
 (() => {
   const ITEM = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]';
@@ -89,10 +93,17 @@
       emit(s.menu, 'dd:menuclose', s.source);
     }
   }
+  // Focus is still in the open menus from `i` up (or was dropped on <body>, e.g. with a removed item), so closing them
+  // should hand it back to their trigger. Anywhere else, something (an item's handler, a dialog) moved it on purpose.
+  const focusInMenus = (i = 0) => {
+    const a = document.activeElement;
+    return !a || a === document.body || stack.slice(i).some((x) => x.menu.contains(a));
+  };
   function closeAll(refocus) {
     const root = stack[0];
+    const back = refocus && root && focusInMenus();
     closeAbove(null);
-    if (refocus && root) (root.trigger || root.ret)?.focus?.({ preventScroll: true });
+    if (back) (root.trigger || root.ret)?.focus?.({ preventScroll: true });
   }
 
   function open(menu, trigger, { focus = 'first', at = null, ret = null } = {}) {
@@ -121,10 +132,10 @@
   const toggleFromTrigger = (t, focus) => {
     const menu = menuFor(t);
     if (!menu) return;
-    // Open from this trigger: close it. Open from another trigger sharing the menu (one menu for every row's
-    // ⋯ button): move it here instead.
-    if (entryOf(menu)?.trigger === t) { closeAbove(t.closest('.dd-menu.is-floating') || null); t.focus({ preventScroll: true }); }
-    else open(menu, t, { focus });
+    // Open from this trigger: close it — but a submenu item only opens, as hovering it may have opened it just before
+    // the click. Open from another trigger sharing the menu (one menu for every row's ⋯ button): move it here instead.
+    if (entryOf(menu)?.trigger !== t) open(menu, t, { focus });
+    else if (!t.closest('.dd-menu.is-floating')) { closeAbove(null); t.focus({ preventScroll: true }); }
   };
 
   const activate = (item) => {
@@ -265,8 +276,11 @@
         typed = now - typedAt > 600 ? e.key.toLowerCase() : typed + e.key.toLowerCase();
         typedAt = now;
         const label = (el) => (el.querySelector('.dd-menu__body')?.firstChild?.textContent || el.textContent).trim().toLowerCase();
-        const order = [...list.slice(i + 1), ...list.slice(0, i + 1)];
-        const hit = order.find((el) => label(el).startsWith(typed)) || order.find((el) => label(el).startsWith(typed[0]));
+        const from = (k) => { k = Math.max(0, k); return [...list.slice(k), ...list.slice(0, k)]; };
+        // A first letter moves on to the next match; a longer prefix may still match the current item ("de" on Delete),
+        // so it searches from there. The same letter again ("dd") falls back to the next item with that letter.
+        const hit = from(typed.length > 1 ? i : i + 1).find((el) => label(el).startsWith(typed))
+          || from(i + 1).find((el) => label(el).startsWith(typed[0]));
         if (hit) { e.preventDefault(); hit.focus(); }
       }
     }
@@ -302,7 +316,7 @@
       const s = m == null ? stack[0] : entryOf(resolveMenu(m));
       if (!s) return; // not open
       const i = stack.indexOf(s);
-      const hadFocus = stack.slice(i).some((x) => x.menu.contains(document.activeElement));
+      const hadFocus = focusInMenus(i);
       closeAbove(i > 0 ? stack[i - 1].menu : null);
       if (hadFocus) (s.trigger || s.ret)?.focus?.({ preventScroll: true });
     },

@@ -3,7 +3,7 @@ import Docs from '../../layouts/Docs.astro';
 import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const basic = `
 <div class="dd-field" style="max-width: 520px">
@@ -85,7 +85,7 @@ LOG_LEVEL=info</textarea>
     ['.dd-input__control', 'The <code>&lt;textarea&gt;</code>. Height follows <code>rows</code> (2, 3, 4 or 6; 3 by default); resizes vertically, up to 24 lines.'],
     ['.dd-input__control.dd-mono', 'Mono text with a taller line height, for config, keys and logs.'],
     ['[data-dd-autogrow]', 'Grows with its content (2–10 lines).'],
-    ['.dd-field__counter', `Character counter in the field foot (see <a href="${docs}/components/form-field">Form field</a>).`],
+    ['.dd-field__counter', `Character counter in the field foot (see <a href="${base}/components/form-field">Form field</a>).`],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>

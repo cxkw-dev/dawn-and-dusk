@@ -138,3 +138,28 @@ test('dusk: the current page sits on a tone; disabled arrows dim', async ({ open
   assert.ok(Number(await page.get((s) => getComputedStyle(document.querySelector(s)).opacity, prev(FIRST))) < 0.6);
   assert.equal(await page.count(steps(NUM)), 2);
 });
+
+test('top and bottom pagers on one root: each list’s own arrows go the right way and disable at the ends', async ({ open, assert }) => {
+  const page = await open('components/pagination');
+  await page.get(() => {
+    const pager = (id) => `<nav class="dd-pagination" id="${id}" aria-label="Pagination"><ul class="dd-pagination__pages">
+      <li><button class="dd-pagination__step" type="button" aria-label="Previous page">‹</button></li>
+      <li><button class="dd-pagination__page" type="button" aria-label="Page 1">1</button></li>
+      <li><button class="dd-pagination__step" type="button" aria-label="Next page">›</button></li></ul></nav>`;
+    document.querySelector('.doc-main').insertAdjacentHTML('beforeend', `<div id="pg-two" data-dd-pagination data-pages="10" data-page="5">${pager('pg-top')}<p>rows</p>${pager('pg-bottom')}</div>`);
+    dd.pagination('#pg-two');
+  });
+  const at = () => page.get(() => document.getElementById('pg-two').dataset.page);
+  const arrows = () => page.get(() => [...document.querySelectorAll('#pg-two .dd-pagination__step')].map((b) => (b.getAttribute('aria-disabled') === 'true' ? 'off' : 'on')).join(' '));
+  await page.click('#pg-bottom .dd-pagination__pages > li:first-child .dd-pagination__step');
+  assert.equal(await at(), '4', 'the bottom Previous goes back');
+  await page.click('#pg-bottom .dd-pagination__pages > li:last-child .dd-pagination__step');
+  assert.equal(await at(), '5', 'the bottom Next goes forward');
+  await page.click('#pg-top .dd-pagination__pages > li:first-child .dd-pagination__step');
+  assert.equal(await at(), '4', 'the top Previous goes back');
+  await page.click('#pg-bottom .dd-pagination__page[aria-label="Page 1"]');
+  assert.equal(await arrows(), 'off on off on', 'both Previous arrows disable on page 1');
+  await page.click('#pg-top .dd-pagination__page[aria-label="Page 10"]');
+  assert.equal(await arrows(), 'on off on off', 'both Next arrows disable on the last page');
+  assert.equal(await page.text('#pg-bottom [aria-current="page"]'), '10', 'both lists show the page');
+});

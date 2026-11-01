@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const sizes = `
 <div class="dd-row" style="--dd-gap: var(--dd-space-6)">
@@ -75,7 +75,7 @@ const live = `
   <Example code={dots} stage="center" />
 
   <h2 id="inline">Inline loading</h2>
-  <p>A spinner beside the thing that’s loading, in muted text. <code>--inline</code> sizes the ring to the surrounding type. Buttons have their own spinner — see <a href={`${docs}/components/button`}>Button</a>.</p>
+  <p>A spinner beside the thing that’s loading, in muted text. <code>--inline</code> sizes the ring to the surrounding type. Buttons have their own spinner — see <a href={`${base}/components/button`}>Button</a>.</p>
   <Example code={inline} />
 
   <h2 id="page">Page loader</h2>

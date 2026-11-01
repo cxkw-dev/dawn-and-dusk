@@ -61,7 +61,7 @@ Try it: focus starts on “Keep it”, so Enter is the safe answer.
 
 ## Form
 
-Wrap the parts in `<form method="dialog" class="dd-dialog__form">` and use the same fields as any form, with tucked labels. Native validation runs first; a valid submit closes the dialog with the button’s `value` as `returnValue`.
+Wrap the parts in `<form method="dialog" class="dd-dialog__form">` and use the same fields as any form, with tucked labels. Native validation runs first; a valid submit closes the dialog with the button’s `value` as `returnValue`. A button with its own `formmethod` wins: `formmethod="post"` posts instead.
 
 Try it: press “Add domain” with the field empty — validation holds the dialog open. Type a domain and press Enter.
 
@@ -278,7 +278,7 @@ Try it: open a member’s ⋯ menu and choose “Remove from team…”. “Keep
 | `data-dd-dialog-open="#id"` | On any element: opens that dialog modally and remembers the element so focus returns to it on close. On an item of a floating menu, it remembers the button that opened the menu instead (the item closes with its menu). |
 | `data-dd-dialog-close` | On any element inside the dialog: closes it with the exit animation. |
 | `data-dd-dialog-close="value"` | Closes and sets `dialog.returnValue` to `value`; read it in the native `close` event. |
-| `form[method="dialog"]` | A valid submit closes with the submit button’s `value`. |
+| `form[method="dialog"]` | A valid submit closes with the submit button’s `value`, unless the button’s `formmethod` says otherwise. |
 | `data-dd-dialog-backdrop="static"` | On the dialog: clicking the scrim does nothing (for forms with unsaved input). Esc still closes. |
 | `dd.dialog.open(sel) / dd.dialog.close(sel, value)` | The same from script. `sel` is a selector or the element. |
 

@@ -13,11 +13,15 @@
 
 .dd-card {
   --_pad: calc(var(--dd-u) * 5);
-  position: relative; display: flex; flex-direction: column; min-width: 0;
-  background: var(--dd-surface); color: var(--dd-text); border-radius: var(--dd-r-box); overflow: hidden;
+  position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  background: var(--dd-surface); color: var(--dd-text); border-radius: var(--dd-r-box);
   text-decoration: none;
   transition: background-color var(--dd-dur-fast) var(--dd-ease);
 }
+/* Only a card with full-bleed media clips to its corners, so popups inside other cards (a select's listbox, a date
+   picker, a menu) can leave it. (min-height: 0 above keeps the size the clipping used to give every card in a flex or
+   grid layout.) */
+.dd-card:has(> .dd-card__media) { overflow: hidden; }
 .dd-card__body { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 2); flex: 1; min-width: 0; padding: var(--_pad); }
 .dd-card__eyebrow {
   display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 2); margin: 0;
@@ -67,8 +71,9 @@ a.dd-card__link:hover { color: var(--dd-accent-hover); text-decoration-color: cu
 .dd-card__stretch::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
 .dd-card__stretch:focus-visible { outline: none; }
 .dd-card:has(.dd-card__stretch:focus-visible) { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
-/* Controls inside a stretched-link card sit above the link's hit area, so they keep their own click. */
-.dd-card:has(.dd-card__stretch) :is(a[href], button, input, select, textarea, label, summary, [tabindex]):not(.dd-card__stretch) { position: relative; z-index: 1; }
+/* Controls inside a stretched-link card sit above the link's hit area, so they keep their own click. No specificity, so
+   a control that positions itself (a segmented control's radio, a code block's copy button) keeps its own position. */
+:where(.dd-card:has(.dd-card__stretch) :is(a[href], button, input, select, textarea, label, summary, [tabindex]):not(.dd-card__stretch)) { position: relative; z-index: 1; }
 
 /* Stat: a big display figure, its label and a delta. */
 .dd-card__stat {

@@ -7,7 +7,8 @@
      dismissible  false leaves out the × button (default true)
    Swipe a toast sideways (or drag it with the mouse) to dismiss it; Esc dismisses the toast that has focus, and focus
    then moves to the next toast or back to where it was before the stack. The stack is a manual popover (top layer),
-   so toasts show above modal dialogs; while a modal is open the stack moves inside it so its buttons aren't inert.
+   so toasts show above modal dialogs; while a modal is open the stack moves inside it so its buttons aren't inert —
+   also when the modal opens over toasts already showing (however it was opened: dd, the palette, showModal()).
    Returns { el, dismiss() }. dd.toast('Saved') works too, and dd.toast.clear() empties the stack.
    Declarative: <button data-dd-toast="Title" data-dd-toast-description="…" data-dd-toast-intent="ok"
    data-dd-toast-action="Undo" data-dd-toast-duration="8000">. The toast takes the dawn/dusk theme of the
@@ -94,6 +95,12 @@
     document.body.append(stack);
     if (stack.querySelector('.dd-toast')) raise();
   }, true);
+  // A modal opened over toasts already showing would cover them and make them inert (an Undo out of reach), so the
+  // stack follows it in. Watch [open] rather than an event: it is set however the modal was opened (dd, the palette,
+  // a plain showModal()), and focus events don't fire while the window is in the background.
+  new MutationObserver((records) => {
+    if (stack?.querySelector('.dd-toast') && records.some((r) => r.target.matches?.('dialog:modal'))) raise();
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['open'], subtree: true });
 
   // Toasts already in the stack glide to their new place instead of jumping when one is added (FLIP).
   const glide = (region, change) => {
@@ -175,7 +182,6 @@
     }
 
     const region = toaster();
-    // A brand-new live region needs a beat before content lands in it, or screen readers miss the first toast.
     const add = () => {
       if (gone) return; // dismissed before it was shown
       raise();
@@ -193,8 +199,13 @@
       }
     };
     el.ddToast = handle;
-    if (region.childElementCount || region.dataset.ready) add();
-    else { region.dataset.ready = ''; requestAnimationFrame(add); }
+    // A brand-new live region needs a beat before content lands in it, or screen readers miss the first toast. Toasts
+    // raised during that beat wait for it too, so they keep their order; after it, an empty stack takes one at once.
+    if (region.childElementCount || region.dataset.ready === 'true') add();
+    else {
+      if (!region.dataset.ready) { region.dataset.ready = 'false'; requestAnimationFrame(() => { region.dataset.ready = 'true'; }); }
+      requestAnimationFrame(add);
+    }
     return handle;
   };
   toast.clear = () => document.querySelectorAll('.dd-toaster > .dd-toast').forEach((t) => (t.ddToast ? t.ddToast.dismiss() : t.remove()));

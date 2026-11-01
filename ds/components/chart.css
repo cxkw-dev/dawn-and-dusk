@@ -225,6 +225,11 @@
 /* ---------- donut (SVG) ---------- */
 .dd-chart__pie { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 5) calc(var(--dd-u) * 8); }
 .dd-chart__pie > .dd-chart__legend { flex: 1 1 200px; max-width: 380px; }
+/* A stacked legend that wraps under the donut can shrink to a narrow chart's width, its labels wrapping. Its basis is its
+   one-line width and its floor 200px, so it moves under the donut at exactly the widths it always did. */
+.dd-chart__pie > .dd-chart__legend--stack { flex-basis: auto; min-width: min(200px, 100%); }
+.dd-chart__pie > .dd-chart__legend--stack > .dd-chart__key { white-space: normal; overflow-wrap: anywhere; }
+.dd-chart__pie > .dd-chart__legend--stack :is(.dd-chart__key-value, .dd-chart__key-share) { white-space: nowrap; }
 .dd-chart__donut { position: relative; flex: none; width: var(--dd-chart-donut, 168px); aspect-ratio: 1; }
 .dd-chart__donut > svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
 .dd-chart__arc {

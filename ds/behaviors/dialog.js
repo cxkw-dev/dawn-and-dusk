@@ -1,17 +1,20 @@
 /* Dialog, drawer and sheet: native <dialog class="dd-dialog | dd-drawer | dd-sheet"> opened modally.
    - [data-dd-dialog-open="#id"] on any element opens that dialog with showModal() and remembers the opener.
    - [data-dd-dialog-close] inside a dialog closes it; a value (data-dd-dialog-close="delete") becomes dialog.returnValue.
-   - <form method="dialog"> inside closes it on submit (after native validation) with the submitter's value.
+   - <form method="dialog"> inside closes it on submit (after native validation) with the submitter's value. A submitter's
+     own formmethod wins: <button formmethod="post"> posts the form instead, <button formmethod="dialog"> closes.
    - A click on the backdrop closes it, unless the dialog has data-dd-dialog-backdrop="static". Esc closes (native).
    - Closing plays the exit animation (.is-closing), then calls close(); focus returns to the opener.
      An opener inside a floating menu (a .dd-menu__item with data-dd-dialog-open) has closed with its menu, so focus goes
-     to the button that opened that menu instead (menu.ddTrigger; for a submenu, the root menu's trigger). If that
-     element is gone by then — removed before the dialog closed, or by a "close" listener (the row the dialog deleted) —
-     focus lands on the nearest focusable where it was: the first control of the next element after it, else the one
-     before, else further up the page.
+     to the button that opened that menu instead (menu.ddTrigger; for a submenu, the root menu's trigger). Likewise a
+     command palette row (a .dd-command__item with data-dd-dialog-open) closes its palette as it runs, so focus goes to
+     what had focus before the palette opened (palette.ddReturn). If that element is gone by then — removed before the
+     dialog closed, or by a "close" listener (the row the dialog deleted) — focus lands on the nearest focusable where it
+     was: the first control of the next element after it, else the one before, else further up the page.
    - Tab / Shift+Tab wrap inside the open dialog instead of leaving for the browser's own UI.
    - Inside a role="menu" list (sheet actions / choices): ↑ ↓ move between rows, Home / End jump to the ends. Choosing a
-     role="menuitemradio" row marks it aria-checked (and unmarks the others); a menuitemcheckbox row flips.
+     role="menuitemradio" row marks it aria-checked (and unmarks the others); a menuitemcheckbox row flips. A .dd-menu
+     inside the dialog is left to menu.js, which does the same for its own items.
    - Reopening a dialog while it plays its exit animation cancels the exit.
    - Global: dd.dialog.open('#id'), dd.dialog.close('#id', value). Listen for the native "close" event for the result. */
 (() => {
@@ -20,13 +23,16 @@
   const pending = new WeakMap(); // dialog → cancels its in-flight exit animation
   const resolve = (target) => (typeof target === 'string' ? document.querySelector(target) : target);
 
-  // Where focus goes back to. A menu item closes with its menu, so use the menu's trigger (up through submenus).
+  // Where focus goes back to. A menu item closes with its menu, so use the menu's trigger (up through submenus); a
+  // palette row closes its palette as it runs, so use what had focus before the palette opened.
   const returnTarget = (el) => {
     let t = el;
     for (let k = 0; k < 10; k++) {
       const menu = t?.closest?.('.dd-menu');
-      if (!menu || !menu.ddTrigger || !(menu.hidden || menu.classList.contains('is-floating'))) break;
-      t = menu.ddTrigger;
+      const pal = t?.closest?.('dialog.dd-command');
+      if (menu?.ddTrigger && (menu.hidden || menu.classList.contains('is-floating'))) t = menu.ddTrigger;
+      else if (pal?.ddReturn && (!pal.open || t.matches('.dd-command__item'))) t = pal.ddReturn;
+      else break;
     }
     return t;
   };
@@ -105,9 +111,10 @@
       if (dlg) { e.preventDefault(); open(dlg, opener); }
       return;
     }
-    // Choices in a sheet / dialog list: a menuitemradio becomes the checked one, a menuitemcheckbox flips.
+    // Choices in a sheet / dialog list: a menuitemradio becomes the checked one, a menuitemcheckbox flips. Not in a
+    // .dd-menu: menu.js toggles those itself, and flipping twice would undo it.
     const choice = e.target.closest(`:is(${SEL}) :is([role="menuitemradio"], [role="menuitemcheckbox"])`);
-    if (choice && !choice.disabled && choice.getAttribute('aria-disabled') !== 'true') {
+    if (choice && !choice.closest('.dd-menu') && !choice.disabled && choice.getAttribute('aria-disabled') !== 'true') {
       if (choice.getAttribute('role') === 'menuitemcheckbox') choice.setAttribute('aria-checked', String(choice.getAttribute('aria-checked') !== 'true'));
       else (choice.closest('[role="group"], [role="menu"]') || choice.parentElement).querySelectorAll('[role="menuitemradio"]')
         .forEach((r) => r.setAttribute('aria-checked', String(r === choice)));
@@ -132,10 +139,10 @@
     close(dlg);
   }, true);
 
-  // <form method="dialog">: animate, keep the submitter's value.
+  // <form method="dialog">: animate, keep the submitter's value. The submitter's formmethod overrides the form's.
   document.addEventListener('submit', (e) => {
     const form = e.target;
-    if (!(form instanceof HTMLFormElement) || form.method !== 'dialog') return;
+    if (!(form instanceof HTMLFormElement) || (e.submitter?.formMethod || form.method) !== 'dialog') return;
     const dlg = form.closest(SEL);
     if (!dlg) return;
     e.preventDefault();
@@ -163,12 +170,12 @@
     else if (!e.shiftKey && (at === last || outside)) { e.preventDefault(); first.focus(); }
   });
 
-  // Arrow keys move through role="menu" rows inside an open dialog / sheet.
+  // Arrow keys move through role="menu" rows inside an open dialog / sheet (a .dd-menu's are menu.js's).
   document.addEventListener('keydown', (e) => {
     if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
     const item = e.target.closest?.('[role^="menuitem"]');
     const menu = item?.closest('[role="menu"]');
-    if (!menu || !item.closest(SEL)) return;
+    if (!menu || !item.closest(SEL) || item.closest('.dd-menu')) return;
     const rows = [...menu.querySelectorAll('[role^="menuitem"]')].filter((r) => !r.disabled && r.getAttribute('aria-disabled') !== 'true');
     let i = rows.indexOf(item);
     if (e.key === 'ArrowDown') i = (i + 1) % rows.length;

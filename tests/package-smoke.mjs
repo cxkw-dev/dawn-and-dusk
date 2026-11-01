@@ -9,7 +9,8 @@ import { createServer } from 'node:http';
 import { launch, open } from './lib/browser.mjs';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
-const tarball = join(root, `site/public/downloads/dawn-and-dusk-${pkg.version}.tgz`);
+const downloads = join(root, 'dist-package/downloads'); // written by npm run build:package
+const tarball = join(downloads, `dawn-and-dusk-${pkg.version}.tgz`);
 await access(tarball);
 const temp = await mkdtemp(join(tmpdir(), 'dawn-consumer-'));
 console.log(`Fresh consumer projects: ${temp}`);
@@ -43,9 +44,14 @@ async function checkApp(url, label) {
     assert.match(await page.text('[role="status"]'), /New workspace.*ready/);
     assert.ok(await page.exists('button svg path'), 'inline icon works without copying a sprite');
     const before = await page.attr('html', 'data-theme');
+    const pressed = () => page.attr('button[type="button"]', 'aria-pressed');
+    assert.equal(await pressed(), String((await page.get(() => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dusk' : 'dawn'))) === 'dusk'), 'the theme toggle reports dusk with aria-pressed once mounted');
     await page.click('button[type="button"]');
     assert.notEqual(await page.attr('html', 'data-theme'), before);
     const chosenTheme = await page.attr('html', 'data-theme');
+    assert.equal(await pressed(), String(chosenTheme === 'dusk'), 'aria-pressed follows the theme');
+    await page.sleep(100);
+    assert.ok(!(await page.get(() => [...document.querySelectorAll('style')].some((s) => s.textContent.includes('transition:none')))), 'the swap turns transitions back on after a frame');
     await page.evaluate(() => location.reload());
     await page.sleep(700);
     assert.equal(await page.attr('html', 'data-theme'), chosenTheme, 'the chosen theme survives reload');
@@ -68,7 +74,7 @@ try {
   console.log('Plain npm install: no React or maintainer tooling, explicit exports, SSR-safe optional runtime');
 
   const htmlDir = join(temp, 'html'); await mkdir(htmlDir);
-  run('unzip', ['-q', join(root, `site/public/downloads/dawn-and-dusk-html-${pkg.version}.zip`), '-d', htmlDir], root);
+  run('unzip', ['-q', join(downloads, `dawn-and-dusk-html-${pkg.version}.zip`), '-d', htmlDir], root);
   const htmlRoot = join(htmlDir, 'dawn-and-dusk-html');
   browser = await launch();
   const htmlUrl = await serve(htmlRoot);
@@ -101,7 +107,8 @@ try {
     <button id="wide" class="dd-btn dd-btn--primary w-full" type="button">Wide</button>
     <h1 id="title" class="dd-h1">Title</h1>
     <p id="mode" class="dark:text-ok">Mode</p>
-    <section data-theme="dusk"><p id="scoped" class="bg-surface dusk:text-bad">Scoped</p></section>
+    <section data-theme="dusk"><p id="scoped" class="bg-surface dusk:text-bad">Scoped</p><p id="island" class="dawn:text-ok">Island</p></section>
+    <section data-theme="dawn"><p id="day" class="dawn:text-ok dusk:text-bad">Day</p></section>
     <div id="offsystem" class="bg-blue-500 rounded-md shadow-lg">Off-system</div>
   </body></html>`);
   run('npx', ['@tailwindcss/cli', '-i', 'app.css', '-o', 'app.out.css'], tw);
@@ -121,12 +128,16 @@ try {
     assert.equal(await style('#scoped', 'backgroundColor'), 'rgb(36, 33, 30)', 'a scoped data-theme section switches utilities');
     assert.equal(await style('#scoped', 'color'), 'rgb(229, 135, 112)', 'dusk: applies inside a dusk section');
     assert.notEqual(await style('#mode', 'color'), 'rgb(160, 187, 128)', 'dark: is off in dawn');
+    assert.notEqual(await style('#island', 'color'), await style('#day', 'color'), 'dawn: is off inside a dusk section of a dawn page');
     await setTheme('dusk');
+    assert.equal(await style('#scoped', 'color'), 'rgb(229, 135, 112)', 'dusk: still applies inside a dusk section of a dusk page');
+    assert.notEqual(await style('#day', 'color'), 'rgb(229, 135, 112)', 'dusk: is off inside a dawn section of a dusk page');
     assert.equal(await style('#surface', 'backgroundColor'), 'rgb(36, 33, 30)', 'bg-surface follows dusk');
     assert.equal(await style('#mode', 'color'), 'rgb(160, 187, 128)', 'dark: follows data-theme="dusk"');
     await setTheme(null);
     await twPage.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
     assert.equal(await style('#mode', 'color'), 'rgb(160, 187, 128)', 'dark: follows the OS when no theme is set');
+    assert.notEqual(await style('#day', 'color'), 'rgb(229, 135, 112)', 'dusk: is off inside a dawn section of an OS-dark page');
     await twPage.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
     assert.notEqual(await style('#mode', 'color'), 'rgb(160, 187, 128)');
     assert.deepEqual(twPage.errors, []);
@@ -135,7 +146,7 @@ try {
 
   for (const kind of ['react', 'next']) {
     const parent = join(temp, kind); await mkdir(parent);
-    run('unzip', ['-q', join(root, `site/public/downloads/dawn-and-dusk-${kind}-${pkg.version}.zip`), '-d', parent], root);
+    run('unzip', ['-q', join(downloads, `dawn-and-dusk-${kind}-${pkg.version}.zip`), '-d', parent], root);
     const dir = join(parent, `dawn-and-dusk-${kind}`);
     const manifestPath = join(dir, 'package.json');
     const app = JSON.parse(await readFile(manifestPath, 'utf8'));
@@ -145,13 +156,16 @@ try {
     run('npm', ['install', '--no-audit', '--no-fund'], dir);
     if (kind === 'react') {
       // Node SSR exercises the public React entry without a window/document and forwards native attributes.
-      await writeFile(join(dir, 'ssr.mjs'), `import assert from 'node:assert/strict'; import React from 'react'; import {renderToString} from 'react-dom/server'; import {Input,Button,Icon} from 'dawn-and-dusk/react'; import {ThemeScript} from 'dawn-and-dusk/theme'; const html=renderToString(React.createElement(Input,{label:'Email',defaultValue:'a@example.com',error:'Required',name:'email'})); assert.match(html,/aria-invalid="true"/); assert.match(html,/aria-describedby=/); assert.match(html,/a@example.com/); assert.match(renderToString(React.createElement(Button,{loading:true},'Save')),/disabled/); assert.match(renderToString(React.createElement(Icon,{name:'plus',label:'Add'})),/aria-label="Add"/); assert.match(renderToString(React.createElement(ThemeScript)),/localStorage/);`);
+      await writeFile(join(dir, 'ssr.mjs'), `import assert from 'node:assert/strict'; import React from 'react'; import {renderToString} from 'react-dom/server'; import {Input,Button,Icon,ThemeToggle} from 'dawn-and-dusk/react'; import {ThemeScript} from 'dawn-and-dusk/theme'; const html=renderToString(React.createElement(Input,{label:'Email',defaultValue:'a@example.com',error:'Required',name:'email'})); assert.match(html,/aria-invalid="true"/); assert.match(html,/aria-describedby=/); assert.match(html,/a@example.com/); assert.match(renderToString(React.createElement(Button,{loading:true},'Save')),/disabled/); assert.match(renderToString(React.createElement(Icon,{name:'plus',label:'Add'})),/aria-label="Add"/); const native=renderToString(React.createElement(Icon,{name:'plus','aria-label':'Add'})); assert.match(native,/aria-label="Add"/); assert.match(native,/role="img"/); assert.doesNotMatch(native,/aria-hidden/); assert.match(renderToString(React.createElement(Icon,{name:'plus',role:'presentation'})),/role="presentation"/); assert.doesNotMatch(renderToString(React.createElement(ThemeToggle)),/aria-pressed/); assert.match(renderToString(React.createElement(ThemeScript)),/localStorage/);`);
       run(process.execPath, ['ssr.mjs'], dir);
       run('npm', ['install', '--save-dev', '--no-audit', '--no-fund', 'typescript', '@types/react', '@types/react-dom'], dir);
       await writeFile(join(dir, 'consumer.tsx'), `import {createRef} from 'react'; import {Button,Input,Icon,ThemeToggle,setTheme} from 'dawn-and-dusk/react'; import {ThemeScript} from 'dawn-and-dusk/theme'; const input = createRef<HTMLInputElement>(); const button = createRef<HTMLButtonElement>(); const view = <><Input ref={input} label="Name" onChange={e => e.currentTarget.value} /><Button ref={button} variant="primary" onClick={e => e.currentTarget.focus()} /><Icon name="plus" /><ThemeToggle /><ThemeScript nonce="test" /></>; setTheme('system');`);
       run('npx', ['tsc', '--noEmit', '--strict', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', '--jsx', 'react-jsx', 'consumer.tsx'], dir);
       console.log('React consumer: public TypeScript declarations and native refs compile');
       run('npm', ['run', 'build'], dir);
+      const head = (await readFile(join(dir, 'dist/index.html'), 'utf8')).split('</head>')[0];
+      const themeAt = head.indexOf("localStorage.getItem('dd-theme')"), cssAt = head.indexOf('rel="stylesheet"');
+      assert.ok(themeAt > 0 && cssAt > themeAt, 'the React starter applies the saved theme in <head>, before the stylesheet');
       await checkApp(await serve(join(dir, 'dist')), 'React production build');
     } else {
       run('npm', ['run', 'build', '--', '--webpack'], dir);

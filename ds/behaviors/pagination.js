@@ -3,7 +3,8 @@
    .dd-pagination__size select inside sets the size when data-page-size is absent). The behaviour keeps the markup in step:
    numbered pages (first, last, the current page and its neighbours, a gap for the rest: never more than seven slots),
    aria-current="page", "Page 4 of 50", the range ("<b>151–200</b> of 2,481") and aria-disabled on the arrows at either end
-   (they stay focusable, so keyboard focus never drops). The first .dd-pagination__step goes back, the last goes forward.
+   (they stay focusable, so keyboard focus never drops). The first .dd-pagination__step goes back, the last goes forward,
+   counted within each list of pages (or pager): one root can hold the same pagination above and below a table.
    Clicking a page or an arrow, or changing the size, emits a bubbling dd:pagechange with
    { page, pages, pageSize, total, from, to }. dd.pagination(el, { page, pages, total, pageSize }) sets state from script
    (no event) and returns it. Without the attribute the markup is static: render links with real hrefs on the server. */
@@ -14,6 +15,10 @@
   const fmt = (n) => n.toLocaleString('en-US');
   const sizeSelect = (root) => root.querySelector('.dd-pagination__size select');
   const shown = new WeakMap(); // root → the state last rendered (a size change must start from the old size)
+  // The arrows that belong together: those in the same list of pages, else the same pager. One root can hold several
+  // pagers (above and below a table), so the first / last arrow is counted within its own.
+  const groupOf = (step, root) => { const g = step.closest('.dd-pagination__pages, .dd-pagination'); return g && root.contains(g) ? g : root; };
+  const stepsBeside = (step, root) => { const g = groupOf(step, root); return [...root.querySelectorAll('.dd-pagination__step')].filter((s) => groupOf(s, root) === g); };
 
   function state(root) {
     let size = num(root.dataset.pageSize);
@@ -88,8 +93,9 @@
       root.querySelectorAll('.dd-pagination__range').forEach((el) => { el.innerHTML = `<b>${range}</b> of ${fmt(s.total)}`; });
     }
     root.querySelectorAll('.dd-pagination__status').forEach((el) => { el.textContent = `Page ${s.page} of ${s.pages}`; });
-    const steps = [...root.querySelectorAll('.dd-pagination__step')];
-    steps.forEach((el, k) => {
+    root.querySelectorAll('.dd-pagination__step').forEach((el) => {
+      const steps = stepsBeside(el, root);
+      const k = steps.indexOf(el);
       const off = k === 0 ? s.page <= 1 : k === steps.length - 1 ? s.page >= s.pages : false;
       el.removeAttribute('disabled');
       if (off) el.setAttribute('aria-disabled', 'true'); else el.removeAttribute('aria-disabled');
@@ -111,10 +117,7 @@
     const s = state(root);
     let page = s.page;
     if (el.classList.contains('dd-pagination__page')) page = Number(el.textContent.trim()) || s.page;
-    else {
-      const steps = [...root.querySelectorAll('.dd-pagination__step')];
-      page += el === steps[0] ? -1 : 1;
-    }
+    else page += el === stepsBeside(el, root)[0] ? -1 : 1;
     if (page === s.page) return;
     root.dataset.page = String(page);
     render(root);

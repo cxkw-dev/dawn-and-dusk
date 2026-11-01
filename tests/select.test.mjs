@@ -209,3 +209,32 @@ for (const theme of ['dawn', 'dusk']) test(`invalid custom select uses the same 
   }, trig(ENV));
   assert.equal(fills[0], fills[1]);
 });
+
+test('autoclose dropdown in a dialog: Esc closes the dropdown only, focus goes to its summary; the next Esc closes the dialog', async ({ open, assert }) => {
+  const page = await open('components/select');
+  await page.get(() => document.body.insertAdjacentHTML('beforeend', `
+    <dialog class="dd-dialog" id="ac-dlg" aria-label="Test"><div class="dd-dialog__body">
+      <details data-dd-autoclose id="ac-more"><summary>More</summary><div><a href="#one">One</a><button type="button">Two</button></div></details>
+    </div></dialog>`));
+  await page.get(() => dd.dialog.open('#ac-dlg'));
+  await page.sleep(300);
+  await page.focus('#ac-more summary');
+  await page.press('ArrowDown');
+  assert.ok(await page.get(() => document.getElementById('ac-more').open), '↓ opens it');
+  assert.equal(await page.get(() => document.activeElement.textContent), 'One');
+  await page.press('Escape');
+  await page.sleep(300);
+  assert.equal(await page.get(() => document.getElementById('ac-more').open), false, 'Esc closes the dropdown');
+  assert.ok(await page.get(() => document.getElementById('ac-dlg').open), 'and leaves the dialog open');
+  assert.ok(await page.get(() => document.activeElement === document.querySelector('#ac-more summary')), 'focus back on the summary');
+  await page.press('Escape');
+  await page.waitFor(() => !document.getElementById('ac-dlg').open);
+  // An Esc something else already handled leaves an open dropdown alone.
+  await page.get(() => document.body.insertAdjacentHTML('beforeend', `<details data-dd-autoclose id="ac-page" open><summary>Page</summary><div><button type="button" id="ac-btn">Go</button></div></details>`));
+  await page.focus('#ac-btn');
+  await page.get(() => document.getElementById('ac-btn').addEventListener('keydown', (e) => e.preventDefault(), { once: true }));
+  await page.press('Escape');
+  assert.ok(await page.get(() => document.getElementById('ac-page').open), 'a handled Esc is not the dropdown’s');
+  await page.press('Escape');
+  assert.equal(await page.get(() => document.getElementById('ac-page').open), false);
+});

@@ -17,8 +17,11 @@
 :where(body) { margin: 0; }
 /* Modal layers (dialogs, drawers, sheets, the off-canvas nav) lock the page scroll. behaviors/scrollbar.js keeps
    --dd-scrollbar-w up to date, so the page is padded by the scrollbar it loses: nothing shifts sideways, and overlays
-   still reach the window's edge. */
+   still reach the window's edge. The system's own layers lock with component specificity too, so a page's own
+   `html { overflow-y: scroll }` can't unlock them (side-nav.js sets .dd-side-nav-lock while the off-canvas nav is open). */
 :where(html):has(dialog:modal), :where(html.dd-side-nav-lock) { overflow: hidden; padding-inline-end: var(--dd-scrollbar-w, 0px); }
+:root:has(.dd-dialog:modal, .dd-drawer:modal, .dd-sheet:modal) { overflow: hidden; }
+:root.dd-side-nav-lock { overflow: hidden; } /* its own rule: a browser without :has() still drops only the one above */
 :where(button, input, select, textarea) { font: inherit; color: inherit; }
 :where(img, svg, video) { display: block; max-width: 100%; }
 ::selection { background: var(--dd-text); color: var(--dd-bg); }
@@ -66,8 +69,9 @@
 .dd-stack { display: flex; flex-direction: column; gap: var(--dd-gap, var(--dd-space-3)); }
 .dd-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--dd-gap, var(--dd-space-2)); }
 
+/* Plain selectors, not :where(): :where() can't take pseudo-elements, so ::before / ::after motion would keep running. */
 @media (prefers-reduced-motion: reduce) {
-  :where(*, *::before, *::after) { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
 
 /* ---------- scroll areas ---------- */

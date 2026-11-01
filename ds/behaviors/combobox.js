@@ -7,7 +7,9 @@
    Fires a bubbling "dd-combobox" event with detail { value, values, option } (+ created: true for a new value).
    data-dd-combobox-create on the wrapper allows new values: when the text matches no option exactly, a
    "Create “…”" row (.dd-combobox__create) ends the list; choosing it adds that option and selects it.
-   Keyboard: ↓ / ↑ open and move · Enter chooses · Esc closes, then clears · Backspace on empty removes the last chip. */
+   Keyboard: ↓ / ↑ open and move · Enter chooses · Esc closes, then clears · Backspace on empty removes the last chip.
+   Single, on blur: text that is exactly an option's label (any case) chooses it; anything else, an emptied field
+   included, puts back the chosen label (or empties the field when nothing is chosen). Esc twice is how to clear. */
 (() => {
   let uid = 0;
   const parts = (root) => ({
@@ -265,7 +267,8 @@
     }
   });
 
-  // Single: leaving the field restores the chosen label if the typed text matches nothing.
+  // Single: leaving the field restores the chosen label if the typed text matches nothing — an emptied field too, so
+  // the field never shows nothing while the option (and hidden input) still holds a value.
   document.addEventListener('focusout', (e) => {
     const root = e.target.closest?.('[data-dd-combobox]');
     if (!root || (e.relatedTarget && root.contains(e.relatedTarget))) return;
@@ -273,7 +276,7 @@
     if (multi(root)) return;
     const { input, list } = parts(root);
     const chosen = list.querySelector('[role="option"][aria-selected="true"]');
-    if (input.value && (!chosen || labelOf(chosen) !== input.value)) {
+    if (chosen ? labelOf(chosen) !== input.value : input.value) {
       const exact = options(list).find((o) => labelOf(o).toLowerCase() === input.value.trim().toLowerCase());
       if (exact) choose(root, exact); else input.value = chosen ? labelOf(chosen) : '';
     }

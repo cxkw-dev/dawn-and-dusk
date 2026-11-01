@@ -19,18 +19,21 @@ site/                      the docs site (Astro): layouts, pages, docs-only comp
 scripts/
   build-ds.mjs             builds release/, the entry points and the skill's assets and references
   build-skill-examples.mjs writes the skill's per-component markup from the built docs
-  build-package.mjs        builds the consumer package (dist-package/) and the starter ZIPs
+  build-package.mjs        builds the consumer package (dist-package/) and the release downloads (dist-package/downloads/)
   tailwind-entry.mjs       generates the package's Tailwind CSS v4 entry (tailwind.css) from ds/tokens.css
+  ds-source.mjs            what the build scripts share: the stylesheet sources in order, token blocks, release URLs
   fetch-icons.mjs          regenerates the icon sprite from Iconify
   install-skill.mjs        installs the skill into one project
 tests/                     behaviour tests in headless Chrome, one file per component (runner and harness in lib/)
 tools/picker/              the option picker the system was designed with (not part of the system)
-.github/workflows/         builds the docs and deploys them to GitHub Pages
+.github/workflows/         deploy: builds the docs, checks the committed generated files match, publishes to Pages;
+                           test: the behaviour tests, on pull requests and pushes to main
 ```
 
 ## Developing
 
-Requires Node 22.12+ and Google Chrome (for the tests).
+Requires Node 22.12+, Google Chrome (for the tests), and `zip` and `unzip` (`npm run build` and `build:package` zip the
+starters; `test:package` unzips them). macOS and most Linux distributions include both; on Windows use Git Bash or WSL.
 
 ```bash
 npm install
@@ -53,16 +56,19 @@ The tests look for Chrome at its macOS path; set `CHROME=/path/to/chrome` elsewh
 3. Document it in `site/pages/components/<name>.astro` with the `Example`, `ClassTable` and `Guides` helpers (examples,
    then Classes, Behaviour and Guidelines), add it to the matching `site/nav/*.mjs`, and cover its behaviour in
    `tests/<name>.test.mjs`.
-4. Run `npm run build` and commit the regenerated `release/` and `skill/` files with your change.
+4. Run `npm run build` and commit the regenerated `release/` and `skill/` files with your change. The deploy workflow
+   rebuilds on every push to main and stops before publishing if any committed generated file differs from its output.
 
 **Changing a token:** edit `ds/tokens.css`. The foundations pages and `references/tokens.md` read it directly.
 
 
 ## Consumer package and releases
 
-`npm run build:package` generates `dist-package/`, a consumer-only npm package, and three starter archives under
-`site/public/downloads/`. Source for the React entry and theme helper lives in `library/`; source starters live in
-`starters/`. The repository manifest stays private so maintainer dependencies can never be published accidentally.
+`npm run build:package` generates `dist-package/`, a consumer-only npm package, and the release downloads under
+`dist-package/downloads/`: the packed tarball and three starter archives. They are release assets only; the docs site
+doesn't publish them. Source for the React entry and theme helper lives in `library/`; source starters live in
+`starters/` (`__PACKAGE_URL__` and `__THEME_SCRIPT__` are filled in when they are zipped). The repository manifest stays
+private so maintainer dependencies can never be published accidentally.
 
 Run `npm run test:package` after building to install the packed artifact into fresh HTML, React, Next.js and Tailwind CSS v4 consumers.
 It checks production builds, server rendering, hydration, icons, theme persistence and controlled form behavior.
@@ -70,11 +76,19 @@ The test fixtures are printed and retained under the OS temporary directory for 
 
 Before a release:
 
-1. Bump the root version and update the versioned install URL in README.md and library/README.md.
+1. Bump the root version in `package.json`. The build fills the versioned release URLs (install command, starter
+   downloads) in README.md, library/README.md, the skill's SKILL.md and references/frameworks.md.
 2. Run `npm run build`, `npm run test:package`, and relevant browser tests against a preview server.
 3. Inspect `npm pack ./dist-package --dry-run --json`; it must contain consumer assets only.
-4. Commit and push the source. Publish a matching GitHub release tag (`v<version>`) with the tarball and starter ZIPs
-   from `site/public/downloads/`. Published version assets are immutable; ship fixes under a new version.
+4. Commit and push the source. Publish a matching GitHub release tag with the four files in `dist-package/downloads/`
+   (the tarball and the three starter ZIPs; each build clears the folder, so it holds only this version):
+
+   ```bash
+   v=$(node -p "require('./package.json').version")
+   gh release create "v$v" dist-package/downloads/* --title "v$v"
+   ```
+
+   Published version assets are immutable; ship fixes under a new version.
 5. Check the Pages deployment and install from the real release URL in a fresh folder.
 
 The default distribution uses GitHub releases, so neither publishing nor installing needs an npm account.

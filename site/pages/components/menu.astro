@@ -146,7 +146,7 @@ const context = `
 <Docs title="Menu" group="Actions" lead="A list of actions or options that floats over the page: dropdowns, overflow menus and context menus. Grouped, text first, with shortcut hints; icons are optional.">
   <Example title="Anatomy" description="Group labels, descriptions, shortcut hints, a submenu chevron, checked and disabled items, a divider and a danger item. Shown inline here; “Duplicate” is the highlighted row." code={anatomy} />
   <h2 id="dropdown">Dropdown</h2>
-  <p>Put <code>data-dd-menu="menu-id"</code> on any button and <code>hidden</code> on the menu. The behaviour floats the menu below the trigger, flips it up when there’s no room, and moves focus into it. “Share” opens a submenu.</p>
+  <p>Put <code>data-dd-menu="menu-id"</code> on any button and <code>hidden</code> on the menu. The behaviour floats the menu below the trigger, flips it up when there’s no room, and moves focus into it. “Share” opens a submenu; hovering opens it too, and a click on an open submenu’s item keeps it open. If an item’s own handler moves focus (say, to a rename field), it stays there when the menu closes.</p>
   <Example code={dropdown} description="Try it: click the button, or focus it and press ↓ / ↑. Type a letter to jump to an item; → on “Share” opens its submenu, ← closes it; Esc closes and returns focus." />
   <h2 id="checked">Checked items</h2>
   <p><code>role="menuitemradio"</code> checks one item per group; <code>role="menuitemcheckbox"</code> toggles. Both keep the menu open so you can set several options. The check sits at the end and the label turns semibold.</p>

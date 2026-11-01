@@ -2,9 +2,9 @@
 import Docs from '../../layouts/Docs.astro';
 import Example from '../../components/Example.astro';
 import Guides from '../../components/Guides.astro';
-import { base } from '../../lib/tokens';
+import { base as shared } from '../../lib/tokens';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 // Durations side by side. A real switch plays them (no script): each dot travels its track with one token.
 const lanes = `
@@ -20,9 +20,9 @@ const lanes = `
 </style>
 <div class="motion-lanes">
   <label class="dd-switch"><input class="dd-switch__input" type="checkbox" role="switch"> Play</label>
-  <div class="motion-lane"><span><code class="dd-mono">--dd-dur-fast</code><small>${base['dur-fast']} · hover, press</small></span>
+  <div class="motion-lane"><span><code class="dd-mono">--dd-dur-fast</code><small>${shared['dur-fast']} · hover, press</small></span>
     <span class="motion-track"><i class="motion-dot" style="--_dur: var(--dd-dur-fast)"></i></span></div>
-  <div class="motion-lane"><span><code class="dd-mono">--dd-dur</code><small>${base.dur} · reveal, lift</small></span>
+  <div class="motion-lane"><span><code class="dd-mono">--dd-dur</code><small>${shared.dur} · reveal, lift</small></span>
     <span class="motion-track"><i class="motion-dot" style="--_dur: var(--dd-dur)"></i></span></div>
   <div class="motion-lane"><span><code class="dd-mono">reduced motion</code><small>0ms · straight to the end</small></span>
     <span class="motion-track"><i class="motion-dot" style="--_dur: 0s"></i></span></div>
@@ -40,7 +40,7 @@ const lift = `
 </style>
 <div class="dd-row" style="--dd-gap: var(--dd-space-6); align-items: center">
   <button class="dd-btn dd-btn--primary" type="button">${i('bolt')}<span>Hover me</span></button>
-  <a class="dd-card motion-lift" href="${docs}/components/card" style="width: 260px">
+  <a class="dd-card motion-lift" href="${base}/components/card" style="width: 260px">
     <div class="dd-card__body">
       <p class="dd-card__eyebrow"><code class="dd-mono">--dd-dur</code></p>
       <h3 class="dd-card__title">card lifts</h3>
@@ -52,9 +52,9 @@ const lift = `
 <Docs title="Motion" group="Foundations" lead="One gentle, symmetric ease. Motion confirms a change; it never performs.">
   <h2 id="tokens">Tokens</h2>
   <ul>
-    <li><code>--dd-dur</code> · {base.dur} — reveals, panels, lifts, expanding rows.</li>
-    <li><code>--dd-dur-fast</code> · {base['dur-fast']} — hovers, presses, focus.</li>
-    <li><code>--dd-ease</code> · <code>{base.ease}</code> — one curve for everything.</li>
+    <li><code>--dd-dur</code> · {shared.dur} — reveals, panels, lifts, expanding rows.</li>
+    <li><code>--dd-dur-fast</code> · {shared['dur-fast']} — hovers, presses, focus.</li>
+    <li><code>--dd-ease</code> · <code>{shared.ease}</code> — one curve for everything.</li>
   </ul>
   <Example code={lanes} title="Durations" description="Flip the switch: each dot crosses its track with one duration and the same ease. The last lane is what visitors who prefer reduced motion get." />
 

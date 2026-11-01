@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const page = `<div style="padding: var(--dd-space-6) var(--dd-space-6) var(--dd-space-8)">
     <p class="dd-eyebrow">cxkw.dev · deploys</p>
@@ -119,7 +119,7 @@ const sticky = `
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute / API', 'What it does']} rows={[
     ['data-dd-dismiss', 'Fades and collapses the banner, then removes it. Fires a cancelable <code>dd:dismiss</code> event first — listen for it to remember the choice.'],
-    ['dd.dismiss(el)', `Dismiss from code, e.g. when the incident is resolved. The full dismiss API is on the <a href="${docs}/components/alert#behaviour">alert</a> page.`],
+    ['dd.dismiss(el)', `Dismiss from code, e.g. when the incident is resolved. The full dismiss API is on the <a href="${base}/components/alert#behaviour">alert</a> page.`],
   ]} />
   <p>Use <code>role="alert"</code> only for an incident banner inserted while the page is open; a banner present at load needs no role, or <code>role="region"</code> with an <code>aria-label</code> if it should be a landmark.</p>
 

@@ -6,7 +6,7 @@ import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
 import { Code } from 'astro:components';
 import { ddTheme } from '../../lib/syntax';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 const item = (icon: string, label: string, o: { section?: string; on?: boolean; extra?: string } = {}) =>
   o.section
@@ -283,7 +283,7 @@ const pageSkeleton = `
     ['.dd-app-shell', 'Flex row at <code>--dd-app-shell-h</code> (default <code>100dvh</code>) on a plain <code>--dd-bg</code>; only <code>__content</code> scrolls. A size container named <code>dd-app-shell</code>: below 768px the side nav goes off-canvas. Because the page has no grain here, cards inside keep dawn’s gentler hover lift in both themes.'],
     ['.dd-app-shell--page', 'Page-scroll mode: the document scrolls, the shell is at least <code>100dvh</code> and grows with its content; the side nav and top bar stick, the off-canvas nav is fixed to the window. No background of its own.'],
     ['--offcanvas-md / --offcanvas-lg', 'Move the off-canvas breakpoint to 900px / 1024px of shell width. See <a href="#breakpoints">Breakpoints</a>.'],
-    ['.dd-app-shell > .dd-side-nav', `Fills the height (sticks, in page mode); no extra class needed. Add <code>dd-side-nav--offcanvas</code> to keep it off-canvas at every width. See <a href="${docs}/components/side-nav">Side nav</a>.`],
+    ['.dd-app-shell > .dd-side-nav', `Fills the height (sticks, in page mode); no extra class needed. Add <code>dd-side-nav--offcanvas</code> to keep it off-canvas at every width. See <a href="${base}/components/side-nav">Side nav</a>.`],
     ['__main', 'The column beside the nav: top bar, then content.'],
     ['__content', 'The scrolling area (the page scrolls instead in page mode), padded 40px / 50px (less on narrow shells).'],
     ['__page', 'Centres the page at up to 1180px with a 40px rhythm between blocks. <code>--narrow</code> for forms and settings (760px).'],
@@ -293,7 +293,7 @@ const pageSkeleton = `
   <h2 id="behaviour">Behaviour</h2>
   <ClassTable head={['Attribute', 'What it does']} rows={[
     ['data-dd-nav-toggle', 'On the rail’s chevron: folds the panel; remembered per nav <code>id</code>.'],
-    ['data-dd-nav-section="name"', `On a rail item: shows that section’s pane in the panel (see <a href="${docs}/components/side-nav#behaviour">Side nav</a>).`],
+    ['data-dd-nav-section="name"', `On a rail item: shows that section’s pane in the panel (see <a href="${base}/components/side-nav#behaviour">Side nav</a>).`],
     ['data-dd-nav-open="#id"', 'On the top bar’s menu button: opens the nav off-canvas on narrow shells. Esc, the scrim, a link or the chevron close it and return focus to the button; tabbing out (onto the button too) closes it. While it covers the window the page behind doesn’t scroll (<code>dd-side-nav-lock</code> on <code>&lt;html&gt;</code>). If the shell widens past the breakpoint while it is open, it closes and stays in view.'],
     ['data-dd-autoclose', 'On the avatar menu: closes on outside click, Esc or choosing an item.'],
   ]} />

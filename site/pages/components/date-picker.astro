@@ -140,7 +140,7 @@ const rangePicker = `
   <Example title="Input with calendar" description="Shown open. Today (Oct 30) carries the apricot dot; the chosen day fills with the accent. Try it: pick a day, or click the calendar button to close and reopen it." code={staticOpen} minHeight="475px" />
 
   <h2 id="interactive">Opening and choosing</h2>
-  <p>The calendar button (or ↓ in the input) opens the popover with focus on the chosen day. Choosing a day fills the input and closes it; Esc, a click outside or tabbing away closes without changes. Typed dates are parsed on change.</p>
+  <p>The calendar button (or ↓ in the input) opens the popover with focus on the chosen day. Choosing a day fills the input and closes it; Esc, a click outside, tabbing away or the calendar button closes without changes. Typed dates are parsed on change.</p>
   <Example code={closed} description="Try it: open a calendar with the button or ↓, move with the arrow keys, Enter to choose. Or type a date like 2026-12-01 and press Tab." minHeight="560px" />
 
   <h2 id="inline">Inline calendar</h2>
@@ -179,7 +179,7 @@ const rangePicker = `
     ['Page Up · Page Down · Home · End', 'Same day in the previous / next month; start / end of the week.'],
     ['Enter · Space', 'Choose the focused day.'],
     ['Esc · Tab out · click outside', 'Close the popover without changes; Esc returns focus to the calendar button.'],
-    ['Typing a date', 'Single mode: parsed on change (<code>2026-12-01</code>, <code>Dec 1, 2026</code>). A date outside <code>data-min</code> / <code>data-max</code>, or text that isn’t a date, sets <code>aria-invalid</code>; clearing the field clears the value.'],
+    ['Typing a date', 'Single mode: parsed on change (<code>2026-12-01</code>, <code>Dec 1, 2026</code>, <code>Dec 1</code>). Numeric dates are read as local days, a date without a year takes today’s, and a day the month doesn’t have (<code>Feb 31</code>) is invalid. A date outside <code>data-min</code> / <code>data-max</code>, or text that isn’t a date, sets <code>aria-invalid</code>; clearing the field clears the value.'],
   ]} />
 
   <h2 id="guidelines">Guidelines</h2>

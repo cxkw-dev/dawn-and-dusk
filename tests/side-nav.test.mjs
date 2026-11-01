@@ -388,3 +388,26 @@ test('the panel scrolls with the sleek scrollbar: no track, a tonal thumb only w
   const on = await bar();
   assert.match(on.color, /\/ 0\.2\) rgba\(0, 0, 0, 0\)$/, `thumb tinted from the text at 20%, no track (${on.color})`);
 });
+
+test('an author’s own toggle labels are kept (aria-expanded carries the state); a handled Esc leaves the off-canvas nav open', async ({ open, assert }) => {
+  const page = await fresh(open, 'components/side-nav');
+  await page.get(() => document.querySelector('.doc-main').insertAdjacentHTML('beforeend', `
+    <nav class="dd-side-nav" aria-label="Haupt"><div class="dd-side-nav__rail">
+      <button class="dd-side-nav__item dd-side-nav__collapse" type="button" id="sn-de" data-dd-nav-toggle aria-expanded="true" aria-label="Seitenleiste" data-label="Leiste">‹</button>
+    </div></nav>`));
+  await page.get(() => document.getElementById('sn-de').click());
+  assert.deepEqual(await page.get(() => ['aria-expanded', 'aria-label', 'data-label'].map((a) => document.getElementById('sn-de').getAttribute(a))), ['false', 'Seitenleiste', 'Leiste']);
+  await page.get(() => document.getElementById('sn-de').click());
+  assert.deepEqual(await page.get(() => ['aria-expanded', 'aria-label', 'data-label'].map((a) => document.getElementById('sn-de').getAttribute(a))), ['true', 'Seitenleiste', 'Leiste']);
+
+  const M = '#nav-demo-mobile';
+  const isOpen = () => page.get((s) => document.querySelector(s).classList.contains('is-mobile-open'), M);
+  if (await isOpen()) await page.press('Escape'); // the example starts open to show the state
+  await page.click(`[data-dd-nav-open="${M}"]`);
+  await page.waitFor((s) => document.querySelector(s).contains(document.activeElement), { args: [M] });
+  await page.get(() => document.activeElement.addEventListener('keydown', (e) => e.preventDefault(), { once: true }));
+  await page.press('Escape');
+  assert.ok(await isOpen(), 'an Esc something inside handled is not the nav’s');
+  await page.press('Escape');
+  assert.ok(!(await isOpen()), 'the next Esc closes it');
+});

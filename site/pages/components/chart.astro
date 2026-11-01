@@ -4,7 +4,7 @@ import Example from '../../components/Example.astro';
 import ClassTable from '../../components/ClassTable.astro';
 import Guides from '../../components/Guides.astro';
 import { i } from '../../lib/icon';
-const docs = import.meta.env.BASE_URL.replace(/\/$/, ''); // links are base-absolute: they must resolve from /x and /x/ alike
+import { base } from '../../lib/nav'; // links are base-absolute: they must resolve from /x and /x/ alike
 
 // The examples are static HTML/SVG generated here; the Code panel shows the output.
 const r1 = (n: number) => +n.toFixed(1);
@@ -379,14 +379,14 @@ const order = `
     <li><b>Touch.</b> Tapping a mark opens its tooltip; tapping anywhere else closes it. Tooltips flip to the side with room.</li>
     <li><b>Floating tooltips.</b> Marks without a <code>.dd-chart__tip</code> inside get one built from <code>data-dd-chart-label</code>, <code>data-dd-chart-value</code> and an optional <code>data-dd-chart-title</code>, keyed by the mark’s series class. Give each mark <code>role="img"</code> and an <code>aria-label</code>, and its container <code>role="group"</code>.</li>
     <li><b>Table view.</b> A <code>&lt;details class="dd-chart__data"&gt;</code> “View as table” needs no script. To swap the plot for its table instead, add a toggle button <code>data-dd-chart-view aria-pressed="false" aria-controls="ID"</code> and a <code>.dd-chart__data.dd-chart__data--swap</code> container with that ID and <code>hidden</code>; the figure gets <code>.is-table</code> and fires <code>dd:change</code> with <code>detail.view</code> = <code>"table"</code> or <code>"chart"</code>.</li>
-    <li><b>Expand.</b> A <code>data-dd-chart-expand</code> button opens the chart in a large dialog: the figure itself moves there, taller and wider, with a tonal placeholder holding its place on the page. <kbd class="dd-kbd">Esc</kbd>, the backdrop or the same button (now a ×) brings it back, and focus returns to the button. Tooltips, keyboard steps and the Table toggle keep working inside. Fires <code>dd:change</code> with <code>detail.expanded</code>. Because the figure moves, use it on HTML-owned markup; in React, render your own dialog.</li>
+    <li><b>Expand.</b> A <code>data-dd-chart-expand</code> button opens the chart in a large dialog: the figure itself moves there, taller and wider, with a tonal placeholder holding its place on the page. <kbd class="dd-kbd">Esc</kbd>, the backdrop or the same button (now a ×) brings it back, and focus returns to the button. Tooltips, keyboard steps and the Table toggle keep working inside. Fires <code>dd:change</code> with <code>detail.expanded</code> while the chart is in its place on the page (just before it opens, just after it returns), so listeners on its container hear both. Because the figure moves, use it on HTML-owned markup; in React, render your own dialog.</li>
     <li>The active mark has <code>.is-active</code> (same look as hover); use it to style custom marks.</li>
   </ul>
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides
     do={[
-      `Pick the form from the job: columns or bars for comparing amounts, lines for change over time, a 100% bar or donut for parts of one whole, a <a href="${docs}/components/stat">stat</a> for a single number.`,
+      `Pick the form from the job: columns or bars for comparing amounts, lines for change over time, a 100% bar or donut for parts of one whole, a <a href="${base}/components/stat">stat</a> for a single number.`,
       'Assign series colours in the fixed order and keep each series’ colour when filters change.',
       'Label selectively: the line ends, the extreme, the one series the story is about. Let the axis, tooltip and table carry the rest.',
       'Round ticks to clean numbers and compact large ones on the axis (0 · 10K · 20K).',

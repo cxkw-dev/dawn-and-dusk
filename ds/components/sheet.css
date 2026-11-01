@@ -86,7 +86,5 @@
 .dd-sheet__foot--stack { flex-direction: column-reverse; }
 .dd-sheet__foot--stack > .dd-btn { flex: none; }
 
-:root:has(.dd-sheet:modal) { overflow: hidden; }
-
 @keyframes dd-sheet-in { from { transform: translateY(100%); } }
 @keyframes dd-sheet-out { to { transform: translateY(100%); } }

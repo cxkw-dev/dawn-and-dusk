@@ -13,6 +13,8 @@
      while it is still showing (an emptied name that now breaks the pattern says so); a control is re-checked when it is
      committed (on change) — never while someone is typing a first value.
    - Resetting the form clears every error.
+   - A field's soft character limit (form-field.js) also sets aria-invalid; clearing an error leaves that mark alone
+     while the text is over the limit. The soft limit never stops the submit.
    A valid form submits as usual: handle "submit" yourself. A submit button with formnovalidate skips the check. */
 (() => {
   let uid = 0;
@@ -32,7 +34,8 @@
     const field = fieldOf(el);
     const hint = field && hintOf(field);
     if (hint && 'ddValidHid' in hint.dataset) { hint.hidden = false; delete hint.dataset.ddValidHid; }
-    el.removeAttribute('aria-invalid');
+    // A counter's soft limit (form-field.js, data-dd-over) marks the control too: leave its mark while it is over.
+    if (!('ddOver' in el.dataset)) el.removeAttribute('aria-invalid');
     delete el.dataset.ddValid;
   };
 

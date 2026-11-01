@@ -402,3 +402,61 @@ test('opening under a stationary pointer preserves first-item focus until the po
   await page.hover('#mn-row [data-action="Rolling back"]');
   assert.equal(await focused(page), 'Roll back', 'moving the pointer still focuses an item');
 });
+
+test('a click on a submenu item that hovering already opened keeps it open', async ({ open, assert }) => {
+  const page = await open('components/menu');
+  const share = '[data-dd-menu="mn-share"]';
+  await page.click(trigger);
+  await page.hover(share);
+  await page.waitFor(() => !document.getElementById('mn-share').hidden);
+  await page.click(share);
+  await page.sleep(200); // past the hover delay too
+  assert.ok(await isOpen('mn-share')(page), 'the click does not toggle it shut');
+  await page.click(share);
+  await page.sleep(200);
+  assert.ok(await isOpen('mn-share')(page), 'nor does a second one');
+  assert.equal(await page.attr(share, 'aria-expanded'), 'true');
+  // The root trigger still toggles.
+  await page.click(trigger);
+  assert.ok(!(await isOpen('mn-project')(page)) && !(await isOpen('mn-share')(page)));
+});
+
+test('running an item leaves focus where its handler put it; focus still in the menu goes back to the trigger', async ({ open, assert }) => {
+  const page = await open('components/menu');
+  await page.get((t) => {
+    document.querySelector(t).insertAdjacentHTML('afterend', '<input class="dd-input__control" id="mn-rename" aria-label="Name">');
+    const item = (name) => [...document.querySelectorAll('#mn-project [role="menuitem"]')].find((el) => el.textContent.startsWith(name));
+    // "Open" turns into an inline rename field; "Delete project" drops focus (to <body>).
+    item('Open').addEventListener('click', () => document.getElementById('mn-rename').focus());
+    item('Delete project').addEventListener('click', (e) => e.currentTarget.blur());
+  }, trigger);
+  await page.click(trigger);
+  await page.press('Enter'); // Open
+  assert.ok(!(await isOpen('mn-project')(page)), 'the menu closed');
+  assert.equal(await page.active(), '#mn-rename', 'focus stays in the rename field');
+  await page.click(trigger);
+  await page.press('End', 'Enter'); // Delete project
+  assert.ok(!(await isOpen('mn-project')(page)));
+  assert.ok(await page.get((s) => document.activeElement === document.querySelector(s), trigger), 'focus dropped with the item goes back to the trigger');
+  // dd.menu.close agrees: focus moved out of the menu stays put; focus in it goes back.
+  await page.click(trigger);
+  await page.focus('#mn-rename');
+  await page.get(() => dd.menu.close('mn-project'));
+  assert.equal(await page.active(), '#mn-rename');
+  await page.click(trigger);
+  await page.get(() => dd.menu.close('mn-project'));
+  assert.ok(await page.get((s) => document.activeElement === document.querySelector(s), trigger));
+});
+
+test('typeahead: a longer prefix stays on the current item while it still matches', async ({ open, assert }) => {
+  const page = await open('components/menu');
+  await page.click(trigger);
+  const seen = [];
+  for (const k of ['s', 'h', 'o']) { await page.press(k); seen.push(await focused(page)); }
+  assert.deepEqual(seen, ['Share', 'Share', 'Show dates'], '"sh" still matches Share, "sho" moves on');
+  await page.sleep(650);
+  await page.press('s');
+  assert.equal(await focused(page), 'Share');
+  await page.press('s');
+  assert.equal(await focused(page), 'Show dates', 'the same letter again still moves on to the next match');
+});

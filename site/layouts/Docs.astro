@@ -6,7 +6,7 @@ import '../../ds/dawn-and-dusk.css';
 import '../styles/docs.css';
 import DocsNav from '../components/DocsNav.astro';
 import { i } from '../lib/icon';
-import { base, hrefOf, locate, sections } from '../lib/nav';
+import { base, hrefOf, locate, pathOf, sections } from '../lib/nav';
 import { dawn, dusk } from '../lib/tokens';
 import { version } from '../lib/distribution';
 import sprite from '../../ds/icons/icons.svg?raw';
@@ -21,14 +21,14 @@ interface Props {
   wide?: boolean;
 }
 const { title, group, lead, wide = false } = Astro.props;
-const here = Astro.url.pathname.replace(/\/$/, '');
+const here = pathOf(Astro.url.pathname);
 const isHome = here === base;
 const isNotFound = /^\/404(\.html)?$/.test(here.slice(base.length));
 
 // Where the page sits in the nav: the rail section it opens on, and its breadcrumb.
 const { section, item } = locate(here);
 const active = (section ?? sections[0]).key;
-const sectionHome = section ? hrefOf(section.groups[0].items[0].href) || `${base}/` : null;
+const sectionHome = section ? hrefOf(section.groups[0].items[0].href) : null;
 const pageTitle = item?.title ?? title;
 
 // Head: title, description, and the social card (Open Graph / Twitter) with absolute URLs built from `site` + base.

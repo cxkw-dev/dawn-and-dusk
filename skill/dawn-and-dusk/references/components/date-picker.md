@@ -44,7 +44,7 @@ Shown open. Today (Oct 30) carries the apricot dot; the chosen day fills with th
 
 ## Opening and choosing
 
-The calendar button (or ↓ in the input) opens the popover with focus on the chosen day. Choosing a day fills the input and closes it; Esc, a click outside or tabbing away closes without changes. Typed dates are parsed on change.
+The calendar button (or ↓ in the input) opens the popover with focus on the chosen day. Choosing a day fills the input and closes it; Esc, a click outside, tabbing away or the calendar button closes without changes. Typed dates are parsed on change.
 
 Try it: open a calendar with the button or ↓, move with the arrow keys, Enter to choose. Or type a date like 2026-12-01 and press Tab.
 
@@ -277,7 +277,7 @@ Try it: pick a preset or two days, then Apply; Cancel, Esc or a click outside pu
 | `Page Up · Page Down · Home · End` | Same day in the previous / next month; start / end of the week. |
 | `Enter · Space` | Choose the focused day. |
 | `Esc · Tab out · click outside` | Close the popover without changes; Esc returns focus to the calendar button. |
-| `Typing a date` | Single mode: parsed on change (`2026-12-01`, `Dec 1, 2026`). A date outside `data-min` / `data-max`, or text that isn’t a date, sets `aria-invalid`; clearing the field clears the value. |
+| `Typing a date` | Single mode: parsed on change (`2026-12-01`, `Dec 1, 2026`, `Dec 1`). Numeric dates are read as local days, a date without a year takes today’s, and a day the month doesn’t have (`Feb 31`) is invalid. A date outside `data-min` / `data-max`, or text that isn’t a date, sets `aria-invalid`; clearing the field clears the value. |
 
 ## Guidelines
 

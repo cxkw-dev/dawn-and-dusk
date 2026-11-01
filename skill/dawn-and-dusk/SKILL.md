@@ -5,7 +5,7 @@ description: Build UI in the dawn & dusk design system (cxkw.dev) — warm greig
 
 # dawn & dusk
 
-dawn & dusk is plain CSS + a tiny delegated JS layer: semantic HTML, `dd-` classes and `--dd-*` tokens. Two themes share
+dawn & dusk is plain CSS + a small JS layer: semantic HTML, `dd-` classes and `--dd-*` tokens. Two themes share
 every name — **dawn** (light) and **dusk** (dark) — so anything built from the tokens works in both.
 
 The system is complete: 59 components with tested markup. Your job is mostly to **compose** them. Copying the documented
@@ -23,9 +23,20 @@ markup is what makes the result look and behave right; invented structure is whe
 
 ## 1. Install
 
-Copy three files from this skill's `assets/` into the project's static/public folder: `dawn-and-dusk.css` (fonts, tokens,
-base, every component), `dawn-and-dusk.js` (all behaviours) and `icons.svg` (the icon sprite). `tokens.css` is only for
-projects that want the tokens without the components. If the project already has `dawn-and-dusk.css`, don't copy again.
+**An app with a package manager** (React, Next.js, Vite, Tailwind v4…): install the package from its GitHub release. It
+is not on the npm registry, so `npm install dawn-and-dusk` fails; use this exact command:
+
+```sh
+npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.0/dawn-and-dusk-0.3.0.tgz
+```
+
+Then follow `references/frameworks.md` for the imports. If `package.json` already lists `dawn-and-dusk`, don't install
+again.
+
+**Static HTML, or no package manager:** copy three files from this skill's `assets/` into the project's static/public
+folder: `dawn-and-dusk.css` (fonts, tokens, base, every component), `dawn-and-dusk.js` (all behaviours) and `icons.svg`
+(the icon sprite). `tokens.css` is only for projects that want the tokens without the components. If the project already
+has `dawn-and-dusk.css`, don't copy again.
 
 ```html
 <html lang="en">                                   <!-- add data-theme="dawn" or "dusk" to force one; omit to follow the OS -->
@@ -108,19 +119,25 @@ hold their markup, so you don't need web access.
 
 ## 4. Behaviour (dawn-and-dusk.js)
 
-Behaviour is opt-in through `data-dd-*` attributes on the documented markup. The script's listeners are delegated from
-`document`, so elements added later just work. Don't re-implement what it already does: menus (`data-dd-menu`), dialogs
-(`data-dd-dialog-open="#id"`), tabs (`data-dd-tabs`), tooltips (`data-dd-tooltip="…"`), dismiss (`data-dd-dismiss`), copy
-(`data-dd-copy`), side-nav fold (`data-dd-nav-toggle`), ⌘K palette (`data-dd-command`), form validation
-(`data-dd-validate`), counters (`data-dd-counter`) and the `data-dd-data-table` sort, select, expand and filter hooks.
-Each component file lists its hooks.
+Behaviour is opt-in through `data-dd-*` attributes on the documented markup. Most listeners are delegated from
+`document`, but some widgets set themselves up when the script runs, so markup you insert later needs its init call:
+`dd.jsonViewer.init()`, `dd.terminal.init(root)`, `dd.tabs.init()`, `dd.dataTable.refresh(table)`. Otherwise have the
+markup in the page before the script runs (`defer` waits for the HTML); don't assume every widget picks up late markup.
+
+Don't re-implement what it already does: menus (`data-dd-menu`), dialogs (`data-dd-dialog-open="#id"`), tabs
+(`data-dd-tabs`), tooltips (`data-dd-tooltip="…"`), dismiss (`data-dd-dismiss`), copy (`data-dd-copy`), side-nav fold
+(`data-dd-nav-toggle`), ⌘K palette (`data-dd-command`), form validation (`data-dd-validate`) and the
+`data-dd-data-table` sort, select, expand and filter hooks. Character counters are automatic: every `.dd-field__counter`
+in a `.dd-field` counts its control (limit from `maxlength`, or a soft one from `data-dd-counter="280"`); a counter your
+own code renders needs `data-dd-counter="manual"`. Each component file lists its hooks.
 
 **Loading:** the brand loader `.dd-loader dd-loader--sun` (the ampersand with a sun rising behind it) for a page or a
 panel that waits; `.dd-spinner` for small inline busy states and buttons (`components/loader.md`, `spinner.md`).
 
-Small global API: `dd.toast({ title, description, intent, action })`, `dd.dialog`, `dd.tabs`, `dd.popover`, `dd.chip`,
-`dd.dismiss`, `dd.guide`, `dd.jsonViewer(el, data)`, `dd.dataTable.refresh(table)`, `dd.pagination(el, state)`,
-`dd.terminal(el)`, `dd.menu.open(menu, trigger?, { focus })` / `dd.menu.close(menu?)` / `dd.menu.trigger(menu)`, and the
+Small global API: `dd.toast({ title, description, intent, action })`, `dd.dialog`, `dd.tabs.select(tab)` /
+`dd.tabs.init()`, `dd.popover`, `dd.chip`, `dd.dismiss`, `dd.guide`, `dd.jsonViewer(el, data)` / `dd.jsonViewer.init()`,
+`dd.dataTable.refresh(table)`, `dd.pagination(el, state)`, `dd.terminal(el)` / `dd.terminal.init(root)`,
+`dd.menu.open(menu, trigger?, { focus })` / `dd.menu.close(menu?)` / `dd.menu.trigger(menu)`, and the
 `dd.iconSprite` setting. Data tables refresh themselves when you add or remove rows (focus moves to the next row);
 call `refresh` after editing a cell's value in place.
 - **One menu shared by many rows** (one ⋯ menu for a whole table): listen for `dd:menuopen` on the menu;
@@ -131,7 +148,7 @@ call `refresh` after editing a cell's value in place.
 - **Dense table height:** it caps at 70vh and scrolls inside by default. Set `--dd-data-table-height: none` to let the
   page scroll, or add `.dd-data-table--fill` to fill its parent (an app shell page).
 
-Components emit bubbling events such as `dd:change`, `dd:tabchange`, `dd:command`, `dd-select`, `dd-date` and
+Components emit bubbling events such as `dd:change`, `dd:tabchange`, `dd:command`, `dd:select`, `dd:date` and
 `dd:dismiss`; listen for them instead of patching internals.
 
 ## 5. Your own CSS (page glue)

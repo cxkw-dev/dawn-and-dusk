@@ -1,8 +1,8 @@
 schema_version: "1.1"
 name: react-form-restyle
 expected_outcome: |
-  SettingsForm.jsx rewritten with dawn & dusk markup (className with dd- classes: tucked-label fields, select,
-  switches, textarea with counter, one primary submit), no Tailwind utilities left, the same props, state and submit
-  logic, labels tied to inputs, and notes on loading the system's CSS/JS in the app.
+  SettingsForm.jsx rewritten with dawn & dusk markup (dd- classes in className and/or the dawn-and-dusk/react
+  components: tucked-label fields, select, switches, textarea with counter, one primary submit), no Tailwind utilities
+  left, the same props, state and submit logic, labels tied to inputs, and notes on loading the system in the app.
 context:
   scaffold_script: place-files.sh

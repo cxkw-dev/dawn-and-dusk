@@ -1,10 +1,10 @@
 /* Data table — opt in with [data-dd-data-table] on .dd-data-table.
    - Sort: <th aria-sort="none"><button class="dd-data-table__sort">…</button></th> cycles none → ascending → descending → none.
      Rows sort within each group; expanded detail rows travel with their row. A cell's data-value (if set) is used instead
-     of its text. Two values compare as numbers only when both are fully numeric ("1,240", "0.5%", "-3"), else as times
-     when both are ISO dates ("2026-10-30", "2026-10-30T09:41"), else as text (localeCompare, numeric: true, so "v2" < "v10").
-     In a figure column (.is-num) a value like "84 ms" still reads as its number and a dash counts as blank. Blanks sort
-     last both ways. Emits dd:sort { column, direction, index }.
+     of its text. Two values compare as numbers only when both are fully numeric ("1,240", "0.5%", "-3", "−3" with a
+     U+2212 minus), else as times when both are ISO dates ("2026-10-30", "2026-10-30T09:41"), else as text (localeCompare,
+     numeric: true, so "v2" < "v10"). In a figure column (.is-num) a value like "84 ms" or "2 of 12" still reads as its
+     first number and a dash counts as blank. Blanks sort last both ways. Emits dd:sort { column, direction, index }.
    - Select: .dd-data-table__check in the header selects every visible row (with indeterminate state); Shift-click selects a
      range. Disabled row boxes are never changed by the table (select all, range, clear) and don't count toward the
      header's checked / indeterminate state. Selected rows get .is-selected; .dd-data-table__bulk shows while anything is
@@ -21,15 +21,18 @@
      returns focus to the search.
    - Pages: a [data-dd-pagination] element inside the root (see pagination.js) pages the filtered rows in the browser.
      Filtering returns to page 1; sorting keeps the page.
-   - Columns: inputs [data-dd-data-table-column="col"] show/hide the column whose <th data-col="col">.
+   - Columns: inputs [data-dd-data-table-column="col"] show/hide the column whose <th data-col="col"> (rows added later too).
    - Menus (.dd-data-table__menu, a <details>) close on Esc (focus returns to the summary) and on any click outside.
    - Scroll: adds .is-scrolled-x / .is-scrolled-y to the root so the frozen column and sticky header cast an edge.
-   - Rows added or removed from script (or a framework) are picked up on their own: count, filters, empty row, pages and
-     selection refresh on the next frame. dd.dataTable.refresh(root) does it by hand; for a table added to the page after
-     load, its first call also sets the table up and starts watching its rows.
-   - Focus: when a row that held focus is removed, focus moves to the first control of the next remaining visible row
-     (else the previous one, else the select-all box, else the scroll region / table). A row that is only moved (re-sorted
-     or re-inserted by a framework) gets its focus back. */
+   - Rows added or removed from script (or a framework, even one that swaps the whole <tbody>) are picked up on their own:
+     count, filters, empty row, hidden columns, pages and selection refresh on the next frame. dd.dataTable.refresh(root)
+     does it by hand; for a table added to the page after load, its first call also sets the table up and starts watching
+     its rows.
+   - Focus: when a row that holds focus is removed, focus moves (without scrolling) to the first control of the next
+     remaining visible row (else the previous one, else the select-all box, else the scroll region / table); a replaced
+     <tbody> lands on its first row. A row that is only moved (re-sorted or re-inserted by a framework) gets its focus
+     back. Once focus has moved on (elsewhere on the page, or to the page itself) a removed row leaves it alone; a menu or
+     dialog opened from the row still counts as the row. */
 (() => {
   const ROOT = '[data-dd-data-table]';
   const SKIP = '.dd-data-table__group, .dd-data-table__detail, .dd-data-table__empty-row';
@@ -79,8 +82,9 @@
   // trailing %. Anything else ("84 ms", "v2.1", "2026-10-30") is not.
   const NUMBER = /^[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?$/i;
   const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+  const minus = (s) => s.replace(/\u2212/g, '-'); // typographic minus (U+2212), as in "−3.2%"
   const asNumber = (s) => {
-    const t = s.replace(/[\s,_\u00a0\u202f]/g, '').replace(/^[$€£¥]/, '').replace(/%$/, '');
+    const t = minus(s).replace(/[\s,_\u00a0\u202f]/g, '').replace(/^[$€£¥]/, '').replace(/%$/, '');
     return NUMBER.test(t) ? Number(t) : null;
   };
   const asTime = (s) => {
@@ -97,9 +101,11 @@
     let num = asNumber(raw);
     const time = num === null ? asTime(raw) : null;
     if (numeric && num === null && time === null) {
-      // A figure column: "84 ms" or "1.2 GB" still reads as its number; a dash or other text counts as blank.
-      num = parseFloat(raw.replace(/[^\d.\-]/g, ''));
-      if (Number.isNaN(num)) return null;
+      // A figure column: "84 ms", "1.2 GB" or "2 of 12" reads as its first number (not every digit run together: 212);
+      // a dash or other text counts as blank.
+      const m = minus(raw).match(/[-+]?(?:\d[\d,_\u00a0\u202f]*(?:\.\d+)?|\.\d+)/);
+      if (!m) return null;
+      num = Number(m[0].replace(/[,_\u00a0\u202f]/g, ''));
     }
     return { raw, num, time };
   };
@@ -344,6 +350,8 @@
   }, true);
 
   const update = (root) => {
+    // Hidden columns stay hidden in rows added since.
+    root.querySelectorAll('[data-dd-data-table-column]').forEach((inp) => { if (!inp.checked) setColumn(root, inp.dataset.ddDataTableColumn, false); });
     if (root.querySelector('[data-dd-data-table-search], [data-dd-data-table-filter], [data-dd-data-table-count], [data-dd-pagination]')) refresh(root);
     else syncSelection(root);
   };
@@ -351,18 +359,28 @@
   // ---------- focus that would be lost with a removed row ----------
   const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
   const firstFocusable = (el) => [...el.querySelectorAll(FOCUSABLE)].find((f) => f.getClientRects().length);
-  const lastFocus = new WeakMap(); // root → the last element focused inside one of its body rows
+  let held = null; // { root, el }: the control in a body row that has focus, until focus really moves on
   const lostFocus = new WeakMap(); // root → where to land once the rows settle
-  // Only focus in a row counts: moving on to a row's ⋯ menu (which may sit inside the root) must not forget the row.
-  document.addEventListener('focusin', (e) => {
-    const root = e.target.closest?.('tbody > tr')?.closest(ROOT);
-    if (root) lastFocus.set(root, e.target);
-  });
   // Focus is "lost" when it sits on the page itself, or on something that is gone or no longer shown.
   const focusLost = () => {
     const a = document.activeElement;
     return !a || a === document.body || a === document.documentElement || !a.isConnected || !a.getClientRects().length;
   };
+  // Focus in a row is remembered. Moving on to the row's ⋯ menu or a dialog it opened (which may sit inside the root or
+  // not) must not forget the row; focus moving anywhere else does, so a row removed later never pulls focus back.
+  const POPUP = '[role="menu"], [role="dialog"], [role="alertdialog"], dialog';
+  document.addEventListener('focusin', (e) => {
+    const root = e.target.closest?.('tbody > tr')?.closest(ROOT);
+    if (root) held = { root, el: e.target };
+    else if (!e.target.closest?.(POPUP)) held = null;
+  });
+  // So does focus dropping to the page (a click on empty space) while its element is still there and shown; one that was
+  // removed or hidden (the row going, a menu closing) is not someone moving on. Checked once the removal has settled.
+  document.addEventListener('focusout', (e) => {
+    if (!held || e.relatedTarget) return;
+    const el = e.target;
+    setTimeout(() => { if (focusLost() && el.isConnected && el.getClientRects().length) held = null; });
+  });
   // Lands focus on the first control of the nearest shown row after where the lost row was (else before it; else the
   // first shown row if every row was replaced), else on the select-all box, else on the scroll region (or the table).
   // With no `lost` (the bulk bar hid under the focus) it goes straight to the select-all box.
@@ -380,18 +398,21 @@
       target = root.querySelector('.dd-data-table__scroll[tabindex]') || root.querySelector('table');
       if (target && !target.hasAttribute('tabindex')) target.tabIndex = -1;
     }
-    target?.focus();
+    target?.focus({ preventScroll: true }); // the page stays where the reader left it
   }
   // From a batch of row mutations: did the row holding focus leave? Note where it was (its old neighbours, followed past
   // any that left in the same batch) so focus can land on the next row once paging and filters have caught up.
   function noteFocus(root, records) {
-    const el = lastFocus.get(root);
-    if (!el) return;
+    if (held?.root !== root) return;
+    const { el } = held;
     const next = new Map(); const prev = new Map();
     for (const rec of records) for (const n of rec.removedNodes) { next.set(n, rec.nextSibling); prev.set(n, rec.previousSibling); }
     const gone = [...next.keys()].find((n) => n.contains?.(el));
     if (!gone) return;
     if (el.isConnected) { lostFocus.set(root, { el }); return; } // only moved
+    held = null;
+    // A whole <tbody> swapped (a framework re-render): every row was replaced, so land on the first shown one.
+    if (gone.nodeName === 'TBODY') { lostFocus.set(root, {}); return; }
     const follow = (map, n) => { for (let k = 0; n && !n.isConnected && map.has(n) && k < 10000; k++) n = map.get(n); return n?.isConnected ? n : null; };
     lostFocus.set(root, { next: follow(next, next.get(gone)), prev: follow(prev, prev.get(gone)) });
   }
@@ -405,22 +426,23 @@
 
   // Rows added / removed later: refresh once per frame (sorting moves rows too; refreshing after it is harmless).
   const pending = new WeakSet();
-  // Only each tbody's own row list is watched: refresh() rewrites counts and labels elsewhere in the table, which must not
-  // trigger it again.
+  // Only each tbody's own row list (and the table's list of bodies) is watched: refresh() rewrites counts and labels
+  // elsewhere in the table, which must not trigger it again.
   const watch = (root) => {
     const mo = new MutationObserver((records) => {
+      // A body added later (a framework swapping the whole <tbody>) is watched from then on.
+      for (const rec of records) for (const n of rec.addedNodes) if (n.nodeName === 'TBODY') mo.observe(n, { childList: true });
       noteFocus(root, records);
       if (pending.has(root)) return;
       pending.add(root);
       requestAnimationFrame(() => { pending.delete(root); update(root); restoreFocus(root); });
     });
-    root.querySelectorAll('tbody').forEach((tb) => mo.observe(tb, { childList: true }));
+    root.querySelectorAll('table, tbody').forEach((el) => mo.observe(el, { childList: true }));
   };
 
   const ready = new WeakSet();
   const setup = (root) => {
     ready.add(root);
-    root.querySelectorAll('[data-dd-data-table-column]').forEach((inp) => { if (!inp.checked) setColumn(root, inp.dataset.ddDataTableColumn, false); });
     update(root);
     watch(root);
   };

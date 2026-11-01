@@ -118,7 +118,7 @@ ${palette('cp-live', all, { tag: 'dialog', hotkey: true })}`;
     ['Typing', 'Filters rows by their text and <code>data-keywords</code> (every word must match); selects the first match.'],
     ['↑ ↓ · Ctrl P / Ctrl N', 'Move the selected row, wrapping at the ends; the list scrolls to keep it in view. Hovering a row selects it too.'],
     ['Enter / click', 'Runs the row: clicks it (links navigate), fires a bubbling <code>dd:command</code> event with <code>detail.item</code> and <code>detail.value</code> (the row’s <code>data-value</code>, else its name), and closes the dialog.'],
-    ['Esc', 'Clears the search; a second Esc closes. Clicking the backdrop closes too, and focus returns to the opener.'],
+    ['Esc', 'Clears the search; a second Esc closes. Clicking the backdrop closes too (a press that starts in the search and ends outside doesn’t), and focus returns to the opener. When a command opens a dialog, closing that dialog returns focus there too.'],
   ]} />
   <script is:inline>
     // Docs feedback: running a row in any example says what it would have done.

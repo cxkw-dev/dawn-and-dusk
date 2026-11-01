@@ -1,6 +1,7 @@
 /* Dropdowns built on <details data-dd-autoclose> (the top-bar avatar menu, the breadcrumb overflow).
    - Closes on a click outside, on Esc (focus inside it returns to the <summary>; focus elsewhere stays put), after
-     choosing an item inside, and when another autoclose dropdown opens.
+     choosing an item inside, and when another autoclose dropdown opens. That Esc goes no further (a dialog around it
+     stays open), and an Esc something else already handled leaves it open.
    - ↓ on the summary opens it and focuses the first item; ↑/↓ move between items while it is open. */
 (() => {
   const SEL = 'details[data-dd-autoclose]';
@@ -22,7 +23,8 @@
     const d = e.target.closest?.(SEL);
     if (e.key === 'Escape') {
       const open = d?.open ? d : document.querySelector(`${SEL}[open]`);
-      if (!open) return;
+      if (!open || e.defaultPrevented) return;
+      e.preventDefault(); // this Esc closes the dropdown only, not a dialog or drawer around it
       // Focus goes back to the summary only from inside the dropdown (or from nowhere), never from elsewhere on the page.
       const a = document.activeElement;
       const back = !a || a === document.body || open.contains(a);

@@ -32,7 +32,7 @@ Group labels, descriptions, shortcut hints, a submenu chevron, checked and disab
 
 ## Dropdown
 
-Put `data-dd-menu="menu-id"` on any button and `hidden` on the menu. The behaviour floats the menu below the trigger, flips it up when there’s no room, and moves focus into it. “Share” opens a submenu.
+Put `data-dd-menu="menu-id"` on any button and `hidden` on the menu. The behaviour floats the menu below the trigger, flips it up when there’s no room, and moves focus into it. “Share” opens a submenu; hovering opens it too, and a click on an open submenu’s item keeps it open. If an item’s own handler moves focus (say, to a rename field), it stays there when the menu closes.
 
 Try it: click the button, or focus it and press ↓ / ↑. Type a letter to jump to an item; → on “Share” opens its submenu, ← closes it; Esc closes and returns focus.
 

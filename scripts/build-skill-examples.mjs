@@ -20,8 +20,22 @@ if (missing.length) {
   process.exit(1);
 }
 
-const decode = (s) => s.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
+// Named entities Astro and Shiki emit, and any numeric one (Shiki writes `<` as &#x3C;); &amp; last, so it can't double-decode.
+const decode = (s) => s.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+  .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+  .replace(/&amp;/g, '&');
 const text = (s) => decode(s.replace(/<code>(.*?)<\/code>/g, '`$1`').replace(/<a [^>]*>(.*?)<\/a>/g, '$1').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+
+/** Index of the </figure> that closes the <figure> opening at `from`. */
+const closeOf = (html, from) => {
+  const tag = /<figure[\s>]|<\/figure>/g;
+  tag.lastIndex = from;
+  for (let depth = 0, m; (m = tag.exec(html));) {
+    depth += m[0][1] === '/' ? -1 : 1;
+    if (!depth) return m.index;
+  }
+  throw new Error('build-skill-examples: unclosed <figure class="ex">');
+};
 
 await rm(outDir, { recursive: true, force: true });
 await mkdir(outDir, { recursive: true });
@@ -37,10 +51,17 @@ for (const group of nav) {
     const md = [`# ${it.title.toLowerCase()} — \`${name}\``, '', lead, '', `Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/${name}`, '',
       'Every snippet is the exact markup of a working docs example. Icons are `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-NAME"/></svg>` from the sprite.', ''];
     const main = html.slice(html.indexOf('<main'), html.lastIndexOf('</main>'));
-    const tokens = /<figure class="ex">([\s\S]*?)<\/figure>|<h2[^>]*>([\s\S]*?)<\/h2>|<p>([\s\S]*?)<\/p>|<ul>([\s\S]*?)<\/ul>|<pre[^>]*>([\s\S]*?)<\/pre>|<table class="doc-table">([\s\S]*?)<\/table>|<div class="doc-guides">([\s\S]*?)<\/div>\s*<\/div>\s*(?=<|$)/g;
+    // An example's own markup can hold figures (charts, code blocks), so an example runs to its matching </figure>.
+    const tokens = /<figure class="ex">|<h2[^>]*>([\s\S]*?)<\/h2>|<p>([\s\S]*?)<\/p>|<ul>([\s\S]*?)<\/ul>|<pre[^>]*>([\s\S]*?)<\/pre>|<table class="doc-table">([\s\S]*?)<\/table>|<div class="doc-guides">([\s\S]*?)<\/div>\s*<\/div>\s*(?=<|$)/g;
     let section = '';
-    for (const t of main.matchAll(tokens)) {
-      const [, fig, h2, para, list, pre, table, guides] = t;
+    for (let t; (t = tokens.exec(main));) {
+      let fig;
+      if (t[0] === '<figure class="ex">') {
+        const end = closeOf(main, t.index);
+        fig = main.slice(t.index + t[0].length, end);
+        tokens.lastIndex = end + '</figure>'.length;
+      }
+      const [, h2, para, list, pre, table, guides] = t;
       if (h2 !== undefined) { section = text(h2); if (!/^guidelines$/i.test(section)) md.push(`## ${section.charAt(0).toUpperCase()}${section.slice(1)}`, ''); continue; }
       if (fig !== undefined) {
         const title = text((fig.match(/<h3 class="dd-h5">([\s\S]*?)<\/h3>/) ?? [, ''])[1]);

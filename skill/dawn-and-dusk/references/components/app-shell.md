@@ -324,24 +324,24 @@ By default the shell is the viewport and only its content area scrolls; the chro
 This page is the live example. These docs run on `dd-app-shell dd-app-shell--page dd-app-shell--offcanvas-md`. Try it: scroll, and the side nav and the top bar stay. Narrow the window under 900px and open the menu: the nav slides in over the page, and the page behind it stays put until Esc, the scrim, a link or tabbing out closes it.
 
 ```html
-&#x3C;html>
-  &#x3C;body>
-    &#x3C;div class="dd-app-shell dd-app-shell--page dd-app-shell--offcanvas-md">
-      &#x3C;nav class="dd-side-nav" id="doc-nav" aria-label="Documentation">
-        &#x3C;div class="dd-side-nav__rail">…&#x3C;/div>
-        &#x3C;div class="dd-side-nav__panel" id="doc-nav-panel">…&#x3C;/div>
-      &#x3C;/nav>
-      &#x3C;div class="dd-app-shell__main">
-        &#x3C;header class="dd-top-bar">
-          &#x3C;button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-nav-open="#doc-nav" aria-controls="doc-nav" aria-expanded="false" aria-label="Open navigation">…&#x3C;/button>
-          &#x3C;a class="dd-top-bar__brand dd-top-bar__narrow" href="/">…&#x3C;/a>
+<html>
+  <body>
+    <div class="dd-app-shell dd-app-shell--page dd-app-shell--offcanvas-md">
+      <nav class="dd-side-nav" id="doc-nav" aria-label="Documentation">
+        <div class="dd-side-nav__rail">…</div>
+        <div class="dd-side-nav__panel" id="doc-nav-panel">…</div>
+      </nav>
+      <div class="dd-app-shell__main">
+        <header class="dd-top-bar">
+          <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" type="button" data-dd-nav-open="#doc-nav" aria-controls="doc-nav" aria-expanded="false" aria-label="Open navigation">…</button>
+          <a class="dd-top-bar__brand dd-top-bar__narrow" href="/">…</a>
           …
-        &#x3C;/header>
-        &#x3C;main class="dd-app-shell__content">…&#x3C;/main>
-      &#x3C;/div>
-    &#x3C;/div>
-  &#x3C;/body>
-&#x3C;/html>
+        </header>
+        <main class="dd-app-shell__content">…</main>
+      </div>
+    </div>
+  </body>
+</html>
 ```
 
 In page mode the shell paints no background of its own, so the page tone on `<html>` (with dusk’s grain) shows through, and cards keep their page hover. Give the document a `scroll-padding-top` a little taller than the top bar (these docs use 80px) so anchors land below it.
@@ -364,24 +364,24 @@ Your own rules can follow the same widths with `@container dd-app-shell (width <
 The skeleton, without the contents. Wire the top bar’s menu button to the nav’s `id`; the nav’s collapsed state is remembered under that `id`.
 
 ```html
-&#x3C;div class="dd-app-shell">
-  &#x3C;nav class="dd-side-nav" id="app-nav" aria-label="Main">
-    &#x3C;div class="dd-side-nav__rail">…&#x3C;/div>
-    &#x3C;div class="dd-side-nav__panel" id="app-nav-panel">…&#x3C;/div>
-  &#x3C;/nav>
-  &#x3C;div class="dd-app-shell__main">
-    &#x3C;header class="dd-top-bar">
-      &#x3C;button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" data-dd-nav-open="#app-nav" aria-label="Open navigation">…&#x3C;/button>
+<div class="dd-app-shell">
+  <nav class="dd-side-nav" id="app-nav" aria-label="Main">
+    <div class="dd-side-nav__rail">…</div>
+    <div class="dd-side-nav__panel" id="app-nav-panel">…</div>
+  </nav>
+  <div class="dd-app-shell__main">
+    <header class="dd-top-bar">
+      <button class="dd-btn dd-btn--ghost dd-btn--icon dd-top-bar__nav-btn" data-dd-nav-open="#app-nav" aria-label="Open navigation">…</button>
       …
-    &#x3C;/header>
-    &#x3C;main class="dd-app-shell__content">
-      &#x3C;div class="dd-app-shell__page">
-        &#x3C;header class="dd-page-header">…&#x3C;/header>
+    </header>
+    <main class="dd-app-shell__content">
+      <div class="dd-app-shell__page">
+        <header class="dd-page-header">…</header>
         …
-      &#x3C;/div>
-    &#x3C;/main>
-  &#x3C;/div>
-&#x3C;/div>
+      </div>
+    </main>
+  </div>
+</div>
 ```
 
 ## Classes

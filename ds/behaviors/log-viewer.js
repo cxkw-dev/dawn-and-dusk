@@ -1,5 +1,6 @@
 /* Log viewer: [data-dd-log-viewer] wires up its bar.
-   - input[data-dd-log-viewer-search]: filters lines by text and highlights matches (service and message) with <mark>. Esc clears.
+   - input[data-dd-log-viewer-search]: filters lines by text and highlights matches (service and message) with <mark>.
+     Esc clears it, and goes no further (a dialog around it stays open); in an empty search Esc is left alone.
    - button[data-dd-log-viewer-level="debug|info|warn|error"]: aria-pressed toggles that level.
    - button[data-dd-log-viewer-wrap]: aria-pressed toggles .is-wrapped (long messages wrap instead of scrolling).
    - [data-dd-log-viewer-count]: gets “18 of 24 lines”; [data-dd-log-viewer-empty] shows when nothing matches.
@@ -135,7 +136,8 @@
     if (e.key !== 'Escape') return;
     const input = e.target.closest?.('[data-dd-log-viewer-search]');
     const root = input?.closest('[data-dd-log-viewer]');
-    if (!root || !input.value) return;
+    if (!root || !input.value || e.defaultPrevented) return;
+    e.preventDefault(); // this Esc clears the search only, not a dialog or drawer around it
     input.value = '';
     apply(root);
   });

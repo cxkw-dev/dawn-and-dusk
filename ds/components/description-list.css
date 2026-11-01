@@ -60,7 +60,7 @@
 
 /* Two columns of stacked items. Rules are drawn on every item and the first row's are clipped. */
 .dd-description-list--columns {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(max(220px, calc(50% - var(--dd-space-8))), 1fr));
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, max(220px, calc(50% - var(--dd-space-8)))), 1fr));
   column-gap: var(--dd-space-8); overflow: hidden;
 }
 .dd-description-list--columns .dd-description-list__item {

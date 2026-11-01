@@ -70,9 +70,9 @@
 }
 .dd-data-table__chip:is([aria-pressed="true"], .is-active):hover { background-image: linear-gradient(var(--dd-wash), var(--dd-wash)); }
 .dd-data-table__chip[hidden] { display: none; }
-.dd-data-table__chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--_c, var(--dd-faint)); }
+.dd-data-table__chip-dot { --_c: var(--dd-faint); width: 6px; height: 6px; border-radius: 50%; background: var(--_c); } /* colour: style="--_c: …" on the dot */
 
-.dd-data-table__tools { display: flex; align-items: center; gap: calc(var(--dd-u) * 1); margin-left: auto; }
+.dd-data-table__tools { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1); margin-left: auto; }
 .dd-data-table__count { margin-right: calc(var(--dd-u) * 1); font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); color: var(--dd-muted); white-space: nowrap; }
 
 /* column toggle: <details class="dd-data-table__menu"><summary>…</summary><div class="dd-data-table__menu-panel">… */

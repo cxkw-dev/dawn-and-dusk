@@ -134,7 +134,7 @@ lowercase, tight) for page and section titles; `.dd-h4/.dd-h5` are UI titles in 
 
 In a Tailwind app these theme keys replace Tailwind's palette, fonts, radii and shadows, so utilities read the tokens and
 follow dawn / dusk on their own. Spacing is the 5px unit: `p-4` = `--dd-space-4` = 20px. Variants: `dusk:` (alias `dark:`)
-and `dawn:`. Prefer token utilities to `dusk:` overrides. See `references/frameworks.md`.
+and `dawn:`, following the nearest `data-theme`. Prefer token utilities to `dusk:` overrides. See `references/frameworks.md`.
 
 | Tailwind theme key | token | e.g. |
 |---|---|---|

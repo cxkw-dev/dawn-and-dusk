@@ -8,11 +8,13 @@
        <h3 class="dd-guide-cue__title">…</h3> <p class="dd-guide-cue__text">…</p>
        <div class="dd-guide-cue__actions"><button data-dd-guide-dismiss>Skip tour</button><button data-dd-guide-next>Next</button></div>
      </div>
-   Steps run in document order (a cue whose target isn't on the page is skipped). [data-dd-guide-back] goes back a step;
-   Next on the last step finishes the tour; Esc or [data-dd-guide-dismiss] ends it early.
-   Each step scrolls its target into view, rings it, drops a beacon on it and points the arrow at it. Focus moves to
-   the cue and returns to the start button at the end. Events on document: "dd:guide-step" (detail.index) and
-   "dd:guide-end" (detail.completed).
+   Steps run in document order; a cue whose target isn't on the page is skipped, both ways, and left out of the count
+   and pips. [data-dd-guide-back] goes back a step (on the first it stays); Next on the last step finishes the tour;
+   Esc (unless something inside already handled it) or [data-dd-guide-dismiss] ends it early.
+   Each step scrolls its target into view, rings it, drops a beacon on it (in the dawn/dusk theme of the target's
+   section) and points the arrow at it. Focus moves to the cue and returns to the start button at the end. Events on
+   document: "dd:guide-step" (detail.index: the cue's place among all the tour's cues) and "dd:guide-end"
+   (detail.completed).
    From code: dd.guide.start(name, trigger) · dd.guide.next() · dd.guide.back() · dd.guide.end(). */
 (() => {
   let tour = null;
@@ -65,25 +67,33 @@
     tour.beacon.style.top = `${Math.round(r.top + 2)}px`;
   };
 
-  const go = (i) => {
+  // Show step i, or the nearest one with a target in direction dir (1 forward, -1 back). Past the last step the tour is
+  // done; with nothing to go back to it stays where it is.
+  const go = (i, dir = 1) => {
     if (!tour) return;
+    while (tour.steps[i] && !targetOf(tour.steps[i])) i += dir;
+    if (i < 0) return;
     const prev = tour.steps[tour.i];
     if (prev) { hideCue(prev); targetOf(prev)?.removeAttribute('data-dd-guide-active'); }
     const cue = tour.steps[i];
     if (!cue) return end(true);
     tour.i = i;
     const target = targetOf(cue);
-    if (!target) return go(i + 1);
+    // The count and pips cover the steps the tour can reach: one whose target is missing isn't one of them.
+    const live = tour.steps.filter((c) => targetOf(c));
+    const n = live.indexOf(cue);
     const step = cue.querySelector('.dd-guide-cue__step');
     const count = cue.querySelector('.dd-guide-cue__count') || (step && !step.children.length ? step : null);
-    if (count) count.textContent = `${i + 1} of ${tour.steps.length}`;
+    if (count) count.textContent = `${n + 1} of ${live.length}`;
     const pips = cue.querySelector('.dd-guide-cue__pips');
-    if (pips) pips.replaceChildren(...tour.steps.map((_, k) => Object.assign(document.createElement('i'), { className: k < i ? 'is-done' : k === i ? 'is-current' : '' })));
+    if (pips) pips.replaceChildren(...live.map((_, k) => Object.assign(document.createElement('i'), { className: k < n ? 'is-done' : k === n ? 'is-current' : '' })));
     if (!cue.hasAttribute('tabindex')) cue.setAttribute('tabindex', '-1');
     target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: still() ? 'auto' : 'smooth' });
     target.setAttribute('data-dd-guide-active', '');
+    // The beacon takes the theme of a section the target sits in, and lets it go for a target outside one.
     const scope = target.closest('[data-theme]');
     if (scope && scope !== document.documentElement) tour.beacon.dataset.theme = scope.dataset.theme;
+    else delete tour.beacon.dataset.theme;
     showCue(cue);
     layout();
     // Smooth scrolling may still be moving the target; settle the position once it stops.
@@ -122,13 +132,14 @@
     if (s) { start(s.getAttribute('data-dd-guide-start'), s); return; }
     if (!tour) return;
     if (e.target.closest('[data-dd-guide-next]')) go(tour.i + 1);
-    else if (e.target.closest('[data-dd-guide-back]')) go(Math.max(0, tour.i - 1));
+    else if (e.target.closest('[data-dd-guide-back]')) go(tour.i - 1, -1);
     else if (e.target.closest('[data-dd-guide-dismiss]')) end(false);
   });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && tour) { e.preventDefault(); end(false); } });
+  // An Esc something inside already handled (a menu, a select) isn't the tour's.
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && tour && !e.defaultPrevented) { e.preventDefault(); end(false); } });
   window.addEventListener('scroll', layout, { capture: true, passive: true });
   window.addEventListener('resize', layout, { passive: true });
 
   window.dd = window.dd || {};
-  window.dd.guide = { start, next: () => tour && go(tour.i + 1), back: () => tour && go(Math.max(0, tour.i - 1)), end: () => end(false) };
+  window.dd.guide = { start, next: () => tour && go(tour.i + 1), back: () => tour && go(tour.i - 1, -1), end: () => end(false) };
 })();
