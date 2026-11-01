@@ -1,4 +1,4 @@
-# dawn & dusk components (v0.3.1)
+# dawn & dusk components (v0.3.2)
 
 Generated from `ds/components/*.css`: what each component is, its classes and its `data-dd-*` hooks. Every component is plain
 HTML + these classes; behaviours are opt-in `data-dd-*` attributes handled by `dawn-and-dusk.js`.
@@ -142,7 +142,7 @@ Markup: `references/components/checkbox.md`
 
 ## chip
 
-Chip — "Soft wash". Categorical chips in the Color set (--dd-set-1…8): a tinted fill with deep text in the same hue. Topics, tags and people; removable (×), filter chips that toggle (aria-pressed) and an input that turns typing into chips. Behaviour lives in behaviors/chip.js. Colour: .dd-chip--set-1…8, or style="--dd-chip: <colour>".
+Chip — "Soft wash". Categorical chips in the Color set (--dd-set-1…8): a tinted fill with deep text in the same hue (40% hue, 60% text colour, so every set and status colour holds 4.5:1 on its fill over the page, a surface, a well, a well card or a floating layer, in both themes). Topics, tags and people; removable (×), filter chips that toggle (aria-pressed) and an input that turns typing into chips. Behaviour lives in behaviors/chip.js. Colour: .dd-chip--set-1…8, or style="--dd-chip: <colour>".
 
 Classes: `.dd-chip--set-1` `.dd-chip` `.dd-chip--set-2` `.dd-chip--set-3` `.dd-chip--set-4` `.dd-chip--set-5` `.dd-chip--set-6` `.dd-chip--set-7` `.dd-chip--set-8` `.dd-chip__dot` `.dd-chip__remove` `.dd-chip--filter` `.dd-chip__check` `.dd-chip--avatar` `.dd-chip-input` `.dd-chip-input__field` `.dd-chip-group`
 
@@ -164,11 +164,11 @@ Markup: `references/components/code.md`
 
 ## combobox
 
-Combobox — a text input that filters a .dd-listbox (select.css) as you type. Single: the chosen label fills the input. Multi (.dd-combobox--multi): chosen values become chips inside the box, in the "Soft wash" chip style — a 22% wash of a Color set hue (--dd-chip: var(--dd-set-N)) with deep text in the same hue. ds/behaviors/combobox.js filters, highlights matches and manages chips.
+Combobox — a text input that filters a .dd-listbox (select.css) as you type. Single: the chosen label fills the input. Multi (.dd-combobox--multi): chosen values become chips inside the box, in the "Soft wash" chip style — a 22% wash of a Color set hue (--dd-chip: var(--dd-set-N)) with deep text in the same hue (a little closer to ink than .dd-chip, since it sits on the field's own wash). ds/behaviors/combobox.js filters, highlights matches and manages chips.
 
 Classes: `.dd-combobox--multi` `.dd-combobox` `.dd-combobox__toggle` `.dd-combobox__chip` `.dd-combobox__remove` `.dd-combobox__create`
 
-Works with: `.dd-listbox` `.dd-input`
+Works with: `.dd-listbox` `.dd-chip` `.dd-input`
 
 Markup: `references/components/combobox.md`
 
@@ -190,7 +190,7 @@ Data table — "Hairline". The dense table for large data sets: a toolbar (searc
 
 Classes: `.dd-data-table--card` `.dd-data-table--fill` `.dd-data-table` `.dd-data-table__rownum` `.dd-data-table__select` `.dd-data-table__toolbar` `.dd-data-table__search` `.dd-data-table__chip` `.dd-data-table__chip-dot` `.dd-data-table__tools` `.dd-data-table__count` `.dd-data-table__menu` `.dd-data-table__menu-panel` `.dd-data-table__menu-title` `.dd-data-table__menu--start` `.dd-data-table__bulk` `.dd-data-table__bulk-count` `.dd-data-table__bulk-end` `.dd-data-table__scroll` `.dd-data-table__table` `.dd-data-table__group` `.dd-data-table__detail` `.dd-data-table__empty-row` `.dd-data-table__unit` `.dd-data-table__status` `.dd-data-table__sort` `.dd-data-table__check` `.dd-data-table__expand` `.dd-data-table__expand-spacer` `.dd-data-table__detail-body` `.dd-data-table__facts` `.dd-data-table__group-label` `.dd-data-table__group-count` `.dd-data-table__skeleton` `.dd-data-table__skeleton--box` `.dd-data-table__empty` `.dd-data-table__empty-icon` `.dd-data-table__empty-title` `.dd-row` `.dd-data-table__footer` `.dd-data-table--compact` `.dd-data-table--roomy`
 
-Works with: `.dd-app-shell` `.dd-btn` `.dd-pagination`
+Works with: `.dd-app-shell` `.dd-input` `.dd-btn` `.dd-pagination`
 
 Attributes/states: `data-dd-data-table` `aria-pressed` `aria-sort` `aria-expanded`
 
@@ -382,6 +382,8 @@ Pagination — numbered pages, a compact prev/next with a range ("1–50 of 2,48
 
 Classes: `.dd-pagination` `.dd-pagination__pages` `.dd-pagination__page` `.dd-pagination__step` `.dd-pagination__gap` `.dd-pagination__step--label` `.dd-pagination__range` `.dd-pagination__status` `.dd-pagination__size` `.dd-pagination__select` `.dd-pagination__end` `.dd-pagination--spread` `.dd-pagination--compact`
 
+Works with: `.dd-input`
+
 Attributes/states: `aria-current` `aria-disabled`
 
 Markup: `references/components/pagination.md`
@@ -540,7 +542,7 @@ Markup: `references/components/tabs.md`
 
 ## text-input
 
-Text input — the tonal, borderless box every form control shares (textarea, select, combobox and date picker build on it). The box (.dd-input) holds the control (.dd-input__control) plus optional affixes, units and inline buttons. Inside a .dd-field the box grows a top pad so the tucked label fits; on its own it is button height. Sizes: sm · md (default) · lg. Focus clears the fill toward the page and lifts the box. Dusk fills are a translucent wash of the text colour, so the box reads on the grain page, on cards and on floating panels alike (an opaque --dd-surface-2 fill vanishes into the dusk page).
+Text input — the tonal, borderless box every form control shares (textarea, select, combobox and date picker build on it). The box (.dd-input) holds the control (.dd-input__control) plus optional affixes, units and inline buttons. Inside a .dd-field the box grows a top pad so the tucked label fits; on its own it is button height. Sizes: sm · md (default) · lg. Focus clears the fill toward the page and lifts the box. The fill is a translucent wash of the text colour in both themes, so the box always reads one step from whatever it sits on: the grain page, a card, a well or a floating panel (an opaque surface step vanishes into some of them).
 
 Classes: `.dd-input` `.dd-input__control` `.dd-mono` `.dd-num` `.dd-input__affix` `.dd-input__unit` `.dd-input__prefix` `.dd-input__status` `.dd-input__btn` `.dd-input__steppers` `.dd-input__hide` `.dd-input__show` `.dd-input--sm` `.dd-input--lg`
 

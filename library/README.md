@@ -5,7 +5,7 @@ A warm design system in two lights. Plain HTML, or a small set of typed React co
 Install the versioned package directly—no npm account needed:
 
 ```sh
-npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.1/dawn-and-dusk-0.3.1.tgz
+npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.2/dawn-and-dusk-0.3.2.tgz
 ```
 
 ## React

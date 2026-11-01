@@ -1,4 +1,6 @@
-/* Chip — "Soft wash". Categorical chips in the Color set (--dd-set-1…8): a tinted fill with deep text in the same hue.
+/* Chip — "Soft wash". Categorical chips in the Color set (--dd-set-1…8): a tinted fill with deep text in the same hue
+   (40% hue, 60% text colour, so every set and status colour holds 4.5:1 on its fill over the page, a surface, a well,
+   a well card or a floating layer, in both themes).
    Topics, tags and people; removable (×), filter chips that toggle (aria-pressed) and an input that turns typing
    into chips. Behaviour lives in behaviors/chip.js. Colour: .dd-chip--set-1…8, or style="--dd-chip: <colour>". */
 .dd-chip {
@@ -7,7 +9,7 @@
   padding: calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 2.5);
   border: 0; border-radius: var(--dd-r-ctl);
   background: color-mix(in oklab, var(--_c) var(--_t), transparent);
-  color: color-mix(in oklab, var(--_c) 62%, var(--dd-text));
+  color: color-mix(in oklab, var(--_c) 40%, var(--dd-text));
   font-family: var(--dd-font-body); font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1;
   white-space: nowrap; vertical-align: middle; text-decoration: none;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), color var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease), scale var(--dd-dur-fast) var(--dd-ease);
@@ -18,7 +20,8 @@
 :is(a, button).dd-chip { appearance: none; cursor: pointer; }
 :is(a, button).dd-chip:hover { background-color: color-mix(in oklab, color-mix(in oklab, var(--_c) var(--_t), transparent), var(--dd-text) 8%); }
 :is(a, button).dd-chip:active { background-color: color-mix(in oklab, color-mix(in oklab, var(--_c) var(--_t), transparent), var(--dd-text) 14%); }
-.dd-chip.is-selected { --_t: 38%; color: color-mix(in oklab, var(--_c) 50%, var(--dd-text)); }
+/* (A deeper tint is a lighter fill at dusk, so selected and pressed stop at 30% and draw the text closer to ink.) */
+.dd-chip.is-selected { --_t: 30%; color: color-mix(in oklab, var(--_c) 32%, var(--dd-text)); }
 :is(a, button).dd-chip:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 2px; }
 
 .dd-chip--set-1 { --_c: var(--dd-set-1); }
@@ -49,8 +52,8 @@
 
 /* Filter chips: <button class="dd-chip dd-chip--filter" aria-pressed="false">. A lighter wash until pressed;
    pressed deepens the wash and slides in a check. Hover (on or off) steps toward the text colour like other chips. */
-.dd-chip--filter { --_t: 12%; color: color-mix(in oklab, var(--_c) 45%, var(--dd-text)); }
-.dd-chip--filter[aria-pressed="true"] { --_t: 34%; color: color-mix(in oklab, var(--_c) 55%, var(--dd-text)); }
+.dd-chip--filter { --_t: 12%; color: color-mix(in oklab, var(--_c) 40%, var(--dd-text)); }
+.dd-chip--filter[aria-pressed="true"] { --_t: 30%; color: color-mix(in oklab, var(--_c) 32%, var(--dd-text)); }
 .dd-chip__check {
   display: inline-grid; place-items: center; width: 0; margin-right: -.45em; overflow: hidden; opacity: 0;
   transition: width var(--dd-dur-fast) var(--dd-ease), margin var(--dd-dur-fast) var(--dd-ease), opacity var(--dd-dur-fast) var(--dd-ease);
@@ -65,15 +68,15 @@
 .dd-chip--avatar > .dd-chip__remove { border-radius: 50%; }
 
 /* Chip input: chips + a text field in one control. Type, then Enter or comma to add; Backspace on empty removes.
-   Same tonal box as .dd-input: a fill a step toward the text colour, deeper on hover; focus clears it to the surface
-   and lifts it with the focus hairline and float shadow. */
+   Same tonal box as .dd-input: a translucent wash a step toward the text colour (so it reads on the page, a card or a
+   well), deeper on hover; focus clears it to the surface and lifts it with the focus hairline and float shadow. */
 .dd-chip-input {
   display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.25);
   min-height: calc(var(--dd-u) * 8); padding: calc(var(--dd-u) * 1.25) calc(var(--dd-u) * 1.5);
-  border-radius: var(--dd-r-ctl); background: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 4%); cursor: text;
+  border-radius: var(--dd-r-ctl); background: var(--dd-wash); cursor: text;
   transition: background-color var(--dd-dur-fast) var(--dd-ease), box-shadow var(--dd-dur) var(--dd-ease);
 }
-.dd-chip-input:hover { background: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 8%); }
+.dd-chip-input:hover { background: var(--dd-wash-strong); }
 .dd-chip-input:focus-within {
   background: var(--dd-surface);
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--dd-accent) 26%, transparent), var(--dd-shadow-float);

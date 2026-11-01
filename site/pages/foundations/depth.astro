@@ -29,9 +29,14 @@ const float = `
   <p>Each step mixes a little more text colour into the page, so hierarchy reads without a single border. In dawn, containers sit a shade darker than the page. In dusk the film grain lifts the page to about the tone of <code>--dd-surface-2</code>, so containers read a shade <em>darker</em> than the page there too.</p>
   <div class="doc-layers">
     <div class="doc-layer-page"><b>bg</b><code>--dd-bg</code><span class="dd-caption">Page, with the grain</span></div>
-    <div style="background: var(--dd-surface)"><b>surface</b><code>--dd-surface</code><span class="dd-caption">Cards, inputs, sidebars</span></div>
+    <div style="background: var(--dd-surface)"><b>surface</b><code>--dd-surface</code><span class="dd-caption">Cards, sidebars, dialogs</span></div>
     <div style="background: var(--dd-surface-2)"><b>surface-2</b><code>--dd-surface-2</code><span class="dd-caption">Inset, secondary — inside a surface</span></div>
     <div style="background: var(--dd-surface-3)"><b>surface-3</b><code>--dd-surface-3</code><span class="dd-caption">Pressed, active</span></div>
+  </div>
+  <p>The ramp only steps toward the text, so it has no pair for a card inside a container that works in both themes. Containers that hold cards — board lanes, trays, grouped lists — use the well pair instead. The card is the reading surface: it takes the tone with the most text contrast, lighter than the page in dawn and darker at dusk, and the well sits a clear step from the page toward the middle tone.</p>
+  <div class="doc-layers">
+    <div style="background: var(--dd-well)"><b>well</b><code>--dd-well</code><span class="dd-caption">Board lane, tray, grouped list</span></div>
+    <div style="background: var(--dd-well-card)"><b>well-card</b><code>--dd-well-card</code><span class="dd-caption">A card in a well — the reading surface</span></div>
   </div>
   <p>Hover and pressed fills that sit straight on the page can’t borrow a surface step — at dusk <code>--dd-surface-2</code> is the page. They use a wash: a translucent step toward the text colour that shows on any tone, shown here on the page and on a surface.</p>
   <div class="doc-layers">

@@ -1,4 +1,4 @@
-# dawn & dusk tokens (v0.3.1)
+# dawn & dusk tokens (v0.3.2)
 
 Generated from `ds/tokens.css`, `ds/base.css` and the icon sprite by `scripts/build-ds.mjs`. Use `var(--dd-NAME)`; never hard-code these values.
 
@@ -10,10 +10,12 @@ Generated from `ds/tokens.css`, `ds/base.css` and the icon sprite by `scripts/bu
 | `--dd-surface` | `#e8e3db` | `#24211e` |  |
 | `--dd-surface-2` | `#dedad2` | `#2b2825` |  |
 | `--dd-surface-3` | `#d2cec7` | `#34312d` |  |
+| `--dd-well` | `#e2ddd5` | `#383531` | a container that holds cards (board lane, tray, grouped list) |
+| `--dd-well-card` | `#fbf8f3` | `#1f1c19` | a card inside a well: the reading surface, most text contrast |
 | `--dd-border` | `#dcd2c3` | `#3f3832` |  |
 | `--dd-border-strong` | `#a9a59f` | `#57534e` |  |
 | `--dd-text` | `#1f1e1c` | `#ece7df` |  |
-| `--dd-muted` | `#6e675e` | `#a59e94` |  |
+| `--dd-muted` | `#5e574e` | `#a59e94` |  |
 | `--dd-faint` | `#a8a299` | `#635e57` |  |
 | `--dd-quiet` | `color-mix(in oklab, var(--dd-muted) 75%, var(--dd-faint))` | `color-mix(in oklab, var(--dd-muted) 75%, var(--dd-faint))` | secondary labels, hints, kbd: readable, quieter than muted |
 | `--dd-wash` | `color-mix(in oklab, var(--dd-text) 7%, transparent)` | `color-mix(in oklab, var(--dd-text) 7%, transparent)` |  |
@@ -165,6 +167,8 @@ and `dawn:`, following the nearest `data-theme`. Prefer token utilities to `dusk
 | `--color-surface` | `var(--dd-surface)` | `bg-surface` `text-surface` `border-surface` |
 | `--color-surface-2` | `var(--dd-surface-2)` | `bg-surface-2` `text-surface-2` `border-surface-2` |
 | `--color-surface-3` | `var(--dd-surface-3)` | `bg-surface-3` `text-surface-3` `border-surface-3` |
+| `--color-well` | `var(--dd-well)` | `bg-well` `text-well` `border-well` |
+| `--color-well-card` | `var(--dd-well-card)` | `bg-well-card` `text-well-card` `border-well-card` |
 | `--color-border` | `var(--dd-border)` | `bg-border` `text-border` `border-border` |
 | `--color-border-strong` | `var(--dd-border-strong)` | `bg-border-strong` `text-border-strong` `border-border-strong` |
 | `--color-text` | `var(--dd-text)` | `bg-text` `text-text` `border-text` |

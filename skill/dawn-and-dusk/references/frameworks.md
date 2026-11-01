@@ -9,7 +9,7 @@ Install it from the versioned GitHub release. It is not on the npm registry (`np
 repository clone or npm account is needed:
 
 ```sh
-npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.1/dawn-and-dusk-0.3.1.tgz
+npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.2/dawn-and-dusk-0.3.2.tgz
 ```
 
 HTML, React and Next.js starters: https://cxkw-dev.github.io/dawn-and-dusk/getting-started

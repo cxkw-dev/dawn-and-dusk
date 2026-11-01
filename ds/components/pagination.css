@@ -33,11 +33,11 @@
 .dd-pagination__select { position: relative; display: inline-flex; align-items: center; }
 .dd-pagination__select select {
   appearance: none; height: 30px; padding: 0 calc(var(--dd-u) * 6) 0 calc(var(--dd-u) * 2.25);
-  border: 0; border-radius: var(--dd-r-ctl); background: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 4%); color: var(--dd-text);
+  border: 0; border-radius: var(--dd-r-ctl); background: var(--dd-wash); color: var(--dd-text); /* the .dd-input fill */
   font-family: var(--dd-font-mono); font-size: var(--dd-fs-xs); cursor: pointer;
   transition: background-color var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-pagination__select select:hover { background: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 8%); }
+.dd-pagination__select select:hover { background: var(--dd-wash-strong); }
 .dd-pagination__select select:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-pagination__select .dd-icon { position: absolute; right: calc(var(--dd-u) * 1.5); width: 1em; height: 1em; pointer-events: none; color: var(--dd-muted); }
 

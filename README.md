@@ -6,14 +6,14 @@
 
 A warm, quiet design system in two moods. **59 HTML/CSS components**, dawn and dusk themes, and a small typed React layer.
 
-[Getting started](https://cxkw-dev.github.io/dawn-and-dusk/getting-started/) · [Components](https://cxkw-dev.github.io/dawn-and-dusk/components/button/) · [Download an HTML starter](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.1/dawn-and-dusk-html-0.3.1.zip)
+[Getting started](https://cxkw-dev.github.io/dawn-and-dusk/getting-started/) · [Components](https://cxkw-dev.github.io/dawn-and-dusk/components/button/) · [Download an HTML starter](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.2/dawn-and-dusk-html-0.3.2.zip)
 
 ## Install in your app
 
 One command. No npm account or repository clone needed:
 
 ```sh
-npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.1/dawn-and-dusk-0.3.1.tgz
+npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.2/dawn-and-dusk-0.3.2.tgz
 ```
 
 This is a versioned npm package hosted on GitHub Releases. npm installs it as `dawn-and-dusk` and records its integrity
@@ -86,9 +86,9 @@ The CSS works on its own. Use `auto` for HTML-owned interactions; keep it out of
 
 | Starter | Start it |
 |---|---|
-| [HTML](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.1/dawn-and-dusk-html-0.3.1.zip) | Unzip and open `index.html`. No build tools. |
-| [React](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.1/dawn-and-dusk-react-0.3.1.zip) | Unzip, run `npm install`, then `npm run dev`. |
-| [Next.js](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.1/dawn-and-dusk-next-0.3.1.zip) | Unzip, run `npm install`, then `npm run dev`. |
+| [HTML](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.2/dawn-and-dusk-html-0.3.2.zip) | Unzip and open `index.html`. No build tools. |
+| [React](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.2/dawn-and-dusk-react-0.3.2.zip) | Unzip, run `npm install`, then `npm run dev`. |
+| [Next.js](https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.2/dawn-and-dusk-next-0.3.2.zip) | Unzip, run `npm install`, then `npm run dev`. |
 
 The app starters require Node.js 22.12+ or 24+. Each includes a working form, icons and a theme switch.
 

@@ -311,7 +311,7 @@ Try it: type a label that isn’t in the list, like “flaky-test”, and press 
 
 ## Chips
 
-A 22% wash of a Color set hue with deep text in the same hue (34% on hover). Set `--dd-chip` to any `--dd-set-N`.
+A 22% wash of a Color set hue with deep text in the same hue (30% on hover). Set `--dd-chip` to any `--dd-set-N`.
 
 Outside a combobox a chip can still go: give it data-dd-dismissible and its remove button data-dd-dismiss. Try removing one.
 

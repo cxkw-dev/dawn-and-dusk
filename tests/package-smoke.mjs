@@ -104,6 +104,7 @@ try {
   await writeFile(join(tw, 'app.css'), '@import "dawn-and-dusk/fonts.css";\n@import "tailwindcss";\n@import "dawn-and-dusk/tailwind.css";\n');
   await writeFile(join(tw, 'index.html'), `<!doctype html><html data-theme="dawn"><head><link rel="stylesheet" href="./app.out.css"></head><body>
     <div id="surface" class="bg-surface text-muted p-4 rounded-box border">Surface</div>
+    <div id="well" class="bg-well p-2"><div id="well-card" class="bg-well-card">Card</div></div>
     <button id="wide" class="dd-btn dd-btn--primary w-full" type="button">Wide</button>
     <h1 id="title" class="dd-h1">Title</h1>
     <p id="mode" class="dark:text-ok">Mode</p>
@@ -122,6 +123,7 @@ try {
     assert.equal(await style('#surface', 'backgroundColor'), 'rgb(232, 227, 219)', 'bg-surface reads the dawn token');
     assert.equal(await style('#surface', 'paddingTop'), '20px', 'p-4 is the 5px unit × 4');
     assert.equal(await style('#surface', 'borderTopColor'), 'rgb(220, 210, 195)', 'bare border uses the hairline token');
+    assert.deepEqual([await style('#well', 'backgroundColor'), await style('#well-card', 'backgroundColor')], ['rgb(226, 221, 213)', 'rgb(251, 248, 243)'], 'bg-well / bg-well-card read the dawn tokens: the card is lighter than the page');
     assert.equal(await style('#title', 'fontSize'), '41.5px', 'dd-h1 survives preflight');
     assert.match(await style('#title', 'fontFamily'), /Outfit/);
     assert.equal(await twPage.get(() => document.querySelector('#wide').offsetWidth === document.body.clientWidth), true, 'a utility overrides a dd- component');
@@ -133,10 +135,12 @@ try {
     assert.equal(await style('#scoped', 'color'), 'rgb(229, 135, 112)', 'dusk: still applies inside a dusk section of a dusk page');
     assert.notEqual(await style('#day', 'color'), 'rgb(229, 135, 112)', 'dusk: is off inside a dawn section of a dusk page');
     assert.equal(await style('#surface', 'backgroundColor'), 'rgb(36, 33, 30)', 'bg-surface follows dusk');
+    assert.deepEqual([await style('#well', 'backgroundColor'), await style('#well-card', 'backgroundColor')], ['rgb(56, 53, 49)', 'rgb(31, 28, 25)'], 'dusk: a lighter well holds a darker card');
     assert.equal(await style('#mode', 'color'), 'rgb(160, 187, 128)', 'dark: follows data-theme="dusk"');
     await setTheme(null);
     await twPage.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
     assert.equal(await style('#mode', 'color'), 'rgb(160, 187, 128)', 'dark: follows the OS when no theme is set');
+    assert.equal(await style('#well-card', 'backgroundColor'), 'rgb(31, 28, 25)', 'the OS-dark tokens carry the well pair too');
     assert.notEqual(await style('#day', 'color'), 'rgb(229, 135, 112)', 'dusk: is off inside a dawn section of an OS-dark page');
     await twPage.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
     assert.notEqual(await style('#mode', 'color'), 'rgb(160, 187, 128)');

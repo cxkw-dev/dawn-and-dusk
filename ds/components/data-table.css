@@ -41,11 +41,11 @@
 .dd-data-table__search > .dd-icon { position: absolute; left: calc(var(--dd-u) * 2.25); color: var(--dd-muted); pointer-events: none; }
 .dd-data-table__search input {
   appearance: none; width: 100%; height: 32px; padding: 0 calc(var(--dd-u) * 2.5) 0 calc(var(--dd-u) * 7.5);
-  border: 0; border-radius: var(--dd-r-ctl); background: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 4%); color: var(--dd-text);
+  border: 0; border-radius: var(--dd-r-ctl); background: var(--dd-wash); color: var(--dd-text); /* the .dd-input fill */
   font: inherit; font-size: var(--dd-fs-sm); transition: background-color var(--dd-dur-fast) var(--dd-ease);
 }
 .dd-data-table__search input::placeholder { color: var(--dd-muted); }
-.dd-data-table__search input:hover { background: color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 8%); }
+.dd-data-table__search input:hover { background: var(--dd-wash-strong); }
 .dd-data-table__search input:focus-visible { outline: 2px solid var(--dd-ring); outline-offset: 1px; }
 .dd-data-table__search input::-webkit-search-cancel-button {
   -webkit-appearance: none; appearance: none; width: 14px; height: 14px; cursor: pointer; background: var(--dd-muted);

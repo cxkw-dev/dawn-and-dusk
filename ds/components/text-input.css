@@ -2,13 +2,12 @@
    build on it). The box (.dd-input) holds the control (.dd-input__control) plus optional affixes, units and inline
    buttons. Inside a .dd-field the box grows a top pad so the tucked label fits; on its own it is button height.
    Sizes: sm · md (default) · lg. Focus clears the fill toward the page and lifts the box.
-   Dusk fills are a translucent wash of the text colour, so the box reads on the grain page, on cards and on
-   floating panels alike (an opaque --dd-surface-2 fill vanishes into the dusk page). */
+   The fill is a translucent wash of the text colour in both themes, so the box always reads one step from whatever it
+   sits on: the grain page, a card, a well or a floating panel (an opaque surface step vanishes into some of them). */
 .dd-input {
   /* metrics in --dd-u: block pad (alone), inline pad, tucked top/bottom pad */
   --_py: 2.1; --_px: 3; --_tpt: 6.5; --_tpb: 2;
-  --_rest: light-dark(color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 4%), var(--dd-wash));
-  --_rest-hover: light-dark(color-mix(in oklab, var(--dd-surface-2), var(--dd-text) 8%), var(--dd-wash-strong));
+  --_rest: var(--dd-wash); --_rest-hover: var(--dd-wash-strong);
   --_fill: var(--_rest); --_fill-hover: var(--_rest-hover);
   position: relative; display: flex; align-items: stretch; gap: calc(var(--dd-u) * 2); width: 100%; min-width: 0;
   margin: 0; padding: 0 calc(var(--dd-u) * var(--_px)); border: 0; border-radius: var(--dd-r-ctl);
@@ -107,7 +106,7 @@
 
 /* Disabled: half the rest wash (a fainter box on any background) and dimmed but legible text; no hover. */
 .dd-input:has(.dd-input__control:disabled), .dd-input:disabled, .dd-input.is-disabled {
-  --_fill: light-dark(color-mix(in oklab, var(--dd-text) 5%, transparent), color-mix(in oklab, var(--dd-text) 3.5%, transparent));
+  --_fill: color-mix(in oklab, var(--dd-text) 3.5%, transparent);
   --_fill-hover: var(--_fill);
   color: color-mix(in oklab, var(--dd-muted) 55%, var(--dd-faint)); cursor: not-allowed;
 }

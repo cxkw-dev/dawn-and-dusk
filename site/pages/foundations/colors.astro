@@ -6,11 +6,13 @@ import { dawn, dusk, setNames } from '../../lib/tokens';
 
 type Row = [token: string, use: string];
 const groups: { title: string; id: string; intro: string; rows: Row[] }[] = [
-  { title: 'Surfaces', id: 'surfaces', intro: 'Warm greige. Surfaces separate by tone — each step is the text colour mixed a little further into the page. At dusk the film grain lifts the page to about the tone of <code>--dd-surface-2</code>, so containers read a shade <em>darker</em> than the page there. Fills that sit straight on the page — hover, pressed, chips — use a wash instead: a translucent step toward the text colour that shows on any tone.', rows: [
+  { title: 'Surfaces', id: 'surfaces', intro: 'Warm greige. Surfaces separate by tone — each step is the text colour mixed a little further into the page. At dusk the film grain lifts the page to about the tone of <code>--dd-surface-2</code>, so containers read a shade <em>darker</em> than the page there. Fills that sit straight on the page — hover, pressed, chips, fields — use a wash instead: a translucent step toward the text colour that shows on any tone. Containers that hold cards use the well pair, where the card is the reading surface.', rows: [
     ['bg', 'Page background (with the film grain on top).'],
-    ['surface', 'Containers: cards, table cards, sidebars, inputs at rest.'],
+    ['surface', 'Containers: cards, table cards, sidebars, dialogs; a focused field.'],
     ['surface-2', 'Inset fills and secondary buttons inside a container. Not for fills on the page — at dusk it matches the grain.'],
-    ['surface-3', 'Pressed, active, the strongest tonal step.'],
+    ['surface-3', 'Pressed, active, the strongest tonal step. Never a large fill.'],
+    ['well', 'A container that holds cards: board lanes, trays, grouped lists. A clear step from the page toward the middle tone.'],
+    ['well-card', 'A card inside a well. It is the reading surface, so it takes the tone with the most text contrast: lighter than the page in dawn, darker at dusk.'],
     ['wash', 'Hover on any tone: the page, a surface or a floating layer. The fill of a transparent element, or layered over a filled one as a <code>linear-gradient(var(--dd-wash), var(--dd-wash))</code> background image.'],
     ['wash-strong', 'Pressed or selected on any tone — one step past wash.'],
     ['border', 'The rare hairline — dense tables and dividers only.'],
@@ -109,7 +111,7 @@ const usage = `
 
   <h2 id="guidelines">Guidelines</h2>
   <Guides
-    do={['Build hierarchy with surface steps before reaching for a border.', 'Use <code>--dd-wash</code> / <code>--dd-wash-strong</code> for hover and pressed fills that sit on the page.', 'Keep <code>--dd-primary</code> for the single most important action.', 'Pair every status colour with an icon or word — never colour alone.', 'Check every screen in dusk; it is a first-class theme, not an afterthought.']}
+    do={['Build hierarchy with surface steps before reaching for a border.', 'Put cards that sit inside a container (a board lane, a tray) on <code>--dd-well-card</code> in a <code>--dd-well</code>.', 'Use <code>--dd-wash</code> / <code>--dd-wash-strong</code> for hover and pressed fills that sit on the page.', 'Keep <code>--dd-primary</code> for the single most important action.', 'Pair every status colour with an icon or word — never colour alone.', 'Check every screen in dusk; it is a first-class theme, not an afterthought.']}
     dont={['Don’t hard-code hex values in components — read tokens.', 'Don’t use the Color set to mean success or failure.', 'Don’t put primary-coloured text on primary-soft backgrounds for long copy.']}
   />
 </Docs>

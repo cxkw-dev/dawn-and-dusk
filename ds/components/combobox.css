@@ -1,7 +1,8 @@
 /* Combobox — a text input that filters a .dd-listbox (select.css) as you type.
    Single: the chosen label fills the input. Multi (.dd-combobox--multi): chosen values become chips inside the box,
    in the "Soft wash" chip style — a 22% wash of a Color set hue (--dd-chip: var(--dd-set-N)) with deep text in the
-   same hue. ds/behaviors/combobox.js filters, highlights matches and manages chips. */
+   same hue (a little closer to ink than .dd-chip, since it sits on the field's own wash). ds/behaviors/combobox.js
+   filters, highlights matches and manages chips. */
 .dd-combobox { position: relative; min-width: 0; }
 .dd-combobox > .dd-input { cursor: text; }
 .dd-combobox__toggle > .dd-icon { transition: transform var(--dd-dur) var(--dd-ease); }
@@ -26,12 +27,12 @@
   display: inline-flex; align-items: center; gap: calc(var(--dd-u) * .5); max-width: 100%; min-width: 0;
   padding: 2px 2px 2px calc(var(--dd-u) * 1.75); border-radius: var(--dd-r-ctl);
   background: color-mix(in oklab, var(--dd-chip) 22%, transparent);
-  color: color-mix(in oklab, var(--dd-chip) 62%, var(--dd-text));
+  color: color-mix(in oklab, var(--dd-chip) 36%, var(--dd-text));
   font-size: var(--dd-fs-xs); font-weight: 500; line-height: 1.4; white-space: nowrap;
-  transition: background-color var(--dd-dur) var(--dd-ease);
+  transition: background-color var(--dd-dur) var(--dd-ease), color var(--dd-dur) var(--dd-ease);
   animation: dd-combobox-chip var(--dd-dur-fast) var(--dd-ease);
 }
-.dd-combobox__chip:hover, .dd-combobox__chip.is-active { background: color-mix(in oklab, var(--dd-chip) 34%, transparent); }
+.dd-combobox__chip:hover, .dd-combobox__chip.is-active { background: color-mix(in oklab, var(--dd-chip) 30%, transparent); color: color-mix(in oklab, var(--dd-chip) 32%, var(--dd-text)); }
 .dd-combobox__chip > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .dd-combobox__remove {
   display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px; margin: 0; padding: 0;

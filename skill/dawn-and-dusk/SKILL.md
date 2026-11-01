@@ -15,7 +15,7 @@ markup is what makes the result look and behave right; invented structure is whe
 
 1. **Install** once (§1).
 2. **Whole page?** Start from the closest recipe in `references/patterns.md` (dashboard, data explorer, settings, landing,
-   pricing).
+   pricing, board).
 3. **Each component:** find it in `references/components-index.md`, open `references/components/<name>.md`, copy the
    closest example and change only text, data and variant classes. Keep the element structure exactly.
 4. **Layout between components** goes in your own small stylesheet (§5), from tokens only.
@@ -27,7 +27,7 @@ markup is what makes the result look and behave right; invented structure is whe
 is not on the npm registry, so `npm install dawn-and-dusk` fails; use this exact command:
 
 ```sh
-npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.1/dawn-and-dusk-0.3.1.tgz
+npm install https://github.com/cxkw-dev/dawn-and-dusk/releases/download/v0.3.2/dawn-and-dusk-0.3.2.tgz
 ```
 
 Then follow `references/frameworks.md` for the imports. If `package.json` already lists `dawn-and-dusk`, don't install
@@ -73,6 +73,9 @@ has `dawn-and-dusk.css`, don't copy again.
    pressed `--dd-surface-3`. Hover and pressed fills you add yourself use `--dd-wash` / `--dd-wash-strong`. Those are
    translucent, so they show on any background; in dusk the grain lifts the page to about `--dd-surface-2`, so a
    surface-2 hover would vanish. No borders on cards, alerts or panels; hairlines only in dense tables and dividers.
+   A container that holds cards (board lanes, trays, grouped lists) uses `--dd-well`, with the cards in `--dd-well-card`:
+   the card is the reading surface, lighter than the page in dawn and darker in dusk. `--dd-surface-3` is a pressed
+   tone, never a large fill.
 3. **Shadows only on floating layers**: menus, popovers, toasts, dialogs, drawers (`--dd-shadow-float`).
 4. **One primary action per view**, meaning per screenful. `.dd-btn--primary` (Golden-hour apricot) is what the screen is
    for; everything else is secondary, ghost, ink or link. In a set of choices (plans, options), the recommended one
@@ -111,7 +114,7 @@ has `dawn-and-dusk.css`, don't copy again.
 | `references/components/<name>.md` | **writing markup**: the exact HTML of every working docs example, the class table, behaviour and do/don't |
 | `references/components.md` | searching all components at once: what each is, its classes, related components, `data-dd-*` hooks, every behaviour |
 | `references/tokens.md` | colours and other tokens, **base classes** (`.dd-h1…`, `.dd-lead`, `.dd-eyebrow`, `.dd-stack`, `.dd-row`, `.dd-mono`, `.dd-visually-hidden`…) and **every icon name** |
-| `references/patterns.md` | building a whole page: dashboard, data explorer, settings, landing, pricing; shared page rules |
+| `references/patterns.md` | building a whole page: dashboard, data explorer, settings, landing, pricing, board (kanban); shared page rules |
 | `references/frameworks.md` | React, Next.js, Vue, Svelte or Astro; Tailwind v4 setup and token utilities; migrating from Tailwind; theme without a flash in SSR |
 
 Live demos, every state: `https://cxkw-dev.github.io/dawn-and-dusk/components/<name>`. The reference files above already
