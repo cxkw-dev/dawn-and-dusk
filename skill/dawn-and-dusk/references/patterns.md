@@ -16,7 +16,7 @@ Reading the skeletons:
 - [The app shell](#the-app-shell-dashboard-explorer-settings) — side nav + top bar + content, shared by the app pages
 - [1. Dashboard](#1-dashboard) · [2. Data explorer](#2-data-explorer-compass-style) · [3. Settings](#3-settings) · [4. Landing page](#4-landing-page-cxkwdev)
 - [5. Pricing](#5-pricing) — plans, billing switch, comparison table, FAQ
-- [6. Board (kanban)](#6-board-kanban) — lanes in wells, cards on well cards, hover actions, empty and collapsed lanes
+- [6. Board (kanban)](#6-board-kanban) — lanes in wells, cards on well cards, status-dot lane headers, empty and collapsed lanes
 - [Before you finish](#before-you-finish) — the checklist
 
 ## Rules for every pattern
@@ -901,10 +901,11 @@ step from the page toward the middle tone.
 
 **Structure** — inside `.dd-app-shell__page`:
 1. `.dd-page-header`: lockup title and the one **primary** (New task). Lanes never get a primary of their own.
-2. A row of lanes (glue). Each lane is a `<section>` on `--dd-well`: a header line (collapse toggle, a `.dd-h5` title, a
-   `.dd-badge--count`, and the add-item control as a ghost icon button), then the list of cards.
+2. A row of lanes (glue). Each lane is a `<section>` on `--dd-well`: a header line (collapse toggle, a `.dd-status-dot`
+   for the lane's state, a lockup title, a `.dd-badge--count`, and the add-item control as a ghost icon button), then
+   the list of cards.
 3. Cards on `--dd-well-card`: the title first, at most one muted line, then a quiet footer meta row: category chips,
-   state only when the lane doesn't already say it, the mono ID last. Row actions (⋯) appear on hover and focus.
+   state only when the lane doesn't already say it, the mono ID last. Row actions (⋯) are always shown, never hover-only.
 4. An empty lane holds a one-line hint, not an empty slab. A collapsed lane is a narrow strip whose toggle and count sit
    on the same line as the other lane headers.
 
@@ -921,7 +922,8 @@ step from the page toward the middle tone.
     <section class="app-lane" aria-labelledby="lane-doing">
       <header class="app-lane__head">
         <button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-expanded="true" aria-controls="lane-doing-list" aria-label="Collapse In progress">[i:chevron-left]</button>
-        <h2 class="dd-h5 app-lane__title" id="lane-doing">In progress</h2>
+        <span class="dd-status-dot dd-status-dot--lg dd-status-dot--info" aria-hidden="true"></span>
+        <h2 class="dd-h3 app-lane__title" id="lane-doing">in progress</h2>
         <span class="dd-badge dd-badge--count">3<span class="dd-visually-hidden"> tasks</span></span>
         <button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon app-lane__add" type="button" aria-label="Add a task to In progress">[i:plus]</button>
       </header>
@@ -941,14 +943,15 @@ step from the page toward the middle tone.
     </section>
 
     <section class="app-lane" aria-labelledby="lane-review">          <!-- empty: header + one line -->
-      <header class="app-lane__head">…<h2 class="dd-h5 app-lane__title" id="lane-review">In review</h2><span class="dd-badge dd-badge--count">0<span class="dd-visually-hidden"> tasks</span></span>…</header>
+      <header class="app-lane__head">…<span class="dd-status-dot dd-status-dot--lg dd-status-dot--idle" aria-hidden="true"></span><h2 class="dd-h3 app-lane__title" id="lane-review">in review</h2><span class="dd-badge dd-badge--count">0<span class="dd-visually-hidden"> tasks</span></span>…</header>
       <p class="dd-caption app-lane__empty">Nothing waiting for review.</p>
     </section>
 
     <section class="app-lane is-collapsed" aria-labelledby="lane-done">  <!-- collapsed: a strip -->
       <header class="app-lane__head">
         <button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" aria-expanded="false" aria-controls="lane-done-list" aria-label="Expand Done">[i:chevron-right]</button>
-        <h2 class="dd-h5 app-lane__title" id="lane-done">Done</h2>
+        <span class="dd-status-dot dd-status-dot--lg dd-status-dot--online" aria-hidden="true"></span>
+        <h2 class="dd-h3 app-lane__title" id="lane-done">done</h2>
         <span class="dd-badge dd-badge--count">24<span class="dd-visually-hidden"> tasks</span></span>
       </header>
       <ol class="app-lane__list" id="lane-done-list" hidden>…</ol>
@@ -969,6 +972,7 @@ step from the page toward the middle tone.
   padding: calc(var(--dd-u) * 2); border-radius: var(--dd-r-lg); background: var(--dd-well); scroll-snap-align: start;
 }
 .app-lane__head { display: flex; align-items: center; gap: calc(var(--dd-u) * 1.5); min-height: calc(var(--dd-u) * 7); }
+.app-lane__title { font-size: var(--dd-fs-lg); }                             /* the lockup, a step below the page title */
 .app-lane__add { margin-left: auto; }
 .app-lane__list { display: flex; flex-direction: column; gap: calc(var(--dd-u) * 1.5); margin: 0; padding: 0; list-style: none; }
 .app-lane__empty { margin: 0; padding: 0 calc(var(--dd-u) * 1.5) calc(var(--dd-u) * 1); }
@@ -978,9 +982,7 @@ step from the page toward the middle tone.
 .app-card__title > a::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }   /* the whole card opens it */
 .app-card__meta { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--dd-u) * 1.5); }
 .app-card__id { margin-left: auto; }
-.app-card__actions { position: absolute; z-index: 1; top: calc(var(--dd-u) * 1.5); right: calc(var(--dd-u) * 1.5); opacity: 0; transition: opacity var(--dd-dur-fast) var(--dd-ease); }
-.app-card:is(:hover, :focus-within) .app-card__actions, .app-card__actions[aria-expanded="true"] { opacity: 1; }
-@media (hover: none) { .app-card__actions { opacity: 1; } }                 /* touch: always there */
+.app-card__actions { position: absolute; z-index: 1; top: calc(var(--dd-u) * 1.5); right: calc(var(--dd-u) * 1.5); }   /* always shown */
 .app-lane.is-collapsed { flex: none; }
 .app-lane.is-collapsed .app-lane__head { flex-direction: column; }           /* same padding: the toggle stays on the header line */
 .app-lane.is-collapsed .app-lane__title { order: 1; writing-mode: vertical-rl; }
@@ -993,11 +995,14 @@ step from the page toward the middle tone.
 - Card anatomy: title first (sentence case, two lines at most), at most one `.dd-muted` line, then the footer meta row
   in a fixed order — category chips (`.dd-chip--set-N`, in set order), a state badge only when the lane doesn't already
   say it (Blocked, Overdue; never "In progress" in the In progress lane), the mono ID last. No priority colour bars.
-- One ghost ⋯ per card, shown on hover and focus and always on touch, opening one shared `.dd-menu` (listen for
+- One ghost ⋯ per card, always shown (hover-only controls hide what a card can do), opening one shared `.dd-menu` (listen for
   `dd:menuopen`; `event.detail.trigger.closest('.app-card')` is the card). "Move to …" lives in that menu, so every
   drag has a keyboard path.
-- Lane header: `.dd-h5` title in sentence case, `.dd-badge--count`, add as a ghost icon button whose label names the
-  lane. The page's one primary (New task) sits in the page header.
+- Lane header: a `.dd-status-dot--lg` for the lane's state (not started `--unknown`, moving `--info`, waiting `--idle`,
+  stuck `--error`, finished `--online`, dropped `--offline`), then the title in the lockup (`.dd-h3` at `--dd-fs-lg`,
+  lowercase): lanes are the board's section titles. Then `.dd-badge--count`, and add as a ghost icon button whose label
+  names the lane. The title is the word, so the dot is `aria-hidden`; never hand-tint an icon for a lane's state. The
+  page's one primary (New task) sits in the page header.
 - Empty lane: header plus one `.dd-caption` line saying what would be here. No min-height, no dashed slab.
 - Collapsed lane: a narrow strip with the lane's own padding, so its toggle (and the count under it) sits on the
   header line of the other lanes; the title runs vertically below. Remember the collapsed state per lane.
