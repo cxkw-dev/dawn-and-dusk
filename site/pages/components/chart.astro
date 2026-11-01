@@ -29,6 +29,9 @@ const swapTable = (id: string, caption: string, head: string[], rows: (string | 
       <caption class="dd-visually-hidden">${caption}</caption>${tbody(head, rows)}
     </table></div>
   </div>`;
+// Expand: one icon button; the script moves the figure into a large dialog and swaps the icon for a close (×).
+const expandBtn = `<button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" data-dd-chart-expand aria-haspopup="dialog" aria-label="Expand chart">${i('expand')}${i('x')}</button>`;
+const actions = (...items: string[]) => `<div class="dd-chart__actions">${items.join('')}</div>`;
 const viewToggle = (id: string) =>
   `<button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" data-dd-chart-view aria-controls="${id}" aria-pressed="false">${i('list')}<span>Table</span></button>`;
 
@@ -44,7 +47,7 @@ const grouped = `
 <figure class="dd-chart" data-dd-chart>
   <figcaption class="dd-chart__head">
     <div><p class="dd-chart__title">Build minutes per day</p><p class="dd-chart__sub">Last 7 days · minutes on shared runners</p></div>
-    ${legend(builds.map(([s, n]) => [s, n]))}
+    ${actions(legend(builds.map(([s, n]) => [s, n])), expandBtn)}
   </figcaption>
   <div class="dd-chart__frame">
     ${yAxis(['80', '60', '40', '20', '0'])}
@@ -83,7 +86,7 @@ const line = `
 <figure class="dd-chart" data-dd-chart>
   <figcaption class="dd-chart__head">
     <div><p class="dd-chart__title">Requests / min</p><p class="dd-chart__sub">Last 12 hours · us-east-1</p></div>
-    ${legend(lines.map(([s, n]) => [s, n]), ' dd-chart__key--line')}
+    ${actions(legend(lines.map(([s, n]) => [s, n]), ' dd-chart__key--line'), expandBtn)}
   </figcaption>
   <div class="dd-chart__frame">
     ${yAxis(['50K', '40K', '30K', '20K', '10K', '0'])}
@@ -109,7 +112,7 @@ const area = `
 <figure class="dd-chart" data-dd-chart>
   <figcaption class="dd-chart__head">
     <div><p class="dd-chart__title">p95 latency · auth-gateway</p><p class="dd-chart__sub">Last 24 hours · milliseconds</p><p class="dd-chart__total">142 ms</p></div>
-    ${viewToggle('p95-table')}
+    ${actions(viewToggle('p95-table'), expandBtn)}
   </figcaption>
   <div class="dd-chart__frame">
     ${yAxis(['250', '200', '150', '100', '50', '0'])}
@@ -217,6 +220,7 @@ const donut = `
 <figure class="dd-chart" data-dd-chart>
   <figcaption class="dd-chart__head">
     <div><p class="dd-chart__title">Storage by project</p><p class="dd-chart__sub">Object storage · all regions</p></div>
+    ${actions(expandBtn)}
   </figcaption>
   <div class="dd-chart__pie">
     <div class="dd-chart__donut" role="group" aria-label="Storage by project, ${storageTotal.toFixed(1)} TB total">
@@ -287,7 +291,7 @@ const order = `
 </div>`;
 ---
 <Docs title="Chart" group="Data display" lead="Conventions for charts in dawn & dusk: recessive axes and grid, thin marks, the Golden hour series in a fixed order, and text that never wears a series colour. Static HTML and inline SVG — the same classes style SVG from D3 or any charting library.">
-  <Example title="Anatomy — grouped columns" description="Title, subtitle and legend on top; y ticks in mono, solid hairline gridlines and a firmer baseline; bars ≤24px with a 4px rounded data end and 2px surface gaps. The table view carries every value. Try it: hover a day, or Tab into the plot and use ← → Home End; Esc hides the tooltip. Open “View as table”." code={grouped} />
+  <Example title="Anatomy — grouped columns" description="Title, subtitle and legend on top; y ticks in mono, solid hairline gridlines and a firmer baseline; bars ≤24px with a 4px rounded data end and 2px surface gaps. The table view carries every value. Try it: hover a day, or Tab into the plot and use ← → Home End; Esc hides the tooltip. Open “View as table”, or expand the chart with the button in the corner." code={grouped} />
 
   <h2 id="line">Line</h2>
   <p>Lines are inline SVG on a 0–100 viewBox with <code>preserveAspectRatio="none"</code>, so the plot stretches to any width while <code>vector-effect: non-scaling-stroke</code> keeps every line at 2px. Markers, crosshair and end labels are HTML positioned by <code>--x</code> / <code>--y</code> percentages, so they stay round. End labels drop out on narrow cards — the legend stays.</p>
@@ -342,6 +346,7 @@ const order = `
     ['.dd-chart', 'Chart card on <code>--dd-surface</code>; a size container. <code>--dd-chart-height</code> sets the plot height (200px).'],
     ['.dd-chart--bare', 'No card — for charts inside another surface.'],
     ['.dd-chart__head / __title / __sub / __total', 'Header row: title, subtitle, optional headline figure, and the legend on the right.'],
+    ['.dd-chart__actions', 'Right side of the head: groups the legend, the Table toggle and the expand button.'],
     ['.dd-chart-s1 … -s8, .dd-chart-other', 'Series colour. Sets <code>--dd-series</code> (and <code>--dd-series-ink</code> for text on a fill) on any mark, key or tooltip row.'],
     ['.dd-chart__legend / __key', 'Legend list and key. <code>__key--line</code>, <code>__key--dot</code> change the swatch; <code>__key-value</code>, <code>__key-share</code> add figures.'],
     ['.dd-chart__legend--stack', 'One key per row, values right-aligned.'],
@@ -363,7 +368,8 @@ const order = `
     ['.dd-chart__pie / __donut / __arc', 'Donut layout, SVG wrapper (<code>--dd-chart-donut</code> size, 168px) and arcs; <code>__arc-track</code> draws an empty ring behind them, <code>__donut-center</code> holds the total.'],
     ['.dd-chart__empty', 'Centred empty message over a faded plot (<code>__plot.is-empty</code>).'],
     ['.dd-chart__data', '<code>&lt;details&gt;</code> “View as table” with every value; wrap the table in <code>__data-scroll</code>. <code>__data--swap</code>: a hidden container the <code>data-dd-chart-view</code> toggle swaps in for the plot.'],
-    ['.dd-chart[data-dd-chart]', 'Opts into the script: roving focus, touch and floating tooltips, table swap. <code>.is-active</code> marks the current mark, <code>.is-table</code> the swapped figure.'],
+    ['[data-dd-chart-expand]', 'Icon button that opens the chart in a large dialog: the expand icon first, then a close icon (<code>x</code>) shown while expanded. Give it <code>aria-label</code> and <code>aria-haspopup="dialog"</code>.'],
+    ['.dd-chart[data-dd-chart]', 'Opts into the script: roving focus, touch and floating tooltips, table swap, expand. <code>.is-active</code> marks the current mark, <code>.is-table</code> the swapped figure, <code>.is-expanded</code> the figure in the dialog.'],
   ]} />
 
   <h2 id="behaviour">Behaviour</h2>
@@ -373,6 +379,7 @@ const order = `
     <li><b>Touch.</b> Tapping a mark opens its tooltip; tapping anywhere else closes it. Tooltips flip to the side with room.</li>
     <li><b>Floating tooltips.</b> Marks without a <code>.dd-chart__tip</code> inside get one built from <code>data-dd-chart-label</code>, <code>data-dd-chart-value</code> and an optional <code>data-dd-chart-title</code>, keyed by the mark’s series class. Give each mark <code>role="img"</code> and an <code>aria-label</code>, and its container <code>role="group"</code>.</li>
     <li><b>Table view.</b> A <code>&lt;details class="dd-chart__data"&gt;</code> “View as table” needs no script. To swap the plot for its table instead, add a toggle button <code>data-dd-chart-view aria-pressed="false" aria-controls="ID"</code> and a <code>.dd-chart__data.dd-chart__data--swap</code> container with that ID and <code>hidden</code>; the figure gets <code>.is-table</code> and fires <code>dd:change</code> with <code>detail.view</code> = <code>"table"</code> or <code>"chart"</code>.</li>
+    <li><b>Expand.</b> A <code>data-dd-chart-expand</code> button opens the chart in a large dialog: the figure itself moves there, taller and wider, with a tonal placeholder holding its place on the page. <kbd class="dd-kbd">Esc</kbd>, the backdrop or the same button (now a ×) brings it back, and focus returns to the button. Tooltips, keyboard steps and the Table toggle keep working inside. Fires <code>dd:change</code> with <code>detail.expanded</code>. Because the figure moves, use it on HTML-owned markup; in React, render your own dialog.</li>
     <li>The active mark has <code>.is-active</code> (same look as hover); use it to style custom marks.</li>
   </ul>
 

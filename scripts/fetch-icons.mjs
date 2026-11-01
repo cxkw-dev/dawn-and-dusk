@@ -15,7 +15,7 @@ const DUO = {
   sparkle: 'stars', bolt: 'bolt', chart: 'chart-2', graph: 'graph-up', database: 'database', server: 'server', cloud: 'cloud', code: 'code',
   terminal: 'programming', tag: 'tag', bookmark: 'bookmark', flag: 'flag', globe: 'global', shield: 'shield-check', play: 'play', pause: 'pause',
   box: 'box', layers: 'layers', inbox: 'inbox', chat: 'chat-round-dots', send: 'plain', pin: 'pin', archive: 'archive', key: 'key',
-  'arrow-right': 'arrow-right', 'arrow-left': 'arrow-left', 'arrow-up': 'arrow-up', 'arrow-down': 'arrow-down', 'sidebar': 'sidebar-minimalistic',
+  'arrow-right': 'arrow-right', 'arrow-left': 'arrow-left', 'arrow-up': 'arrow-up', 'arrow-down': 'arrow-down', 'sidebar': 'sidebar-minimalistic', expand: 'full-screen',
 };
 const LINE = {
   'chevron-down': 'alt-arrow-down', 'chevron-up': 'alt-arrow-up', 'chevron-left': 'alt-arrow-left', 'chevron-right': 'alt-arrow-right',

@@ -10,7 +10,7 @@ Every snippet is the exact markup of a working docs example. Icons are `<svg cla
 &#x3C;figure class="dd-chart" data-dd-chart>
   &#x3C;figcaption class="dd-chart__head">
     &#x3C;div>&#x3C;p class="dd-chart__title">Build minutes per day&#x3C;/p>&#x3C;p class="dd-chart__sub">Last 7 days · minutes on shared runners&#x3C;/p>&#x3C;/div>
-    &#x3C;ul class="dd-chart__legend">&#x3C;li class="dd-chart__key dd-chart-s1">dawn-and-dusk&#x3C;/li>&#x3C;li class="dd-chart__key dd-chart-s2">dockey-ui&#x3C;/li>&#x3C;/ul>
+    &#x3C;div class="dd-chart__actions">&#x3C;ul class="dd-chart__legend">&#x3C;li class="dd-chart__key dd-chart-s1">dawn-and-dusk&#x3C;/li>&#x3C;li class="dd-chart__key dd-chart-s2">dockey-ui&#x3C;/li>&#x3C;/ul>&#x3C;button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" data-dd-chart-expand aria-haspopup="dialog" aria-label="Expand chart">&#x3C;svg class="dd-icon" aria-hidden="true">&#x3C;use href="#dd-i-expand"/>&#x3C;/svg>&#x3C;svg class="dd-icon" aria-hidden="true">&#x3C;use href="#dd-i-x"/>&#x3C;/svg>&#x3C;/button>&#x3C;/div>
   &#x3C;/figcaption>
   &#x3C;div class="dd-chart__frame">
     &#x3C;div class="dd-chart__y" aria-hidden="true">&#x3C;span>80&#x3C;/span>&#x3C;span>60&#x3C;/span>&#x3C;span>40&#x3C;/span>&#x3C;span>20&#x3C;/span>&#x3C;span>0&#x3C;/span>&#x3C;/div>
@@ -68,7 +68,7 @@ Lines are inline SVG on a 0–100 viewBox with `preserveAspectRatio="none"`, so 
 &#x3C;figure class="dd-chart" data-dd-chart>
   &#x3C;figcaption class="dd-chart__head">
     &#x3C;div>&#x3C;p class="dd-chart__title">Requests / min&#x3C;/p>&#x3C;p class="dd-chart__sub">Last 12 hours · us-east-1&#x3C;/p>&#x3C;/div>
-    &#x3C;ul class="dd-chart__legend">&#x3C;li class="dd-chart__key dd-chart__key--line dd-chart-s1">edge-cache&#x3C;/li>&#x3C;li class="dd-chart__key dd-chart__key--line dd-chart-s2">auth-gateway&#x3C;/li>&#x3C;/ul>
+    &#x3C;div class="dd-chart__actions">&#x3C;ul class="dd-chart__legend">&#x3C;li class="dd-chart__key dd-chart__key--line dd-chart-s1">edge-cache&#x3C;/li>&#x3C;li class="dd-chart__key dd-chart__key--line dd-chart-s2">auth-gateway&#x3C;/li>&#x3C;/ul>&#x3C;button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" data-dd-chart-expand aria-haspopup="dialog" aria-label="Expand chart">&#x3C;svg class="dd-icon" aria-hidden="true">&#x3C;use href="#dd-i-expand"/>&#x3C;/svg>&#x3C;svg class="dd-icon" aria-hidden="true">&#x3C;use href="#dd-i-x"/>&#x3C;/svg>&#x3C;/button>&#x3C;/div>
   &#x3C;/figcaption>
   &#x3C;div class="dd-chart__frame">
     &#x3C;div class="dd-chart__y" aria-hidden="true">&#x3C;span>50K&#x3C;/span>&#x3C;span>40K&#x3C;/span>&#x3C;span>30K&#x3C;/span>&#x3C;span>20K&#x3C;/span>&#x3C;span>10K&#x3C;/span>&#x3C;span>0&#x3C;/span>&#x3C;/div>
@@ -153,7 +153,7 @@ A single series needs no legend — the title names it. The area is the series h
 &#x3C;figure class="dd-chart" data-dd-chart>
   &#x3C;figcaption class="dd-chart__head">
     &#x3C;div>&#x3C;p class="dd-chart__title">p95 latency · auth-gateway&#x3C;/p>&#x3C;p class="dd-chart__sub">Last 24 hours · milliseconds&#x3C;/p>&#x3C;p class="dd-chart__total">142 ms&#x3C;/p>&#x3C;/div>
-    &#x3C;button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" data-dd-chart-view aria-controls="p95-table" aria-pressed="false">&#x3C;svg class="dd-icon" aria-hidden="true">&#x3C;use href="#dd-i-list"/>&#x3C;/svg>&#x3C;span>Table&#x3C;/span>&#x3C;/button>
+    &#x3C;div class="dd-chart__actions">&#x3C;button class="dd-btn dd-btn--ghost dd-btn--sm" type="button" data-dd-chart-view aria-controls="p95-table" aria-pressed="false">&#x3C;svg class="dd-icon" aria-hidden="true">&#x3C;use href="#dd-i-list"/>&#x3C;/svg>&#x3C;span>Table&#x3C;/span>&#x3C;/button>&#x3C;button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" data-dd-chart-expand aria-haspopup="dialog" aria-label="Expand chart">&#x3C;svg class="dd-icon" aria-hidden="true">&#x3C;use href="#dd-i-expand"/>&#x3C;/svg>&#x3C;svg class="dd-icon" aria-hidden="true">&#x3C;use href="#dd-i-x"/>&#x3C;/svg>&#x3C;/button>&#x3C;/div>
   &#x3C;/figcaption>
   &#x3C;div class="dd-chart__frame">
     &#x3C;div class="dd-chart__y" aria-hidden="true">&#x3C;span>250&#x3C;/span>&#x3C;span>200&#x3C;/span>&#x3C;span>150&#x3C;/span>&#x3C;span>100&#x3C;/span>&#x3C;span>50&#x3C;/span>&#x3C;span>0&#x3C;/span>&#x3C;/div>
@@ -386,6 +386,7 @@ SVG circles with `pathLength="100"`: each arc’s `stroke-dasharray` is its shar
 &#x3C;figure class="dd-chart" data-dd-chart>
   &#x3C;figcaption class="dd-chart__head">
     &#x3C;div>&#x3C;p class="dd-chart__title">Storage by project&#x3C;/p>&#x3C;p class="dd-chart__sub">Object storage · all regions&#x3C;/p>&#x3C;/div>
+    &#x3C;div class="dd-chart__actions">&#x3C;button class="dd-btn dd-btn--ghost dd-btn--sm dd-btn--icon" type="button" data-dd-chart-expand aria-haspopup="dialog" aria-label="Expand chart">&#x3C;svg class="dd-icon" aria-hidden="true">&#x3C;use href="#dd-i-expand"/>&#x3C;/svg>&#x3C;svg class="dd-icon" aria-hidden="true">&#x3C;use href="#dd-i-x"/>&#x3C;/svg>&#x3C;/button>&#x3C;/div>
   &#x3C;/figcaption>
   &#x3C;div class="dd-chart__pie">
     &#x3C;div class="dd-chart__donut" role="group" aria-label="Storage by project, 12.4 TB total">
@@ -492,6 +493,7 @@ Nothing changes in markup. The set tokens are lifted for dusk, so marks keep the
 | `.dd-chart` | Chart card on `--dd-surface`; a size container. `--dd-chart-height` sets the plot height (200px). |
 | `.dd-chart--bare` | No card — for charts inside another surface. |
 | `.dd-chart__head / __title / __sub / __total` | Header row: title, subtitle, optional headline figure, and the legend on the right. |
+| `.dd-chart__actions` | Right side of the head: groups the legend, the Table toggle and the expand button. |
 | `.dd-chart-s1 … -s8, .dd-chart-other` | Series colour. Sets `--dd-series` (and `--dd-series-ink` for text on a fill) on any mark, key or tooltip row. |
 | `.dd-chart__legend / __key` | Legend list and key. `__key--line`, `__key--dot` change the swatch; `__key-value`, `__key-share` add figures. |
 | `.dd-chart__legend--stack` | One key per row, values right-aligned. |
@@ -513,7 +515,8 @@ Nothing changes in markup. The set tokens are lifted for dusk, so marks keep the
 | `.dd-chart__pie / __donut / __arc` | Donut layout, SVG wrapper (`--dd-chart-donut` size, 168px) and arcs; `__arc-track` draws an empty ring behind them, `__donut-center` holds the total. |
 | `.dd-chart__empty` | Centred empty message over a faded plot (`__plot.is-empty`). |
 | `.dd-chart__data` | `<details>` “View as table” with every value; wrap the table in `__data-scroll`. `__data--swap`: a hidden container the `data-dd-chart-view` toggle swaps in for the plot. |
-| `.dd-chart[data-dd-chart]` | Opts into the script: roving focus, touch and floating tooltips, table swap. `.is-active` marks the current mark, `.is-table` the swapped figure. |
+| `[data-dd-chart-expand]` | Icon button that opens the chart in a large dialog: the expand icon first, then a close icon (`x`) shown while expanded. Give it `aria-label` and `aria-haspopup="dialog"`. |
+| `.dd-chart[data-dd-chart]` | Opts into the script: roving focus, touch and floating tooltips, table swap, expand. `.is-active` marks the current mark, `.is-table` the swapped figure, `.is-expanded` the figure in the dialog. |
 
 ## Behaviour
 
@@ -523,6 +526,7 @@ Charts work as static HTML: tooltips open on hover and keyboard focus with CSS a
 - Touch. Tapping a mark opens its tooltip; tapping anywhere else closes it. Tooltips flip to the side with room.
 - Floating tooltips. Marks without a `.dd-chart__tip` inside get one built from `data-dd-chart-label`, `data-dd-chart-value` and an optional `data-dd-chart-title`, keyed by the mark’s series class. Give each mark `role="img"` and an `aria-label`, and its container `role="group"`.
 - Table view. A `<details class="dd-chart__data">` “View as table” needs no script. To swap the plot for its table instead, add a toggle button `data-dd-chart-view aria-pressed="false" aria-controls="ID"` and a `.dd-chart__data.dd-chart__data--swap` container with that ID and `hidden`; the figure gets `.is-table` and fires `dd:change` with `detail.view` = `"table"` or `"chart"`.
+- Expand. A `data-dd-chart-expand` button opens the chart in a large dialog: the figure itself moves there, taller and wider, with a tonal placeholder holding its place on the page. Esc, the backdrop or the same button (now a ×) brings it back, and focus returns to the button. Tooltips, keyboard steps and the Table toggle keep working inside. Fires `dd:change` with `detail.expanded`. Because the figure moves, use it on HTML-owned markup; in React, render your own dialog.
 - The active mark has `.is-active` (same look as hover); use it to style custom marks.
 
 ## Guidelines

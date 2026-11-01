@@ -293,6 +293,22 @@
 .dd-chart__data--swap .dd-chart__data-scroll { margin-top: 0; max-height: calc(var(--_h) + 2.5rem); overflow: auto; }
 .dd-chart__data--swap thead th { position: sticky; top: 0; background: var(--_bg); }
 
+/* Head actions: the Table toggle and the expand button sit together on the right. */
+.dd-chart__actions { flex: 0 1 auto; min-width: 0; display: flex; align-items: center; gap: var(--dd-u); }
+.dd-chart__actions > .dd-chart__legend { min-width: 0; }
+
+/* Expand: [data-dd-chart-expand] moves the figure into a large dialog (.dd-chart-dialog) and back. The button shows the
+   expand icon (first) in the page and the close icon (last) in the dialog; a tonal placeholder holds the figure's place. */
+[data-dd-chart-expand] > .dd-icon:last-child, .dd-chart.is-expanded [data-dd-chart-expand] > .dd-icon:first-child { display: none; }
+.dd-chart.is-expanded [data-dd-chart-expand] > .dd-icon:last-child { display: inline-block; }
+.dd-chart__placeholder { border-radius: var(--dd-r-box); background: var(--dd-surface); }
+.dd-dialog.dd-chart-dialog { --_w: 1180px; max-height: calc(100dvh - var(--dd-u) * 8); overflow: auto; }
+.dd-chart.is-expanded {
+  --_h: clamp(220px, 58dvh, 620px);
+  --dd-chart-donut: clamp(168px, 46dvh, 340px);
+  padding: calc(var(--dd-u) * 7); border-radius: 0;
+}
+
 /* ---------- narrow ---------- */
 /* Minor x ticks go first: below ~760px a dozen time labels start to touch. */
 @container (max-width: 760px) { .dd-chart__x > .is-minor { visibility: hidden; } }

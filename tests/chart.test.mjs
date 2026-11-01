@@ -147,3 +147,55 @@ test('touch at 375px: tap a day or a segment for its tooltip, tap away to close'
   await page.tap('#ex5 .dd-chart__title');
   await page.waitFor(() => !document.querySelector('#ex5 .dd-chart__tip--float.is-open'));
 });
+
+test('expand: the chart opens large in a dialog and comes back with Esc or its button', async ({ open, assert }) => {
+  const page = await open('components/chart');
+  await tagExamples(page);
+  const size = (sel) => page.get((s) => { const c = document.querySelector(s); return c ? { w: c.offsetWidth, h: c.offsetHeight } : null; }, sel);
+  const before = await size('#ex0 .dd-chart');
+  await page.click('#ex0 [data-dd-chart-expand]');
+  await page.sleep(450);
+  const state = await page.get(() => {
+    const d = document.querySelector('dialog.dd-chart-dialog');
+    return { open: d?.open, modal: d?.matches(':modal'), label: d?.getAttribute('aria-label'), focus: document.activeElement?.getAttribute('aria-label'),
+      inDialog: !!d?.querySelector(':scope > .dd-chart.is-expanded'), placeholder: document.querySelector('#ex0 .dd-chart__placeholder')?.offsetHeight };
+  });
+  assert.ok(state.open && state.modal, 'a modal dialog opens');
+  assert.ok(state.inDialog, 'the figure itself moves into the dialog');
+  assert.equal(state.label, 'Build minutes per day', 'the dialog is named by the chart title');
+  assert.equal(state.focus, 'Close expanded chart', 'focus stays on the button, now a close');
+  assert.equal(state.placeholder, before.h, 'a placeholder holds the chart’s place');
+  const big = await size('dialog.dd-chart-dialog .dd-chart');
+  assert.ok(big.w > before.w && big.h > before.h, `the chart grows (${before.w}×${before.h} → ${big.w}×${big.h})`);
+  // Marks still respond inside the dialog.
+  await page.hover('dialog.dd-chart-dialog .dd-chart__slot:nth-child(3)');
+  assert.ok(await tipShown(page, 'dialog.dd-chart-dialog .dd-chart__slot:nth-child(3)'), 'tooltips work while expanded');
+  await page.focus('dialog.dd-chart-dialog [data-dd-chart-expand]');
+  await page.press('Escape');
+  await page.sleep(450);
+  const back = await page.get(() => ({ inPage: !!document.querySelector('#ex0 .dd-chart:not(.is-expanded)'), placeholder: !!document.querySelector('.dd-chart__placeholder'),
+    open: document.querySelector('dialog.dd-chart-dialog')?.open, focus: document.activeElement?.matches('#ex0 [data-dd-chart-expand]'),
+    label: document.querySelector('#ex0 [data-dd-chart-expand]').getAttribute('aria-label') }));
+  assert.deepEqual(back, { inPage: true, placeholder: false, open: false, focus: true, label: 'Expand chart' }, 'Esc puts it back and returns focus');
+  assert.deepEqual(await size('#ex0 .dd-chart'), before, 'back at its original size');
+  // The button closes it too, and the Table toggle keeps its state through the round trip.
+  await page.click('#ex2 [data-dd-chart-expand]');
+  await page.sleep(450);
+  await page.click('dialog.dd-chart-dialog [data-dd-chart-view]');
+  assert.ok(await page.get(() => document.querySelector('dialog.dd-chart-dialog .dd-chart').classList.contains('is-table')), 'Table works inside');
+  await page.click('dialog.dd-chart-dialog [data-dd-chart-expand]');
+  await page.sleep(450);
+  assert.ok(await page.get(() => document.querySelector('#ex2 .dd-chart').classList.contains('is-table') && !document.querySelector('dialog.dd-chart-dialog').open), 'the button closes it; the table view stays');
+});
+
+test('expand: a chart in a dusk example keeps dusk in the dialog', async ({ open, assert }) => {
+  const page = await open('components/chart');
+  await tagExamples(page);
+  await page.click('#ex6 [data-ex-theme]');
+  await page.click('#ex6 [data-dd-chart-expand]');
+  await page.sleep(450);
+  assert.equal(await page.attr('dialog.dd-chart-dialog', 'data-theme'), 'dusk');
+  const donut = await page.get(() => document.querySelector('dialog.dd-chart-dialog .dd-chart__donut').offsetWidth);
+  assert.ok(donut > 168, `the donut grows (${donut}px)`);
+  await page.press('Escape');
+});

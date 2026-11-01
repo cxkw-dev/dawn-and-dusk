@@ -8,7 +8,11 @@
    Tooltips flip to whichever side has room.
    View as table: a button [data-dd-chart-view] (aria-controls = the table container, or the figure's .dd-chart__data)
    swaps the plot for its data table and back; aria-pressed and .is-table on the figure follow. A plain
-   <details class="dd-chart__data"> needs no script. Fires `dd:change` on the figure with { view: 'chart' | 'table' }. */
+   <details class="dd-chart__data"> needs no script. Fires `dd:change` on the figure with { view: 'chart' | 'table' }.
+   Expand: a button [data-dd-chart-expand] moves the figure into a large modal dialog (.dd-chart-dialog), leaving a
+   placeholder of the same height, and moves it back when the dialog closes (Esc, backdrop, or the button again); focus
+   returns to the button. Fires `dd:change` with { expanded: true | false }. The figure itself moves, so keep it out of
+   framework-owned markup (render your own dialog there). */
 (() => {
   const MARK = '.dd-chart__slot, .dd-chart__hit, .dd-chart__seg, .dd-chart__arc, [data-dd-chart-point]';
   const chartOf = (el) => el.closest('[data-dd-chart]');
@@ -190,6 +194,58 @@
     deactivate(chart);
     chart.dispatchEvent(new CustomEvent('dd:change', { bubbles: true, detail: { view: on ? 'table' : 'chart' } }));
   });
+
+  // Expand: the figure moves into one shared dialog and comes back on close (Esc, backdrop, or the button again).
+  let expandDialog = null;
+  const dialogFor = () => {
+    if (expandDialog?.isConnected) return expandDialog;
+    expandDialog = document.createElement('dialog');
+    expandDialog.className = 'dd-dialog dd-chart-dialog';
+    document.body.append(expandDialog);
+    return expandDialog;
+  };
+  const collapse = (dlg) => {
+    const chart = dlg.querySelector(':scope > .dd-chart.is-expanded');
+    const spot = chart?.ddPlaceholder;
+    if (!chart) return;
+    if (spot?.isConnected) spot.replaceWith(chart); else chart.remove();
+    chart.ddPlaceholder = null;
+    chart.classList.remove('is-expanded');
+    deactivate(chart);
+    const btn = chart.querySelector('[data-dd-chart-expand]');
+    if (btn) { btn.setAttribute('aria-label', btn.dataset.ddLabel || 'Expand chart'); if (chart.isConnected) btn.focus({ preventScroll: true }); }
+    chart.dispatchEvent(new CustomEvent('dd:change', { bubbles: true, detail: { expanded: false } }));
+  };
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-dd-chart-expand]');
+    const chart = btn?.closest('.dd-chart');
+    if (!chart) return;
+    const dlg = dialogFor();
+    if (chart.classList.contains('is-expanded')) {
+      if (window.dd?.dialog) window.dd.dialog.close(dlg); else dlg.close();
+      return;
+    }
+    const spot = document.createElement('div');
+    spot.className = 'dd-chart__placeholder';
+    spot.setAttribute('aria-hidden', 'true');
+    spot.style.height = `${chart.offsetHeight}px`;
+    deactivate(chart);
+    chart.replaceWith(spot);
+    chart.ddPlaceholder = spot;
+    chart.classList.add('is-expanded');
+    btn.dataset.ddLabel = btn.dataset.ddLabel || btn.getAttribute('aria-label') || 'Expand chart';
+    btn.setAttribute('aria-label', 'Close expanded chart');
+    dlg.setAttribute('aria-label', chart.querySelector('.dd-chart__title')?.textContent.trim() || 'Chart');
+    // A chart in a section with its own data-theme keeps that theme in the dialog (which lives at the end of <body>).
+    const scope = spot.parentElement?.closest('[data-theme]');
+    if (scope && scope !== document.documentElement) dlg.dataset.theme = scope.dataset.theme; else delete dlg.dataset.theme;
+    dlg.replaceChildren(chart);
+    if (window.dd?.dialog) window.dd.dialog.open(dlg); else dlg.showModal();
+    btn.focus({ preventScroll: true });
+    chart.dispatchEvent(new CustomEvent('dd:change', { bubbles: true, detail: { expanded: true } }));
+  });
+  // Capture, so the figure is back in the page before the dialog behaviour returns focus to its button.
+  document.addEventListener('close', (e) => { if (e.target === expandDialog) collapse(expandDialog); }, true);
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => init());
   else init();
