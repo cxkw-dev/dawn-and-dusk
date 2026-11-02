@@ -63,7 +63,8 @@ test('pointer: hover a day shows its tooltip and dims the rest; leaving hides it
   await page.hover(slot);
   assert.ok(await tipShown(page, slot), 'tooltip on hover');
   assert.match(await page.text(`${slot} .dd-chart__tip`), /Wed, Oct 22.*dawn-and-dusk\s*35 min/);
-  assert.ok(await page.get(() => getComputedStyle(document.querySelector('#ex0 .dd-chart__slot:nth-child(1) .dd-chart__col')).opacity < 0.6), 'other days step back');
+  // Other days step back (the fade is a transition, so wait for it to land).
+  await page.waitFor(() => Number(getComputedStyle(document.querySelector('#ex0 .dd-chart__slot:nth-child(1) .dd-chart__col')).opacity) < 0.6);
   await page.hover('#ex0 .dd-chart__title');
   await page.waitFor((s) => getComputedStyle(document.querySelector(`${s} .dd-chart__tip`)).visibility === 'hidden', { args: [slot] });
   // Line chart crosshair: hover a point, the dots show.
