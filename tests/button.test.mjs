@@ -19,8 +19,8 @@ test('hover steps the fill, keyboard focus draws the ring, pressing nudges down'
     // Pressed: translateY(1px) while the mouse is down.
     const p = await page.get(() => { const r = document.querySelector('.ex-stage .dd-btn--primary').getBoundingClientRect(); return { x: r.left + 10, y: r.top + 10 }; });
     await page.send('Input.dispatchMouseEvent', { type: 'mousePressed', ...p, button: 'left', clickCount: 1 });
-    await page.sleep(220);
-    assert.match(await page.get(() => getComputedStyle(document.querySelector('.ex-stage .dd-btn--primary')).transform), /matrix\(1, 0, 0, 1, 0, 1\)/, `${theme}: pressed moves down 1px`);
+    // Pressed moves down 1px (a transition, so wait for it to land).
+    await page.waitFor(() => /matrix\(1, 0, 0, 1, 0, 1\)/.test(getComputedStyle(document.querySelector('.ex-stage .dd-btn--primary')).transform));
     await page.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...p, button: 'left', clickCount: 1 });
     // Keyboard focus ring.
     await page.focus('.doc-head h1');

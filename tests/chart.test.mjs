@@ -72,7 +72,7 @@ test('pointer: hover a day shows its tooltip and dims the rest; leaving hides it
   await page.hover(hit);
   assert.ok(await tipShown(page, hit));
   assert.match(await page.text(`${hit} .dd-chart__tip`), /01:00.*edge-cache\s*15\.9K/);
-  assert.ok(await page.get((s) => Number(getComputedStyle(document.querySelector(`${s} .dd-chart__dot`)).opacity) > 0.5, hit));
+  await page.waitFor((s) => Number(getComputedStyle(document.querySelector(`${s} .dd-chart__dot`)).opacity) > 0.5, { args: [hit] });
   // Rapid hovering across every point never leaves two tips open.
   for (let k = 1; k <= 12; k += 3) await page.hover(`#ex1 .dd-chart__hit:nth-child(${k})`);
   assert.equal(await page.count('#ex1 .dd-chart__hit.is-active'), 1);
