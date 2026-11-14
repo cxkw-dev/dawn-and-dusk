@@ -1,0 +1,48 @@
+---
+import { base } from '../lib/nav';
+import { kinds, snippet } from '../lib/playground';
+const { kind } = Astro.props;
+const enabled = kinds.includes(kind);
+const variants = kind === 'badge' ? ['neutral', 'accent', 'ok', 'warn', 'bad', 'info'] : ['primary', 'secondary', 'ghost', 'ink', 'danger', 'link'];
+const options = { variant: variants[0], size: 'md', disabled: false, loading: false, invalid: false };
+const initial = snippet(kind, options, `play-${kind}`);
+---
+{enabled && <section data-playground={kind}>
+  <h2 id="playground">Try it</h2>
+  <p>Change the options, try the HTML preview, then copy HTML or the equivalent React component.</p>
+  {['textarea', 'select', 'checkbox', 'switch'].includes(kind) && <p class="dd-small dd-muted">This React export is new in the source checkout and will ship in the next release. <a href={`${base}/releases`}>Release availability</a></p>}
+  <div class="doc-play-controls">
+    {['button', 'badge'].includes(kind) && <label class="dd-field"><span class="dd-field__label">{kind === 'badge' ? 'Intent' : 'Variant'}</span><div class="dd-input dd-select"><select class="dd-input__control" data-play-option="variant">{variants.map((variant) => <option>{variant}</option>)}</select></div></label>}
+    {!['badge', 'card', 'textarea'].includes(kind) && <label class="dd-field"><span class="dd-field__label">Size</span><div class="dd-input dd-select"><select class="dd-input__control" data-play-option="size"><option value="sm">Small</option><option value="md" selected>Medium</option>{kind !== 'checkbox' && <option value="lg">Large</option>}</select></div></label>}
+    {!['badge', 'card'].includes(kind) && <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" data-play-option="disabled" />Disabled</label>}
+    {kind === 'button' && <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" data-play-option="loading" />Loading</label>}
+    {['text-input', 'textarea', 'select'].includes(kind) && <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" data-play-option="invalid" />Error</label>}
+    <label class="dd-field"><span class="dd-field__label">Copy format</span><div class="dd-input dd-select"><select class="dd-input__control" data-play-format><option value="html">HTML</option><option value="react">React</option></select></div></label>
+    <button type="button" class="dd-btn dd-btn--ghost dd-btn--sm" data-play-reset>Reset</button>
+  </div>
+  <div class="ex-frame">
+    <div class="ex-stage ex-stage--pad" data-play-preview><Fragment set:html={initial.html} /></div>
+    <div class="ex-bar"><button class="ex-btn" type="button" data-ex-theme><span class="ex-t-dusk">☾ View in dusk</span><span class="ex-t-dawn">☀ View in dawn</span></button><button class="ex-btn" type="button" data-play-copy data-dd-copy={initial.html}>Copy HTML</button><span class="dd-small dd-muted" data-play-status role="status"></span></div>
+    <pre class="doc-play-source" tabindex="0" aria-label="Generated example"><code data-play-source>{initial.html}</code></pre>
+  </div>
+</section>}
+<script>
+  import { snippet, type Options } from '../lib/playground';
+  for (const root of document.querySelectorAll<HTMLElement>('[data-playground]')) {
+    const controls = [...root.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-play-option]')];
+    const format = root.querySelector<HTMLSelectElement>('[data-play-format]')!;
+    const render = () => {
+      const options: Options = { variant: root.dataset.playground === 'badge' ? 'neutral' : 'primary', size: 'md', disabled: false, loading: false, invalid: false };
+      for (const control of controls) (options as any)[control.dataset.playOption!] = control instanceof HTMLInputElement ? control.checked : control.value;
+      const code = snippet(root.dataset.playground!, options, `play-${root.dataset.playground}`);
+      root.querySelector('[data-play-preview]')!.innerHTML = code.html;
+      const source = format.value === 'react' ? code.react : code.html;
+      root.querySelector('[data-play-source]')!.textContent = source;
+      const copy = root.querySelector<HTMLElement>('[data-play-copy]')!;
+      copy.dataset.ddCopy = source; copy.textContent = format.value === 'react' ? 'Copy React' : 'Copy HTML';
+      root.querySelector('[data-play-status]')!.textContent = `${format.value === 'react' ? 'React' : 'HTML'} example updated`;
+    };
+    controls.forEach((control) => control.addEventListener('change', render)); format.addEventListener('change', render);
+    root.querySelector('[data-play-reset]')!.addEventListener('click', () => { controls.forEach((control) => { if (control instanceof HTMLInputElement) control.checked = false; else control.value = control.dataset.playOption === 'size' ? 'md' : root.dataset.playground === 'badge' ? 'neutral' : 'primary'; }); format.value = 'html'; render(); });
+  }
+</script>

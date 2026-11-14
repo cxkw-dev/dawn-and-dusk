@@ -1,0 +1,10 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import { recipes } from '../../lib/recipes';
+import { base } from '../../lib/nav';
+---
+<Docs title="Recipes" group="Build" lead="Start with a complete workflow. Copy a page, try every state, and connect it to your own data.">
+  <div class="doc-cards">{Object.entries(recipes).map(([key, recipe]) => <a class="doc-card" href={`${base}/recipes/${key}`}><b>{recipe.title}</b><span>{recipe.lead}</span></a>)}</div>
+  <h2>What you get</h2><p>Each recipe includes working HTML and JavaScript, accessible labels and status feedback, and a downloadable page. The same tokens and components follow dawn, dusk, or your system preference.</p>
+  <h2>Make it yours</h2><p>Install the package using <a href={`${base}/getting-started`}>Getting started</a>. Replace sample data and simulated requests with your own API. For a React app, start with the <a href={`${base}/react#settings-form`}>complete React settings form</a>.</p>
+</Docs>

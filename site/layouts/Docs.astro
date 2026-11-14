@@ -4,6 +4,8 @@
 // the rest, and under 900px the nav goes off-canvas. Every page uses the design system itself.
 import '../../ds/dawn-and-dusk.css';
 import '../styles/docs.css';
+import Playground from '../components/Playground.astro';
+import SupportSummary from '../components/SupportSummary.astro';
 import DocsNav from '../components/DocsNav.astro';
 import { i } from '../lib/icon';
 import { base, hrefOf, locate, pathOf, sections } from '../lib/nav';
@@ -136,7 +138,9 @@ const ogImage = absolute(`${base}/og.png`);
                 <h1 class="dd-h1">{title}</h1>
                 {lead && <p class="dd-lead">{lead}</p>}
               </header>
+              {here.startsWith(`${base}/components/`) && <SupportSummary name={here.split('/').pop()} />}
               <slot />
+              {here.startsWith(`${base}/components/`) && <Playground kind={here.split('/').pop()} />}
             </article>
             <nav class="doc-toc dd-scroll" aria-label="On this page" hidden><p class="doc-toc-h">On this page</p><ul></ul></nav>
           </div>

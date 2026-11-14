@@ -1,0 +1,32 @@
+---
+import Docs from '../layouts/Docs.astro';
+import { Code } from 'astro:components';
+import { ddTheme } from '../lib/syntax';
+import { base } from '../lib/nav';
+import { catalog } from '../lib/catalog';
+import { settingsForm, dialogExample, tabsExample } from '../lib/react-examples';
+const formControls = [
+  ['text-input', 'Input', 'Native input props and ref; label, hint, error; sm, md, lg sizes.'],
+  ['textarea', 'Textarea', 'Native textarea props and ref; label, hint, error; vertical resize.'],
+  ['select', 'Select', 'Native select props and ref; label, hint, error, sizes. Pass option or optgroup children.'],
+  ['checkbox', 'Checkbox', 'Native checkbox props and ref; label, hint, error, sm/md sizes. checked / onChange or defaultChecked.'],
+  ['switch', 'Switch', 'Native checkbox props and ref; label and sizes. role is always switch.'],
+];
+---
+<Docs title="React API" group="Build" lead="Typed components that own their state through React and keep the native browser controls underneath.">
+  <p class="dd-small"><b>Upcoming release:</b> Textarea, Select, Checkbox, Switch, Dialog, and Tabs are available in this source checkout and its locally built package. They are not in the published v0.3.2 package yet. See <a href={`${base}/releases`}>release notes</a>.</p>
+  <p>Import <code>dawn-and-dusk/styles.css</code> once. Import components from <code>dawn-and-dusk/react</code>. Keep the HTML <code>auto</code> runtime out of React-owned subtrees. React 18 and 19 are supported.</p>
+  <h2 id="settings-form">A complete settings form</h2>
+  <p>Controlled fields, accessible errors, a pending submit button, and recoverable save feedback. Pass your API function as <code>saveSettings</code>.</p>
+  <button class="dd-btn dd-btn--secondary" type="button" data-dd-copy={settingsForm}>Copy React form</button><Code code={settingsForm} lang="jsx" theme={ddTheme} wrap />
+  {formControls.map(([id, name, description]) => <section><h2 id={id}>{name}</h2><p>{description} Native <code>name</code>, <code>required</code>, <code>disabled</code>, event handlers, and refs pass through. Use <code>value</code>/<code>onChange</code> or <code>defaultValue</code> for text controls.</p><p><a href={`${base}/components/${id}#playground`}>Try options and copy HTML or React</a></p></section>)}
+  <h2 id="dialog">Dialog</h2><p>Required props: <code>open</code>, <code>onOpenChange</code>, and <code>title</code>. Optional <code>footer</code>, native dialog attributes, and ref. Escape and the close button request <code>onOpenChange(false)</code>. Keep the component mounted while toggling <code>open</code>. The browser manages modal focus and returns it to the opener. Backdrop clicks do not dismiss this React dialog.</p>
+  <button class="dd-btn dd-btn--secondary" type="button" data-dd-copy={dialogExample}>Copy React dialog</button><Code code={dialogExample} lang="jsx" theme={ddTheme} wrap />
+  <h2 id="tabs">Tabs</h2><p>Pass a unique <code>value</code>, <code>label</code>, <code>content</code>, and optional <code>disabled</code> for each item. Use <code>defaultValue</code> for local state, or <code>value</code>/<code>onValueChange</code> for controlled tabs. Arrow keys wrap across enabled tabs; Home and End jump to the ends. Horizontal layout only.</p>
+  <button class="dd-btn dd-btn--secondary" type="button" data-dd-copy={tabsExample}>Copy React tabs</button><Code code={tabsExample} lang="jsx" theme={ddTheme} wrap />
+  <h2 id="button">Button</h2><p>Native button props and ref; <code>variant</code> (primary, secondary, ghost, ink, danger, link), <code>size</code> (sm, md, lg), and <code>loading</code>. Defaults to <code>type="button"</code>. Loading disables the button and sets <code>aria-busy</code>.</p>
+  <h2 id="card">Card</h2><p>A padded card body. Native div props and ref pass through.</p>
+  <h2 id="badge">Badge</h2><p><code>intent</code>: neutral, accent, ok, warn, bad, info. <code>variant</code>: soft, solid, outline, dot, ghost. Native span props and ref pass through.</p>
+  <h2 id="icons-and-theme">Icons and themes</h2><p><code>Icon</code> renders typed icons inline. Supply <code>label</code> for meaningful standalone icons. <code>ThemeToggle</code> switches dawn and dusk; <code>setTheme('system')</code> restores system preference. For Next.js, use <code>ThemeScript</code> from <code>dawn-and-dusk/theme</code> in your root layout.</p>
+  <h2 id="coverage">Coverage and limits</h2><p>{catalog.filter((item) => item.react).length} component families have React exports, plus Icon and ThemeToggle. Select is native; the custom HTML listbox is separate. Date picker, combobox, data table, and other widgets retain HTML APIs. <a href={`${base}/support`}>See the support matrix</a>.</p>
+</Docs>

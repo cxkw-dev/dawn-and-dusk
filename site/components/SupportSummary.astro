@@ -1,0 +1,23 @@
+---
+import { catalog } from '../lib/catalog';
+import { base } from '../lib/nav';
+const { name } = Astro.props;
+const item = catalog.find((item) => item.name === name);
+const behaviors = import.meta.glob('../../ds/behaviors/*.js');
+const aliases: Record<string, string> = { drawer: 'dialog', sheet: 'dialog', 'text-input': 'text-input', radio: '', alert: 'dismiss', switch: '', accordion: '' };
+const behavior = aliases[name] ?? name;
+const runtime = !!behaviors[`../../ds/behaviors/${behavior}.js`];
+const keyboard: Record<string, string> = {
+  dialog: 'Tab stays inside the modal; Escape closes it and returns focus.', drawer: 'Tab stays inside the drawer; Escape closes it.', sheet: 'Tab stays inside the sheet; Escape closes it.',
+  tabs: 'Arrow keys, Home and End select tabs; Tab enters the panel.', select: 'Native select uses the browser keyboard model. Custom listbox uses arrows, Enter and Escape.',
+  checkbox: 'Space changes the checked state.', switch: 'Space changes the checked state.', radio: 'Arrow keys move within the group; Space selects.',
+  menu: 'Arrow keys navigate; Enter activates; Escape dismisses.', combobox: 'Type to filter; arrows navigate; Enter selects; Escape dismisses.',
+  'command-palette': 'Arrow keys navigate; Enter activates; Escape dismisses.', slider: 'Arrow keys adjust; Home and End reach the limits.',
+  'date-picker': 'Arrow keys move dates; Enter selects; Escape closes.', tooltip: 'Focus reveals the hint; Escape dismisses.',
+  accordion: 'Enter or Space toggles each native disclosure.',
+};
+---
+{item && <aside class="doc-support" aria-label="Component support">
+  <dl><div><dt>HTML / CSS</dt><dd>Available</dd></div><div><dt>React</dt><dd>{item.react ? <a href={`${base}/react#${name}`}>{item.react}{item.unreleased ? ' (next release)' : ''}{name === 'select' ? ' (native)' : ''}</a> : 'HTML API only'}</dd></div><div><dt>Interactions</dt><dd>{runtime ? 'Optional auto runtime' : 'CSS / native browser'}</dd></div></dl>
+  <p>{keyboard[name] ?? 'Native controls retain their browser keyboard behavior; static content adds no keyboard interaction.'} <a href={`${base}/support`}>Support and limitations</a></p>
+</aside>}

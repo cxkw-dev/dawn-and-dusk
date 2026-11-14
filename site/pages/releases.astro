@@ -1,0 +1,18 @@
+---
+import Docs from '../layouts/Docs.astro';
+import { base } from '../lib/nav';
+---
+<Docs title="Release notes" group="Reference" lead="What changed, what is available today, and how to upgrade safely.">
+  <h2 id="unreleased">Unreleased</h2>
+  <p>These changes are available in this source checkout. A new versioned package and release tag must be published before consumers can install the new exports from GitHub Releases.</p>
+  <ul><li>Complete workspace-settings, project-directory, and sign-in recipes with copyable source and downloadable HTML pages.</li><li>Visual component gallery with search, category filters, and React coverage.</li><li>Configurable HTML previews with matching HTML and React source for Button, Badge, Card, Input, Textarea, Select, Checkbox, and Switch.</li><li>New React Textarea, native Select, Checkbox, Switch, controlled Dialog, and keyboard-driven Tabs.</li><li>Documentation-section search, per-component support summaries, React API documentation, and support matrix.</li><li>Homepage entry now leads to setup and complete recipes.</li></ul>
+  <h2 id="v0-3-2">v0.3.2</h2>
+  <p>The published package provides the HTML/CSS collection, dawn and dusk themes, Tailwind CSS v4 integration, and the existing React primitives: Button, Input, Card, Badge, Icon, ThemeToggle, and setTheme.</p>
+  <p><a href="https://github.com/cxkw-dev/dawn-and-dusk/releases/tag/v0.3.2">Published release and assets</a></p>
+  <h2 id="upgrade">Upgrade checklist</h2>
+  <ol><li>Read the release notes for the target version and check its React/HTML coverage.</li><li>Install that release’s exact tarball URL from Getting started. Commit the updated package manifest and lockfile together.</li><li>Import one stylesheet entry: styles.css, styles-no-fonts.css, or tailwind.css. Keep auto out of React-owned subtrees.</li><li>Verify your key workflows in dawn and dusk, on narrow screens, and from the keyboard.</li></ol>
+  <p>For the upcoming release, existing React exports retain their APIs. The new controls forward native props and refs. Replace custom HTML selects with React Select only when a native picker meets your needs; do not attach the auto runtime to the new React controls.</p>
+  <h2 id="local-preview">Try unreleased components locally</h2>
+  <p>From this repository, run <code>npm ci</code> and <code>npm run build:package</code>, then install the generated <code>dist-package/downloads/*.tgz</code> file into a separate test app. This is a local preview; published version assets remain unchanged. Maintainers must assign a new version before publishing.</p>
+  <p><a href={`${base}/getting-started`}>Current installation instructions</a> · <a href={`${base}/support`}>Support matrix</a></p>
+</Docs>

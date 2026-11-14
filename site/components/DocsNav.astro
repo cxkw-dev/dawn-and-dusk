@@ -4,6 +4,7 @@
 // Every pane has the same anatomy: its title and page count, then each group under a micro-caps label, then the pages.
 // The search sits at the head of the panel and, while a query is typed, searches every section at once
 // (site/scripts/docs.js).
+import { sectionIndex } from '../lib/catalog';
 import { i } from '../lib/icon';
 import { base, hrefOf, pathOf, sections, type RailSection } from '../lib/nav';
 
@@ -33,7 +34,7 @@ const aka: Record<string, string> = {
   'command-palette': 'cmdk search spotlight quick open', kbd: 'keyboard shortcut key', link: 'anchor href', 'button-group': 'split toolbar',
   colors: 'colours palette tokens theme', typography: 'fonts type scale headings', icons: 'svg sprite', motion: 'animation easing duration',
 };
-const pages = (s: RailSection) => s.groups.reduce((n, g) => n + g.items.length, 0);
+const pages = (s: RailSection) => s.groups.reduce((n, g) => n + g.items.filter((item) => s.key !== 'components' || item.href.startsWith('components/')).length, 0);
 ---
 <nav class="dd-side-nav doc-nav" id="doc-nav" aria-label="Documentation">
   <div class="dd-side-nav__rail">
@@ -74,6 +75,10 @@ const pages = (s: RailSection) => s.groups.reduce((n, g) => n + g.items.length, 
               })}
             </div>
           ))}
+          {s.key === 'components' && <div class="doc-nav-group doc-section-results" hidden>
+            <p class="dd-side-nav__section">In the documentation</p>
+            {sectionIndex.map((entry) => <a class="dd-side-nav__link" href={hrefOf(entry.href)} hidden data-find-section data-find={entry.keywords}><span class="dd-side-nav__label">{entry.title}</span></a>)}
+          </div>}
         </div>
       ))}
     </div>

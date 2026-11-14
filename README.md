@@ -105,3 +105,7 @@ The app starters require Node.js 22.12+ or 24+. Each includes a working form, ic
 [Contributor guide](CONTRIBUTING.md) · [MIT license](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)
 
 Solar icons are by 480 Design under CC BY 4.0. Project-specific AI icons are additions. Fonts retain their SIL Open Font licenses.
+
+## Upcoming React additions
+
+The source checkout adds `Textarea`, native `Select`, `Checkbox`, `Switch`, controlled `Dialog`, and keyboard-driven `Tabs`. These exports are not in the published v0.3.2 artifact yet. Build a local package with `npm run build:package` to try them. See the [React guide](https://cxkw-dev.github.io/dawn-and-dusk/react) and [release notes](https://cxkw-dev.github.io/dawn-and-dusk/releases) when the updated docs are deployed.

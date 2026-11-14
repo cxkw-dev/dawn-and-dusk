@@ -50,11 +50,14 @@ for (const group of nav) {
     const lead = text((html.match(/<p class="dd-lead">([\s\S]*?)<\/p>/) ?? [, ''])[1]);
     const md = [`# ${it.title.toLowerCase()} — \`${name}\``, '', lead, '', `Live, with every state: https://cxkw-dev.github.io/dawn-and-dusk/components/${name}`, '',
       'Every snippet is the exact markup of a working docs example. Icons are `<svg class="dd-icon" aria-hidden="true"><use href="#dd-i-NAME"/></svg>` from the sprite.', ''];
-    const main = html.slice(html.indexOf('<main'), html.lastIndexOf('</main>'));
+    const main = html.slice(html.indexOf('<main'), html.lastIndexOf('</main>'))
+      .replace(/<aside class="doc-support"[^>]*>[\s\S]*?<\/aside>/g, '')
+      .replace(/<section data-playground="[^"]*">[\s\S]*?<\/section>/g, '');
     // An example's own markup can hold figures (charts, code blocks), so an example runs to its matching </figure>.
-    const tokens = /<figure class="ex">|<h2[^>]*>([\s\S]*?)<\/h2>|<p>([\s\S]*?)<\/p>|<ul>([\s\S]*?)<\/ul>|<pre[^>]*>([\s\S]*?)<\/pre>|<table class="doc-table">([\s\S]*?)<\/table>|<div class="doc-guides">([\s\S]*?)<\/div>\s*<\/div>\s*(?=<|$)/g;
+    const tokens = /<script\b[^>]*>[\s\S]*?<\/script>|<figure class="ex">|<h2[^>]*>([\s\S]*?)<\/h2>|<p>([\s\S]*?)<\/p>|<ul>([\s\S]*?)<\/ul>|<pre[^>]*>([\s\S]*?)<\/pre>|<table class="doc-table">([\s\S]*?)<\/table>|<div class="doc-guides">([\s\S]*?)<\/div>\s*<\/div>\s*(?=<|$)/g;
     let section = '';
     for (let t; (t = tokens.exec(main));) {
+      if (t[0].startsWith('<script')) continue;
       let fig;
       if (t[0] === '<figure class="ex">') {
         const end = closeOf(main, t.index);

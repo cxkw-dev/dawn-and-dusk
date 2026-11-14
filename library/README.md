@@ -93,3 +93,7 @@ With no saved choice, CSS follows the system theme; set `data-theme="dawn"` or `
 · [Component catalogue](https://cxkw-dev.github.io/dawn-and-dusk/components/button/)
 
 MIT. Solar icons retain CC BY 4.0 attribution; see THIRD_PARTY_NOTICES.md.
+
+## Upcoming React additions
+
+The source checkout adds `Textarea`, native `Select`, `Checkbox`, `Switch`, controlled `Dialog`, and keyboard-driven `Tabs`. These exports are not in the published v0.3.2 artifact yet. Build a local package with `npm run build:package` to try them. See the [React guide](https://cxkw-dev.github.io/dawn-and-dusk/react) and [release notes](https://cxkw-dev.github.io/dawn-and-dusk/releases) when the updated docs are deployed.

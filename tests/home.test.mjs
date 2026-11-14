@@ -53,17 +53,17 @@ test('the calls to action open foundations, components and the agent skill', asy
   const page = await open('', { width: 1440 });
   const links = await page.get(() => [...document.querySelectorAll('.home-cover .home-face--base .home-cover__ctas a')].map((a) => [a.textContent.trim(), new URL(a.href).pathname]));
   assert.deepEqual(links, [
-    ['Start with foundations', '/dawn-and-dusk/foundations/colors'],
-    ['Browse components', '/dawn-and-dusk/components/button'],
+    ['Get started', '/dawn-and-dusk/getting-started'],
+    ['Browse components', '/dawn-and-dusk/components'],
     ['Agent skill', '/dawn-and-dusk/skill'],
   ]);
   assert.equal(await page.count('.home-cover .home-cover__ctas .dd-btn--primary'), 2, 'one primary per face (the overlay copy is inert)');
   const figures = await page.get(() => [...document.querySelectorAll('.home-figure')].map((a) => [a.querySelector('.home-figure__n').textContent, new URL(a.href).pathname]));
-  assert.deepEqual(figures, [['59', '/dawn-and-dusk/components/button'], ['2', '/dawn-and-dusk/foundations/colors'], ['1', '/dawn-and-dusk/skill']]);
+  assert.deepEqual(figures, [['59', '/dawn-and-dusk/components'], ['2', '/dawn-and-dusk/foundations/colors'], ['1', '/dawn-and-dusk/skill']]);
   // A real click on the primary lands on Colors, even though the inert overlay copy is drawn over part of the cover.
   await settle(page);
   await page.click('.home-cover .home-face--base .dd-btn--primary');
-  await page.waitFor(() => location.pathname.replace(/\/$/, '').endsWith('/foundations/colors'));
+  await page.waitFor(() => location.pathname.replace(/\/$/, '').endsWith('/getting-started'));
 });
 
 test('the seam follows a pointer drag and the keyboard', async ({ open, assert }) => {

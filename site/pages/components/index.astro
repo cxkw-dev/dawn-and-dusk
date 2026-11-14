@@ -1,0 +1,37 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import { catalog } from '../../lib/catalog';
+import { previews } from '../../lib/previews';
+import { base, hrefOf } from '../../lib/nav';
+const categories = [...new Set(catalog.map((item) => item.category))];
+---
+<Docs title="Components" group="Explore" wide lead="Find the part you need. Every component works in dawn and dusk; React exports are marked below.">
+  <p class="dd-small dd-muted">React exports marked “next release” are available in this source checkout. <a href={`${base}/releases`}>Check release availability</a> before installing.</p>
+  <div class="catalog-controls">
+    <label class="dd-field"><span class="dd-field__label">Find a component</span><div class="dd-input"><input class="dd-input__control" type="search" data-catalog-query placeholder="Button, select, dialog…" /></div></label>
+    <label class="dd-field"><span class="dd-field__label">Category</span><div class="dd-input dd-select"><select class="dd-input__control" data-catalog-category><option value="">All categories</option>{categories.map((category) => <option>{category}</option>)}</select></div></label>
+    <label class="dd-checkbox"><input class="dd-checkbox__input" type="checkbox" data-catalog-react />React exports only</label>
+  </div>
+  <p class="dd-small dd-muted" data-catalog-count role="status">{catalog.length} components</p>
+  <div class="catalog-grid">
+    {catalog.map((item) => <a class="catalog-item" href={hrefOf(item.href)} data-catalog-item data-category={item.category} data-react={!!item.react} data-query={`${item.title} ${item.category} ${item.lead}`.toLowerCase()}>
+      <div class="catalog-preview" inert aria-hidden="true"><Fragment set:html={previews[item.name] ?? `<span class="dd-small">${item.title}</span>`} /></div>
+      <div class="catalog-caption"><h2 class="dd-h5">{item.title}</h2>{item.react && <span class="dd-badge dd-badge--neutral dd-badge--outline">{item.unreleased ? 'React · next release' : 'React'}</span>}<p>{item.lead}</p><span class="dd-small dd-muted">{item.category}</span></div>
+    </a>)}
+  </div>
+  <p data-catalog-empty hidden>No components match. Try another name or clear the category filter.</p>
+</Docs>
+<script>
+  const query = document.querySelector<HTMLInputElement>('[data-catalog-query]')!;
+  const category = document.querySelector<HTMLSelectElement>('[data-catalog-category]')!;
+  const react = document.querySelector<HTMLInputElement>('[data-catalog-react]')!;
+  const items = [...document.querySelectorAll<HTMLElement>('[data-catalog-item]')];
+  const filter = () => {
+    const words = query.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    for (const item of items) item.hidden = !words.every((word) => item.dataset.query!.includes(word)) || !!category.value && item.dataset.category !== category.value || react.checked && item.dataset.react !== 'true';
+    const count = items.filter((item) => !item.hidden).length;
+    document.querySelector('[data-catalog-count]')!.textContent = `${count} ${count === 1 ? 'component' : 'components'}`;
+    (document.querySelector('[data-catalog-empty]') as HTMLElement).hidden = count > 0;
+  };
+  for (const input of [query, category, react]) input.addEventListener('input', filter);
+</script>

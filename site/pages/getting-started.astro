@@ -111,14 +111,16 @@ const tailwindHtml = `<div class="bg-surface rounded-box p-6">
   <h2 id="included">What is included</h2>
   <p>All 59 components are available as HTML/CSS. The React entry provides <code>Button</code>, <code>Input</code>, <code>Card</code>, <code>Badge</code>, <code>Icon</code>, <code>ThemeToggle</code>, and <code>setTheme</code>.</p>
   <p>For example, <code>&lt;Icon name="plus" /&gt;</code> draws an icon inline. Give a standalone icon a <code>label</code>; icons next to text are decorative by default. Button variants are primary, secondary, ghost, ink, danger and link, with sm, md and lg sizes.</p>
-  <p>Selects, date pickers and data tables currently use the <a href={`${base}/components/select`}>HTML/CSS APIs</a>. The optional <code>auto</code> runtime is for HTML-owned markup; React components manage their own state and do not load it.</p>
+  <p>The published v0.3.2 selects, date pickers and data tables use the <a href={`${base}/components/select`}>HTML/CSS APIs</a>. The optional <code>auto</code> runtime is for HTML-owned markup; React components manage their own state and do not load it.</p>
+
+  <p>The next release adds React Textarea, Select, Checkbox, Switch, Dialog, and Tabs. See the <a href={`${base}/react`}>React API and complete form</a> for source-checkout examples and <a href={`${base}/releases`}>release availability</a>.</p>
 
   <h2 id="themes">Themes and fonts</h2>
   <p>With no saved choice, the theme follows your system. Set <code>data-theme="dawn"</code> or <code>"dusk"</code> on <code>&lt;html&gt;</code> to choose explicitly. In React, <code>setTheme('system')</code> clears a saved choice.</p>
   <p>Use <code>styles-no-fonts.css</code> instead of <code>styles.css</code> for self-hosted fonts or a restricted Content Security Policy. Use <code>tokens.css</code> for tokens alone. The full stylesheet includes a page reset and a 17px root font size.</p>
 
   <h2 id="next-step">Build your first page</h2>
-  <p><a class="dd-btn dd-btn--primary" href={`${base}/components/button`}>Browse components</a></p>
+  <p><a class="dd-btn dd-btn--primary" href={`${base}/components`}>Browse components</a></p>
   <p>Working with an agent? The <a href={`${base}/skill`}>optional project skill</a> teaches it the system’s rules. You don’t need the skill to use any of the components.</p>
 </Docs>
 <script>

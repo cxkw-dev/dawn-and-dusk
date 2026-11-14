@@ -9,7 +9,7 @@ import { version, installCommand } from '../lib/distribution';
 import { setNames } from '../lib/tokens';
 import '../styles/home.css';
 
-const components = Object.keys(import.meta.glob('./components/*.astro')).length;
+const components = Object.keys(import.meta.glob('./components/*.astro')).filter((path) => !path.endsWith('/index.astro')).length;
 import { base } from '../lib/nav';
 const href = (p: string) => `${base}/${p}`;
 
@@ -33,8 +33,8 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
         <p class="home-cover__lead">A warm, quiet design system. Two lights, one point of view.</p>
         <p class="home-cover__note">Golden-hour colour, confident type and considered details. Plain CSS, a little JavaScript, and an agent skill to bring it together.</p>
         <div class="home-cover__ctas">
-          <a class="dd-btn dd-btn--primary" href={href('foundations/colors')}><Fragment set:html={i('layers')} /><span>Start with foundations</span></a>
-          <a class="dd-btn dd-btn--secondary" href={href('components/button')}><Fragment set:html={i('box')} /><span>Browse components</span></a>
+          <a class="dd-btn dd-btn--primary" href={href('getting-started')}><Fragment set:html={i('layers')} /><span>Get started</span></a>
+          <a class="dd-btn dd-btn--secondary" href={href('components')}><Fragment set:html={i('box')} /><span>Browse components</span></a>
           <a class="dd-btn dd-btn--ghost" href={href('skill')}><Fragment set:html={i('ai')} /><span>Agent skill</span></a>
         </div>
       </div>
@@ -51,10 +51,19 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
       </Fragment>
     </HomeSplit>
 
+    <section class="home-install" aria-labelledby="home-build-h">
+      <h2 id="home-build-h" class="dd-h2 home-head__h">build your first page</h2>
+      <p>Start with a working recipe, then make it yours. Every page includes the markup, interactions, and states you need.</p>
+      <div class="doc-cards">
+        <a class="doc-card" href={href('recipes/settings')}><b>Workspace settings</b><span>A complete form with validation and save feedback.</span></a>
+        <a class="doc-card" href={href('recipes/projects')}><b>Project directory</b><span>Search, loading, empty results, and retry.</span></a>
+        <a class="doc-card" href={href('recipes/sign-in')}><b>Sign in</b><span>Accessible validation and a simulated session.</span></a>
+      </div>
+    </section>
     <!-- ── the numbers: three ways in ─────────────────────────────────────────────────────────────────────── -->
     <section class="home-figures" aria-labelledby="home-figures-h">
       <h2 id="home-figures-h" class="dd-visually-hidden">What’s inside</h2>
-      <a class="home-figure home-figure--a" href={href('components/button')}>
+      <a class="home-figure home-figure--a" href={href('components')}>
         <span class="home-figure__n">{components}</span>
         <span class="home-figure__word">components<Fragment set:html={i('arrow-right')} /></span>
         <span class="home-figure__text">Buttons to data tables, each with tested markup that works in both themes.</span>
@@ -196,7 +205,7 @@ const amp = `<span class="dd-loader dd-loader--sky dd-loader--xl" aria-hidden="t
           <figcaption class="home-cap"><b>Buttons</b><span>One clear next move</span></figcaption>
         </figure>
       </HomeSplit>
-      <p class="home-more"><a class="dd-btn dd-btn--link" href={href('components/button')}><span>All {components} components</span><Fragment set:html={i('arrow-right')} /></a></p>
+      <p class="home-more"><a class="dd-btn dd-btn--link" href={href('components')}><span>All {components} components</span><Fragment set:html={i('arrow-right')} /></a></p>
     </section>
 
     <!-- ── install ───────────────────────────────────────────────────────────────────────────────────────── -->

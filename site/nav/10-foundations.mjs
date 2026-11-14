@@ -2,6 +2,13 @@
 export default { group: 'Foundations', order: 10, section: 'foundations', items: [
   { title: 'Introduction', href: '', group: 'Overview' },
   { title: 'Getting started', href: 'getting-started', group: 'Overview' },
+  { title: 'Recipes', href: 'recipes', group: 'Build' },
+  { title: 'Workspace settings', href: 'recipes/settings', group: 'Build' },
+  { title: 'Project directory', href: 'recipes/projects', group: 'Build' },
+  { title: 'Sign in', href: 'recipes/sign-in', group: 'Build' },
+  { title: 'React API', href: 'react', group: 'Build' },
+  { title: 'Support & accessibility', href: 'support', group: 'Reference' },
+  { title: 'Release notes', href: 'releases', group: 'Reference' },
   { title: 'Colors', href: 'foundations/colors', group: 'Colour & type' },
   { title: 'Typography', href: 'foundations/typography', group: 'Colour & type' },
   { title: 'Spacing & layout', href: 'foundations/spacing', group: 'Space & shape' },

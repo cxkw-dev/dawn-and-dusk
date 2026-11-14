@@ -1,0 +1,18 @@
+---
+import Docs from '../layouts/Docs.astro';
+import { catalog } from '../lib/catalog';
+import { base } from '../lib/nav';
+---
+<Docs title="Support & accessibility" group="Reference" lead="Choose the right API and understand the limits before adopting a component.">
+  <h2 id="matrix">Component coverage</h2>
+  <p>Every component has an HTML/CSS API and both themes. React exports marked “new” are source-checkout features pending the next release. Complex HTML widgets use the optional auto runtime; React components manage their own interactions.</p>
+  <div class="recipe-scroll"><table class="doc-table"><thead><tr><th scope="col">Component</th><th scope="col">HTML / CSS</th><th scope="col">React</th></tr></thead><tbody>{catalog.map((item) => <tr><td><a href={`${base}/${item.href}`}>{item.title}</a></td><td>Available</td><td>{item.react ? <a href={`${base}/react#${item.name}`}>{item.react}{['textarea','select','checkbox','switch','dialog','tabs'].includes(item.name) ? ' (new)' : ''}{item.name === 'select' ? ' — native' : ''}</a> : 'HTML API only'}</td></tr>)}</tbody></table></div>
+  <h2 id="accessibility">Accessibility expectations</h2>
+  <p>Examples include native controls, labels, error associations, keyboard behavior, and status announcements where appropriate. Component pages summarize their keyboard model. Automated behavior tests cover interactions, ARIA state, focus handling, and mobile layouts; these checks are not a conformance certification.</p>
+  <ul><li>Keep visible labels and associate errors with the relevant field.</li><li>Preserve the documented roles and keyboard behavior when customizing markup.</li><li>Test your actual content, colors, zoom levels, and assistive-technology workflows.</li><li>Respect reduced-motion preferences and keep useful content available without animation.</li></ul>
+  <h2 id="browsers">Browser requirements</h2>
+  <p>The system uses modern CSS including <code>light-dark()</code>, <code>color-mix()</code>, <code>:has()</code>, and native <code>dialog</code>. Use current evergreen browsers. The automated harness runs Chrome; Safari, Firefox, and screen-reader behavior require separate verification. Internet Explorer and older embedded webviews are outside the supported target.</p>
+  <h2 id="integration">Integration limits</h2>
+  <ul><li>The full stylesheet includes a page reset and a 17px root font size. Import <code>tokens.css</code> alone if you only want variables.</li><li>Google Fonts need a network connection. Use <code>styles-no-fonts.css</code> and self-host fonts for offline or restricted environments.</li><li>React Select wraps a native select, not the custom listbox. React Tabs are horizontal. React Dialog uses the browser modal and does not dismiss on backdrop clicks.</li><li>The recipe sign-in is a simulation; recipes do not provide authentication or a backend.</li></ul>
+  <h2 id="upgrades">Releases and upgrades</h2><p>Use versioned package URLs and retain your lockfile. Read the <a href={`${base}/releases`}>release and upgrade notes</a> before changing versions.</p>
+</Docs>

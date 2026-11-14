@@ -151,8 +151,8 @@ test('static list: remove works without a dropzone, retry gives feedback', async
 
 test('keyboard: Tab reaches the hidden input and the zone shows the focus ring (dusk)', async ({ open, assert }) => {
   const page = await open('components/file-upload', { theme: 'dusk' });
-  await page.get(() => document.querySelector('.doc-head').setAttribute('tabindex', '-1'));
-  await page.focus('.doc-head');
+  await page.get(() => document.querySelector('.ex-stage').setAttribute('tabindex', '-1'));
+  await page.focus('.ex-stage');
   await page.press('Tab');
   assert.equal(await page.get((s) => document.activeElement === document.querySelector(s), input1), true);
   assert.equal(await page.get((s) => getComputedStyle(document.querySelector(s)).outlineStyle, zone1), 'solid');

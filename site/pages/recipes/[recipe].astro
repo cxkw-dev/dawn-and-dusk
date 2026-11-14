@@ -1,0 +1,35 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import { recipes } from '../../lib/recipes';
+import { base } from '../../lib/nav';
+import { Code } from 'astro:components';
+import { ddTheme } from '../../lib/syntax';
+export function getStaticPaths() { return Object.entries(recipes).map(([key, recipe]) => ({ params: { recipe: key }, props: { recipe, key } })); }
+const { recipe, key } = Astro.props;
+const code = `${recipe.html}\n\n<script>\n${recipe.script}\n<\/script>`;
+// Absolute CSS/runtime URLs make a downloaded example usable without a repository clone.
+const origin = 'https://cxkw-dev.github.io/dawn-and-dusk/release';
+const download = `<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${recipe.title}</title><link rel="stylesheet" href="${origin}/dawn-and-dusk.css"><script src="${origin}/dawn-and-dusk.js" defer><\/script><style>body{padding:var(--dd-space-6);max-width:60rem;margin:auto}.recipe-scroll{overflow:auto}[hidden]{display:none!important}</style></head><body><p class="dd-small dd-muted">${recipe.note}</p><button class="dd-btn dd-btn--ghost" type="button" data-dd-theme-toggle>Switch theme</button>\n${code}\n</body></html>`;
+---
+<Docs title={recipe.title} group="Recipes" lead={recipe.lead}>
+  <p class="dd-small dd-muted">{recipe.note}</p>
+  {key !== 'settings' && <label class="dd-field"><span class="dd-field__label">Preview state</span><div class="dd-input dd-select"><select class="dd-input__control" data-recipe-state><option value="ready">Ready</option>{key === 'projects' && <><option value="loading">Loading</option><option value="empty">Empty</option></>}<option value="error">Error</option></select></div></label>}
+  <h2 id="preview">Live preview</h2>
+  <div class="recipe-stage"><Fragment set:html={recipe.html} /></div>
+  <script type="module" is:inline set:html={recipe.script}></script>
+  <h2 id="source">Use this recipe</h2>
+  <div class="dd-row"><button class="dd-btn dd-btn--secondary" type="button" data-dd-copy={code}>Copy HTML + JavaScript</button><button class="dd-btn dd-btn--ghost" type="button" data-recipe-download={download} data-recipe-filename={`${key}.html`}>Download page</button></div>
+  <p>The downloaded page loads the published stylesheet and interactions over the internet. In your app, import <code>dawn-and-dusk/styles.css</code> once. Import <code>dawn-and-dusk/auto</code> only for HTML-owned interactions.</p>
+  <details><summary>View HTML and JavaScript</summary><Code code={code} lang="html" theme={ddTheme} wrap /></details>
+  <h2 id="integration">Connect your app</h2>
+  <p>{key === 'settings' ? 'Replace the localStorage write with your API request, preserving validation and the disabled pending state. Show a recoverable error if the save fails.' : key === 'projects' ? 'Replace loadProjects with your fetch call. Check the HTTP status, validate returned data, and keep the generation guard so an older request cannot replace a newer result.' : 'Replace the simulated request with your authentication provider. Keep credentials out of localStorage and logs; let the provider manage the session.'}</p>
+  <p><a href={`${base}/recipes`}>All recipes</a> · <a href={`${base}/react`}>React examples</a></p>
+</Docs>
+<script>
+  document.querySelector<HTMLButtonElement>('[data-recipe-download]')?.addEventListener('click', (event) => {
+    const button = event.currentTarget as HTMLButtonElement;
+    const url = URL.createObjectURL(new Blob([button.dataset.recipeDownload!], { type: 'text/html' }));
+    const link = document.createElement('a'); link.href = url; link.download = button.dataset.recipeFilename!; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+</script>

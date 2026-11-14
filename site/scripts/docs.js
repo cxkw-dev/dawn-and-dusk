@@ -143,7 +143,7 @@ function navSearch({ nav, list }) {
       const title = titles.get(a);
       const tokens = a.dataset.find.split(/[\s&/-]+/);
       // a word matches anywhere in the title, or at the start of a section name or another name for the page
-      a.hidden = on && !words.every((w) => title.toLowerCase().includes(w) || tokens.some((t) => t.startsWith(w)));
+      a.hidden = (!on && a.hasAttribute('data-find-section')) || on && !words.every((w) => title.toLowerCase().includes(w) || tokens.some((t) => t.startsWith(w)));
       const w = on && words.find((x) => title.toLowerCase().includes(x));
       const at = w ? title.toLowerCase().indexOf(w) : -1;
       label(a).innerHTML = at >= 0 ? `${esc(title.slice(0, at))}<mark>${esc(title.slice(at, at + w.length))}</mark>${esc(title.slice(at + w.length))}` : esc(title);
@@ -162,7 +162,7 @@ function navSearch({ nav, list }) {
     else if (filtering) list.dispatchEvent(new Event(RESTORE_EVENT));
     filtering = on;
     status.classList.toggle('is-none', on && !total);
-    status.textContent = !on ? '' : total ? `${total} ${total === 1 ? 'page' : 'pages'}` : `Nothing matches “${raw}”.`;
+    status.textContent = !on ? '' : total ? `${total} ${total === 1 ? 'result' : 'results'}` : `Nothing matches “${raw}”.`;
   };
   input.addEventListener('input', run);
   input.addEventListener('keydown', (e) => {

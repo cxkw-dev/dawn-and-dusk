@@ -24,7 +24,7 @@ test('hover takes the accent and turns the dots solid; arrows nudge and lift', a
 
 test('keyboard: Tab reaches links and draws the ring; the disabled link is skipped and inert', async ({ open, assert }) => {
   const page = await open('components/link');
-  await page.get(() => { const h = document.querySelector('.doc-head h1'); h.tabIndex = -1; h.focus(); return true; });
+  await page.get(() => { const h = document.querySelector('.ex-stage'); h.tabIndex = -1; h.focus(); return true; });
   await page.press('Tab');
   assert.ok(await page.get(() => document.activeElement.matches('.ex-stage a.dd-link')), 'first Tab lands on the first link');
   assert.equal(await page.get(() => getComputedStyle(document.activeElement).outlineStyle), 'solid');
