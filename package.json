@@ -21,7 +21,8 @@
     "test": "node tests/run.mjs",
     "skill:install": "node scripts/install-skill.mjs",
     "build:package": "node scripts/build-ds.mjs && node scripts/build-package.mjs",
-    "test:package": "node tests/package-smoke.mjs"
+    "test:package": "node tests/package-smoke.mjs",
+    "build:orca": "node scripts/build-orca-theme.mjs"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",

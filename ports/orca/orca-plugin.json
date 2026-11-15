@@ -1,0 +1,39 @@
+{
+  "manifestVersion": 2,
+  "id": "dawn-and-dusk",
+  "name": "dawn & dusk",
+  "version": "0.3.2",
+  "description": "The dawn & dusk design system for Orca: dawn in light mode, dusk in dark, with matching terminal and code colours.",
+  "license": "MIT",
+  "repository": "https://github.com/cxkw-dev/dawn-and-dusk/tree/main/ports/orca",
+  "engines": {
+    "orca": ">=1.4.246"
+  },
+  "execution": "data",
+  "contributes": {
+    "themes": [
+      {
+        "id": "dawn",
+        "title": "dawn & dusk",
+        "path": "themes/dawn.json"
+      },
+      {
+        "id": "dusk",
+        "title": "dawn & dusk",
+        "path": "themes/dusk.json"
+      }
+    ],
+    "terminalThemes": [
+      {
+        "id": "dawn",
+        "title": "dawn & dusk · dawn",
+        "path": "terminal/dawn.json"
+      },
+      {
+        "id": "dusk",
+        "title": "dawn & dusk · dusk",
+        "path": "terminal/dusk.json"
+      }
+    ]
+  }
+}
