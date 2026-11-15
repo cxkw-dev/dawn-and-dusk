@@ -100,6 +100,11 @@ The app starters require Node.js 22.12+ or 24+. Each includes a working form, ic
 - **Global styles:** the full stylesheet includes a page reset and a 17px root font size.
 - **Agent skill:** optional, installed per project. [Set up an agent](https://cxkw-dev.github.io/dawn-and-dusk/skill/).
 
+## Orca theme
+
+dawn & dusk is also a theme for the Orca app: dawn in light mode, dusk in dark, with matching terminal and code colours.
+It lives in [`ports/orca/`](ports/orca/README.md), which explains how to install it and turn it on.
+
 ## Contributing and license
 
 [Contributor guide](CONTRIBUTING.md) · [MIT license](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)

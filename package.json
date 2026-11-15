@@ -15,7 +15,7 @@
   },
   "scripts": {
     "dev": "node scripts/build-ds.mjs && astro dev",
-    "build": "node scripts/build-ds.mjs && node scripts/build-package.mjs && astro build && node scripts/build-skill-examples.mjs",
+    "build": "node scripts/build-ds.mjs && node scripts/build-orca-theme.mjs && node scripts/build-package.mjs && astro build && node scripts/build-skill-examples.mjs",
     "build:ds": "node scripts/build-ds.mjs",
     "preview": "astro preview",
     "test": "node tests/run.mjs",

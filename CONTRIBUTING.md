@@ -24,6 +24,8 @@ scripts/
   ds-source.mjs            what the build scripts share: the stylesheet sources in order, token blocks, release URLs
   fetch-icons.mjs          regenerates the icon sprite from Iconify
   install-skill.mjs        installs the skill into one project
+  build-orca-theme.mjs     generates the Orca theme plugin (ports/orca/) from ds/tokens.css
+ports/orca/                the Orca app theme plugin: dawn (light) and dusk (dark) themes and terminal palettes (generated)
 tests/                     behaviour tests in headless Chrome, one file per component (runner and harness in lib/)
 tools/picker/              the option picker the system was designed with (not part of the system)
 .github/workflows/         deploy: builds the docs, checks the committed generated files match, publishes to Pages;
@@ -40,6 +42,7 @@ npm install
 npm run dev          # builds the system, then serves the docs at http://localhost:4321/dawn-and-dusk/
 npm run build        # builds the system, the static docs (dist/) and the skill's markup references
 npm run build:ds     # rebuilds release/, the entry points and the skill's assets and references only
+npm run build:orca   # rebuilds the Orca theme plugin in ports/orca/ only
 npm run preview      # serves the built docs from dist/
 npm test             # every behaviour test, in headless Chrome, against the running dev server
 npm test -- menu tabs    # only the test files whose names contain "menu" or "tabs"
@@ -59,7 +62,8 @@ The tests look for Chrome at its macOS path; set `CHROME=/path/to/chrome` elsewh
 4. Run `npm run build` and commit the regenerated `release/` and `skill/` files with your change. The deploy workflow
    rebuilds on every push to main and stops before publishing if any committed generated file differs from its output.
 
-**Changing a token:** edit `ds/tokens.css`. The foundations pages and `references/tokens.md` read it directly.
+**Changing a token:** edit `ds/tokens.css`. The foundations pages and `references/tokens.md` read it directly. The Orca
+theme in `ports/orca/` is generated from it too, so `npm run build` updates it; see [ports/orca](ports/orca/README.md).
 
 
 ## Consumer package and releases

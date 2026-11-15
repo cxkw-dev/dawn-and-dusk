@@ -93,8 +93,7 @@ const status = (mode) =>
     : { ok: t('ok'), warn: t('warn'), bad: t('bad'), info: t('info') };
 
 /* ---------- app theme ---------- */
-// Options a variant can change; the defaults are the system as it is. (Variants aren't shipped: one theme per mode.)
-function appTheme(mode, { lines = 8, tabs = 'underline' } = {}) {
+function appTheme(mode) {
   use(mode);
   const text = t('text');
   const bg = t('bg');
@@ -103,9 +102,8 @@ function appTheme(mode, { lines = 8, tabs = 'underline' } = {}) {
   // Links: apricot reads on the dusk ground; on dawn it takes the .dd-code prompt mix (half apricot, half text).
   const link = mode === 'dawn' ? k('primary', 50, 'text') : pri;
   const st = status(mode);
-  const line = wash(lines, bg);
+  const line = wash(8, bg); // the side-nav and tabs hairline
   const ring = (ground) => over(alpha(t('accent'), 0.45), ground); // --dd-ring
-  const tabBar = tabs === 'underline' ? bg : side;
   const tok = {
     '--background': bg,
     '--editor-surface': bg,
@@ -136,24 +134,23 @@ function appTheme(mode, { lines = 8, tabs = 'underline' } = {}) {
     '--sidebar-primary-foreground': onPri,
     '--sidebar-accent': wash(10, side),
     '--sidebar-accent-foreground': text,
-    '--sidebar-border': wash(lines, side),
+    '--sidebar-border': wash(8, side),
     '--sidebar-ring': ring(side),
     '--worktree-sidebar': side,
     '--worktree-sidebar-foreground': text,
     '--worktree-sidebar-accent': wash(4, side), // side-nav hover: quieter than current
     '--worktree-sidebar-accent-foreground': text,
-    '--worktree-sidebar-border': wash(lines, side),
+    '--worktree-sidebar-border': wash(8, side),
     '--worktree-sidebar-ring': ring(side),
     '--worktree-sidebar-active': wash(10, side), // side-nav current, no border
     '--worktree-sidebar-active-border': wash(10, side),
     '--host-badge': wash(9, side),
     '--host-badge-foreground': t('muted'),
-    '--tab-bar': tabBar,
+    '--tab-bar': bg,
     '--tab-active': bg,
     '--tab-active-foreground': text,
-    // underline: the dd-tabs bar (a text-coloured line under the current tab); tone: no line, the active tab joins the editor
-    '--tab-active-indicator': tabs === 'underline' ? text : bg,
-    '--tab-inactive': tabBar,
+    '--tab-active-indicator': text, // the dd-tabs bar: a text-coloured line under the current tab
+    '--tab-inactive': bg,
     '--tab-inactive-foreground': t('muted'),
     '--split-divider': line,
     '--split-divider-hover': t('border-strong'),
